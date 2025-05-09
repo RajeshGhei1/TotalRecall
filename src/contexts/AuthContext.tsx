@@ -31,7 +31,7 @@ const mockUser = {
   app_metadata: {
     role: 'super_admin'
   }
-} as User;
+} as unknown as User;
 
 const mockSession = {
   user: mockUser,
@@ -92,14 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     if (bypassAuth) {
       console.log("Auth bypass is enabled - redirecting without actual sign in");
-      navigate('/admin/dashboard');
+      navigate('/superadmin/dashboard');
       return;
     }
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate('/admin/dashboard');
+      navigate('/superadmin/dashboard');
     } catch (error: any) {
       toast({
         title: "Sign in failed",

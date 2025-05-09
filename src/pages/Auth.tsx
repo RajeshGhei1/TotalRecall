@@ -44,7 +44,7 @@ const Auth = () => {
   useEffect(() => {
     if (bypassAuth) {
       const timer = setTimeout(() => {
-        navigate('/admin/dashboard');
+        navigate('/superadmin/dashboard');
       }, 3000); // Redirect after 3 seconds
       
       return () => clearTimeout(timer);
@@ -94,7 +94,7 @@ const Auth = () => {
             JobMojo.ai
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access the admin dashboard
+            Sign in to access the dashboard
           </p>
         </div>
 
@@ -102,7 +102,7 @@ const Auth = () => {
           <Alert className="bg-amber-50 border-amber-200">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800">
-              Authentication bypass is enabled. You will be automatically redirected to the admin dashboard.
+              Authentication bypass is enabled. You will be automatically redirected to the superadmin dashboard.
             </AlertDescription>
           </Alert>
         )}
