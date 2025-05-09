@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Breadcrumb,
@@ -27,7 +27,10 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Plus } from 'lucide-react';
+import CreateUserDialog from '@/components/superadmin/CreateUserDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -39,6 +42,9 @@ interface User {
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -70,6 +76,15 @@ const Users = () => {
     }
   };
 
+  const handleCreateSuccess = () => {
+    toast({
+      title: "User created successfully",
+      description: "The user has been added to the system",
+    });
+    queryClient.invalidateQueries({ queryKey: ['users'] });
+    setIsCreateDialogOpen(false);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -96,15 +111,23 @@ const Users = () => {
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <CardTitle>User List</CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search users..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search users..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Create User
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -150,6 +173,12 @@ const Users = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <CreateUserDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onCreateSuccess={handleCreateSuccess}
+      />
     </AdminLayout>
   );
 };
