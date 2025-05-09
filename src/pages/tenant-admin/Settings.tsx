@@ -2,33 +2,25 @@
 import React, { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
-import { 
-  Settings, 
-  Bell, 
-  Mail, 
-  Shield, 
-  Palette, 
-  Database 
-} from "lucide-react";
-import { useCustomFields } from "@/hooks/useCustomFields";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { PenSquare } from "lucide-react";
 
 const TenantAdminSettings = () => {
   const { user } = useAuth();
-  const [currentTab, setCurrentTab] = useState("general");
-  const [tenantName, setTenantName] = useState("");
-  const [tenantDescription, setTenantDescription] = useState("");
+  const [activeTab, setActiveTab] = useState("general");
 
   // Fetch tenant information for the current user
-  const { data: tenantData, isLoading } = useQuery({
-    queryKey: ['currentTenantSettings'],
+  const { data: tenantData, isLoading: tenantLoading } = useQuery({
+    queryKey: ['currentTenantData'],
     queryFn: async () => {
       if (!user) return null;
       
@@ -46,379 +38,278 @@ const TenantAdminSettings = () => {
         .single();
 
       if (error) throw error;
-      
-      // Set initial form values
-      setTenantName(data.tenants.name);
-      setTenantDescription(data.tenants.description || "");
-      
       return data;
     },
     enabled: !!user,
   });
 
-  const { customFields } = useCustomFields(tenantData?.tenant_id);
-
-  // Update tenant settings
-  const updateTenantMutation = useMutation({
-    mutationFn: async () => {
-      if (!tenantData?.tenant_id) return;
-      
-      const { error } = await supabase
-        .from('tenants')
-        .update({
-          name: tenantName.trim(),
-          description: tenantDescription.trim() || null
-        })
-        .eq('id', tenantData.tenant_id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Settings updated",
-        description: "Tenant settings have been updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error updating settings",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSaveSettings = () => {
-    if (!tenantName.trim()) {
-      toast({
-        title: "Validation error",
-        description: "Tenant name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    updateTenantMutation.mutate();
-  };
-
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Tenant Admin Settings</h1>
-          <div className="flex items-center justify-center h-64">
-            <p>Loading settings...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  if (!tenantData) {
-    return (
-      <AdminLayout>
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Tenant Admin Settings</h1>
-          <Card>
-            <CardContent className="flex items-center justify-center h-64">
-              <p className="text-muted-foreground">No tenant data available</p>
-            </CardContent>
-          </Card>
-        </div>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Tenant Admin Settings</h1>
+          <h1 className="text-3xl font-bold">Tenant Settings</h1>
           {tenantData?.tenants?.name && (
             <div className="bg-jobmojo-primary text-white px-4 py-2 rounded-md">
               {tenantData.tenants.name}
             </div>
           )}
         </div>
-        
-        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid grid-cols-5 w-full max-w-3xl mb-4">
-            <TabsTrigger value="general" className="flex items-center">
-              <Settings className="mr-2 h-4 w-4" /> General
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center">
-              <Bell className="mr-2 h-4 w-4" /> Notifications
-            </TabsTrigger>
-            <TabsTrigger value="branding" className="flex items-center">
-              <Palette className="mr-2 h-4 w-4" /> Branding
-            </TabsTrigger>
-            <TabsTrigger value="customFields" className="flex items-center">
-              <Database className="mr-2 h-4 w-4" /> Custom Fields
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center">
-              <Shield className="mr-2 h-4 w-4" /> Security
-            </TabsTrigger>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-4 md:w-[600px]">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="customization">Customization</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="general">
+
+          <TabsContent value="general" className="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>General Settings</CardTitle>
                 <CardDescription>
-                  Basic settings for your tenant organization.
+                  Manage your tenant's general settings and information
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <label htmlFor="tenant-name" className="text-sm font-medium">
-                    Organization Name
-                  </label>
-                  <Input
-                    id="tenant-name"
-                    value={tenantName}
-                    onChange={(e) => setTenantName(e.target.value)}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <label htmlFor="tenant-description" className="text-sm font-medium">
-                    Organization Description
-                  </label>
-                  <Input
-                    id="tenant-description"
-                    value={tenantDescription}
-                    onChange={(e) => setTenantDescription(e.target.value)}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <label htmlFor="tenant-timezone" className="text-sm font-medium">
-                    Default Timezone
-                  </label>
-                  <select 
-                    id="tenant-timezone"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                  >
-                    <option value="UTC">UTC</option>
-                    <option value="America/New_York">Eastern Time (ET)</option>
-                    <option value="America/Chicago">Central Time (CT)</option>
-                    <option value="America/Denver">Mountain Time (MT)</option>
-                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                  </select>
-                </div>
-                
-                <div className="pt-4">
-                  <Button onClick={handleSaveSettings} disabled={updateTenantMutation.isPending}>
-                    {updateTenantMutation.isPending ? "Saving..." : "Save Settings"}
-                  </Button>
-                </div>
+              <CardContent className="space-y-6">
+                {tenantLoading ? (
+                  <div className="space-y-4">
+                    <div className="h-8 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-24 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tenant-name">Tenant Name</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="tenant-name"
+                          defaultValue={tenantData?.tenants?.name || ""}
+                          className="flex-1"
+                        />
+                        <Button size="sm" className="flex-none">
+                          <PenSquare className="h-4 w-4 mr-2" /> Edit
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tenant-description">Description</Label>
+                      <div className="flex items-start gap-2">
+                        <Textarea
+                          id="tenant-description"
+                          rows={4}
+                          defaultValue={tenantData?.tenants?.description || ""}
+                          className="flex-1"
+                        />
+                        <Button size="sm" className="flex-none">
+                          <PenSquare className="h-4 w-4 mr-2" /> Edit
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Settings saved",
+                      description: "Your tenant settings have been updated successfully",
+                    });
+                  }}
+                >
+                  Save Changes
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
-          
-          <TabsContent value="notifications">
+
+          <TabsContent value="notifications" className="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>Notification Settings</CardTitle>
                 <CardDescription>
-                  Configure when and how you receive notifications.
+                  Configure how and when you receive notifications
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">Email Notifications</h3>
+                      <p className="font-medium">Email Notifications</p>
                       <p className="text-sm text-muted-foreground">
-                        Receive email notifications for important updates.
+                        Receive notifications via email
                       </p>
                     </div>
-                    <Switch id="email-notifications" defaultChecked />
+                    <Switch defaultChecked />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">New Talent Alerts</h3>
+                      <p className="font-medium">Job Alerts</p>
                       <p className="text-sm text-muted-foreground">
-                        Get notified when new talent is added to the platform.
+                        Get notified when new jobs matching your criteria are posted
                       </p>
                     </div>
-                    <Switch id="talent-notifications" defaultChecked />
+                    <Switch defaultChecked />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">Interview Reminders</h3>
+                      <p className="font-medium">Candidate Updates</p>
                       <p className="text-sm text-muted-foreground">
-                        Receive reminders for upcoming interviews.
+                        Notifications when candidates update their profiles
                       </p>
                     </div>
-                    <Switch id="interview-notifications" defaultChecked />
+                    <Switch />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">Daily Digest</h3>
+                      <p className="font-medium">Weekly Digest</p>
                       <p className="text-sm text-muted-foreground">
-                        Get a daily summary of all activities.
+                        Receive a weekly summary of activities
                       </p>
                     </div>
-                    <Switch id="digest-notifications" />
+                    <Switch defaultChecked />
                   </div>
                 </div>
-                
-                <div className="pt-4">
-                  <Button>Save Notification Settings</Button>
-                </div>
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Notification settings saved",
+                      description:
+                        "Your notification preferences have been updated successfully",
+                    });
+                  }}
+                >
+                  Save Preferences
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
-          
-          <TabsContent value="branding">
+
+          <TabsContent value="integrations" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Branding Settings</CardTitle>
+                <CardTitle>Integrations</CardTitle>
                 <CardDescription>
-                  Customize the appearance of your tenant.
+                  Connect with third-party services and tools
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Logo</label>
-                  <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground">No logo</p>
-                    </div>
-                    <Button variant="outline">Upload Logo</Button>
-                  </div>
-                </div>
-                
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Primary Color</label>
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-md bg-blue-500"></div>
-                    <Input type="text" value="#3B82F6" className="w-40" />
-                  </div>
-                </div>
-                
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Secondary Color</label>
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-md bg-purple-500"></div>
-                    <Input type="text" value="#8B5CF6" className="w-40" />
-                  </div>
-                </div>
-                
-                <div className="pt-4">
-                  <Button>Save Branding</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="customFields">
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Fields</CardTitle>
-                <CardDescription>
-                  Manage custom fields for talent, jobs, and other entities.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Custom Fields Configuration</h3>
-                    <Button>
-                      <Database className="mr-2 h-4 w-4" /> Add Custom Field
-                    </Button>
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-gray-100 p-2 rounded-md">
+                        <img
+                          src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg"
+                          alt="Google"
+                          className="w-8 h-8"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">Google Calendar</p>
+                        <p className="text-sm text-muted-foreground">
+                          Sync interviews and events
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="outline">Connect</Button>
                   </div>
-                  
-                  {customFields?.length ? (
-                    <div className="border rounded-md divide-y">
-                      {customFields.map((field) => (
-                        <div key={field.id} className="p-4 flex justify-between items-center">
-                          <div>
-                            <h4 className="font-medium">{field.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Type: {field.field_type} | Key: {field.field_key}
-                            </p>
-                            {field.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{field.description}</p>
-                            )}
-                          </div>
-                          <div>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-gray-100 p-2 rounded-md">
+                        <img
+                          src="https://cdn.cdnlogo.com/logos/s/40/slack-new.svg"
+                          alt="Slack"
+                          className="w-8 h-8"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">Slack</p>
+                        <p className="text-sm text-muted-foreground">
+                          Get notifications in your Slack channels
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="bg-muted/50 p-8 text-center rounded-md">
-                      <Database className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                      <h3 className="font-medium mb-1">No Custom Fields</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        You haven't created any custom fields yet.
-                      </p>
-                      <Button>Create Your First Custom Field</Button>
+                    <Button variant="outline">Connect</Button>
+                  </div>
+
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-gray-100 p-2 rounded-md">
+                        <img
+                          src="https://cdn.cdnlogo.com/logos/m/25/microsoft-outlook.svg"
+                          alt="Outlook"
+                          className="w-8 h-8"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">Microsoft Outlook</p>
+                        <p className="text-sm text-muted-foreground">
+                          Sync emails and calendar events
+                        </p>
+                      </div>
                     </div>
-                  )}
+                    <Button variant="outline">Connect</Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-          
-          <TabsContent value="security">
+
+          <TabsContent value="customization" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
+                <CardTitle>Customization</CardTitle>
                 <CardDescription>
-                  Manage security settings for your tenant organization.
+                  Customize the appearance and branding of your tenant
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Two-Factor Authentication</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Require users to enable 2FA for added security.
-                    </p>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Tenant Logo</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="h-20 w-20 border rounded-md flex items-center justify-center bg-gray-50">
+                        <span className="text-gray-400">No logo</span>
+                      </div>
+                      <Button variant="outline">Upload Logo</Button>
+                    </div>
                   </div>
-                  <Switch id="require-2fa" />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Password Policy</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Require strong passwords with special characters and numbers.
-                    </p>
+
+                  <div className="space-y-2">
+                    <Label>Primary Color</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 rounded-md bg-jobmojo-primary" />
+                      <Input type="color" defaultValue="#9b87f5" className="w-20 h-10" />
+                    </div>
                   </div>
-                  <Switch id="strong-passwords" defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Account Lockout</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Lock accounts after 5 failed login attempts.
-                    </p>
+
+                  <div className="space-y-2">
+                    <Label>Email Template</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded-md p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary">
+                        <div className="h-24 w-full bg-gray-100 mb-2 rounded"></div>
+                        <span>Minimal</span>
+                      </div>
+                      <div className="border rounded-md p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary">
+                        <div className="h-24 w-full bg-gray-100 mb-2 rounded"></div>
+                        <span>Corporate</span>
+                      </div>
+                    </div>
                   </div>
-                  <Switch id="account-lockout" defaultChecked />
                 </div>
-                
-                <div className="grid gap-2 pt-4">
-                  <label className="text-sm font-medium">Session Timeout (minutes)</label>
-                  <Input type="number" min={5} max={240} defaultValue={60} className="w-32" />
-                  <p className="text-xs text-muted-foreground">
-                    Logout users after a period of inactivity.
-                  </p>
-                </div>
-                
-                <div className="pt-4">
-                  <Button>Save Security Settings</Button>
-                </div>
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Customization settings saved",
+                      description: "Your branding preferences have been updated",
+                    });
+                  }}
+                >
+                  Save Customization
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

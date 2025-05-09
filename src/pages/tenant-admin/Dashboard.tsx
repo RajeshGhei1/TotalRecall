@@ -11,7 +11,8 @@ import {
   TrendingUp, 
   MessageSquare,
   CalendarDays,
-  PenLine 
+  PenLine,
+  UserRound
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import TalentMetricsDashboard from "@/components/talent/TalentMetricsDashboard";
@@ -69,6 +70,23 @@ const TenantAdminDashboard = () => {
     },
     enabled: !!tenantData?.tenant_id,
   });
+  
+  // Fetch users count
+  const { data: usersCount = 0, isLoading: usersLoading } = useQuery({
+    queryKey: ['tenantUsersCount', tenantData?.tenant_id],
+    queryFn: async () => {
+      if (!tenantData?.tenant_id) return 0;
+      
+      const { count, error } = await supabase
+        .from('user_tenants')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantData.tenant_id);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!tenantData?.tenant_id,
+  });
 
   // Fetch recent activities
   const { data: recentActivities = [] } = useQuery({
@@ -87,7 +105,7 @@ const TenantAdminDashboard = () => {
     enabled: !!tenantData?.tenant_id,
   });
 
-  const isLoading = tenantLoading || metricsLoading;
+  const isLoading = tenantLoading || metricsLoading || usersLoading;
 
   return (
     <AdminLayout>
@@ -103,7 +121,7 @@ const TenantAdminDashboard = () => {
         
         {isLoading ? (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4, 5].map(i => (
               <Card key={i}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -117,7 +135,7 @@ const TenantAdminDashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -128,6 +146,30 @@ const TenantAdminDashboard = () => {
                 <div className="flex items-center">
                   <Users className="mr-2 h-4 w-4 text-muted-foreground" />
                   <div className="text-2xl font-bold">{dashboardMetrics?.talentCount || 0}</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <UserRound className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <div className="text-2xl font-bold">{usersCount}</div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => navigate('/tenant-admin/users')}
+                    className="text-xs text-primary hover:text-primary-foreground"
+                  >
+                    Manage
+                  </Button>
                 </div>
               </CardContent>
             </Card>
