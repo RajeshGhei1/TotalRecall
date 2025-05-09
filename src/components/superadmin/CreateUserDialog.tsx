@@ -186,7 +186,7 @@ const CreateUserDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No tenant</SelectItem>
+                      <SelectItem value="none">No tenant</SelectItem>
                       {tenants.map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.id}>
                           {tenant.name}
