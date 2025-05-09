@@ -25,8 +25,9 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bot } from 'lucide-react';
 import CustomFieldsManager from '@/components/CustomFieldsManager';
+import AIModelIntegration from '@/components/superadmin/AIModelIntegration';
 
 const Settings = () => {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
@@ -58,6 +59,7 @@ const Settings = () => {
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="access">Access Management</TabsTrigger>
             <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+            <TabsTrigger value="ai-models">AI Models</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
           
@@ -122,6 +124,20 @@ const Settings = () => {
                     <p className="text-muted-foreground">Select a tenant to manage custom fields</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="ai-models" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Model Integration</CardTitle>
+                <CardDescription>
+                  Configure and assign AI models to tenants
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AIModelIntegration />
               </CardContent>
             </Card>
           </TabsContent>
