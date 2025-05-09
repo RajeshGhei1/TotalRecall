@@ -778,10 +778,10 @@ const TenantAdminSettings = () => {
                           <div className="mt-2">
                             <p className="text-sm font-medium">Available Variables:</p>
                             <div className="flex flex-wrap gap-2 mt-1">
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{{candidate_name}}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{{company_name}}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{{job_title}}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{{recruiter_name}}</span>
+                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{candidate_name}}'}</span>
+                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{company_name}}'}</span>
+                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{job_title}}'}</span>
+                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{recruiter_name}}'}</span>
                             </div>
                           </div>
                         </div>
