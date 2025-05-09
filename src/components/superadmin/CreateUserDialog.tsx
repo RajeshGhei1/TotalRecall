@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 import {
   Dialog,
@@ -85,7 +86,7 @@ const CreateUserDialog = ({
     setError(null);
     
     try {
-      // Step 1: Create a profile record in profiles table
+      // Step 1: Create a profile record in profiles table with UUID generated server-side
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -99,7 +100,7 @@ const CreateUserDialog = ({
       if (profileError) throw profileError;
       
       // Step 2: If tenant is selected, create association in user_tenants table
-      if (values.tenantId && profileData.id) {
+      if (values.tenantId && values.tenantId !== 'none' && profileData.id) {
         const { error: tenantError } = await supabase
           .from('user_tenants')
           .insert({
@@ -109,6 +110,11 @@ const CreateUserDialog = ({
 
         if (tenantError) throw tenantError;
       }
+      
+      toast({
+        title: "User created",
+        description: "New user has been successfully added to the system."
+      });
       
       onCreateSuccess();
       form.reset();

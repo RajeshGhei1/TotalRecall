@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,8 +24,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import CustomFieldsManager from '@/components/CustomFieldsManager';
 
 const Settings = () => {
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -52,6 +57,7 @@ const Settings = () => {
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="access">Access Management</TabsTrigger>
+            <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
           
@@ -93,6 +99,33 @@ const Settings = () => {
             <TenantAccessManager />
           </TabsContent>
 
+          <TabsContent value="custom-fields" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Custom Fields Management</CardTitle>
+                <CardDescription>
+                  Create and manage custom fields for tenants
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TenantSelector 
+                  onSelectTenant={(tenantId) => setSelectedTenantId(tenantId)} 
+                  selectedTenantId={selectedTenantId}
+                />
+                
+                {selectedTenantId ? (
+                  <div className="mt-8">
+                    <CustomFieldsManager tenantId={selectedTenantId} />
+                  </div>
+                ) : (
+                  <div className="text-center py-8 mt-4 border rounded-md">
+                    <p className="text-muted-foreground">Select a tenant to manage custom fields</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="security" className="space-y-4">
             <Card>
               <CardHeader>
@@ -123,6 +156,54 @@ const Settings = () => {
         </Tabs>
       </div>
     </AdminLayout>
+  );
+};
+
+// Tenant Selector Component
+const TenantSelector = ({ 
+  onSelectTenant, 
+  selectedTenantId 
+}: { 
+  onSelectTenant: (tenantId: string) => void;
+  selectedTenantId: string | null;
+}) => {
+  const { data: tenants = [], isLoading } = useQuery({
+    queryKey: ['tenants-selector'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4">
+      <h3 className="text-lg font-medium mb-2">Select Tenant</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {tenants.map((tenant) => (
+          <Button
+            key={tenant.id}
+            variant={tenant.id === selectedTenantId ? "default" : "outline"}
+            className="h-auto py-3 justify-start"
+            onClick={() => onSelectTenant(tenant.id)}
+          >
+            {tenant.name}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 };
 
