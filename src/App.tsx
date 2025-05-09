@@ -95,6 +95,8 @@ const App = () => (
                 </AuthGuard>
               }
             />
+            
+            {/* Talent Management Routes */}
             <Route
               path="/tenant-admin/talent"
               element={
@@ -103,6 +105,23 @@ const App = () => (
                 </AuthGuard>
               }
             />
+            <Route
+              path="/tenant-admin/talent/:action"
+              element={
+                <AuthGuard>
+                  <TenantAdminTalent />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/talent/:action/:id"
+              element={
+                <AuthGuard>
+                  <TenantAdminTalent />
+                </AuthGuard>
+              }
+            />
+            
             <Route
               path="/tenant-admin/jobs"
               element={

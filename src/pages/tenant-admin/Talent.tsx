@@ -1,15 +1,24 @@
 
-import React from "react";
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TalentList from "@/components/talent/TalentList";
+import TalentForm from "@/components/talent/TalentForm";
+import TalentDetail from "@/components/talent/TalentDetail";
+import CustomFieldsManager from "@/components/CustomFieldsManager";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
 const TenantAdminTalent = () => {
+  const { action, id } = useParams(); 
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("talents");
 
   // Fetch tenant information for the current user
   const { data: tenantData } = useQuery({
@@ -36,6 +45,86 @@ const TenantAdminTalent = () => {
     enabled: !!user,
   });
 
+  // Determine which view to render based on URL params
+  const renderContent = () => {
+    if (action === "add") {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mr-2" 
+              onClick={() => navigate('/tenant-admin/talent')}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back to Talents
+            </Button>
+          </div>
+          <h2 className="text-2xl font-bold">Add New Talent</h2>
+          <TalentForm />
+        </div>
+      );
+    } else if (action === "edit" && id) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mr-2" 
+              onClick={() => navigate('/tenant-admin/talent')}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back to Talents
+            </Button>
+          </div>
+          <h2 className="text-2xl font-bold">Edit Talent</h2>
+          <TalentForm talentId={id} />
+        </div>
+      );
+    } else if (action === "view" && id) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mr-2" 
+              onClick={() => navigate('/tenant-admin/talent')}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back to Talents
+            </Button>
+          </div>
+          <TalentDetail talentId={id} />
+        </div>
+      );
+    } else {
+      // Default view - tabs for Talents list and Custom Fields management
+      return (
+        <Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-2 w-[400px] mx-4 mt-4">
+              <TabsTrigger value="talents">Talent Pool</TabsTrigger>
+              <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+            </TabsList>
+            <CardContent className="pt-6">
+              <TabsContent value="talents" className="mt-0">
+                <TalentList />
+              </TabsContent>
+              <TabsContent value="custom-fields" className="mt-0">
+                {tenantData?.tenant_id && (
+                  <CustomFieldsManager tenantId={tenantData.tenant_id} />
+                )}
+              </TabsContent>
+            </CardContent>
+          </Tabs>
+        </Card>
+      );
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -48,20 +137,7 @@ const TenantAdminTalent = () => {
           )}
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Talent Pool</CardTitle>
-            <CardDescription>Manage your talent database and candidates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-end mb-4">
-              <Button className="flex items-center">
-                <Users className="mr-2 h-4 w-4" /> Add New Talent
-              </Button>
-            </div>
-            <p className="text-muted-foreground">No talents found. Add your first talent to get started.</p>
-          </CardContent>
-        </Card>
+        {renderContent()}
       </div>
     </AdminLayout>
   );
