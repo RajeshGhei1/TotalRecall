@@ -110,6 +110,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
+                onClick={() => navigate("/tenant-admin/companies")}
+              >
+                <Building className="mr-2 h-4 w-4" /> Companies
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
                 onClick={() => navigate("/tenant-admin/jobs")}
               >
                 <Briefcase className="mr-2 h-4 w-4" /> Jobs
