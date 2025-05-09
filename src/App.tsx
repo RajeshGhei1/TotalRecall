@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/admin/Dashboard";
 import Tenants from "./pages/admin/Tenants";
+import Users from "./pages/admin/Users";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -39,6 +40,14 @@ const App = () => (
               element={
                 <AuthGuard requiresSuperAdmin={true}>
                   <Tenants />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Users />
                 </AuthGuard>
               }
             />
