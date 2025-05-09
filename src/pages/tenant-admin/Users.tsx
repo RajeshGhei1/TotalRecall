@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,7 +102,10 @@ const TenantAdminUsers = () => {
         `)
         .eq('tenant_id', tenantData.tenant_id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching tenant users:", error);
+        return [];
+      }
       
       // Transform to match User interface
       return data.map(item => ({

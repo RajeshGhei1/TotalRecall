@@ -96,7 +96,11 @@ const TenantUserManager: React.FC<TenantUserManagerProps> = ({
         `)
         .eq("tenant_id", tenantId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching tenant users:", error);
+        return [] as TenantUserAssociation[];
+      }
+      
       return data as TenantUserAssociation[];
     },
     enabled: isOpen && !!tenantId,

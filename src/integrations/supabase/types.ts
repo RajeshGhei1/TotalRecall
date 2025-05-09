@@ -262,23 +262,39 @@ export type Database = {
       user_tenants: {
         Row: {
           created_at: string
+          department: string | null
           id: string
+          manager_id: string | null
           tenant_id: string
           user_id: string
+          user_role: string | null
         }
         Insert: {
           created_at?: string
+          department?: string | null
           id?: string
+          manager_id?: string | null
           tenant_id: string
           user_id: string
+          user_role?: string | null
         }
         Update: {
           created_at?: string
+          department?: string | null
           id?: string
+          manager_id?: string | null
           tenant_id?: string
           user_id?: string
+          user_role?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_tenants_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_tenants_tenant_id_fkey"
             columns: ["tenant_id"]
