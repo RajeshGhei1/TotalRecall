@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -45,20 +45,21 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
       return await getCustomFieldValues(entityType, entityId);
     },
     enabled: !!entityId,
-    onSuccess: (data) => {
-      // Set initial values in the form
-      if (data && data.length > 0) {
-        const values = {};
-        data.forEach((item) => {
-          const fieldKey = item.custom_fields?.field_key;
-          if (fieldKey) {
-            values[`custom_${fieldKey}`] = item.value;
-          }
-        });
-        form.reset({ ...form.getValues(), ...values });
-      }
-    },
   });
+
+  // Use useEffect to set form values when fieldValues are loaded
+  useEffect(() => {
+    if (fieldValues && fieldValues.length > 0) {
+      const values = {};
+      fieldValues.forEach((item) => {
+        const fieldKey = item.custom_fields?.field_key;
+        if (fieldKey) {
+          values[`custom_${fieldKey}`] = item.value;
+        }
+      });
+      form.reset({ ...form.getValues(), ...values });
+    }
+  }, [fieldValues, form]);
 
   if (isLoading || customFields.length === 0) {
     return null;

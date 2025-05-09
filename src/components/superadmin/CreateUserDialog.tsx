@@ -86,25 +86,30 @@ const CreateUserDialog = ({
     setError(null);
     
     try {
-      // Step 1: Create a profile record in profiles table with UUID generated server-side
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          email: values.email,
-          full_name: values.fullName,
-          role: values.role,
-        })
-        .select('id')
-        .single();
-
-      if (profileError) throw profileError;
+      // Create a new user by inserting into auth.users
+      // Note: In a real application, this would typically be done through an Edge Function
+      // or a secure backend endpoint as direct manipulation of auth.users requires admin rights
       
-      // Step 2: If tenant is selected, create association in user_tenants table
-      if (values.tenantId && values.tenantId !== 'none' && profileData.id) {
+      // For now, we'll insert into a public API that automatically triggers the user creation
+      // This is a temporary solution until proper user management is implemented
+      const { data: userData, error: userError } = await supabase
+        .rpc('create_user_profile', { 
+          user_email: values.email, 
+          user_full_name: values.fullName,
+          user_role: values.role
+        });
+      
+      if (userError) throw userError;
+      
+      // Extract the user ID from the returned data
+      const userId = userData;
+      
+      // If tenant is selected, create association in user_tenants table
+      if (values.tenantId && values.tenantId !== 'none' && userId) {
         const { error: tenantError } = await supabase
           .from('user_tenants')
           .insert({
-            user_id: profileData.id,
+            user_id: userId,
             tenant_id: values.tenantId,
           });
 
