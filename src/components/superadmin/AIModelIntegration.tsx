@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Label } from '@/components/ui/label'; // Add this import for standalone labels
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 
@@ -155,7 +156,8 @@ const AIModelIntegration = () => {
         ) : (
           <div className="space-y-6">
             <div className="space-y-2">
-              <FormLabel>Select Tenant</FormLabel>
+              {/* Changed from FormLabel to Label since it's not in a Form context */}
+              <Label>Select Tenant</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tenants.map((tenant) => (
                   <Button
