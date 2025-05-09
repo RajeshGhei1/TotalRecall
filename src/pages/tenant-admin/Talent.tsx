@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TalentList from "@/components/talent/TalentList";
 import TalentForm from "@/components/talent/TalentForm";
 import TalentDetail from "@/components/talent/TalentDetail";
-import CustomFieldsManager from "@/components/CustomFieldsManager";
+import { CustomFieldsManager } from "@/components/customFields";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 
