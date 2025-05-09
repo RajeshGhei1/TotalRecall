@@ -25,7 +25,12 @@ import {
   Phone,
   Video,
   FileCode,
-  Database
+  Database,
+  Settings,
+  Users,
+  Globe,
+  MessageCircle,
+  Send
 } from "lucide-react";
 import {
   Dialog,
@@ -54,6 +59,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
 const TenantAdminSettings = () => {
   const { user } = useAuth();
@@ -425,726 +439,762 @@ const TenantAdminSettings = () => {
           </DialogContent>
         </Dialog>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 md:w-[750px]">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="social">Social Media</TabsTrigger>
-            <TabsTrigger value="communication">Communication</TabsTrigger>
-            <TabsTrigger value="outreach">Outreach</TabsTrigger>
-            <TabsTrigger value="api">API</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="general" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Settings</CardTitle>
-                <CardDescription>
-                  Manage your tenant's general settings and information
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {tenantLoading ? (
-                  <div className="space-y-4">
-                    <div className="h-8 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-24 bg-gray-200 rounded animate-pulse" />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="tenant-name">Tenant Name</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="tenant-name"
-                          defaultValue={tenantData?.tenants?.name || ""}
-                          className="flex-1"
-                        />
-                        <Button size="sm" className="flex-none">
-                          <PenSquare className="h-4 w-4 mr-2" /> Edit
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tenant-description">Description</Label>
-                      <div className="flex items-start gap-2">
-                        <Textarea
-                          id="tenant-description"
-                          rows={4}
-                          defaultValue={tenantData?.tenants?.description || ""}
-                          className="flex-1"
-                        />
-                        <Button size="sm" className="flex-none">
-                          <PenSquare className="h-4 w-4 mr-2" /> Edit
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Settings saved",
-                      description: "Your tenant settings have been updated successfully",
-                    });
-                  }}
+        <div className="bg-white rounded-lg shadow-sm">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="border-b">
+              <TabsList className="flex w-full justify-between rounded-none bg-transparent p-0">
+                <TabsTrigger 
+                  value="general" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
-                  Save Changes
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="social" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Social Media Settings</CardTitle>
-                <CardDescription>
-                  Connect and manage your social media accounts for job posting and outreach
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-pink-100 p-2 rounded-full">
-                        <Instagram className="h-6 w-6 text-pink-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Instagram</p>
-                        <p className="text-sm text-muted-foreground">Not connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <Linkedin className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">LinkedIn</p>
-                        <p className="text-sm text-muted-foreground">Not connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-50 p-2 rounded-full">
-                        <Facebook className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Facebook</p>
-                        <p className="text-sm text-muted-foreground">Not connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-sky-50 p-2 rounded-full">
-                        <Twitter className="h-6 w-6 text-sky-500" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Twitter</p>
-                        <p className="text-sm text-muted-foreground">Not connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <h3 className="text-lg font-medium">Canva Integration</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Connect your Canva account to create custom graphics for job postings and company branding
-                  </p>
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <img 
-                          src="https://cdn.cdnlogo.com/logos/c/50/canva.svg" 
-                          alt="Canva" 
-                          className="h-6 w-6" 
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">Canva</p>
-                        <p className="text-sm text-muted-foreground">Not connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Social media settings saved",
-                      description: "Your social media connections have been updated",
-                    });
-                  }}
+                  <Settings className="h-4 w-4" />
+                  General
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="social" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
-                  Save Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="communication" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Communication Tools</CardTitle>
-                <CardDescription>
-                  Configure your communication channels and integrations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Messaging Platforms</h3>
-                  
-                  {/* Slack */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-purple-100 p-2 rounded-full">
-                        <img
-                          src="https://cdn.cdnlogo.com/logos/s/40/slack-new.svg"
-                          alt="Slack"
-                          className="h-6 w-6"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">Slack</p>
-                        <p className="text-sm text-muted-foreground">
-                          Team communication and notifications
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* Microsoft Teams */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <img
-                          src="https://cdn.cdnlogo.com/logos/m/25/microsoft-teams.svg"
-                          alt="Teams"
-                          className="h-6 w-6"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">Microsoft Teams</p>
-                        <p className="text-sm text-muted-foreground">
-                          Chat, meetings, and collaboration
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* WhatsApp - NEW */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <img
-                          src="https://cdn.cdnlogo.com/logos/w/43/whatsapp.svg"
-                          alt="WhatsApp"
-                          className="h-6 w-6"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">WhatsApp</p>
-                        <p className="text-sm text-muted-foreground">
-                          Messaging with candidates and clients
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* SMS - NEW */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <MessageSquare className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">SMS</p>
-                        <p className="text-sm text-muted-foreground">
-                          Text message campaigns and notifications
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Video Conferencing</h3>
-                  
-                  {/* Zoom - NEW */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <img
-                          src="https://cdn.cdnlogo.com/logos/z/41/zoom-app.svg"
-                          alt="Zoom"
-                          className="h-6 w-6"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">Zoom</p>
-                        <p className="text-sm text-muted-foreground">
-                          Video interviews and team meetings
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* Google Meet - NEW */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <Video className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Google Meet</p>
-                        <p className="text-sm text-muted-foreground">
-                          Video conferences and interviews
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Voice Communications</h3>
-                  
-                  {/* Click-to-Call - NEW */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-amber-100 p-2 rounded-full">
-                        <Phone className="h-6 w-6 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Click-to-Call</p>
-                        <p className="text-sm text-muted-foreground">
-                          One-click calling solution for recruitment
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Email Configuration</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email-sender">Default Sender Name</Label>
-                    <Input id="email-sender" placeholder="Recruitment Team" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email-reply-to">Default Reply-To Address</Label>
-                    <Input id="email-reply-to" placeholder="recruiting@company.com" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email-signature">Email Signature</Label>
-                    <Textarea 
-                      id="email-signature" 
-                      rows={3} 
-                      placeholder="Your company email signature"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Switch id="email-tracking" />
-                      <Label htmlFor="email-tracking">Enable Email Tracking</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Track when emails are opened and links are clicked
-                    </p>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Communication settings saved",
-                      description: "Your communication preferences have been updated",
-                    });
-                  }}
+                  <Globe className="h-4 w-4" />
+                  Social Media
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="communication" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
-                  Save Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  <MessageCircle className="h-4 w-4" />
+                  Communication
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="outreach" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                >
+                  <Send className="h-4 w-4" />
+                  Outreach
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="api" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                >
+                  <Database className="h-4 w-4" />
+                  API
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value="outreach" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Outreach Configuration</CardTitle>
-                <CardDescription>
-                  Set up automated outreach campaigns and engagement settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Automated Campaigns</h3>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Candidate Follow-up</p>
-                        <p className="text-sm text-muted-foreground">
-                          Automatically follow up with candidates after interviews
-                        </p>
+            <div className="p-4">
+              <TabsContent value="general" className="mt-0 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>General Settings</CardTitle>
+                    <CardDescription>
+                      Manage your tenant's general settings and information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {tenantLoading ? (
+                      <div className="space-y-4">
+                        <div className="h-8 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-24 bg-gray-200 rounded animate-pulse" />
                       </div>
-                      <Switch defaultChecked id="candidate-followup" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Talent Pool Nurturing</p>
-                        <p className="text-sm text-muted-foreground">
-                          Send periodic updates to candidates in your talent pool
-                        </p>
-                      </div>
-                      <Switch id="talent-nurturing" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Job Alert Notifications</p>
-                        <p className="text-sm text-muted-foreground">
-                          Notify candidates about relevant new job openings
-                        </p>
-                      </div>
-                      <Switch defaultChecked id="job-alerts" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Client Updates</p>
-                        <p className="text-sm text-muted-foreground">
-                          Keep clients informed about hiring progress
-                        </p>
-                      </div>
-                      <Switch id="client-updates" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Outreach Templates</h3>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div>
-                      <p className="font-medium">Welcome Message</p>
-                      <p className="text-sm text-muted-foreground">
-                        First message to new candidates
-                      </p>
-                    </div>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline">Edit Template</Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-[400px] sm:w-[540px]">
-                        <SheetHeader>
-                          <SheetTitle>Edit Template</SheetTitle>
-                          <SheetDescription>
-                            Customize your welcome message template
-                          </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-4">
-                          <Textarea 
-                            className="min-h-[200px]" 
-                            placeholder="Enter your welcome message template..." 
-                            defaultValue="Dear {{candidate_name}},\n\nThank you for your interest in {{company_name}}. We appreciate your application for the {{job_title}} position and look forward to reviewing your qualifications.\n\nBest regards,\n{{recruiter_name}}"
-                          />
-                          <div className="mt-2">
-                            <p className="text-sm font-medium">Available Variables:</p>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{candidate_name}}'}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{company_name}}'}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{job_title}}'}</span>
-                              <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{recruiter_name}}'}</span>
-                            </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="tenant-name">Tenant Name</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              id="tenant-name"
+                              defaultValue={tenantData?.tenants?.name || ""}
+                              className="flex-1"
+                            />
+                            <Button size="sm" className="flex-none">
+                              <PenSquare className="h-4 w-4 mr-2" /> Edit
+                            </Button>
                           </div>
                         </div>
-                        <SheetFooter>
-                          <SheetClose asChild>
-                            <Button type="submit">Save Template</Button>
-                          </SheetClose>
-                        </SheetFooter>
-                      </SheetContent>
-                    </Sheet>
-                  </div>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div>
-                      <p className="font-medium">Interview Invitation</p>
-                      <p className="text-sm text-muted-foreground">
-                        Invitation to schedule an interview
-                      </p>
-                    </div>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline">Edit Template</Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-[400px] sm:w-[540px]">
-                        <SheetHeader>
-                          <SheetTitle>Edit Template</SheetTitle>
-                          <SheetDescription>
-                            Customize your interview invitation template
-                          </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-4">
-                          <Textarea 
-                            className="min-h-[200px]" 
-                            placeholder="Enter your interview invitation template..." 
-                          />
+                        <div className="space-y-2">
+                          <Label htmlFor="tenant-description">Description</Label>
+                          <div className="flex items-start gap-2">
+                            <Textarea
+                              id="tenant-description"
+                              rows={4}
+                              defaultValue={tenantData?.tenants?.description || ""}
+                              className="flex-1"
+                            />
+                            <Button size="sm" className="flex-none">
+                              <PenSquare className="h-4 w-4 mr-2" /> Edit
+                            </Button>
+                          </div>
                         </div>
-                        <SheetFooter>
-                          <SheetClose asChild>
-                            <Button type="submit">Save Template</Button>
-                          </SheetClose>
-                        </SheetFooter>
-                      </SheetContent>
-                    </Sheet>
-                  </div>
-                  
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div>
-                      <p className="font-medium">Job Offer</p>
-                      <p className="text-sm text-muted-foreground">
-                        Official job offer message
-                      </p>
-                    </div>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline">Edit Template</Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-[400px] sm:w-[540px]">
-                        <SheetHeader>
-                          <SheetTitle>Edit Template</SheetTitle>
-                          <SheetDescription>
-                            Customize your job offer template
-                          </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-4">
-                          <Textarea 
-                            className="min-h-[200px]" 
-                            placeholder="Enter your job offer template..." 
-                          />
-                        </div>
-                        <SheetFooter>
-                          <SheetClose asChild>
-                            <Button type="submit">Save Template</Button>
-                          </SheetClose>
-                        </SheetFooter>
-                      </SheetContent>
-                    </Sheet>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Outreach settings saved",
-                      description: "Your outreach configuration has been updated",
-                    });
-                  }}
-                >
-                  Save Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      </div>
+                    )}
+                    <Button
+                      onClick={() => {
+                        toast({
+                          title: "Settings saved",
+                          description: "Your tenant settings have been updated successfully",
+                        });
+                      }}
+                    >
+                      Save Changes
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="api" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>API Integrations</CardTitle>
-                <CardDescription>
-                  Connect to billing systems and parsing tools for document data extraction
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Document Parsing Tools</h3>
-                  
-                  {/* Resume Parser */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <FileCode className="h-6 w-6 text-blue-600" />
+              <TabsContent value="social" className="mt-0 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Social Media Settings</CardTitle>
+                    <CardDescription>
+                      Connect and manage your social media accounts for job posting and outreach
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-pink-100 p-2 rounded-full">
+                            <Instagram className="h-6 w-6 text-pink-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Instagram</p>
+                            <p className="text-sm text-muted-foreground">Not connected</p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
                       </div>
-                      <div>
-                        <p className="font-medium">Resume Parser</p>
-                        <p className="text-sm text-muted-foreground">
-                          Extract structured data from resumes and CVs
-                        </p>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <Linkedin className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">LinkedIn</p>
+                            <p className="text-sm text-muted-foreground">Not connected</p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-50 p-2 rounded-full">
+                            <Facebook className="h-6 w-6 text-blue-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Facebook</p>
+                            <p className="text-sm text-muted-foreground">Not connected</p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-sky-50 p-2 rounded-full">
+                            <Twitter className="h-6 w-6 text-sky-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Twitter</p>
+                            <p className="text-sm text-muted-foreground">Not connected</p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
                       </div>
                     </div>
-                    <Button variant="outline">Configure</Button>
-                  </div>
-                  
-                  {/* Job Description Parser */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-purple-100 p-2 rounded-full">
-                        <FileCode className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Job Description Parser</p>
-                        <p className="text-sm text-muted-foreground">
-                          Extract key requirements and skills from job descriptions
-                        </p>
+                    
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium">Canva Integration</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Connect your Canva account to create custom graphics for job postings and company branding
+                      </p>
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-green-100 p-2 rounded-full">
+                            <img 
+                              src="https://cdn.cdnlogo.com/logos/c/50/canva.svg" 
+                              alt="Canva" 
+                              className="h-6 w-6" 
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Canva</p>
+                            <p className="text-sm text-muted-foreground">Not connected</p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
                       </div>
                     </div>
-                    <Button variant="outline">Configure</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Billing Integrations</h3>
-                  
-                  {/* Stripe Integration */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-indigo-100 p-2 rounded-full">
-                        <img 
-                          src="https://cdn.cdnlogo.com/logos/s/54/stripe.svg" 
-                          alt="Stripe" 
-                          className="h-6 w-6" 
+                    
+                    <Button
+                      onClick={() => {
+                        toast({
+                          title: "Social media settings saved",
+                          description: "Your social media connections have been updated",
+                        });
+                      }}
+                    >
+                      Save Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="communication" className="mt-0 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Communication Tools</CardTitle>
+                    <CardDescription>
+                      Configure your communication channels and integrations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Messaging Platforms</h3>
+                      
+                      {/* Slack */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-purple-100 p-2 rounded-full">
+                            <img
+                              src="https://cdn.cdnlogo.com/logos/s/40/slack-new.svg"
+                              alt="Slack"
+                              className="h-6 w-6"
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Slack</p>
+                            <p className="text-sm text-muted-foreground">
+                              Team communication and notifications
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* Microsoft Teams */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <img
+                              src="https://cdn.cdnlogo.com/logos/m/25/microsoft-teams.svg"
+                              alt="Teams"
+                              className="h-6 w-6"
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Microsoft Teams</p>
+                            <p className="text-sm text-muted-foreground">
+                              Chat, meetings, and collaboration
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* WhatsApp - NEW */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-green-100 p-2 rounded-full">
+                            <img
+                              src="https://cdn.cdnlogo.com/logos/w/43/whatsapp.svg"
+                              alt="WhatsApp"
+                              className="h-6 w-6"
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">WhatsApp</p>
+                            <p className="text-sm text-muted-foreground">
+                              Messaging with candidates and clients
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* SMS - NEW */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <MessageSquare className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">SMS</p>
+                            <p className="text-sm text-muted-foreground">
+                              Text message campaigns and notifications
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Video Conferencing</h3>
+                      
+                      {/* Zoom - NEW */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <img
+                              src="https://cdn.cdnlogo.com/logos/z/41/zoom-app.svg"
+                              alt="Zoom"
+                              className="h-6 w-6"
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Zoom</p>
+                            <p className="text-sm text-muted-foreground">
+                              Video interviews and team meetings
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* Google Meet - NEW */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-green-100 p-2 rounded-full">
+                            <Video className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Google Meet</p>
+                            <p className="text-sm text-muted-foreground">
+                              Video conferences and interviews
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Voice Communications</h3>
+                      
+                      {/* Click-to-Call - NEW */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-amber-100 p-2 rounded-full">
+                            <Phone className="h-6 w-6 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Click-to-Call</p>
+                            <p className="text-sm text-muted-foreground">
+                              One-click calling solution for recruitment
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Email Configuration</h3>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email-sender">Default Sender Name</Label>
+                        <Input id="email-sender" placeholder="Recruitment Team" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email-reply-to">Default Reply-To Address</Label>
+                        <Input id="email-reply-to" placeholder="recruiting@company.com" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email-signature">Email Signature</Label>
+                        <Textarea 
+                          id="email-signature" 
+                          rows={3} 
+                          placeholder="Your company email signature"
                         />
                       </div>
-                      <div>
-                        <p className="font-medium">Stripe</p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Switch id="email-tracking" />
+                          <Label htmlFor="email-tracking">Enable Email Tracking</Label>
+                        </div>
                         <p className="text-sm text-muted-foreground">
-                          Process payments and manage billing
+                          Track when emails are opened and links are clicked
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* QuickBooks Integration */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <img 
-                          src="https://cdn.cdnlogo.com/logos/q/44/quickbooks.svg" 
-                          alt="QuickBooks" 
-                          className="h-6 w-6" 
-                        />
+                    
+                    <Button
+                      onClick={() => {
+                        toast({
+                          title: "Communication settings saved",
+                          description: "Your communication preferences have been updated",
+                        });
+                      }}
+                    >
+                      Save Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="outreach" className="mt-0 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Outreach Configuration</CardTitle>
+                    <CardDescription>
+                      Set up automated outreach campaigns and engagement settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Automated Campaigns</h3>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Candidate Follow-up</p>
+                            <p className="text-sm text-muted-foreground">
+                              Automatically follow up with candidates after interviews
+                            </p>
+                          </div>
+                          <Switch defaultChecked id="candidate-followup" />
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">QuickBooks</p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Talent Pool Nurturing</p>
+                            <p className="text-sm text-muted-foreground">
+                              Send periodic updates to candidates in your talent pool
+                            </p>
+                          </div>
+                          <Switch id="talent-nurturing" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Job Alert Notifications</p>
+                            <p className="text-sm text-muted-foreground">
+                              Notify candidates about relevant new job openings
+                            </p>
+                          </div>
+                          <Switch defaultChecked id="job-alerts" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Client Updates</p>
+                            <p className="text-sm text-muted-foreground">
+                              Keep clients informed about hiring progress
+                            </p>
+                          </div>
+                          <Switch id="client-updates" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Outreach Templates</h3>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div>
+                          <p className="font-medium">Welcome Message</p>
+                          <p className="text-sm text-muted-foreground">
+                            First message to new candidates
+                          </p>
+                        </div>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="outline">Edit Template</Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-[400px] sm:w-[540px]">
+                            <SheetHeader>
+                              <SheetTitle>Edit Template</SheetTitle>
+                              <SheetDescription>
+                                Customize your welcome message template
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-4">
+                              <Textarea 
+                                className="min-h-[200px]" 
+                                placeholder="Enter your welcome message template..." 
+                                defaultValue="Dear {{candidate_name}},\n\nThank you for your interest in {{company_name}}. We appreciate your application for the {{job_title}} position and look forward to reviewing your qualifications.\n\nBest regards,\n{{recruiter_name}}"
+                              />
+                              <div className="mt-2">
+                                <p className="text-sm font-medium">Available Variables:</p>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{candidate_name}}'}</span>
+                                  <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{company_name}}'}</span>
+                                  <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{job_title}}'}</span>
+                                  <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{'{{recruiter_name}}'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <SheetFooter>
+                              <SheetClose asChild>
+                                <Button type="submit">Save Template</Button>
+                              </SheetClose>
+                            </SheetFooter>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div>
+                          <p className="font-medium">Interview Invitation</p>
+                          <p className="text-sm text-muted-foreground">
+                            Invitation to schedule an interview
+                          </p>
+                        </div>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="outline">Edit Template</Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-[400px] sm:w-[540px]">
+                            <SheetHeader>
+                              <SheetTitle>Edit Template</SheetTitle>
+                              <SheetDescription>
+                                Customize your interview invitation template
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-4">
+                              <Textarea 
+                                className="min-h-[200px]" 
+                                placeholder="Enter your interview invitation template..." 
+                              />
+                            </div>
+                            <SheetFooter>
+                              <SheetClose asChild>
+                                <Button type="submit">Save Template</Button>
+                              </SheetClose>
+                            </SheetFooter>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div>
+                          <p className="font-medium">Job Offer</p>
+                          <p className="text-sm text-muted-foreground">
+                            Official job offer message
+                          </p>
+                        </div>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="outline">Edit Template</Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-[400px] sm:w-[540px]">
+                            <SheetHeader>
+                              <SheetTitle>Edit Template</SheetTitle>
+                              <SheetDescription>
+                                Customize your job offer template
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-4">
+                              <Textarea 
+                                className="min-h-[200px]" 
+                                placeholder="Enter your job offer template..." 
+                              />
+                            </div>
+                            <SheetFooter>
+                              <SheetClose asChild>
+                                <Button type="submit">Save Template</Button>
+                              </SheetClose>
+                            </SheetFooter>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => {
+                        toast({
+                          title: "Outreach settings saved",
+                          description: "Your outreach configuration has been updated",
+                        });
+                      }}
+                    >
+                      Save Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="api" className="mt-0 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>API Integrations</CardTitle>
+                    <CardDescription>
+                      Connect to billing systems and parsing tools for document data extraction
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Document Parsing Tools</h3>
+                      
+                      {/* Resume Parser */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <FileCode className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Resume Parser</p>
+                            <p className="text-sm text-muted-foreground">
+                              Extract structured data from resumes and CVs
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Configure</Button>
+                      </div>
+                      
+                      {/* Job Description Parser */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-purple-100 p-2 rounded-full">
+                            <FileCode className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Job Description Parser</p>
+                            <p className="text-sm text-muted-foreground">
+                              Extract key requirements and skills from job descriptions
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Configure</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Billing Integrations</h3>
+                      
+                      {/* Stripe Integration */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-indigo-100 p-2 rounded-full">
+                            <img 
+                              src="https://cdn.cdnlogo.com/logos/s/54/stripe.svg" 
+                              alt="Stripe" 
+                              className="h-6 w-6" 
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Stripe</p>
+                            <p className="text-sm text-muted-foreground">
+                              Process payments and manage billing
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* QuickBooks Integration */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-green-100 p-2 rounded-full">
+                            <img 
+                              src="https://cdn.cdnlogo.com/logos/q/44/quickbooks.svg" 
+                              alt="QuickBooks" 
+                              className="h-6 w-6" 
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">QuickBooks</p>
+                            <p className="text-sm text-muted-foreground">
+                              Accounting and financial management
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                      
+                      {/* Xero Integration */}
+                      <div className="flex items-center justify-between border p-4 rounded-md">
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-sky-100 p-2 rounded-full">
+                            <img 
+                              src="https://cdn.cdnlogo.com/logos/x/99/xero.svg" 
+                              alt="Xero" 
+                              className="h-6 w-6" 
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium">Xero</p>
+                            <p className="text-sm text-muted-foreground">
+                              Cloud-based accounting software
+                            </p>
+                          </div>
+                        </div>
+                        <Button variant="outline">Connect</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium">Database Connectors</h3>
+                      
+                      {/* Custom API Configuration */}
+                      <div className="space-y-2">
+                        <Label htmlFor="api-endpoint">Custom API Endpoint</Label>
+                        <Input id="api-endpoint" placeholder="https://api.example.com/v1/" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="api-key">API Key</Label>
+                        <div className="flex gap-2">
+                          <Input id="api-key" placeholder="Enter your API key" type="password" className="flex-1" />
+                          <Button variant="outline">Validate</Button>
+                        </div>
                         <p className="text-sm text-muted-foreground">
-                          Accounting and financial management
+                          Your API key is securely encrypted and stored
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Database Connection</p>
+                            <p className="text-sm text-muted-foreground">
+                              Connect to external databases for data import/export
+                            </p>
+                          </div>
+                          <Button className="flex items-center gap-2">
+                            <Database className="h-4 w-4" /> Configure Connection
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Switch id="webhook-notifications" />
+                          <Label htmlFor="webhook-notifications">Enable Webhook Notifications</Label>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Send webhook notifications to third-party applications when important events occur
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                  
-                  {/* Xero Integration */}
-                  <div className="flex items-center justify-between border p-4 rounded-md">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-sky-100 p-2 rounded-full">
-                        <img 
-                          src="https://cdn.cdnlogo.com/logos/x/99/xero.svg" 
-                          alt="Xero" 
-                          className="h-6 w-6" 
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">Xero</p>
-                        <p className="text-sm text-muted-foreground">
-                          Cloud-based accounting software
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline">Connect</Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-md font-medium">Database Connectors</h3>
-                  
-                  {/* Custom API Configuration */}
-                  <div className="space-y-2">
-                    <Label htmlFor="api-endpoint">Custom API Endpoint</Label>
-                    <Input id="api-endpoint" placeholder="https://api.example.com/v1/" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="api-key">API Key</Label>
-                    <div className="flex gap-2">
-                      <Input id="api-key" placeholder="Enter your API key" type="password" className="flex-1" />
-                      <Button variant="outline">Validate</Button>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Your API key is securely encrypted and stored
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Database Connection</p>
-                        <p className="text-sm text-muted-foreground">
-                          Connect to external databases for data import/export
-                        </p>
-                      </div>
-                      <Button className="flex items-center gap-2">
-                        <Database className="h-4 w-4" /> Configure Connection
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Switch id="webhook-notifications" />
-                      <Label htmlFor="webhook-notifications">Enable Webhook Notifications</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Send webhook notifications to third-party applications when important events occur
-                    </p>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "API settings saved",
-                      description: "Your API configuration has been updated",
-                    });
-                  }}
-                >
-                  Save API Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    
+                    <Button
+                      onClick={() => {
+                        toast({
+                          title: "API settings saved",
+                          description: "Your API configuration has been updated",
+                        });
+                      }}
+                    >
+                      Save API Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </AdminLayout>
   );
