@@ -18,7 +18,8 @@ import {
   Users, 
   LogOut,
   Building,
-  Briefcase 
+  Briefcase,
+  ContactRound
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -113,6 +114,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 onClick={() => navigate("/tenant-admin/companies")}
               >
                 <Building className="mr-2 h-4 w-4" /> Companies
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => navigate("/tenant-admin/contacts")}
+              >
+                <ContactRound className="mr-2 h-4 w-4" /> Contacts
               </Button>
               <Button 
                 variant="ghost" 

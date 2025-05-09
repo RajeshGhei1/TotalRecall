@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import TenantAdminSettings from "./pages/tenant-admin/Settings";
 import TenantAdminTalent from "./pages/tenant-admin/Talent";
 import TenantAdminJobs from "./pages/tenant-admin/Jobs";
 import TenantAdminCompanies from "./pages/tenant-admin/Companies";
+import TenantAdminContacts from "./pages/tenant-admin/Contacts";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -145,6 +145,32 @@ const App = () => (
               element={
                 <AuthGuard>
                   <TenantAdminCompanies />
+                </AuthGuard>
+              }
+            />
+            
+            {/* Contacts Routes */}
+            <Route
+              path="/tenant-admin/contacts"
+              element={
+                <AuthGuard>
+                  <TenantAdminContacts />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/contacts/:action"
+              element={
+                <AuthGuard>
+                  <TenantAdminContacts />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/contacts/:action/:id"
+              element={
+                <AuthGuard>
+                  <TenantAdminContacts />
                 </AuthGuard>
               }
             />
