@@ -90,34 +90,45 @@ const TenantAdminUsers = () => {
     queryFn: async () => {
       if (!tenantData?.tenant_id) return [];
       
-      const { data, error } = await supabase
+      // First get the user_tenant associations
+      const { data: userTenants, error: userTenantsError } = await supabase
         .from('user_tenants')
         .select(`
           id,
           user_id,
-          user:user_id(id, email, full_name, role),
           user_role,
           manager_id,
           department
         `)
         .eq('tenant_id', tenantData.tenant_id);
 
-      if (error) {
-        console.error("Error fetching tenant users:", error);
+      if (userTenantsError) {
+        console.error("Error fetching tenant users:", userTenantsError);
         return [];
       }
       
-      // Transform to match User interface
-      return data.map(item => ({
-        id: item.user.id,
-        email: item.user.email,
-        full_name: item.user.full_name,
-        role: item.user.role,
-        user_role: item.user_role || "user",
-        manager_id: item.manager_id,
-        department: item.department,
-        association_id: item.id
-      }));
+      // Then get the user details separately and merge them
+      const result: User[] = [];
+      
+      for (const userTenant of userTenants) {
+        const { data: userData, error: userError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name, role")
+          .eq("id", userTenant.user_id)
+          .single();
+          
+        if (!userError && userData) {
+          result.push({
+            ...userData,
+            user_role: userTenant.user_role || "user",
+            manager_id: userTenant.manager_id,
+            department: userTenant.department,
+            association_id: userTenant.id
+          });
+        }
+      }
+      
+      return result;
     },
     enabled: !!tenantData?.tenant_id,
   });

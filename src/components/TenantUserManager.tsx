@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -83,24 +84,42 @@ const TenantUserManager: React.FC<TenantUserManagerProps> = ({
   const { data: tenantUsers = [], isLoading } = useQuery({
     queryKey: ["tenantUsers", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the user_tenant associations
+      const { data: userTenants, error: userTenantsError } = await supabase
         .from("user_tenants")
         .select(`
           id, 
           user_id, 
           tenant_id,
           user_role,
-          department,
-          user:user_id(id, email, full_name)
+          department
         `)
         .eq("tenant_id", tenantId);
 
-      if (error) {
-        console.error("Error fetching tenant users:", error);
+      if (userTenantsError) {
+        console.error("Error fetching tenant users:", userTenantsError);
         return [] as TenantUserAssociation[];
       }
       
-      return data as TenantUserAssociation[];
+      // Then get the user details separately and merge them
+      const result: TenantUserAssociation[] = [];
+      
+      for (const userTenant of userTenants) {
+        const { data: userData, error: userError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name")
+          .eq("id", userTenant.user_id)
+          .single();
+          
+        if (!userError && userData) {
+          result.push({
+            ...userTenant,
+            user: userData
+          });
+        }
+      }
+      
+      return result;
     },
     enabled: isOpen && !!tenantId,
   });
