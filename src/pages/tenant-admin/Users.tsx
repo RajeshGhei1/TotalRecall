@@ -12,18 +12,31 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserPlus, Search, Edit, Trash } from "lucide-react";
+import { UserPlus, Search, Edit, Trash, Shield, Users, UserCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import TenantUserManager from "@/components/TenantUserManager";
 
 interface User {
   id: string;
   email: string;
   full_name: string | null;
   role: string;
+  user_role?: string;
+  manager_id?: string | null;
+  department?: string | null;
+  association_id: string;
+}
+
+type UserRole = 'tenant_admin' | 'manager' | 'recruiter' | 'user';
+
+interface Department {
+  id: string;
+  name: string;
 }
 
 const TenantAdminUsers = () => {
@@ -32,6 +45,20 @@ const TenantAdminUsers = () => {
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserName, setNewUserName] = useState("");
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>("user");
+  const [userDepartment, setUserDepartment] = useState("");
+  const [userManager, setUserManager] = useState("");
+  const [showUserManagerDialog, setShowUserManagerDialog] = useState(false);
+
+  const departments: Department[] = [
+    { id: "recruiting", name: "Recruiting" },
+    { id: "sales", name: "Sales" },
+    { id: "marketing", name: "Marketing" },
+    { id: "operations", name: "Operations" },
+    { id: "hr", name: "Human Resources" },
+  ];
 
   // Fetch tenant information for the current user
   const { data: tenantData } = useQuery({
@@ -69,7 +96,10 @@ const TenantAdminUsers = () => {
         .select(`
           id,
           user_id,
-          user:profiles(id, email, full_name, role)
+          user:profiles(id, email, full_name, role),
+          user_role,
+          manager_id,
+          department
         `)
         .eq('tenant_id', tenantData.tenant_id);
 
@@ -81,6 +111,9 @@ const TenantAdminUsers = () => {
         email: item.user.email,
         full_name: item.user.full_name,
         role: item.user.role,
+        user_role: item.user_role || "user",
+        manager_id: item.manager_id,
+        department: item.department,
         association_id: item.id
       }));
     },
@@ -92,6 +125,43 @@ const TenantAdminUsers = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Get managers (users with manager or admin role)
+  const managers = users.filter(user => 
+    user.user_role === "tenant_admin" || user.user_role === "manager"
+  );
+
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async ({ associationId, role, managerId, department }: 
+      { associationId: string, role: string, managerId?: string | null, department?: string | null }) => {
+      const { error } = await supabase
+        .from('user_tenants')
+        .update({ 
+          user_role: role,
+          manager_id: managerId,
+          department: department 
+        })
+        .eq('id', associationId);
+
+      if (error) throw error;
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "User updated",
+        description: "User role and organization details have been updated",
+      });
+      refetch();
+      setEditUserDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating user",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleAddUser = async () => {
     if (!newUserEmail || !tenantData?.tenant_id) return;
@@ -145,7 +215,13 @@ const TenantAdminUsers = () => {
       const { error: insertError } = await supabase
         .from('user_tenants')
         .insert([
-          { user_id: userId, tenant_id: tenantData.tenant_id }
+          { 
+            user_id: userId, 
+            tenant_id: tenantData.tenant_id,
+            user_role: userRole,
+            department: userDepartment || null,
+            manager_id: userManager || null
+          }
         ]);
 
       if (insertError) throw insertError;
@@ -158,6 +234,9 @@ const TenantAdminUsers = () => {
       // Reset form and close dialog
       setNewUserEmail("");
       setNewUserName("");
+      setUserRole("user");
+      setUserDepartment("");
+      setUserManager("");
       setAddUserDialogOpen(false);
       refetch();
 
@@ -200,6 +279,43 @@ const TenantAdminUsers = () => {
     }
   };
 
+  const handleEditUser = (user: User) => {
+    setCurrentUser(user);
+    setUserRole(user.user_role as UserRole || "user");
+    setUserDepartment(user.department || "");
+    setUserManager(user.manager_id || "");
+    setEditUserDialogOpen(true);
+  };
+
+  const saveUserChanges = () => {
+    if (!currentUser) return;
+
+    updateUserRoleMutation.mutate({
+      associationId: currentUser.association_id,
+      role: userRole,
+      managerId: userManager || null,
+      department: userDepartment || null
+    });
+  };
+
+  // Get the name of a manager by ID
+  const getManagerName = (managerId: string | null | undefined) => {
+    if (!managerId) return "None";
+    const manager = users.find(u => u.id === managerId);
+    return manager ? (manager.full_name || manager.email) : "Unknown";
+  };
+
+  // Get the role display name
+  const getRoleDisplayName = (role: string) => {
+    const roleMap: Record<string, string> = {
+      "tenant_admin": "Admin",
+      "manager": "Manager", 
+      "recruiter": "Recruiter",
+      "user": "User"
+    };
+    return roleMap[role] || role;
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -215,7 +331,17 @@ const TenantAdminUsers = () => {
         <Card>
           <CardHeader>
             <CardTitle>User Management</CardTitle>
-            <CardDescription>Manage users associated with this tenant</CardDescription>
+            <CardDescription>Manage users, roles, and organization structure</CardDescription>
+            <div className="flex mt-4 space-x-2">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUserManagerDialog(true)}
+              >
+                <Users className="mr-2 h-4 w-4" /> 
+                Bulk User Management
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between mb-4">
@@ -239,20 +365,22 @@ const TenantAdminUsers = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Department</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Reports To</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4">
+                      <TableCell colSpan={6} className="text-center py-4">
                         Loading users...
                       </TableCell>
                     </TableRow>
                   ) : filteredUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                         {searchTerm ? "No users match your search" : "No users found in this tenant"}
                       </TableCell>
                     </TableRow>
@@ -261,9 +389,23 @@ const TenantAdminUsers = () => {
                       <TableRow key={user.id}>
                         <TableCell>{user.full_name || "N/A"}</TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell className="capitalize">{user.role}</TableCell>
+                        <TableCell>{user.department || "Unassigned"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {user.user_role === "tenant_admin" && <Shield className="h-4 w-4 mr-1 text-blue-600" />}
+                            {user.user_role === "manager" && <UserCheck className="h-4 w-4 mr-1 text-green-600" />}
+                            {getRoleDisplayName(user.user_role || "user")}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getManagerName(user.manager_id)}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit user">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0" 
+                            title="Edit user"
+                            onClick={() => handleEditUser(user)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
@@ -288,7 +430,7 @@ const TenantAdminUsers = () => {
 
       {/* Add User Dialog */}
       <Dialog open={addUserDialogOpen} onOpenChange={setAddUserDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Add User to Tenant</DialogTitle>
             <DialogDescription>
@@ -320,9 +462,56 @@ const TenantAdminUsers = () => {
                 value={newUserName}
                 onChange={(e) => setNewUserName(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">
-                Only required when creating a new user.
-              </p>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="role" className="text-sm font-medium">
+                Role
+              </label>
+              <Select value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tenant_admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="recruiter">Recruiter</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="department" className="text-sm font-medium">
+                Department
+              </label>
+              <Select value={userDepartment} onValueChange={setUserDepartment}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {departments.map(dept => (
+                    <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="manager" className="text-sm font-medium">
+                Reports To
+              </label>
+              <Select value={userManager} onValueChange={setUserManager}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {managers.map(manager => (
+                    <SelectItem key={manager.id} value={manager.id}>
+                      {manager.full_name || manager.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -335,6 +524,95 @@ const TenantAdminUsers = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user role and organization details
+            </DialogDescription>
+          </DialogHeader>
+          {currentUser && (
+            <div className="space-y-4 py-4">
+              <div>
+                <p className="text-sm font-medium mb-1">User</p>
+                <p>{currentUser.full_name || "N/A"} ({currentUser.email})</p>
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="edit-role" className="text-sm font-medium">
+                  Role
+                </label>
+                <Select value={userRole} onValueChange={(value) => setUserRole(value as UserRole)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tenant_admin">Admin</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="recruiter">Recruiter</SelectItem>
+                    <SelectItem value="user">User</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="edit-department" className="text-sm font-medium">
+                  Department
+                </label>
+                <Select value={userDepartment} onValueChange={setUserDepartment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {departments.map(dept => (
+                      <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="edit-manager" className="text-sm font-medium">
+                  Reports To
+                </label>
+                <Select value={userManager} onValueChange={setUserManager}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a manager" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {managers
+                      .filter(manager => manager.id !== currentUser.id) // Can't report to yourself
+                      .map(manager => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          {manager.full_name || manager.email}
+                        </SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUserDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveUserChanges}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk User Management Dialog */}
+      <TenantUserManager 
+        tenantId={tenantData?.tenant_id || ""}
+        tenantName={tenantData?.tenants?.name || ""}
+        isOpen={showUserManagerDialog}
+        onClose={() => setShowUserManagerDialog(false)} 
+      />
     </AdminLayout>
   );
 };
