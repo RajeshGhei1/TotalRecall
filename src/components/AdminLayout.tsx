@@ -35,7 +35,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <div className="w-64 bg-white shadow-md">
         <div className="p-6 border-b">
           <h2 className="text-2xl font-bold text-jobmojo-primary">JobMojo.ai</h2>
-          <p className="text-xs text-gray-600">Admin Dashboard</p>
+          <p className="text-xs text-gray-600">Tenant Admin Dashboard</p>
         </div>
         <nav className="p-4 space-y-2">
           <Button 
@@ -80,7 +80,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <header className="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Admin Portal</h1>
+          <h1 className="text-xl font-semibold">Tenant Admin Portal</h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -112,7 +112,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
         {/* Footer */}
         <footer className="bg-white p-4 text-center text-sm text-gray-600 shadow-inner">
-          © {new Date().getFullYear()} JobMojo.ai - Admin Portal
+          © {new Date().getFullYear()} JobMojo.ai - Tenant Admin Portal
         </footer>
       </div>
     </div>

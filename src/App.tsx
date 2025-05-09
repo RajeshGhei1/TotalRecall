@@ -74,10 +74,10 @@ const App = () => (
             />
             
             {/* Redirect old admin routes to superadmin for backward compatibility */}
-            <Route path="/admin/dashboard" element={<Navigate to="/superadmin/dashboard" replace />} />
-            <Route path="/admin/tenants" element={<Navigate to="/superadmin/tenants" replace />} />
-            <Route path="/admin/users" element={<Navigate to="/superadmin/users" replace />} />
-            <Route path="/admin/settings" element={<Navigate to="/superadmin/settings" replace />} />
+            <Route path="/admin/dashboard" element={<Navigate to="/tenant-admin/dashboard" replace />} />
+            <Route path="/admin/tenants" element={<Navigate to="/tenant-admin/tenants" replace />} />
+            <Route path="/admin/users" element={<Navigate to="/tenant-admin/users" replace />} />
+            <Route path="/admin/settings" element={<Navigate to="/tenant-admin/settings" replace />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
