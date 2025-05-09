@@ -18,7 +18,13 @@ interface AuthContextType {
 // Create a mock user for development purposes
 const mockUser = {
   id: '9374586c-f2fa-4503-8493-672c3e750345',
+  aud: 'authenticated',
   email: 'dev@jobmojo.ai',
+  phone: '',
+  created_at: new Date().toISOString(),
+  confirmed_at: new Date().toISOString(),
+  last_sign_in_at: new Date().toISOString(),
+  role: '',
   user_metadata: {
     full_name: 'Development User'
   },

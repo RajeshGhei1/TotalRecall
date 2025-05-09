@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -7,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -99,7 +100,7 @@ const Auth = () => {
 
         {bypassAuth && (
           <Alert className="bg-amber-50 border-amber-200">
-            <InfoCircle className="h-4 w-4 text-amber-600" />
+            <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800">
               Authentication bypass is enabled. You will be automatically redirected to the admin dashboard.
             </AlertDescription>
