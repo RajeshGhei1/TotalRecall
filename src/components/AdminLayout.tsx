@@ -41,35 +41,28 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/superadmin/dashboard")}
+            onClick={() => navigate("/tenant-admin/dashboard")}
           >
             <Home className="mr-2 h-4 w-4" /> Dashboard
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/superadmin/tenants")}
+            onClick={() => navigate("/tenant-admin/tenants")}
           >
             <Database className="mr-2 h-4 w-4" /> Tenants
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/superadmin/users")}
+            onClick={() => navigate("/tenant-admin/users")}
           >
             <Users className="mr-2 h-4 w-4" /> Users
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/superadmin/talents")}
-          >
-            <Award className="mr-2 h-4 w-4" /> Talents
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start" 
-            onClick={() => navigate("/superadmin/settings")}
+            onClick={() => navigate("/tenant-admin/settings")}
           >
             <Settings className="mr-2 h-4 w-4" /> Settings
           </Button>
@@ -91,10 +84,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/superadmin/profile")}>
+              <DropdownMenuItem onClick={() => navigate("/tenant-admin/profile")}>
                 <User className="h-4 w-4 mr-2" /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/superadmin/settings")}>
+              <DropdownMenuItem onClick={() => navigate("/tenant-admin/settings")}>
                 <Settings className="h-4 w-4 mr-2" /> Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />

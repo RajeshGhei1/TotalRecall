@@ -12,6 +12,10 @@ import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
 import Settings from "./pages/superadmin/Settings";
 import Talents from "./pages/superadmin/Talents";
+import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
+import TenantAdminUsers from "./pages/tenant-admin/Users";
+import TenantAdminSettings from "./pages/tenant-admin/Settings";
+import TenantAdminTenants from "./pages/tenant-admin/Tenants";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -73,7 +77,41 @@ const App = () => (
               }
             />
             
-            {/* Redirect old admin routes to superadmin for backward compatibility */}
+            {/* Tenant Admin Routes with Authentication Guard */}
+            <Route
+              path="/tenant-admin/dashboard"
+              element={
+                <AuthGuard>
+                  <TenantAdminDashboard />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/tenants"
+              element={
+                <AuthGuard>
+                  <TenantAdminTenants />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/users"
+              element={
+                <AuthGuard>
+                  <TenantAdminUsers />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/settings"
+              element={
+                <AuthGuard>
+                  <TenantAdminSettings />
+                </AuthGuard>
+              }
+            />
+            
+            {/* Redirect old admin routes to tenant-admin for backward compatibility */}
             <Route path="/admin/dashboard" element={<Navigate to="/tenant-admin/dashboard" replace />} />
             <Route path="/admin/tenants" element={<Navigate to="/tenant-admin/tenants" replace />} />
             <Route path="/admin/users" element={<Navigate to="/tenant-admin/users" replace />} />
