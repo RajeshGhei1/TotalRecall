@@ -300,6 +300,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_user_profile: {
+        Args: { user_email: string; user_full_name: string; user_role: string }
+        Returns: string
+      }
       is_super_admin: {
         Args: { user_id: string }
         Returns: boolean

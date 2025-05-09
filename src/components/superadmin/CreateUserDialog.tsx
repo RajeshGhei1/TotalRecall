@@ -86,13 +86,8 @@ const CreateUserDialog = ({
     setError(null);
     
     try {
-      // Create a new user by inserting into auth.users
-      // Note: In a real application, this would typically be done through an Edge Function
-      // or a secure backend endpoint as direct manipulation of auth.users requires admin rights
-      
-      // For now, we'll insert into a public API that automatically triggers the user creation
-      // This is a temporary solution until proper user management is implemented
-      const { data: userData, error: userError } = await supabase
+      // Create a new user by inserting into profiles table via RPC function
+      const { data: userId, error: userError } = await supabase
         .rpc('create_user_profile', { 
           user_email: values.email, 
           user_full_name: values.fullName,
@@ -100,9 +95,6 @@ const CreateUserDialog = ({
         });
       
       if (userError) throw userError;
-      
-      // Extract the user ID from the returned data
-      const userId = userData;
       
       // If tenant is selected, create association in user_tenants table
       if (values.tenantId && values.tenantId !== 'none' && userId) {
