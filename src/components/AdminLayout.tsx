@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { 
-  Database, 
   Home, 
   Settings, 
   User, 
@@ -44,13 +43,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             onClick={() => navigate("/tenant-admin/dashboard")}
           >
             <Home className="mr-2 h-4 w-4" /> Dashboard
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start" 
-            onClick={() => navigate("/tenant-admin/tenants")}
-          >
-            <Database className="mr-2 h-4 w-4" /> Tenants
           </Button>
           <Button 
             variant="ghost" 

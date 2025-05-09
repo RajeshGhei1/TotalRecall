@@ -15,7 +15,6 @@ import Talents from "./pages/superadmin/Talents";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminUsers from "./pages/tenant-admin/Users";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
-import TenantAdminTenants from "./pages/tenant-admin/Tenants";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -87,14 +86,6 @@ const App = () => (
               }
             />
             <Route
-              path="/tenant-admin/tenants"
-              element={
-                <AuthGuard>
-                  <TenantAdminTenants />
-                </AuthGuard>
-              }
-            />
-            <Route
               path="/tenant-admin/users"
               element={
                 <AuthGuard>
@@ -113,9 +104,12 @@ const App = () => (
             
             {/* Redirect old admin routes to tenant-admin for backward compatibility */}
             <Route path="/admin/dashboard" element={<Navigate to="/tenant-admin/dashboard" replace />} />
-            <Route path="/admin/tenants" element={<Navigate to="/tenant-admin/tenants" replace />} />
+            <Route path="/admin/tenants" element={<Navigate to="/tenant-admin/dashboard" replace />} />
             <Route path="/admin/users" element={<Navigate to="/tenant-admin/users" replace />} />
             <Route path="/admin/settings" element={<Navigate to="/tenant-admin/settings" replace />} />
+            
+            {/* Redirect tenant-admin/tenants to dashboard since it's no longer needed */}
+            <Route path="/tenant-admin/tenants" element={<Navigate to="/tenant-admin/dashboard" replace />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

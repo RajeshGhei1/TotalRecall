@@ -10,13 +10,17 @@ import {
   Building, 
   TrendingUp, 
   MessageSquare,
-  CalendarDays 
+  CalendarDays,
+  PenLine 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import TalentMetricsDashboard from "@/components/talent/TalentMetricsDashboard";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const TenantAdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Fetch tenant information for the current user
   const { data: tenantData, isLoading: tenantLoading } = useQuery({
@@ -35,7 +39,7 @@ const TenantAdminDashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
