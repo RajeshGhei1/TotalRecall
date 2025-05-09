@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,15 +11,22 @@ interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = false }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, bypassAuth } = useAuth();
   const location = useLocation();
 
   // For super admin check
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<boolean | null>(null);
-  const [checkingRole, setCheckingRole] = React.useState(requiresSuperAdmin);
+  const [checkingRole, setCheckingRole] = React.useState(requiresSuperAdmin && !bypassAuth);
 
   useEffect(() => {
     const checkSuperAdmin = async () => {
+      // In bypass mode, automatically grant super admin access
+      if (bypassAuth) {
+        setIsSuperAdmin(true);
+        setCheckingRole(false);
+        return;
+      }
+
       if (!user || !requiresSuperAdmin) return;
       
       try {
@@ -45,11 +53,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     };
 
     checkSuperAdmin();
-  }, [user, requiresSuperAdmin]);
+  }, [user, requiresSuperAdmin, bypassAuth]);
 
   // Show nothing while checking authentication or role
   if (loading || checkingRole) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  // In bypass mode, allow access
+  if (bypassAuth) {
+    return <>{children}</>;
   }
 
   // If no user, redirect to login

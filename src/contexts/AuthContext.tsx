@@ -12,7 +12,27 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  bypassAuth: boolean;
 }
+
+// Create a mock user for development purposes
+const mockUser = {
+  id: '9374586c-f2fa-4503-8493-672c3e750345',
+  email: 'dev@jobmojo.ai',
+  user_metadata: {
+    full_name: 'Development User'
+  },
+  app_metadata: {
+    role: 'super_admin'
+  }
+} as User;
+
+const mockSession = {
+  user: mockUser,
+  access_token: 'mock-token',
+  refresh_token: 'mock-refresh-token',
+  expires_at: Date.now() + 3600,
+} as Session;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -20,9 +40,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bypassAuth, setBypassAuth] = useState(true); // Default to bypass for development
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (bypassAuth) {
+      console.log("Auth bypass is enabled - using mock user");
+      setUser(mockUser);
+      setSession(mockSession);
+      setLoading(false);
+      return;
+    }
+
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -52,9 +81,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, bypassAuth]);
 
   const signIn = async (email: string, password: string) => {
+    if (bypassAuth) {
+      console.log("Auth bypass is enabled - redirecting without actual sign in");
+      navigate('/admin/dashboard');
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -70,6 +105,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    if (bypassAuth) {
+      console.log("Auth bypass is enabled - pretending to sign up");
+      toast({
+        title: "Development mode",
+        description: "Sign up bypassed in development mode",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -99,6 +143,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (bypassAuth) {
+      console.log("Auth bypass is enabled - pretending to sign out");
+      navigate('/auth');
+      return;
+    }
+
     try {
       await supabase.auth.signOut();
       navigate('/auth');
@@ -112,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, bypassAuth }}>
       {children}
     </AuthContext.Provider>
   );
