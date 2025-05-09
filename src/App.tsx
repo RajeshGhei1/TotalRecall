@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/superadmin/Dashboard";
 import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
+import Settings from "./pages/superadmin/Settings";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -54,11 +55,20 @@ const App = () => (
                 </AuthGuard>
               }
             />
+            <Route
+              path="/superadmin/settings"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Settings />
+                </AuthGuard>
+              }
+            />
             
             {/* Redirect old admin routes to superadmin for backward compatibility */}
             <Route path="/admin/dashboard" element={<Navigate to="/superadmin/dashboard" replace />} />
             <Route path="/admin/tenants" element={<Navigate to="/superadmin/tenants" replace />} />
             <Route path="/admin/users" element={<Navigate to="/superadmin/users" replace />} />
+            <Route path="/admin/settings" element={<Navigate to="/superadmin/settings" replace />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -40,28 +40,28 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/admin/dashboard")}
+            onClick={() => navigate("/superadmin/dashboard")}
           >
             <Home className="mr-2 h-4 w-4" /> Dashboard
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/admin/tenants")}
+            onClick={() => navigate("/superadmin/tenants")}
           >
             <Database className="mr-2 h-4 w-4" /> Tenants
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/admin/users")}
+            onClick={() => navigate("/superadmin/users")}
           >
             <Users className="mr-2 h-4 w-4" /> Users
           </Button>
           <Button 
             variant="ghost" 
             className="w-full justify-start" 
-            onClick={() => navigate("/admin/settings")}
+            onClick={() => navigate("/superadmin/settings")}
           >
             <Settings className="mr-2 h-4 w-4" /> Settings
           </Button>
@@ -83,10 +83,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/admin/profile")}>
+              <DropdownMenuItem onClick={() => navigate("/superadmin/profile")}>
                 <User className="h-4 w-4 mr-2" /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin/settings")}>
+              <DropdownMenuItem onClick={() => navigate("/superadmin/settings")}>
                 <Settings className="h-4 w-4 mr-2" /> Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />

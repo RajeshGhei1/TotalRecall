@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,7 +42,8 @@ import TenantUserManager from '@/components/TenantUserManager';
 interface Tenant {
   id: string;
   name: string;
-  domain: string;
+  domain?: string;  // Make domain optional to match database schema
+  description?: string;
   created_at: string;
 }
 
@@ -64,7 +64,7 @@ const Tenants = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Tenant[];
+      return data as Tenant[];  // Cast to match our interface
     },
   });
 
