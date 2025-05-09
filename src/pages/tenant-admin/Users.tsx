@@ -95,7 +95,7 @@ const TenantAdminUsers = () => {
         .select(`
           id,
           user_id,
-          user:profiles(id, email, full_name, role),
+          user:user_id(id, email, full_name, role),
           user_role,
           manager_id,
           department

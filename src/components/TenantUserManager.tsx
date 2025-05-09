@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -92,7 +91,7 @@ const TenantUserManager: React.FC<TenantUserManagerProps> = ({
           tenant_id,
           user_role,
           department,
-          user:profiles(id, email, full_name)
+          user:user_id(id, email, full_name)
         `)
         .eq("tenant_id", tenantId);
 
