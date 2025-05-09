@@ -15,6 +15,8 @@ import Talents from "./pages/superadmin/Talents";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminUsers from "./pages/tenant-admin/Users";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
+import TenantAdminTalent from "./pages/tenant-admin/Talent";
+import TenantAdminJobs from "./pages/tenant-admin/Jobs";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -90,6 +92,22 @@ const App = () => (
               element={
                 <AuthGuard>
                   <TenantAdminUsers />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/talent"
+              element={
+                <AuthGuard>
+                  <TenantAdminTalent />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tenant-admin/jobs"
+              element={
+                <AuthGuard>
+                  <TenantAdminJobs />
                 </AuthGuard>
               }
             />
