@@ -17,7 +17,8 @@ import {
   Settings, 
   User, 
   Users, 
-  LogOut 
+  LogOut,
+  Award 
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -57,6 +58,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             onClick={() => navigate("/superadmin/users")}
           >
             <Users className="mr-2 h-4 w-4" /> Users
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start" 
+            onClick={() => navigate("/superadmin/talents")}
+          >
+            <Award className="mr-2 h-4 w-4" /> Talents
           </Button>
           <Button 
             variant="ghost" 

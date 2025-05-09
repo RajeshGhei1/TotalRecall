@@ -11,6 +11,7 @@ import Dashboard from "./pages/superadmin/Dashboard";
 import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
 import Settings from "./pages/superadmin/Settings";
+import Talents from "./pages/superadmin/Talents";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -52,6 +53,14 @@ const App = () => (
               element={
                 <AuthGuard requiresSuperAdmin={true}>
                   <Users />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/superadmin/talents"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Talents />
                 </AuthGuard>
               }
             />
