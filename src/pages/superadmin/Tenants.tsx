@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,7 +17,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -26,8 +26,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,6 +36,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Plus, UserPlus } from 'lucide-react';
 import TenantUserManager from '@/components/TenantUserManager';
+import ExtendedTenantForm from '@/components/superadmin/ExtendedTenantForm';
 
 interface Tenant {
   id: string;
@@ -49,7 +48,6 @@ interface Tenant {
 
 const Tenants = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [newTenant, setNewTenant] = useState({ name: '', domain: '' });
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isUserManagerOpen, setIsUserManagerOpen] = useState(false);
 
@@ -68,20 +66,33 @@ const Tenants = () => {
     },
   });
 
+  // This mutation will need to be updated to handle the extended tenant data
   const createTenant = useMutation({
-    mutationFn: async ({ name, domain }: { name: string; domain: string }) => {
+    mutationFn: async (tenantData: any) => {
+      // Extract the basic tenant data that the database expects
+      const basicTenantData = {
+        name: tenantData.name,
+        domain: tenantData.domain || tenantData.webSite, // Use website as domain if domain not provided
+        description: tenantData.companyProfile, // Use company profile as description
+      };
+
       const { data, error } = await supabase
         .from('tenants')
-        .insert([{ name, domain }])
+        .insert([basicTenantData])
         .select()
         .single();
 
       if (error) throw error;
+      
+      // In a real implementation, you would store the extended tenant data
+      // in another table with a foreign key to the tenant id
+      // For now, we'll just log it to show it's captured
+      console.log("Extended tenant data to be stored:", tenantData);
+      
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      setNewTenant({ name: '', domain: '' });
       setIsCreateDialogOpen(false);
       toast({
         title: 'Tenant created',
@@ -97,11 +108,8 @@ const Tenants = () => {
     },
   });
 
-  const handleCreateTenant = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTenant.name.trim() && newTenant.domain.trim()) {
-      createTenant.mutate(newTenant);
-    }
+  const handleCreateTenant = (data: any) => {
+    createTenant.mutate(data);
   };
 
   const handleOpenUserManager = (tenant: Tenant) => {
@@ -187,7 +195,7 @@ const Tenants = () => {
       </div>
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Create New Tenant</DialogTitle>
             <DialogDescription>
@@ -195,41 +203,11 @@ const Tenants = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateTenant}>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Tenant Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Acme Inc."
-                  value={newTenant.name}
-                  onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="domain">Domain</Label>
-                <Input
-                  id="domain"
-                  placeholder="acme.com"
-                  value={newTenant.domain}
-                  onChange={(e) => setNewTenant({ ...newTenant, domain: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={createTenant.isPending}>
-                {createTenant.isPending ? 'Creating...' : 'Create Tenant'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <ExtendedTenantForm
+            onSubmit={handleCreateTenant}
+            isSubmitting={createTenant.isPending}
+            onCancel={() => setIsCreateDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
 
