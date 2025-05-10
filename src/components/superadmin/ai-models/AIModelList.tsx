@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bot } from 'lucide-react';
+import { Bot, Key } from 'lucide-react';
 import { AIModel } from './types';
 
 interface AIModelListProps {
@@ -20,11 +20,17 @@ const AIModelList = ({ models }: AIModelListProps) => {
             </div>
             <p className="text-sm text-muted-foreground mb-1">Provider: {model.provider}</p>
             <p className="text-sm flex-1">{model.description}</p>
-            {model.isDefault && (
-              <div className="mt-2">
+            <div className="mt-2 flex flex-wrap gap-2">
+              {model.isDefault && (
                 <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">Default</span>
-              </div>
-            )}
+              )}
+              {model.requiresApiKey && (
+                <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded flex items-center gap-1">
+                  <Key className="h-3 w-3" />
+                  Requires API Key
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

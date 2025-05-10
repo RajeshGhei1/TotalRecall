@@ -12,6 +12,7 @@ export const useAvailableModels = (): AIModel[] => {
       provider: 'OpenAI',
       description: 'Latest multimodal GPT model with vision capabilities',
       isDefault: true,
+      requiresApiKey: true,
     },
     {
       id: 'gpt-4o-mini',
@@ -19,6 +20,7 @@ export const useAvailableModels = (): AIModel[] => {
       provider: 'OpenAI',
       description: 'Smaller, faster version of GPT-4o',
       isDefault: false,
+      requiresApiKey: true,
     },
     {
       id: 'claude-3-opus',
@@ -26,6 +28,7 @@ export const useAvailableModels = (): AIModel[] => {
       provider: 'Anthropic',
       description: 'Most powerful Claude model for complex reasoning',
       isDefault: false,
+      requiresApiKey: true,
     },
     {
       id: 'claude-3-sonnet',
@@ -33,6 +36,7 @@ export const useAvailableModels = (): AIModel[] => {
       provider: 'Anthropic',
       description: 'Balanced Claude model for most use cases',
       isDefault: false,
+      requiresApiKey: true,
     },
     {
       id: 'gemini-pro',
@@ -40,6 +44,7 @@ export const useAvailableModels = (): AIModel[] => {
       provider: 'Google',
       description: 'Google\'s Gemini Pro model for general purpose tasks',
       isDefault: false,
+      requiresApiKey: true,
     },
   ];
 };
@@ -49,6 +54,13 @@ export const useAvailableModels = (): AIModel[] => {
 export const getTenantModel = (tenantId: string, availableModels: AIModel[]) => {
   // This is a placeholder. In a real application, this would be fetched from the database
   return availableModels[0].id;
+};
+
+// Mock function to get the API key for a tenant's AI model
+// In a real application, this would be fetched securely from the database
+export const getTenantModelApiKey = (tenantId: string, modelId: string): string => {
+  // This is a placeholder. In a real application, this would be fetched from a secure storage
+  return '';
 };
 
 // Hook to fetch tenants
