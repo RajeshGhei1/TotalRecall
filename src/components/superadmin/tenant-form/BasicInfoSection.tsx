@@ -3,6 +3,13 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
 import { TenantFormValues } from './schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;

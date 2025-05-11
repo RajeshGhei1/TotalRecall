@@ -60,7 +60,7 @@ export const FormInput = ({
             placeholder={placeholder || label} 
             type={type} 
             {...field} 
-            value={field.value || ''}
+            value={typeof field.value === 'string' ? field.value : ''}
           />
         </FormControl>
         <FormMessage />
@@ -88,7 +88,7 @@ export const FormSelect = ({
         <FormLabel className="flex items-center">
           {label} {required && <span className="text-red-500 ml-1">*</span>}
         </FormLabel>
-        <Select onValueChange={field.onChange} value={field.value}>
+        <Select onValueChange={field.onChange} value={typeof field.value === 'string' ? field.value : ''}>
           <FormControl>
             <SelectTrigger>
               <SelectValue placeholder="[Choose One]" />
@@ -133,7 +133,7 @@ export const FormTextarea = ({
             placeholder={placeholder || label}
             className="min-h-[100px]" 
             {...field}
-            value={field.value || ''}
+            value={typeof field.value === 'string' ? field.value : ''}
           />
         </FormControl>
         <FormMessage />
@@ -167,7 +167,7 @@ export const FormDatePicker = ({
                 )}
               >
                 {field.value ? (
-                  format(field.value, "PPP")
+                  format(new Date(field.value), "PPP")
                 ) : (
                   <span>Select Date</span>
                 )}
@@ -178,7 +178,7 @@ export const FormDatePicker = ({
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={field.value}
+              selected={field.value ? new Date(field.value) : undefined}
               onSelect={field.onChange}
               initialFocus
               className="p-3 pointer-events-auto"
