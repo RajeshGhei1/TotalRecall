@@ -1,19 +1,11 @@
 
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormSelect } from './FormFields';
 import { TenantFormValues } from './schema';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Plus, Loader2 } from 'lucide-react';
+import IndustryDropdown from './dropdowns/IndustryDropdown';
+import CompanyTypeDropdown from './dropdowns/CompanyTypeDropdown';
+import AddOptionDialog from './common/AddOptionDialog';
 
 interface IndustrySectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -99,11 +91,9 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
   const entityTypes = entityTypeOptions.length > 1 ? entityTypeOptions : [...fallbackEntityTypeOptions, addNewOption];
 
   // Handle selection of the "Add New" option
-  const handleSelectOption = (name: string, value: string) => {
-    if (value === '__add_new__') {
-      setAddingType(name);
-      setNewOption('');
-    }
+  const handleSelectOption = (name: string) => {
+    setAddingType(name);
+    setNewOption('');
   };
 
   // Handle adding a new option
@@ -151,191 +141,100 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
       console.error('Failed to add new option:', error);
     }
   };
+
+  // Get dialog props based on the current adding type
+  const getDialogTitle = () => {
+    if (addingType === 'industry1' || addingType === 'industry2' || addingType === 'industry3') {
+      return 'Add New Industry';
+    } else if (addingType === 'companySector') {
+      return 'Add New Company Sector';
+    } else if (addingType === 'companyType') {
+      return 'Add New Company Type';  
+    } else if (addingType === 'entityType') {
+      return 'Add New Entity Type';
+    }
+    return 'Add New Option';
+  };
+
+  const getDialogPlaceholder = () => {
+    if (addingType === 'industry1' || addingType === 'industry2' || addingType === 'industry3') {
+      return 'Enter new industry name';
+    } else if (addingType === 'companySector') {
+      return 'Enter new company sector';
+    } else if (addingType === 'companyType') {
+      return 'Enter new company type';
+    } else if (addingType === 'entityType') {
+      return 'Enter new entity type';
+    }
+    return 'Enter new option name';
+  };
   
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="industry1"
-            label="Industry 1"
-            options={industries}
-            required
-            onChange={(value) => handleSelectOption('industry1', value)}
-          />
-          {form.watch('industry1') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('industry1')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Industry
-            </Button>
-          )}
-        </div>
+        <IndustryDropdown
+          form={form}
+          name="industry1"
+          label="Industry 1"
+          options={industries}
+          onSelectAddNew={handleSelectOption}
+        />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="industry2"
-            label="Industry 2"
-            options={industries}
-            required
-            onChange={(value) => handleSelectOption('industry2', value)}
-          />
-          {form.watch('industry2') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('industry2')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Industry
-            </Button>
-          )}
-        </div>
+        <IndustryDropdown
+          form={form}
+          name="industry2"
+          label="Industry 2"
+          options={industries}
+          onSelectAddNew={handleSelectOption}
+        />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="industry3"
-            label="Industry 3"
-            options={industries}
-            required
-            onChange={(value) => handleSelectOption('industry3', value)}
-          />
-          {form.watch('industry3') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('industry3')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Industry
-            </Button>
-          )}
-        </div>
+        <IndustryDropdown
+          form={form}
+          name="industry3"
+          label="Industry 3"
+          options={industries}
+          onSelectAddNew={handleSelectOption}
+        />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="companySector"
-            label="Company Sector"
-            options={sectors}
-            required
-            onChange={(value) => handleSelectOption('companySector', value)}
-          />
-          {form.watch('companySector') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('companySector')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Sector
-            </Button>
-          )}
-        </div>
+        <CompanyTypeDropdown
+          form={form}
+          name="companySector"
+          label="Company Sector"
+          options={sectors}
+          onSelectAddNew={handleSelectOption}
+          buttonLabel="Add New Sector"
+        />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="companyType"
-            label="Company Type"
-            options={companyTypes}
-            required
-            onChange={(value) => handleSelectOption('companyType', value)}
-          />
-          {form.watch('companyType') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('companyType')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Company Type
-            </Button>
-          )}
-        </div>
+        <CompanyTypeDropdown
+          form={form}
+          name="companyType"
+          label="Company Type"
+          options={companyTypes}
+          onSelectAddNew={handleSelectOption}
+          buttonLabel="Add New Company Type"
+        />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="entityType"
-            label="Entity Type"
-            options={entityTypes}
-            required
-            onChange={(value) => handleSelectOption('entityType', value)}
-          />
-          {form.watch('entityType') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingType('entityType')}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Entity Type
-            </Button>
-          )}
-        </div>
+        <CompanyTypeDropdown
+          form={form}
+          name="entityType"
+          label="Entity Type"
+          options={entityTypes}
+          onSelectAddNew={handleSelectOption}
+          buttonLabel="Add New Entity Type"
+        />
       </div>
 
       {/* Dialog for adding new options */}
-      <Dialog open={!!addingType} onOpenChange={(open) => !open && setAddingType(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Add New {
-                addingType === 'industry1' || addingType === 'industry2' || addingType === 'industry3' ? 'Industry' :
-                addingType === 'companySector' ? 'Company Sector' :
-                addingType === 'companyType' ? 'Company Type' :
-                addingType === 'entityType' ? 'Entity Type' : ''
-              }
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Input
-              placeholder={`Enter new ${
-                addingType === 'industry1' || addingType === 'industry2' || addingType === 'industry3' ? 'industry' :
-                addingType === 'companySector' ? 'company sector' :
-                addingType === 'companyType' ? 'company type' :
-                addingType === 'entityType' ? 'entity type' : 'option'
-              } name`}
-              value={newOption}
-              onChange={(e) => setNewOption(e.target.value)}
-              autoFocus
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddingType(null)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAddNewOption} 
-              disabled={!newOption.trim() || industryHook.isAddingOption}
-            >
-              {industryHook.isAddingOption ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>Add</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddOptionDialog
+        isOpen={!!addingType}
+        onClose={() => setAddingType(null)}
+        title={getDialogTitle()}
+        placeholder={getDialogPlaceholder()}
+        value={newOption}
+        onChange={setNewOption}
+        onSubmit={handleAddNewOption}
+        isSubmitting={industryHook.isAddingOption}
+      />
     </>
   );
 };
