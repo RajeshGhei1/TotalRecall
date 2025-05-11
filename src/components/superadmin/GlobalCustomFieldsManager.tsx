@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CustomFieldsManager } from '@/components/customFields';
 
 const GlobalCustomFieldsManager: React.FC = () => {
+  console.log("Rendering GlobalCustomFieldsManager");
+  
   return (
     <Card>
       <CardHeader>

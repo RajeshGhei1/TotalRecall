@@ -37,27 +37,38 @@ export function useCustomFields(tenantId?: string) {
     queryFn: async () => {
       console.log(`Starting custom fields query for tenant: ${effectiveTenantId}`);
       
-      // For global fields, we look for tenant_id is null or 'global'
-      let query = supabase
+      const { data, error } = await supabase
         .from('custom_fields')
-        .select('*');
-        
-      if (effectiveTenantId === 'global') {
-        // For global tenant fields, get fields where tenant_id is null or 'global'
-        query = query.or('tenant_id.is.null,tenant_id.eq.global');
-      } else {
-        // For specific tenant, get tenant-specific fields and global fields
-        query = query.or(`tenant_id.is.null,tenant_id.eq.${effectiveTenantId},tenant_id.eq.global`);
-      }
-      
-      const { data, error } = await query.order('name');
+        .select('*')
+        .eq('tenant_id', effectiveTenantId)
+        .order('name');
 
       if (error) {
+        // Special handling for global tenant
+        if (effectiveTenantId === 'global' && error.code === '22P02') {
+          console.log('Using alternative query for global tenant');
+          
+          // For global tenant, get fields where tenant_id is null or 'global'
+          const { data: globalData, error: globalError } = await supabase
+            .from('custom_fields')
+            .select('*')
+            .is('tenant_id', null)
+            .order('name');
+            
+          if (globalError) {
+            console.error('Error fetching global custom fields:', globalError);
+            throw globalError;
+          }
+          
+          console.log(`Retrieved ${globalData?.length || 0} global custom fields`);
+          return globalData as CustomField[];
+        }
+        
         console.error('Error fetching custom fields:', error);
         throw error;
       }
       
-      console.log(`Retrieved ${data?.length || 0} custom fields for tenant: ${effectiveTenantId}`, data);
+      console.log(`Retrieved ${data?.length || 0} custom fields for tenant: ${effectiveTenantId}`);
       return data as CustomField[];
     },
     enabled: !!effectiveTenantId,
@@ -103,7 +114,7 @@ export function useCustomFields(tenantId?: string) {
     const { data: fields, error: fieldsError } = await supabase
       .from('custom_fields')
       .select('id, field_key')
-      .or(`tenant_id.is.null,tenant_id.eq.global${tenantId ? `,tenant_id.eq.${tenantId}` : ''}`);
+      .or(`tenant_id.is.null,tenant_id.eq.${effectiveTenantId}`);
 
     if (fieldsError) {
       console.error("Error fetching custom fields:", fieldsError);
