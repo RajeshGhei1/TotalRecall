@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormTextarea, FormSelect } from './FormFields';
@@ -14,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
+import { createDialogHelpers } from '@/hooks/useDialogHelpers';
 
 interface AdditionalInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -28,6 +28,22 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
   const specializationHook = useDropdownOptions('specializations');
   const serviceLineHook = useDropdownOptions('service_lines');
   const endUserHook = useDropdownOptions('end_user_channels');
+
+  // Use the new dialog helpers
+  const { getDialogTitle, getDialogPlaceholder } = createDialogHelpers({
+    'areaOfSpecialize': {
+      title: 'Add New Specialization',
+      placeholder: 'Enter new specialization name'
+    },
+    'serviceLine': {
+      title: 'Add New Service Line',
+      placeholder: 'Enter new service line name'
+    },
+    'endUserChannel': {
+      title: 'Add New End User/Channel',
+      placeholder: 'Enter new end user type'
+    }
+  });
 
   // Add an "Add New" option
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
@@ -194,21 +210,13 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Add New {
-                addingType === 'areaOfSpecialize' ? 'Specialization' :
-                addingType === 'serviceLine' ? 'Service Line' :
-                addingType === 'endUserChannel' ? 'End User/Channel' : ''
-              }
+              {getDialogTitle(addingType)}
             </DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
             <Input
-              placeholder={`Enter new ${
-                addingType === 'areaOfSpecialize' ? 'specialization' :
-                addingType === 'serviceLine' ? 'service line' :
-                addingType === 'endUserChannel' ? 'end user type' : 'option'
-              } name`}
+              placeholder={getDialogPlaceholder(addingType)}
               value={newOption}
               onChange={(e) => setNewOption(e.target.value)}
               autoFocus

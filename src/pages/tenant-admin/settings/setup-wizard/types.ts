@@ -4,3 +4,10 @@ export interface SetupWizardProps {
   onOpenChange: (open: boolean) => void;
   tenantData: any;
 }
+
+export interface WizardStepProps {
+  onNext: () => void;
+  onPrevious?: () => void;
+  tenantData: any;
+  updateTenantData: (data: any) => void;
+}

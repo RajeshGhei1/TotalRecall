@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { TenantFormValues } from './schema';
 import AddOptionDialog from './common/AddOptionDialog';
 import IndustryDropdownSection from './industry/IndustryDropdownSection';
 import { useIndustryOptions } from './industry/useIndustryOptions';
-import { useIndustryDialogHelpers } from './industry/useIndustryDialogHelpers';
+import { useIndustryDialogHelpers } from '@/hooks/useDialogHelpers';
 
 interface IndustrySectionProps {
   form: UseFormReturn<TenantFormValues>;

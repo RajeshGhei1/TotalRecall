@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
@@ -23,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
+import { createDialogHelpers } from '@/hooks/useDialogHelpers';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -31,6 +31,14 @@ interface BasicInfoSectionProps {
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   const [addingCompanyStatus, setAddingCompanyStatus] = useState(false);
   const [newCompanyStatus, setNewCompanyStatus] = useState('');
+  
+  // Use the new dialog helpers
+  const { getDialogTitle, getDialogPlaceholder } = createDialogHelpers({
+    'companyStatus': {
+      title: 'Add New Company Status',
+      placeholder: 'Enter new company status'
+    }
+  });
 
   // Get parent tenants
   const { data: tenants = [] } = useQuery({
@@ -189,12 +197,12 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
       <Dialog open={addingCompanyStatus} onOpenChange={setAddingCompanyStatus}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Company Status</DialogTitle>
+            <DialogTitle>{getDialogTitle('companyStatus')}</DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
             <Input
-              placeholder="Enter new company status"
+              placeholder={getDialogPlaceholder('companyStatus')}
               value={newCompanyStatus}
               onChange={(e) => setNewCompanyStatus(e.target.value)}
               autoFocus
