@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
+import { Loader } from 'lucide-react';
 
 import { tenantFormSchema, TenantFormValues } from './schema';
 import BasicInfoSection from './BasicInfoSection';
@@ -31,6 +32,7 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
       cin: '',
       companyStatus: '',
       registeredOfficeAddress: '',
+      registrationDate: undefined,
       registeredEmailAddress: '',
       noOfDirectives: '',
       globalRegion: '',
@@ -82,8 +84,15 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
           <Button type="button" variant="outline" onClick={onCancel}>
             Reset
           </Button>
-          <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>
-            Submit
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit'
+            )}
           </Button>
         </div>
       </form>

@@ -8,11 +8,12 @@ import TenantUserManager from '@/components/TenantUserManager';
 import TenantsHeader from '@/components/superadmin/TenantsHeader';
 import TenantList from '@/components/superadmin/TenantList';
 import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
+import { TenantFormValues } from '@/components/superadmin/tenant-form';
 
 interface Tenant {
   id: string;
   name: string;
-  domain?: string;  // Make domain optional to match database schema
+  domain?: string;
   description?: string;
   created_at: string;
 }
@@ -40,13 +41,17 @@ const Tenants = () => {
 
   // Mutation for creating a new tenant
   const createTenant = useMutation({
-    mutationFn: async (tenantData: any) => {
+    mutationFn: async (tenantData: TenantFormValues) => {
+      console.log("Form data received:", tenantData);
+      
       // Extract the basic tenant data that the database expects
       const basicTenantData = {
         name: tenantData.name,
         domain: tenantData.domain || tenantData.webSite, // Use website as domain if domain not provided
         description: tenantData.companyProfile, // Use company profile as description
       };
+
+      console.log("Sending to database:", basicTenantData);
 
       const { data, error } = await supabase
         .from('tenants')
@@ -58,7 +63,7 @@ const Tenants = () => {
       
       // In a real implementation, you would store the extended tenant data
       // in another table with a foreign key to the tenant id
-      console.log("Extended tenant data to be stored:", tenantData);
+      console.log("Tenant created successfully:", data);
       
       return data;
     },
@@ -70,7 +75,8 @@ const Tenants = () => {
         description: 'The tenant has been created successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Error creating tenant:", error);
       toast({
         title: 'Error',
         description: `Failed to create tenant: ${error.message}`,
@@ -79,7 +85,8 @@ const Tenants = () => {
     },
   });
 
-  const handleCreateTenant = (data: any) => {
+  const handleCreateTenant = (data: TenantFormValues) => {
+    console.log("Submitting tenant form:", data);
     createTenant.mutate(data);
   };
 
