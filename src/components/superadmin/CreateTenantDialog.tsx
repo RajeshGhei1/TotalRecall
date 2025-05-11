@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import ExtendedTenantForm from '@/components/superadmin/ExtendedTenantForm';
+import { ExtendedTenantForm } from '@/components/superadmin/tenant-form';
 
 interface CreateTenantDialogProps {
   isOpen: boolean;
