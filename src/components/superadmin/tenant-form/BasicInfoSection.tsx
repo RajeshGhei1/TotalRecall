@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
-import { TenantFormValues, formOptions } from './schema';
+import { TenantFormValues } from './schema';
 import {
   Select,
   SelectContent,
@@ -12,12 +12,27 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Plus, Loader2 } from 'lucide-react';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
 }
 
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
+  const [addingCompanyStatus, setAddingCompanyStatus] = useState(false);
+  const [newCompanyStatus, setNewCompanyStatus] = useState('');
+
+  // Get parent tenants
   const { data: tenants = [] } = useQuery({
     queryKey: ["tenants-for-parent"],
     queryFn: async () => {
@@ -30,6 +45,56 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
       return data;
     },
   });
+
+  // Get company status options from our hook
+  const { 
+    options: companyStatusOptionsRaw = [], 
+    isLoading: statusLoading,
+    isAddingOption: isAddingStatus,
+    addOption,
+    getCategoryIdByName
+  } = useDropdownOptions('company_statuses');
+
+  // Add an "Add New" option
+  const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
+  
+  const companyStatusOptions = statusLoading 
+    ? [{ value: '', label: 'Loading...' }] 
+    : [...companyStatusOptionsRaw.map(o => ({ value: o.value, label: o.label })), addNewOption];
+
+  // Handle selection of the "Add New" option
+  const handleSelectCompanyStatus = (value: string) => {
+    if (value === '__add_new__') {
+      setAddingCompanyStatus(true);
+      setNewCompanyStatus('');
+    }
+  };
+
+  // Handle adding a new company status
+  const handleAddNewCompanyStatus = async () => {
+    if (!newCompanyStatus.trim()) return;
+
+    const categoryId = await getCategoryIdByName('company_statuses');
+    
+    if (!categoryId) {
+      console.error('Company status category not found');
+      return;
+    }
+
+    try {
+      const newOption = await addOption.mutateAsync({
+        categoryId,
+        value: newCompanyStatus,
+        label: newCompanyStatus
+      });
+      
+      // Set the form value to the newly added option
+      form.setValue('companyStatus', newOption.value);
+      setAddingCompanyStatus(false);
+    } catch (error) {
+      console.error('Failed to add new company status:', error);
+    }
+  };
 
   return (
     <>
@@ -87,13 +152,27 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           required
         />
         
-        <FormSelect 
-          form={form}
-          name="companyStatus"
-          label="Company Status"
-          options={formOptions.companyStatusOptions}
-          required
-        />
+        <div className="space-y-1">
+          <FormSelect 
+            form={form}
+            name="companyStatus"
+            label="Company Status"
+            options={companyStatusOptions}
+            required
+            onChange={handleSelectCompanyStatus}
+          />
+          {form.watch('companyStatus') === '__add_new__' && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="mt-1"
+              onClick={() => setAddingCompanyStatus(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add New Status
+            </Button>
+          )}
+        </div>
         
         <FormInput 
           form={form}
@@ -102,6 +181,43 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           required
         />
       </div>
+
+      {/* Dialog for adding new company status */}
+      <Dialog open={addingCompanyStatus} onOpenChange={setAddingCompanyStatus}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Company Status</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Input
+              placeholder="Enter new company status"
+              value={newCompanyStatus}
+              onChange={(e) => setNewCompanyStatus(e.target.value)}
+              autoFocus
+            />
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddingCompanyStatus(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddNewCompanyStatus} 
+              disabled={!newCompanyStatus.trim() || isAddingStatus}
+            >
+              {isAddingStatus ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>Add</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
