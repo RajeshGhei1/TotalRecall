@@ -14,7 +14,7 @@ import SocialMediaSettings from "./settings/SocialMediaSettings";
 import CommunicationSettings from "./settings/CommunicationSettings";
 import OutreachSettings from "./settings/OutreachSettings";
 import ApiSettings from "./settings/ApiSettings";
-import SetupWizard from "./settings/SetupWizard";
+import SetupWizard from "./settings/setup-wizard/SetupWizard";
 
 const TenantAdminSettings = () => {
   const { user } = useAuth();
