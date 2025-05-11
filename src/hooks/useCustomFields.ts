@@ -28,11 +28,15 @@ export function useCustomFields(tenantId?: string) {
 
   // Default to "global" if no tenantId is provided
   const effectiveTenantId = tenantId || "global";
+  
+  console.log(`Fetching custom fields for tenant: ${effectiveTenantId}`);
 
   // Fetch custom fields for a tenant
   const { data: customFields = [], isLoading } = useQuery({
     queryKey: ['customFields', effectiveTenantId],
     queryFn: async () => {
+      console.log(`Starting custom fields query for tenant: ${effectiveTenantId}`);
+      
       // For global fields, we look for tenant_id is null or 'global'
       let query = supabase
         .from('custom_fields')
@@ -48,7 +52,12 @@ export function useCustomFields(tenantId?: string) {
       
       const { data, error } = await query.order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching custom fields:', error);
+        throw error;
+      }
+      
+      console.log(`Retrieved ${data?.length || 0} custom fields for tenant: ${effectiveTenantId}`, data);
       return data as CustomField[];
     },
     enabled: !!effectiveTenantId,
@@ -57,6 +66,8 @@ export function useCustomFields(tenantId?: string) {
   // Fetch custom field values for an entity
   const getCustomFieldValues = async (entityType: string, entityId: string) => {
     if (!entityId || !entityType) return [];
+
+    console.log(`Getting custom field values for ${entityType}:${entityId}`);
 
     const { data, error } = await supabase
       .from('custom_field_values')
@@ -69,7 +80,12 @@ export function useCustomFields(tenantId?: string) {
       .eq('entity_type', entityType)
       .eq('entity_id', entityId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching custom field values:', error);
+      throw error;
+    }
+    
+    console.log(`Retrieved ${data?.length || 0} custom field values for ${entityType}:${entityId}`, data);
     return data;
   };
 

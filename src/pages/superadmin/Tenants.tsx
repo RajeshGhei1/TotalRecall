@@ -47,6 +47,8 @@ const Tenants = () => {
   const extractCustomFieldValues = (formData: TenantFormValues) => {
     const customFields: Record<string, any> = {};
     
+    console.log("Extracting custom fields from form data:", formData);
+    
     // Loop through all form values and extract those that start with "custom_"
     Object.entries(formData).forEach(([key, value]) => {
       if (key.startsWith('custom_')) {
@@ -55,6 +57,7 @@ const Tenants = () => {
       }
     });
     
+    console.log("Extracted custom fields:", customFields);
     return customFields;
   };
 
