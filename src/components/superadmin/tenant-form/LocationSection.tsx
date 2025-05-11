@@ -9,7 +9,7 @@ interface LocationSectionProps {
 }
 
 const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
-  const { regionOptions, countryOptions } = formOptions;
+  const { regionOptions, countryOptions, localRegionOptions, locationOptions } = formOptions;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -33,7 +33,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
         form={form}
         name="region"
         label="Region"
-        options={["North", "South", "East", "West"]}
+        options={localRegionOptions}
         required
       />
       
@@ -41,7 +41,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
         form={form}
         name="hoLocation"
         label="HO Location"
-        options={["Location 1", "Location 2", "Location 3"]}
+        options={locationOptions}
         required
       />
     </div>

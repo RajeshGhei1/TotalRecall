@@ -9,7 +9,7 @@ interface IndustrySectionProps {
 }
 
 const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
-  const { industryOptions } = formOptions;
+  const { industryOptions, companyTypeOptions, entityTypeOptions, companySectorOptions } = formOptions;
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -41,7 +41,7 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
         form={form}
         name="companySector"
         label="Company Sector"
-        options={["Private", "Public", "Government"]}
+        options={companySectorOptions}
         required
       />
       
@@ -49,7 +49,7 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
         form={form}
         name="companyType"
         label="Company Type"
-        options={formOptions.companyTypeOptions}
+        options={companyTypeOptions}
         required
       />
       
@@ -57,7 +57,7 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
         form={form}
         name="entityType"
         label="Entity Type"
-        options={formOptions.entityTypeOptions}
+        options={entityTypeOptions}
         required
       />
     </div>

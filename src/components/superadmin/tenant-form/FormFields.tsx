@@ -94,9 +94,9 @@ export const FormSelect = ({
               <SelectValue placeholder="[Choose One]" />
             </SelectTrigger>
           </FormControl>
-          <SelectContent>
+          <SelectContent className="z-50 max-h-60 overflow-y-auto">
             {options.map((option) => {
-              const value = typeof option === 'string' ? option.toLowerCase() : option.value;
+              const value = typeof option === 'string' ? option : option.value;
               const label = typeof option === 'string' ? option : option.label;
               
               return (

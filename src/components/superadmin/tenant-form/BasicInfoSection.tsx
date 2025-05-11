@@ -2,7 +2,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
-import { TenantFormValues } from './schema';
+import { TenantFormValues, formOptions } from './schema';
 import {
   Select,
   SelectContent,
@@ -10,12 +10,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
 }
 
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
+  const { data: tenants = [] } = useQuery({
+    queryKey: ["tenants-for-parent"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tenants")
+        .select("id, name")
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -32,8 +47,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
             <SelectTrigger>
               <SelectValue placeholder="[Choose One]" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-50 bg-background">
               <SelectItem value="none">None</SelectItem>
+              {tenants.map((tenant) => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -71,11 +91,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           form={form}
           name="companyStatus"
           label="Company Status"
-          options={[
-            { value: "active", label: "Active" },
-            { value: "inactive", label: "Inactive" },
-            { value: "pending", label: "Pending" }
-          ]}
+          options={formOptions.companyStatusOptions}
           required
         />
         

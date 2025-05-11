@@ -9,19 +9,23 @@ interface AdditionalInfoSectionProps {
 }
 
 const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) => {
+  const { endUserOptions, specializationOptions, serviceLineOptions } = formOptions;
+  
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormInput 
+        <FormSelect 
           form={form}
           name="areaOfSpecialize"
-          label="Area of Specialize"
+          label="Area of Specialization"
+          options={specializationOptions}
         />
         
-        <FormInput 
+        <FormSelect 
           form={form}
           name="serviceLine"
           label="Service Line"
+          options={serviceLineOptions}
         />
         
         <FormInput 
@@ -33,7 +37,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
         <FormInput 
           form={form}
           name="webSite"
-          label="WEB Site"
+          label="Website"
         />
       </div>
       
@@ -48,7 +52,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
         form={form}
         name="endUserChannel"
         label="EndUser/Channel"
-        options={formOptions.endUserOptions}
+        options={endUserOptions}
         required
       />
     </>
