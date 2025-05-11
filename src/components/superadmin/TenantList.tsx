@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Tenant {
@@ -24,9 +24,15 @@ interface TenantListProps {
   tenants: Tenant[];
   isLoading: boolean;
   onOpenUserManager: (tenant: Tenant) => void;
+  onOpenCustomFields: (tenant: Tenant) => void;
 }
 
-const TenantList = ({ tenants, isLoading, onOpenUserManager }: TenantListProps) => {
+const TenantList = ({ 
+  tenants, 
+  isLoading, 
+  onOpenUserManager,
+  onOpenCustomFields 
+}: TenantListProps) => {
   return (
     <Card>
       <CardHeader>
@@ -58,12 +64,18 @@ const TenantList = ({ tenants, isLoading, onOpenUserManager }: TenantListProps) 
                     <TableCell>
                       {new Date(tenant.created_at).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onOpenCustomFields(tenant)}
+                      >
+                        <Settings className="mr-2 h-4 w-4" /> Custom Fields
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onOpenUserManager(tenant)}
-                        className="ml-2"
                       >
                         <UserPlus className="mr-2 h-4 w-4" /> Manage Users
                       </Button>

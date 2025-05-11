@@ -8,7 +8,9 @@ import TenantUserManager from '@/components/TenantUserManager';
 import TenantsHeader from '@/components/superadmin/TenantsHeader';
 import TenantList from '@/components/superadmin/TenantList';
 import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
+import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
 import { TenantFormValues } from '@/components/superadmin/tenant-form';
+import { useCustomFields } from '@/hooks/useCustomFields';
 
 interface Tenant {
   id: string;
@@ -22,8 +24,10 @@ const Tenants = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isUserManagerOpen, setIsUserManagerOpen] = useState(false);
+  const [isCustomFieldsOpen, setIsCustomFieldsOpen] = useState(false);
 
   const queryClient = useQueryClient();
+  const { saveCustomFieldValues } = useCustomFields();
 
   // Fetch tenants from the database
   const { data: tenants = [], isLoading } = useQuery({
@@ -38,6 +42,21 @@ const Tenants = () => {
       return data as Tenant[];
     },
   });
+
+  // Extract custom field values from form data
+  const extractCustomFieldValues = (formData: TenantFormValues) => {
+    const customFields: Record<string, any> = {};
+    
+    // Loop through all form values and extract those that start with "custom_"
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key.startsWith('custom_')) {
+        const fieldKey = key.replace('custom_', '');
+        customFields[fieldKey] = value;
+      }
+    });
+    
+    return customFields;
+  };
 
   // Mutation for creating a new tenant
   const createTenant = useMutation({
@@ -61,9 +80,11 @@ const Tenants = () => {
 
       if (error) throw error;
       
-      // In a real implementation, you would store the extended tenant data
-      // in another table with a foreign key to the tenant id
-      console.log("Tenant created successfully:", data);
+      // Handle custom fields if any exist
+      const customFieldValues = extractCustomFieldValues(tenantData);
+      if (Object.keys(customFieldValues).length > 0) {
+        await saveCustomFieldValues('tenant', data.id, customFieldValues);
+      }
       
       return data;
     },
@@ -95,6 +116,11 @@ const Tenants = () => {
     setIsUserManagerOpen(true);
   };
 
+  const handleOpenCustomFields = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsCustomFieldsOpen(true);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -104,6 +130,7 @@ const Tenants = () => {
           tenants={tenants} 
           isLoading={isLoading} 
           onOpenUserManager={handleOpenUserManager} 
+          onOpenCustomFields={handleOpenCustomFields} 
         />
 
         <CreateTenantDialog
@@ -114,12 +141,21 @@ const Tenants = () => {
         />
 
         {selectedTenant && (
-          <TenantUserManager
-            tenantId={selectedTenant.id}
-            tenantName={selectedTenant.name}
-            isOpen={isUserManagerOpen}
-            onClose={() => setIsUserManagerOpen(false)}
-          />
+          <>
+            <TenantUserManager
+              tenantId={selectedTenant.id}
+              tenantName={selectedTenant.name}
+              isOpen={isUserManagerOpen}
+              onClose={() => setIsUserManagerOpen(false)}
+            />
+            
+            <CustomFieldsDialog
+              tenantId={selectedTenant.id}
+              tenantName={selectedTenant.name}
+              isOpen={isCustomFieldsOpen}
+              onClose={() => setIsCustomFieldsOpen(false)}
+            />
+          </>
         )}
       </div>
     </AdminLayout>

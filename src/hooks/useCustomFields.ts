@@ -26,22 +26,32 @@ interface CustomFieldValue {
 export function useCustomFields(tenantId?: string) {
   const queryClient = useQueryClient();
 
+  // Default to "global" if no tenantId is provided
+  const effectiveTenantId = tenantId || "global";
+
   // Fetch custom fields for a tenant
   const { data: customFields = [], isLoading } = useQuery({
-    queryKey: ['customFields', tenantId],
+    queryKey: ['customFields', effectiveTenantId],
     queryFn: async () => {
-      if (!tenantId) return [];
-
-      const { data, error } = await supabase
+      // For global fields, we look for tenant_id is null or 'global'
+      let query = supabase
         .from('custom_fields')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('name');
+        .select('*');
+        
+      if (effectiveTenantId === 'global') {
+        // For global tenant fields, get fields where tenant_id is null or 'global'
+        query = query.or('tenant_id.is.null,tenant_id.eq.global');
+      } else {
+        // For specific tenant, get tenant-specific fields and global fields
+        query = query.or(`tenant_id.is.null,tenant_id.eq.${effectiveTenantId},tenant_id.eq.global`);
+      }
+      
+      const { data, error } = await query.order('name');
 
       if (error) throw error;
       return data as CustomField[];
     },
-    enabled: !!tenantId,
+    enabled: !!effectiveTenantId,
   });
 
   // Fetch custom field values for an entity
@@ -69,13 +79,13 @@ export function useCustomFields(tenantId?: string) {
     entityId: string,
     values: Record<string, any>
   ) => {
-    if (!entityId || !entityType || !tenantId) return;
+    if (!entityId || !entityType) return;
 
-    // Get all custom fields for this tenant
+    // Get all custom fields
     const { data: fields, error: fieldsError } = await supabase
       .from('custom_fields')
       .select('id, field_key')
-      .eq('tenant_id', tenantId);
+      .or(`tenant_id.is.null,tenant_id.eq.global${tenantId ? `,tenant_id.eq.${tenantId}` : ''}`);
 
     if (fieldsError) throw fieldsError;
     

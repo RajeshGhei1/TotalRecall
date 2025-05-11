@@ -12,6 +12,7 @@ import LocationSection from './LocationSection';
 import IndustrySection from './IndustrySection';
 import CompanyMetricsSection from './CompanyMetricsSection';
 import AdditionalInfoSection from './AdditionalInfoSection';
+import CustomFieldsForm from '@/components/CustomFieldsForm';
 
 interface ExtendedTenantFormProps {
   onSubmit: (data: TenantFormValues) => void;
@@ -79,6 +80,14 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
         
         <h3 className="text-lg font-medium border-b pb-2 mt-8">Additional Information</h3>
         <AdditionalInfoSection form={form} />
+        
+        {/* Custom Fields Section */}
+        <h3 className="text-lg font-medium border-b pb-2 mt-8">Custom Fields</h3>
+        <CustomFieldsForm
+          tenantId={"global"}  // Use global for tenant-wide custom fields
+          entityType="tenant"
+          form={form}
+        />
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onCancel}>
