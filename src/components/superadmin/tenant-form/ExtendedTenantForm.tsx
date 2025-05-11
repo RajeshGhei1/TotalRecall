@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
@@ -13,6 +13,7 @@ import IndustrySection from './IndustrySection';
 import CompanyMetricsSection from './CompanyMetricsSection';
 import AdditionalInfoSection from './AdditionalInfoSection';
 import CustomFieldsForm from '@/components/CustomFieldsForm';
+import { useCustomFields } from '@/hooks/useCustomFields';
 
 interface ExtendedTenantFormProps {
   onSubmit: (data: TenantFormValues) => void;
@@ -25,6 +26,8 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
   isSubmitting, 
   onCancel 
 }) => {
+  const { customFields, isLoading: customFieldsLoading } = useCustomFields('global');
+  
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchema),
     defaultValues: {
@@ -63,9 +66,22 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
     }
   });
 
+  useEffect(() => {
+    // This ensures the form knows about any custom fields that might be added
+    if (customFields && customFields.length > 0) {
+      const currentValues = form.getValues();
+      form.reset(currentValues);
+    }
+  }, [customFields, form]);
+
+  const handleFormSubmit = (data: TenantFormValues) => {
+    console.log("Form submission with custom fields:", data);
+    onSubmit(data);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <h3 className="text-lg font-medium border-b pb-2">Basic Information</h3>
         <BasicInfoSection form={form} />
         
@@ -81,13 +97,16 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
         <h3 className="text-lg font-medium border-b pb-2 mt-8">Additional Information</h3>
         <AdditionalInfoSection form={form} />
         
-        {/* Custom Fields Section */}
-        <h3 className="text-lg font-medium border-b pb-2 mt-8">Custom Fields</h3>
-        <CustomFieldsForm
-          tenantId={"global"}  // Use global for tenant-wide custom fields
-          entityType="tenant"
-          form={form}
-        />
+        {!customFieldsLoading && customFields.length > 0 && (
+          <>
+            <h3 className="text-lg font-medium border-b pb-2 mt-8">Custom Fields</h3>
+            <CustomFieldsForm
+              tenantId="global"
+              entityType="tenant"
+              form={form}
+            />
+          </>
+        )}
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onCancel}>

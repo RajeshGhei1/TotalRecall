@@ -98,6 +98,15 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId }) =
   // Delete custom field mutation
   const deleteFieldMutation = useMutation({
     mutationFn: async (fieldId: string) => {
+      // First delete any custom field values associated with this field
+      const { error: valuesError } = await supabase
+        .from('custom_field_values')
+        .delete()
+        .eq('field_id', fieldId);
+
+      if (valuesError) throw valuesError;
+
+      // Then delete the field itself
       const { error } = await supabase
         .from('custom_fields')
         .delete()

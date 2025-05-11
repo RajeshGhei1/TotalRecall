@@ -82,6 +82,8 @@ const Tenants = () => {
       
       // Handle custom fields if any exist
       const customFieldValues = extractCustomFieldValues(tenantData);
+      console.log("Custom field values:", customFieldValues);
+      
       if (Object.keys(customFieldValues).length > 0) {
         await saveCustomFieldValues('tenant', data.id, customFieldValues);
       }

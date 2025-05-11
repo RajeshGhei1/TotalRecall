@@ -81,13 +81,18 @@ export function useCustomFields(tenantId?: string) {
   ) => {
     if (!entityId || !entityType) return;
 
+    console.log(`Saving custom field values for ${entityType}:${entityId}`, values);
+
     // Get all custom fields
     const { data: fields, error: fieldsError } = await supabase
       .from('custom_fields')
       .select('id, field_key')
       .or(`tenant_id.is.null,tenant_id.eq.global${tenantId ? `,tenant_id.eq.${tenantId}` : ''}`);
 
-    if (fieldsError) throw fieldsError;
+    if (fieldsError) {
+      console.error("Error fetching custom fields:", fieldsError);
+      throw fieldsError;
+    }
     
     // Get existing field values
     const { data: existingValues, error: existingError } = await supabase
@@ -96,7 +101,10 @@ export function useCustomFields(tenantId?: string) {
       .eq('entity_type', entityType)
       .eq('entity_id', entityId);
 
-    if (existingError) throw existingError;
+    if (existingError) {
+      console.error("Error fetching existing values:", existingError);
+      throw existingError;
+    }
 
     // Create a map of field_key to field_id
     const fieldKeyToId = fields.reduce((acc, field) => {
@@ -116,9 +124,14 @@ export function useCustomFields(tenantId?: string) {
     // Go through all values
     for (const [fieldKey, value] of Object.entries(values)) {
       const fieldId = fieldKeyToId[fieldKey];
-      if (!fieldId) continue;  // Skip if field doesn't exist
+      if (!fieldId) {
+        console.warn(`Field key ${fieldKey} not found in database`);
+        continue;  // Skip if field doesn't exist
+      }
 
       const existingId = fieldIdToValueId[fieldId];
+      
+      console.log(`Processing field ${fieldKey} with value ${value}, existingId: ${existingId}`);
 
       upserts.push({
         id: existingId || undefined,
@@ -130,11 +143,20 @@ export function useCustomFields(tenantId?: string) {
     }
 
     if (upserts.length > 0) {
-      const { error: upsertError } = await supabase
+      console.log("Upserting custom field values:", upserts);
+      const { error: upsertError, data } = await supabase
         .from('custom_field_values')
-        .upsert(upserts);
+        .upsert(upserts)
+        .select();
 
-      if (upsertError) throw upsertError;
+      if (upsertError) {
+        console.error("Error upserting values:", upsertError);
+        throw upsertError;
+      }
+      
+      console.log("Upserted values:", data);
+    } else {
+      console.log("No custom field values to upsert");
     }
     
     // Invalidate queries

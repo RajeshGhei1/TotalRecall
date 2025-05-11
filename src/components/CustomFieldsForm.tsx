@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface CustomFieldsFormProps {
   tenantId: string;
@@ -61,14 +62,17 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
     }
   }, [fieldValues, form]);
 
-  if (isLoading || customFields.length === 0) {
-    return null;
+  if (isLoading) {
+    return <Card><CardContent className="py-4">Loading custom fields...</CardContent></Card>;
+  }
+
+  if (customFields.length === 0) {
+    return <Card><CardContent className="py-4">No custom fields defined</CardContent></Card>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="text-lg font-medium">Additional Information</div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {customFields.map((field) => {
           const fieldName = `custom_${field.field_key}`;
           
@@ -86,7 +90,7 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
                         {field.required && <span className="text-destructive ml-1">*</span>}
                       </FormLabel>
                       <FormControl>
-                        <Input {...formField} />
+                        <Input {...formField} placeholder={`Enter ${field.name.toLowerCase()}`} />
                       </FormControl>
                       {field.description && <FormDescription>{field.description}</FormDescription>}
                       <FormMessage />
@@ -108,7 +112,7 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
                         {field.required && <span className="text-destructive ml-1">*</span>}
                       </FormLabel>
                       <FormControl>
-                        <Textarea {...formField} />
+                        <Textarea {...formField} placeholder={`Enter ${field.name.toLowerCase()}`} />
                       </FormControl>
                       {field.description && <FormDescription>{field.description}</FormDescription>}
                       <FormMessage />
@@ -134,6 +138,7 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
                           type="number" 
                           {...formField} 
                           onChange={(e) => formField.onChange(parseFloat(e.target.value) || '')}
+                          placeholder={`Enter ${field.name.toLowerCase()}`} 
                         />
                       </FormControl>
                       {field.description && <FormDescription>{field.description}</FormDescription>}
@@ -191,7 +196,7 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an option" />
+                            <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
