@@ -18,20 +18,20 @@ const CompanyMetricsSection: React.FC<CompanyMetricsSectionProps> = ({ form }) =
   
   // Map the options to the required format
   const employeeRangeOptions = employeeRangeHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : employeeRangeHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : employeeRangeHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const turnoverRangeOptions = turnoverRangeHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : turnoverRangeHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : turnoverRangeHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const yearOptions = yearsHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : yearsHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : yearsHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const segmentOptions = segmentHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : segmentHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : segmentHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   // If no options are available, provide fallback options using the scheme generator
   const fallbackYearOptions = Array.from({ length: 51 }, (_, i) => ({

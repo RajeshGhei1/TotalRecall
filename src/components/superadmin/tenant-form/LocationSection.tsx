@@ -34,20 +34,32 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
   
   const regionOptions = regionHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...regionHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...regionHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
   
   const countryOptions = countryHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...countryHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...countryHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
   
   const localRegionOptions = localRegionHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...localRegionHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...localRegionHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
   
   const locationOptions = locationHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...locationHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...locationHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
 
   // Handle selection of the "Add New" option
   const handleSelectOption = (name: string, value: string) => {

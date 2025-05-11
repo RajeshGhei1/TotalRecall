@@ -33,16 +33,25 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
   
   const specializationOptions = specializationHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...specializationHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...specializationHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
   
   const serviceLineOptions = serviceLineHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...serviceLineHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...serviceLineHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
   
   const endUserOptions = endUserHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...endUserHook.options.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...endUserHook.options.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
 
   // Handle selection of the "Add New" option
   const handleSelectOption = (name: string, value: string) => {

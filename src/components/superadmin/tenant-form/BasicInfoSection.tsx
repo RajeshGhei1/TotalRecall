@@ -59,8 +59,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
   
   const companyStatusOptions = statusLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : [...companyStatusOptionsRaw.map(o => ({ value: o.value, label: o.label })), addNewOption];
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : [...companyStatusOptionsRaw.map(o => ({ 
+        value: o.value || 'unknown', 
+        label: o.label || o.value || 'Unknown' 
+      })), addNewOption];
 
   // Handle selection of the "Add New" option
   const handleSelectCompanyStatus = (value: string) => {
@@ -115,8 +118,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
             <SelectContent className="z-50 bg-background">
               <SelectItem value="none">None</SelectItem>
               {tenants.map((tenant) => (
-                <SelectItem key={tenant.id} value={tenant.id}>
-                  {tenant.name}
+                <SelectItem key={tenant.id} value={tenant.id || 'unknown'}>
+                  {tenant.name || 'Unnamed Tenant'}
                 </SelectItem>
               ))}
             </SelectContent>

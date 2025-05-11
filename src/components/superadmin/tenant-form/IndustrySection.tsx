@@ -18,20 +18,20 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
   
   // Map the options to the required format
   const industryOptions = industryHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : industryHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : industryHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const companySectorOptions = companySectorHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : companySectorHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : companySectorHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const companyTypeOptions = companyTypeHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : companyTypeHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : companyTypeHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   const entityTypeOptions = entityTypeHook.isLoading 
-    ? [{ value: '', label: 'Loading...' }] 
-    : entityTypeHook.options.map(o => ({ value: o.value, label: o.label }));
+    ? [{ value: 'loading', label: 'Loading...' }] 
+    : entityTypeHook.options.map(o => ({ value: o.value || 'unknown', label: o.label || o.value || 'Unknown' }));
   
   // Fallback options in case API fails or has no data
   const fallbackIndustryOptions = [
