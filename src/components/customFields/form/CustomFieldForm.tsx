@@ -85,7 +85,6 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     resolver: zodResolver(customFieldSchema),
     defaultValues,
   });
-
   const fieldType = form.watch('fieldType');
 
   const handleSubmit = (values: FieldFormValues) => {
