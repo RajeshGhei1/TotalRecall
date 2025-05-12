@@ -17,6 +17,7 @@ import NumberFieldInput from './fields/NumberFieldInput';
 import BooleanFieldInput from './fields/BooleanFieldInput';
 import DateFieldInput from './fields/DateFieldInput';
 import FormApplicabilitySelector from './fields/FormApplicabilitySelector';
+import { CustomField } from '@/hooks/customFields/types';
 
 // Schema for the form
 export const customFieldSchema = z.object({
@@ -92,13 +93,19 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     onSubmit(values);
   };
 
-  // Define a dummy field for the field components to use during form creation
-  const dummyField = {
+  // Define a complete dummy field for the field components to use during form creation
+  // This ensures all required properties of CustomField are present
+  const dummyField: CustomField = {
     id: 'new-field',
+    tenant_id: tenantId,
     name: form.watch('name') || 'New Field',
+    field_key: (form.watch('name') || 'new_field').toLowerCase().replace(/\s+/g, '_'),
     field_type: fieldType,
     required: form.watch('required'),
-    description: form.watch('info')
+    description: form.watch('info'),
+    options: {},
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   return (
@@ -112,12 +119,12 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             <FormTypeSelect form={form} />
 
             {/* Conditional Fields based on fieldType */}
-            {fieldType === 'text' && <TextFieldInput form={form} field={dummyField} fieldName="placeholder" />}
-            {fieldType === 'textarea' && <TextareaInput form={form} field={dummyField} fieldName="placeholder" />}
-            {fieldType === 'dropdown' && <DropdownFieldInput form={form} field={dummyField} fieldName="options" />}
-            {fieldType === 'number' && <NumberFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
-            {fieldType === 'boolean' && <BooleanFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
-            {fieldType === 'date' && <DateFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
+            {fieldType === 'text' && <TextFieldInput field={dummyField} form={form} fieldName="placeholder" />}
+            {fieldType === 'textarea' && <TextareaInput field={dummyField} form={form} fieldName="placeholder" />}
+            {fieldType === 'dropdown' && <DropdownFieldInput field={dummyField} form={form} fieldName="options" />}
+            {fieldType === 'number' && <NumberFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
+            {fieldType === 'boolean' && <BooleanFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
+            {fieldType === 'date' && <DateFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
             
             {/* Form Applicability Selector */}
             <FormApplicabilitySelector 

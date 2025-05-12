@@ -65,19 +65,25 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
       if (values.fieldType === 'dropdown' && values.options) {
         try {
           // If options is already an array, use it directly
-          let optionsArray;
+          let optionsArray = [];
+          
           if (Array.isArray(values.options)) {
             optionsArray = values.options;
           } else {
-            // Otherwise, assume it's a string and split it
-            optionsArray = values.options
-              .split(',')
-              .map(option => option.trim())
-              .filter(option => option)
-              .map(option => ({ label: option, value: option }));
+            // Otherwise, assume it's a string and parse it carefully
+            console.log("Options type:", typeof values.options);
+            // Only call split if options is a string
+            if (typeof values.options === 'string') {
+              optionsArray = values.options
+                .split(',')
+                .map(option => option.trim())
+                .filter(option => option)
+                .map(option => ({ label: option, value: option }));
+            }
           }
           options = { options: optionsArray };
         } catch (err) {
+          console.error('Error parsing options:', err);
           throw new Error('Invalid options format');
         }
       }

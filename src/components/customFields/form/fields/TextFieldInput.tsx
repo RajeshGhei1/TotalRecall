@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { CustomField } from '@/hooks/customFields/types';
 import { 
   FormField, 
   FormItem, 
@@ -11,9 +12,9 @@ import {
 import { Input } from '@/components/ui/input';
 
 interface TextFieldInputProps {
-  field: any; // The field configuration
-  form: any;  // The form context
-  fieldName: string; // The name of the field in the form
+  field: CustomField; 
+  form: any;
+  fieldName: string;
 }
 
 const TextFieldInput: React.FC<TextFieldInputProps> = ({ field, form, fieldName }) => {
@@ -28,7 +29,11 @@ const TextFieldInput: React.FC<TextFieldInputProps> = ({ field, form, fieldName 
             {field.required && <span className="text-destructive ml-1">*</span>}
           </FormLabel>
           <FormControl>
-            <Input {...formField} placeholder={`Enter ${field.name.toLowerCase()}`} />
+            <Input 
+              {...formField} 
+              value={formField.value || ''} 
+              placeholder={`Enter ${field.name.toLowerCase()}`} 
+            />
           </FormControl>
           {field.description && <FormDescription>{field.description}</FormDescription>}
           <FormMessage />

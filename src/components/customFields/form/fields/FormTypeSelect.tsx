@@ -25,20 +25,20 @@ const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
-      name="field_type"
+      name="fieldType"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Field Type</FormLabel>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value}
+            value={field.value as string || ""}
           >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select field type" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="z-[1000] bg-white">
               <SelectItem value="text">Text</SelectItem>
               <SelectItem value="textarea">Text Area</SelectItem>
               <SelectItem value="number">Number</SelectItem>
