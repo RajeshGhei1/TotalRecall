@@ -27,7 +27,9 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
   isSubmitting, 
   onCancel 
 }) => {
-  const { customFields, isLoading: customFieldsLoading } = useCustomFields('global');
+  const { customFields, isLoading: customFieldsLoading } = useCustomFields('global', {
+    formContext: 'tenant_creation'
+  });
   
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchema),
@@ -146,6 +148,7 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
               <CustomFieldsForm
                 tenantId="global"
                 entityType="tenant"
+                formContext="tenant_creation"
                 form={form}
               />
             )}

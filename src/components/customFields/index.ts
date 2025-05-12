@@ -1,4 +1,4 @@
 
-export { default as CustomFieldForm } from './CustomFieldForm';
-export { default as CustomFieldList } from './CustomFieldList';
-export { default as CustomFieldsManager } from '../CustomFieldsManager';
+// Re-export the CustomFieldManager component
+export { default as CustomFieldsManager } from "../CustomFieldsManager";
+export { availableForms } from "./CustomFieldForm";

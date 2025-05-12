@@ -49,6 +49,7 @@ export type Database = {
       }
       custom_fields: {
         Row: {
+          applicable_forms: Json | null
           created_at: string
           description: string | null
           field_key: string
@@ -61,6 +62,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          applicable_forms?: Json | null
           created_at?: string
           description?: string | null
           field_key: string
@@ -73,6 +75,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          applicable_forms?: Json | null
           created_at?: string
           description?: string | null
           field_key?: string

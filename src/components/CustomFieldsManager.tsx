@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,21 +14,23 @@ interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
+  applicable_forms?: string[];
   options?: Record<string, any>;
   description?: string;
 }
 
 interface CustomFieldsManagerProps {
   tenantId: string;
+  formContext?: string;
 }
 
-const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId }) => {
+const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, formContext }) => {
   const [isAddingField, setIsAddingField] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch custom fields for this tenant
   const { data: customFields = [], isLoading } = useQuery({
-    queryKey: ['customFields', tenantId],
+    queryKey: ['customFields', tenantId, formContext],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('custom_fields')
@@ -38,7 +39,21 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId }) =
         .order('name');
 
       if (error) throw error;
-      return data as CustomField[];
+      
+      // If a formContext is specified, filter fields to only those applicable to this form
+      let fields = data as CustomField[];
+      if (formContext) {
+        fields = fields.filter(field => {
+          // If applicable_forms is empty array or null, field applies to all forms
+          if (!field.applicable_forms || field.applicable_forms.length === 0) {
+            return true;
+          }
+          // Otherwise, check if this form is in the applicable_forms array
+          return field.applicable_forms.includes(formContext);
+        });
+      }
+      
+      return fields;
     },
   });
 
@@ -61,6 +76,11 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId }) =
         }
       }
 
+      // Store the applicable forms array
+      const applicable_forms = values.applicable_forms && values.applicable_forms.length > 0 
+        ? values.applicable_forms 
+        : [];
+
       const { data, error } = await supabase
         .from('custom_fields')
         .insert({
@@ -71,6 +91,7 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId }) =
           required: values.required,
           description: values.description,
           options: options,
+          applicable_forms: applicable_forms,
         })
         .select()
         .single();

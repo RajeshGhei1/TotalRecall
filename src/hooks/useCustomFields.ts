@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -10,6 +9,7 @@ interface CustomField {
   field_type: string;
   required: boolean;
   options?: Record<string, any>;
+  applicable_forms?: string[];
   description?: string;
   created_at: string;
   updated_at: string;
@@ -23,17 +23,22 @@ interface CustomFieldValue {
   value: any;
 }
 
-export function useCustomFields(tenantId?: string) {
+interface UseCustomFieldsOptions {
+  formContext?: string;
+}
+
+export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOptions) {
   const queryClient = useQueryClient();
+  const { formContext } = options || {};
 
   // Default to "global" if no tenantId is provided
   const effectiveTenantId = tenantId || "global";
   
-  console.log(`Fetching custom fields for tenant: ${effectiveTenantId}`);
+  console.log(`Fetching custom fields for tenant: ${effectiveTenantId}, formContext: ${formContext || 'all'}`);
 
   // Fetch custom fields for a tenant
   const { data: customFields = [], isLoading } = useQuery({
-    queryKey: ['customFields', effectiveTenantId],
+    queryKey: ['customFields', effectiveTenantId, formContext],
     queryFn: async () => {
       console.log(`Starting custom fields query for tenant: ${effectiveTenantId}`);
       
@@ -61,7 +66,22 @@ export function useCustomFields(tenantId?: string) {
           }
           
           console.log(`Retrieved ${globalData?.length || 0} global custom fields`);
-          return globalData as CustomField[];
+          
+          // Filter by form context if provided
+          let filteredData = globalData as CustomField[];
+          if (formContext) {
+            filteredData = filteredData.filter(field => {
+              // If applicable_forms is empty array or null, field applies to all forms
+              if (!field.applicable_forms || field.applicable_forms.length === 0) {
+                return true;
+              }
+              // Otherwise, check if this form is in the applicable_forms array
+              return field.applicable_forms.includes(formContext);
+            });
+            console.log(`Filtered to ${filteredData.length} fields for form context: ${formContext}`);
+          }
+          
+          return filteredData;
         }
         
         console.error('Error fetching custom fields:', error);
@@ -69,7 +89,22 @@ export function useCustomFields(tenantId?: string) {
       }
       
       console.log(`Retrieved ${data?.length || 0} custom fields for tenant: ${effectiveTenantId}`);
-      return data as CustomField[];
+      
+      // Filter by form context if provided
+      let filteredData = data as CustomField[];
+      if (formContext) {
+        filteredData = filteredData.filter(field => {
+          // If applicable_forms is empty array or null, field applies to all forms
+          if (!field.applicable_forms || field.applicable_forms.length === 0) {
+            return true;
+          }
+          // Otherwise, check if this form is in the applicable_forms array
+          return field.applicable_forms.includes(formContext);
+        });
+        console.log(`Filtered to ${filteredData.length} fields for form context: ${formContext}`);
+      }
+      
+      return filteredData;
     },
     enabled: !!effectiveTenantId,
   });
@@ -86,7 +121,7 @@ export function useCustomFields(tenantId?: string) {
         id, 
         value,
         field_id,
-        custom_fields(id, name, field_key, field_type, required, options)
+        custom_fields(id, name, field_key, field_type, required, options, applicable_forms)
       `)
       .eq('entity_type', entityType)
       .eq('entity_id', entityId);
@@ -97,6 +132,23 @@ export function useCustomFields(tenantId?: string) {
     }
     
     console.log(`Retrieved ${data?.length || 0} custom field values for ${entityType}:${entityId}`, data);
+    
+    // If formContext is provided, filter the values to only include fields applicable to this form
+    if (formContext) {
+      const filteredData = data.filter(item => {
+        const field = item.custom_fields;
+        // If applicable_forms is empty array or null, field applies to all forms
+        if (!field.applicable_forms || field.applicable_forms.length === 0) {
+          return true;
+        }
+        // Otherwise, check if this form is in the applicable_forms array
+        return field.applicable_forms.includes(formContext);
+      });
+      
+      console.log(`Filtered to ${filteredData.length} field values for form context: ${formContext}`);
+      return filteredData;
+    }
+    
     return data;
   };
 
@@ -113,7 +165,7 @@ export function useCustomFields(tenantId?: string) {
     // Get all custom fields
     const { data: fields, error: fieldsError } = await supabase
       .from('custom_fields')
-      .select('id, field_key')
+      .select('id, field_key, applicable_forms')
       .or(`tenant_id.is.null,tenant_id.eq.${effectiveTenantId}`);
 
     if (fieldsError) {
@@ -133,9 +185,21 @@ export function useCustomFields(tenantId?: string) {
       throw existingError;
     }
 
-    // Create a map of field_key to field_id
+    // Create a map of field_key to field_id and check form context if provided
     const fieldKeyToId = fields.reduce((acc, field) => {
-      acc[field.field_key] = field.id;
+      // If formContext is provided, only include fields applicable to this form
+      if (formContext) {
+        if (!field.applicable_forms || field.applicable_forms.length === 0) {
+          // Field applies to all forms
+          acc[field.field_key] = field.id;
+        } else if (field.applicable_forms.includes(formContext)) {
+          // Field applies to this specific form
+          acc[field.field_key] = field.id;
+        }
+      } else {
+        // No form context filter, include all fields
+        acc[field.field_key] = field.id;
+      }
       return acc;
     }, {} as Record<string, string>);
 
@@ -152,8 +216,8 @@ export function useCustomFields(tenantId?: string) {
     for (const [fieldKey, value] of Object.entries(values)) {
       const fieldId = fieldKeyToId[fieldKey];
       if (!fieldId) {
-        console.warn(`Field key ${fieldKey} not found in database`);
-        continue;  // Skip if field doesn't exist
+        console.warn(`Field key ${fieldKey} not found in database or not applicable to the form context`);
+        continue;  // Skip if field doesn't exist or not applicable to this form
       }
 
       const existingId = fieldIdToValueId[fieldId];

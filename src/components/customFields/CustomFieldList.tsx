@@ -1,7 +1,17 @@
 
 import React from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { formatFormsList } from '@/utils/formUtils';
 
 interface CustomField {
   id: string;
@@ -9,65 +19,73 @@ interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
+  applicable_forms?: string[];
   description?: string;
 }
 
 interface CustomFieldListProps {
   fields: CustomField[];
   isLoading: boolean;
-  onDelete: (fieldId: string) => void;
+  onDelete: (id: string) => void;
   isDeleting: boolean;
 }
 
-const CustomFieldList: React.FC<CustomFieldListProps> = ({ 
-  fields, 
-  isLoading, 
+const CustomFieldList: React.FC<CustomFieldListProps> = ({
+  fields,
+  isLoading,
   onDelete,
-  isDeleting
+  isDeleting,
 }) => {
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
+    return <div>Loading custom fields...</div>;
   }
 
   if (fields.length === 0) {
-    return (
-      <div className="text-center py-8 border rounded-md">
-        <p className="text-muted-foreground">No custom fields defined yet</p>
-      </div>
-    );
+    return <div>No custom fields have been defined yet.</div>;
   }
 
   return (
-    <div className="grid gap-4">
-      {fields.map((field) => (
-        <div
-          key={field.id}
-          className="flex justify-between items-center p-4 border rounded-md"
-        >
-          <div>
-            <div className="font-medium">{field.name}</div>
-            <div className="text-sm text-muted-foreground">
-              {field.field_key} ({field.field_type})
-              {field.required && <span className="ml-2 text-destructive">*Required</span>}
-            </div>
-            {field.description && (
-              <div className="text-sm mt-1">{field.description}</div>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(field.id)}
-            disabled={isDeleting}
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
+    <div className="border rounded-md">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Display Name</TableHead>
+            <TableHead>Field Key</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Required</TableHead>
+            <TableHead>Used In</TableHead>
+            <TableHead className="w-24">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {fields.map((field) => (
+            <TableRow key={field.id}>
+              <TableCell className="font-medium">{field.name}</TableCell>
+              <TableCell className="font-mono text-sm">{field.field_key}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{field.field_type}</Badge>
+              </TableCell>
+              <TableCell>{field.required ? 'Yes' : 'No'}</TableCell>
+              <TableCell>
+                <span className="text-sm text-muted-foreground">
+                  {formatFormsList(field.applicable_forms || [])}
+                </span>
+              </TableCell>
+              <TableCell>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  disabled={isDeleting}
+                  onClick={() => onDelete(field.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

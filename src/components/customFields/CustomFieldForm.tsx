@@ -30,7 +30,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
+
+// Define available forms in the system
+export const availableForms = [
+  { id: 'tenant_creation', label: 'Tenant Creation Form' },
+  { id: 'tenant_edit', label: 'Tenant Edit Form' },
+  { id: 'talent_profile', label: 'Talent Profile' },
+  { id: 'company_details', label: 'Company Details' },
+  { id: 'job_posting', label: 'Job Posting' },
+];
 
 const fieldSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -42,6 +52,7 @@ const fieldSchema = z.object({
   required: z.boolean().default(false),
   description: z.string().optional(),
   options: z.string().optional(),
+  applicable_forms: z.array(z.string()).optional().default([]),
 });
 
 export type FieldFormValues = z.infer<typeof fieldSchema>;
@@ -66,6 +77,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
       required: false,
       description: '',
       options: '',
+      applicable_forms: [],
     },
   });
 
@@ -161,6 +173,57 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
                 )}
               />
             )}
+
+            <FormField
+              control={form.control}
+              name="applicable_forms"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Apply to Forms</FormLabel>
+                    <FormDescription>
+                      Select which forms this field should appear in (leave empty to show in all forms)
+                    </FormDescription>
+                  </div>
+                  <div className="space-y-2">
+                    {availableForms.map((form) => (
+                      <FormField
+                        key={form.id}
+                        control={form.control}
+                        name="applicable_forms"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={form.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(form.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, form.id])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== form.id
+                                          )
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {form.label}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
