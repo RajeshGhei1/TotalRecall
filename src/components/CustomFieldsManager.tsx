@@ -63,9 +63,9 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
     mutationFn: async (values: FieldFormValues) => {
       // Parse options if field type is dropdown
       let options = null;
-      if (values.fieldType === 'dropdown' && values.options) {
+      if (values.fieldType === 'dropdown') {
         try {
-          // If options is already an array, use it directly
+          // Initialize options array
           let optionsArray: Array<{ label: string, value: string }> = [];
           
           if (Array.isArray(values.options)) {
@@ -75,7 +75,7 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
               value: option.value || option.label || ''
             }));
           } else if (typeof values.options === 'string') {
-            // Only process if it's a string
+            // Process string options
             optionsArray = values.options
               .split(',')
               .map(option => option.trim())
