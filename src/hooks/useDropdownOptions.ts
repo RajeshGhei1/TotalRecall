@@ -156,6 +156,49 @@ export function useDropdownOptions(categoryName?: string) {
     },
   });
 
+  // Add a new category
+  const addCategory = useMutation({
+    mutationFn: async ({ 
+      name, 
+      description = null 
+    }: { 
+      name: string; 
+      description?: string | null;
+    }) => {
+      console.log(`Adding new category: ${name}`);
+      
+      const { data, error } = await supabase
+        .from('dropdown_option_categories')
+        .insert([{
+          name,
+          description,
+        }])
+        .select();
+
+      if (error) {
+        console.error('Error adding category:', error);
+        throw error;
+      }
+      
+      console.log('Successfully added category:', data[0]);
+      return data[0] as DropdownCategory;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dropdown-categories'] });
+      toast({
+        title: 'Category added',
+        description: 'New dropdown category has been added successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to add category',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Get category ID by name
   const getCategoryIdByName = async (name: string): Promise<string | null> => {
     console.log(`Looking up category ID for name: ${name}`);
@@ -189,6 +232,7 @@ export function useDropdownOptions(categoryName?: string) {
     isLoading: categoriesLoading || optionsLoading,
     isAddingOption,
     addOption,
+    addCategory,
     getOptionsByCategoryId,
     getCategoryIdByName
   };

@@ -23,13 +23,16 @@ export const useCustomFieldsMutations = (tenantId: string) => {
               label: option.label || option.value || '',
               value: option.value || option.label || ''
             }));
-          } else if (typeof values.options === 'string' && values.options.length > 0) {
-            // Process string options - adding type guard to ensure options is string and not empty
-            optionsArray = values.options
-              .split(',')
-              .map(option => option.trim())
-              .filter(option => option)
-              .map(option => ({ label: option, value: option }));
+          } else if (typeof values.options === 'string') {
+            // Process string options with proper type guard
+            const optionsString = values.options; // This helps TypeScript understand the type
+            if (optionsString.length > 0) {
+              optionsArray = optionsString
+                .split(',')
+                .map(option => option.trim())
+                .filter(option => option)
+                .map(option => ({ label: option, value: option }));
+            }
           }
           options = { options: optionsArray };
         } catch (err) {
