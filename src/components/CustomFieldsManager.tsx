@@ -66,10 +66,14 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
       if (values.fieldType === 'dropdown' && values.options) {
         try {
           // If options is already an array, use it directly
-          let optionsArray: { label: string, value: string }[] = [];
+          let optionsArray: Array<{ label: string, value: string }> = [];
           
           if (Array.isArray(values.options)) {
-            optionsArray = values.options;
+            // Ensure each option has both label and value as non-optional
+            optionsArray = values.options.map(option => ({
+              label: option.label || option.value || '',
+              value: option.value || option.label || ''
+            }));
           } else if (typeof values.options === 'string') {
             // Only process if it's a string
             optionsArray = values.options
