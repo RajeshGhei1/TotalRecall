@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +66,7 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
       if (values.fieldType === 'dropdown' && values.options) {
         try {
           // If options is already an array, use it directly
-          let optionsArray = [];
+          let optionsArray: { label: string, value: string }[] = [];
           
           if (Array.isArray(values.options)) {
             optionsArray = values.options;
