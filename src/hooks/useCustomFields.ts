@@ -9,7 +9,7 @@ interface CustomField {
   field_type: string;
   required: boolean;
   options?: Record<string, any>;
-  applicable_forms?: string[];
+  applicable_forms?: string[] | null;
   description?: string;
   created_at: string;
   updated_at: string;
@@ -69,14 +69,14 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
           
           // Filter by form context if provided
           let filteredData = globalData as CustomField[];
-          if (formContext) {
+          if (formContext && filteredData) {
             filteredData = filteredData.filter(field => {
               // If applicable_forms is empty array or null, field applies to all forms
-              if (!field.applicable_forms || field.applicable_forms.length === 0) {
+              if (!field.applicable_forms || (Array.isArray(field.applicable_forms) && field.applicable_forms.length === 0)) {
                 return true;
               }
               // Otherwise, check if this form is in the applicable_forms array
-              return field.applicable_forms.includes(formContext);
+              return Array.isArray(field.applicable_forms) && field.applicable_forms.includes(formContext);
             });
             console.log(`Filtered to ${filteredData.length} fields for form context: ${formContext}`);
           }
@@ -92,14 +92,14 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
       
       // Filter by form context if provided
       let filteredData = data as CustomField[];
-      if (formContext) {
+      if (formContext && filteredData) {
         filteredData = filteredData.filter(field => {
           // If applicable_forms is empty array or null, field applies to all forms
-          if (!field.applicable_forms || field.applicable_forms.length === 0) {
+          if (!field.applicable_forms || (Array.isArray(field.applicable_forms) && field.applicable_forms.length === 0)) {
             return true;
           }
           // Otherwise, check if this form is in the applicable_forms array
-          return field.applicable_forms.includes(formContext);
+          return Array.isArray(field.applicable_forms) && field.applicable_forms.includes(formContext);
         });
         console.log(`Filtered to ${filteredData.length} fields for form context: ${formContext}`);
       }
@@ -138,11 +138,11 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
       const filteredData = data.filter(item => {
         const field = item.custom_fields;
         // If applicable_forms is empty array or null, field applies to all forms
-        if (!field.applicable_forms || field.applicable_forms.length === 0) {
+        if (!field.applicable_forms || (Array.isArray(field.applicable_forms) && field.applicable_forms.length === 0)) {
           return true;
         }
         // Otherwise, check if this form is in the applicable_forms array
-        return field.applicable_forms.includes(formContext);
+        return Array.isArray(field.applicable_forms) && field.applicable_forms.includes(formContext);
       });
       
       console.log(`Filtered to ${filteredData.length} field values for form context: ${formContext}`);
@@ -189,10 +189,10 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
     const fieldKeyToId = fields.reduce((acc, field) => {
       // If formContext is provided, only include fields applicable to this form
       if (formContext) {
-        if (!field.applicable_forms || field.applicable_forms.length === 0) {
+        if (!field.applicable_forms || (Array.isArray(field.applicable_forms) && field.applicable_forms.length === 0)) {
           // Field applies to all forms
           acc[field.field_key] = field.id;
-        } else if (field.applicable_forms.includes(formContext)) {
+        } else if (Array.isArray(field.applicable_forms) && field.applicable_forms.includes(formContext)) {
           // Field applies to this specific form
           acc[field.field_key] = field.id;
         }

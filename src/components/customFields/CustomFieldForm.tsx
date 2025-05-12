@@ -186,33 +186,33 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
                     </FormDescription>
                   </div>
                   <div className="space-y-2">
-                    {availableForms.map((form) => (
+                    {availableForms.map((formOption) => (
                       <FormField
-                        key={form.id}
+                        key={formOption.id}
                         control={form.control}
                         name="applicable_forms"
                         render={({ field }) => {
                           return (
                             <FormItem
-                              key={form.id}
+                              key={formOption.id}
                               className="flex flex-row items-start space-x-3 space-y-0"
                             >
                               <FormControl>
                                 <Checkbox
-                                  checked={field.value?.includes(form.id)}
+                                  checked={field.value?.includes(formOption.id)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...field.value, form.id])
+                                      ? field.onChange([...field.value, formOption.id])
                                       : field.onChange(
                                           field.value?.filter(
-                                            (value) => value !== form.id
+                                            (value) => value !== formOption.id
                                           )
                                         );
                                   }}
                                 />
                               </FormControl>
                               <FormLabel className="font-normal">
-                                {form.label}
+                                {formOption.label}
                               </FormLabel>
                             </FormItem>
                           );

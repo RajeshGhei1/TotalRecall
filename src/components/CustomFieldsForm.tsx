@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useQuery } from '@tanstack/react-query';
@@ -27,6 +26,7 @@ interface CustomFieldsFormProps {
   tenantId: string;
   entityType: string;
   entityId?: string;
+  formContext?: string; // Add formContext as an optional prop
   form: any;
 }
 
@@ -34,13 +34,16 @@ const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
   tenantId,
   entityType,
   entityId,
+  formContext,
   form,
 }) => {
-  const { customFields, isLoading, getCustomFieldValues } = useCustomFields(tenantId);
+  const { customFields, isLoading, getCustomFieldValues } = useCustomFields(tenantId, {
+    formContext // Pass formContext to the hook
+  });
 
   // Fetch existing values if entityId is provided
   const { data: fieldValues = [] } = useQuery({
-    queryKey: ['customFieldValues', entityType, entityId],
+    queryKey: ['customFieldValues', entityType, entityId, formContext],
     queryFn: async () => {
       if (!entityId) return [];
       return await getCustomFieldValues(entityType, entityId);
