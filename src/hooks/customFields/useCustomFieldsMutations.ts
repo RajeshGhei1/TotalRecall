@@ -24,10 +24,12 @@ export const useCustomFieldsMutations = (tenantId: string) => {
               value: option.value || option.label || ''
             }));
           } else if (typeof values.options === 'string') {
-            // Process string options with proper type guard
-            const optionsString = values.options; // This helps TypeScript understand the type
-            if (optionsString.length > 0) {
+            // Process string options with proper type safety
+            const optionsString = values.options;
+            // Only proceed if it's a non-empty string
+            if (optionsString && optionsString.trim().length > 0) {
               optionsArray = optionsString
+                .trim()
                 .split(',')
                 .map(option => option.trim())
                 .filter(option => option)
