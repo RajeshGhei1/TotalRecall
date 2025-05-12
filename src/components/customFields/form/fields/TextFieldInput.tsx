@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { CustomField } from '@/hooks/customFields/types';
 import { 
   FormField, 
   FormItem, 
@@ -12,9 +11,9 @@ import {
 import { Input } from '@/components/ui/input';
 
 interface TextFieldInputProps {
-  field: CustomField;
-  form: any;
-  fieldName: string;
+  field: any; // The field configuration
+  form: any;  // The form context
+  fieldName: string; // The name of the field in the form
 }
 
 const TextFieldInput: React.FC<TextFieldInputProps> = ({ field, form, fieldName }) => {

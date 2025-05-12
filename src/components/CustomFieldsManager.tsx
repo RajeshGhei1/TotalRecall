@@ -62,14 +62,20 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
     mutationFn: async (values: FieldFormValues) => {
       // Parse options if field type is dropdown
       let options = null;
-      if (values.field_type === 'dropdown' && values.options) {
+      if (values.fieldType === 'dropdown' && values.options) {
         try {
-          // Convert comma-separated values to array of objects
-          const optionsArray = values.options
-            .split(',')
-            .map(option => option.trim())
-            .filter(option => option)
-            .map(option => ({ label: option, value: option }));
+          // If options is already an array, use it directly
+          let optionsArray;
+          if (Array.isArray(values.options)) {
+            optionsArray = values.options;
+          } else {
+            // Otherwise, assume it's a string and split it
+            optionsArray = values.options
+              .split(',')
+              .map(option => option.trim())
+              .filter(option => option)
+              .map(option => ({ label: option, value: option }));
+          }
           options = { options: optionsArray };
         } catch (err) {
           throw new Error('Invalid options format');
@@ -77,8 +83,8 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
       }
 
       // Store the applicable forms array
-      const applicable_forms = values.applicable_forms && values.applicable_forms.length > 0 
-        ? values.applicable_forms 
+      const applicable_forms = values.forms && values.forms.length > 0 
+        ? values.forms 
         : [];
 
       const { data, error } = await supabase
@@ -86,10 +92,10 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
         .insert({
           tenant_id: tenantId,
           name: values.name,
-          field_key: values.field_key,
-          field_type: values.field_type,
+          field_key: values.name.toLowerCase().replace(/\s+/g, '_'),
+          field_type: values.fieldType,
           required: values.required,
-          description: values.description,
+          description: values.info,
           options: options,
           applicable_forms: applicable_forms,
         })
@@ -179,6 +185,7 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
           onSubmit={handleAddField}
           onCancel={() => setIsAddingField(false)}
           isSubmitting={addFieldMutation.isPending}
+          tenantId={tenantId}
         />
       )}
 

@@ -39,15 +39,15 @@ const BasicFieldInfo: React.FC<BasicFieldInfoProps> = ({ form }) => {
 
       <FormField
         control={form.control}
-        name="field_key"
+        name="label"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Field Key</FormLabel>
+            <FormLabel>Field Label</FormLabel>
             <FormControl>
               <Input {...field} placeholder="e.g., certification" />
             </FormControl>
             <FormDescription>
-              Unique identifier used in database and code (letters, numbers, underscores only)
+              Label displayed next to the field in forms
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -56,7 +56,7 @@ const BasicFieldInfo: React.FC<BasicFieldInfoProps> = ({ form }) => {
 
       <FormField
         control={form.control}
-        name="description"
+        name="info"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>

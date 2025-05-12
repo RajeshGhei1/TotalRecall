@@ -42,13 +42,14 @@ export const customFieldSchema = z.object({
 
 export type FieldFormValues = z.infer<typeof customFieldSchema>;
 
+// Define available forms for the application
 export const availableForms = [
-  { value: 'talent_form', label: 'Talent Profile' },
-  { value: 'job_form', label: 'Job Listing' },
-  { value: 'company_form', label: 'Company Profile' },
-  { value: 'tenants_form', label: 'Tenant Settings' },
-  { value: 'application_form', label: 'Job Application' },
-  { value: 'candidate_form', label: 'Candidate Profile' },
+  { id: 'talent_form', label: 'Talent Profile' },
+  { id: 'job_form', label: 'Job Listing' },
+  { id: 'company_form', label: 'Company Profile' },
+  { id: 'tenants_form', label: 'Tenant Settings' },
+  { id: 'application_form', label: 'Job Application' },
+  { id: 'candidate_form', label: 'Candidate Profile' },
 ];
 
 interface CustomFieldFormProps {
@@ -91,6 +92,15 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     onSubmit(values);
   };
 
+  // Define a dummy field for the field components to use during form creation
+  const dummyField = {
+    id: 'new-field',
+    name: form.watch('name') || 'New Field',
+    field_type: fieldType,
+    required: form.watch('required'),
+    description: form.watch('info')
+  };
+
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <FormHeader />
@@ -102,17 +112,17 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             <FormTypeSelect form={form} />
 
             {/* Conditional Fields based on fieldType */}
-            {fieldType === 'text' && <TextFieldInput form={form} />}
-            {fieldType === 'textarea' && <TextareaInput form={form} />}
-            {fieldType === 'dropdown' && <DropdownFieldInput form={form} />}
-            {fieldType === 'number' && <NumberFieldInput form={form} />}
-            {fieldType === 'boolean' && <BooleanFieldInput form={form} />}
-            {fieldType === 'date' && <DateFieldInput form={form} />}
+            {fieldType === 'text' && <TextFieldInput form={form} field={dummyField} fieldName="placeholder" />}
+            {fieldType === 'textarea' && <TextareaInput form={form} field={dummyField} fieldName="placeholder" />}
+            {fieldType === 'dropdown' && <DropdownFieldInput form={form} field={dummyField} fieldName="options" />}
+            {fieldType === 'number' && <NumberFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
+            {fieldType === 'boolean' && <BooleanFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
+            {fieldType === 'date' && <DateFieldInput form={form} field={dummyField} fieldName="defaultValue" />}
             
             {/* Form Applicability Selector */}
             <FormApplicabilitySelector 
               form={form} 
-              availableForms={availableForms} 
+              availableForms={availableForms}
             />
           </div>
           

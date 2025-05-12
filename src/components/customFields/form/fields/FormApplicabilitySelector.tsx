@@ -11,17 +11,22 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { UseFormReturn } from 'react-hook-form';
 import { FieldFormValues } from '../CustomFieldForm';
-import { availableForms } from '../CustomFieldForm';
+
+interface FormOption {
+  id: string;
+  label: string;
+}
 
 interface FormApplicabilitySelectorProps {
   form: UseFormReturn<FieldFormValues>;
+  availableForms: FormOption[];
 }
 
-const FormApplicabilitySelector: React.FC<FormApplicabilitySelectorProps> = ({ form }) => {
+const FormApplicabilitySelector: React.FC<FormApplicabilitySelectorProps> = ({ form, availableForms }) => {
   return (
     <FormField
       control={form.control}
-      name="applicable_forms"
+      name="forms"
       render={() => (
         <FormItem>
           <div className="mb-4">
@@ -35,7 +40,7 @@ const FormApplicabilitySelector: React.FC<FormApplicabilitySelectorProps> = ({ f
               <FormField
                 key={formOption.id}
                 control={form.control}
-                name="applicable_forms"
+                name="forms"
                 render={({ field }) => {
                   return (
                     <FormItem
