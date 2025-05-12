@@ -14,6 +14,7 @@ import SocialMediaSettings from "./settings/SocialMediaSettings";
 import CommunicationSettings from "./settings/CommunicationSettings";
 import OutreachSettings from "./settings/OutreachSettings";
 import ApiSettings from "./settings/ApiSettings";
+import CustomFieldsSettings from "./settings/CustomFieldsSettings";
 import SetupWizard from "./settings/setup-wizard/SetupWizard";
 
 const TenantAdminSettings = () => {
@@ -106,6 +107,13 @@ const TenantAdminSettings = () => {
                   Outreach
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="customfields" 
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+                >
+                  <Database className="h-4 w-4" />
+                  Custom Fields
+                </TabsTrigger>
+                <TabsTrigger 
                   value="api" 
                   className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-muted-foreground hover:text-primary data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
@@ -130,6 +138,10 @@ const TenantAdminSettings = () => {
 
               <TabsContent value="outreach" className="mt-0 pt-4">
                 <OutreachSettings />
+              </TabsContent>
+
+              <TabsContent value="customfields" className="mt-0 pt-4">
+                <CustomFieldsSettings />
               </TabsContent>
 
               <TabsContent value="api" className="mt-0 pt-4">
