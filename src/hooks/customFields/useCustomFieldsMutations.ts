@@ -23,8 +23,8 @@ export const useCustomFieldsMutations = (tenantId: string) => {
               label: option.label || option.value || '',
               value: option.value || option.label || ''
             }));
-          } else if (typeof values.options === 'string' && values.options) {
-            // Process string options - only if it's actually a string with content
+          } else if (typeof values.options === 'string') {
+            // Process string options - adding type guard to ensure options is string
             optionsArray = values.options
               .split(',')
               .map(option => option.trim())
