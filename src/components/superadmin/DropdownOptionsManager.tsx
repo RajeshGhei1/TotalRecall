@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,11 @@ const DropdownOptionsManager = () => {
   const queryClient = useQueryClient();
   
   const { categories, options, isLoading, getCategoryIdByName } = useDropdownOptions(selectedCategory);
+
+  useEffect(() => {
+    console.log("DropdownOptionsManager mounted");
+    console.log("Categories available:", categories);
+  }, [categories]);
 
   // Add a new option
   const addOption = useMutation({
@@ -113,6 +118,8 @@ const DropdownOptionsManager = () => {
     }
   };
 
+  console.log("Rendering DropdownOptionsManager with categories:", categories);
+
   return (
     <Card>
       <CardHeader>
@@ -123,17 +130,24 @@ const DropdownOptionsManager = () => {
           <label className="text-sm font-medium">Select Category</label>
           <Select
             value={selectedCategory}
-            onValueChange={setSelectedCategory}
+            onValueChange={(value) => {
+              console.log("Category selected:", value);
+              setSelectedCategory(value);
+            }}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a category" />
             </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.name}>
-                  {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </SelectItem>
-              ))}
+            <SelectContent className="bg-white" style={{ zIndex: 1000 }}>
+              {categories.length === 0 ? (
+                <SelectItem value="no-categories">No categories available</SelectItem>
+              ) : (
+                categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
+                    {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
