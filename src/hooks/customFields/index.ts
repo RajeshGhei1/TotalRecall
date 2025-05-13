@@ -1,7 +1,8 @@
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchCustomFields, filterFieldsByFormContext, fetchCustomFieldValues } from './fetchHelpers';
 import { saveCustomFieldValues } from './fieldOperations';
-import { UseCustomFieldsOptions, UseCustomFieldsReturn } from './types';
+import { UseCustomFieldsOptions, UseCustomFieldsReturn, CustomField } from './types';
 
 /**
  * Hook for managing custom fields and their values
@@ -16,7 +17,7 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
   console.log(`Fetching custom fields for tenant: ${effectiveTenantId}, formContext: ${formContext || 'all'}`);
 
   // Fetch custom fields for a tenant
-  const { data: allFields = [], isLoading } = useQuery({
+  const { data: customFields = [], isLoading } = useQuery({
     queryKey: ['customFields', effectiveTenantId, formContext],
     queryFn: async () => {
       const fields = await fetchCustomFields(effectiveTenantId);
@@ -61,7 +62,7 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
   };
 
   return {
-    customFields: allFields,
+    customFields,
     isLoading,
     getCustomFieldValues,
     saveCustomFieldValues: saveValues

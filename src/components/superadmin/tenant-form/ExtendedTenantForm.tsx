@@ -146,9 +146,8 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
               </div>
             ) : (
               <CustomFieldsForm
-                tenantId="global"
-                entityType="tenant"
                 formContext="tenant_creation"
+                entityType="tenant"
                 form={form}
               />
             )}

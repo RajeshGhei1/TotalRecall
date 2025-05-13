@@ -1,19 +1,17 @@
 
 import React from 'react';
-import {
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
 
-const FormHeader: React.FC = () => {
+interface FormHeaderProps {
+  title?: string;
+  description?: string;
+}
+
+const FormHeader: React.FC<FormHeaderProps> = ({ title, description }) => {
   return (
-    <CardHeader>
-      <CardTitle>Add Custom Field</CardTitle>
-      <CardDescription>
-        Define a new custom field for this tenant
-      </CardDescription>
-    </CardHeader>
+    <div className="mb-6">
+      {title && <h3 className="text-lg font-medium">{title}</h3>}
+      {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+    </div>
   );
 };
 

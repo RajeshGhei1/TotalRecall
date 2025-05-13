@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -456,7 +455,6 @@ const TalentForm: React.FC<TalentFormProps> = ({ talentId, onSuccess }) => {
         {tenantId && isEditMode && talentId && (
           <Card className="p-6">
             <CustomFieldsForm
-              tenantId={tenantId}
               entityType="talent"
               entityId={talentId}
               form={form}
