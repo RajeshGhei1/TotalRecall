@@ -3,9 +3,14 @@ import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
+
+// Define valid table names based on your Supabase schema
+type ValidTableName = 'tenants' | 'tenant_settings' | 'tenant_communication' | 'tenant_social_media' | 
+                     'tenant_outreach' | 'tenant_api_settings';
 
 export function useTenantSettings<T extends Record<string, any>>(
-  tableOrView: string,
+  tableName: ValidTableName,
   defaultValue: T,
   keyField: string = "id"
 ) {
@@ -29,15 +34,16 @@ export function useTenantSettings<T extends Record<string, any>>(
 
   // Fetch tenant settings query
   const { isLoading: isLoadingSettings } = useQuery({
-    queryKey: [tableOrView, selectedTenantId],
+    queryKey: [tableName, selectedTenantId],
     queryFn: async () => {
       if (!selectedTenantId) return null;
       
-      const { data, error } = await supabase
-        .from(tableOrView)
+      // Use type assertion to handle the dynamic table name
+      const { data, error } = await (supabase
+        .from(tableName as any)
         .select('*')
         .eq('tenant_id', selectedTenantId)
-        .maybeSingle();
+        .maybeSingle());
 
       if (error) throw error;
       return data;
@@ -65,30 +71,30 @@ export function useTenantSettings<T extends Record<string, any>>(
       };
       
       // Check if record exists
-      const { data: existingData } = await supabase
-        .from(tableOrView)
+      const { data: existingData } = await (supabase
+        .from(tableName as any)
         .select(keyField)
         .eq('tenant_id', selectedTenantId)
-        .maybeSingle();
+        .maybeSingle());
       
       let result;
       
       if (existingData) {
         // Update
-        const { data, error } = await supabase
-          .from(tableOrView)
-          .update(dataToUpdate)
+        const { data, error } = await (supabase
+          .from(tableName as any)
+          .update(dataToUpdate as any)
           .eq('tenant_id', selectedTenantId)
-          .select();
+          .select());
         
         if (error) throw error;
         result = data;
       } else {
         // Insert
-        const { data, error } = await supabase
-          .from(tableOrView)
-          .insert(dataToUpdate)
-          .select();
+        const { data, error } = await (supabase
+          .from(tableName as any)
+          .insert(dataToUpdate as any)
+          .select());
         
         if (error) throw error;
         result = data;
@@ -98,7 +104,7 @@ export function useTenantSettings<T extends Record<string, any>>(
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [tableOrView, selectedTenantId]
+        queryKey: [tableName, selectedTenantId]
       });
       toast({
         title: "Settings saved",
