@@ -2,7 +2,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-// Remove next/navigation import and use a compatible router if needed
 
 // Define types for custom field and option
 export type CustomField = {
@@ -10,9 +9,12 @@ export type CustomField = {
   tenant_id: string;
   name: string;
   type: string;
+  field_key?: string;
+  field_type?: string;
   description?: string;
   required: boolean;
   options?: Array<{ label: string; value: string }>;
+  applicable_forms?: string[];
   created_at?: string;
 };
 
@@ -49,15 +51,32 @@ export const parseOptions = (values: any) => {
   return optionsArray;
 };
 
+// Prepare field for database insertion
+const prepareFieldForDb = (field: CustomField) => {
+  // Map the form field type to database field_type
+  return {
+    tenant_id: field.tenant_id,
+    name: field.name,
+    field_key: field.field_key || field.name.toLowerCase().replace(/\s+/g, '_'),
+    field_type: field.field_type || field.type,
+    description: field.description,
+    required: field.required || false,
+    options: field.options ? JSON.stringify(field.options) : null,
+    applicable_forms: field.applicable_forms || [],
+  };
+};
+
 // Hook for creating a custom field
 export const useCreateCustomField = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (newField: CustomField) => {
+      const dbField = prepareFieldForDb(newField);
+      
       const { data, error } = await supabase
         .from("custom_fields")
-        .insert([newField])
+        .insert(dbField)
         .select()
         .single();
 
@@ -72,7 +91,7 @@ export const useCreateCustomField = () => {
         title: "Success",
         description: "Custom field created successfully.",
       });
-      queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
+      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id] });
     },
     onError: (error: any) => {
       toast({
@@ -90,9 +109,11 @@ export const useUpdateCustomField = () => {
 
   return useMutation({
     mutationFn: async (updatedField: CustomField) => {
+      const dbField = prepareFieldForDb(updatedField);
+      
       const { data, error } = await supabase
         .from("custom_fields")
-        .update(updatedField)
+        .update(dbField)
         .eq("id", updatedField.id)
         .select()
         .single();
@@ -108,7 +129,7 @@ export const useUpdateCustomField = () => {
         title: "Success",
         description: "Custom field updated successfully.",
       });
-      queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
+      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id] });
     },
     onError: (error: any) => {
       toast({
@@ -144,7 +165,7 @@ export const useDeleteCustomField = () => {
         title: "Success",
         description: "Custom field deleted successfully.",
       });
-      queryClient.invalidateQueries(["custom-fields"]);
+      queryClient.invalidateQueries({ queryKey: ['customFields'] });
     },
     onError: (error: any) => {
       toast({
