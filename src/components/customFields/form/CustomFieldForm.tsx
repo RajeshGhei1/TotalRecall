@@ -132,7 +132,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             />
           </div>
           
-          <FormFooter onCancel={onCancel} isSubmitting={isSubmitting} />
+          <FormFooter form={form} onCancel={onCancel} isSubmitting={isSubmitting} />
         </form>
       </Form>
     </Card>
