@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GlobalCustomFieldsManager from '@/components/superadmin/GlobalCustomFieldsManager';
 import DropdownOptionsManager from '@/components/superadmin/DropdownOptionsManager';
 import AIModelIntegration from '@/components/superadmin/AIModelIntegration';
-import { Database, ListFilter, Bot, Settings, Globe, MessageCircle, Send } from 'lucide-react';
+import { Database, ListFilter, Bot, Settings as SettingsIcon, Globe, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Import our new super admin settings components
@@ -54,7 +54,7 @@ const Settings = () => {
               AI Models
             </TabsTrigger>
             <TabsTrigger value="general" className="flex items-center gap-1">
-              <Settings className="h-4 w-4" />
+              <SettingsIcon className="h-4 w-4" />
               General
             </TabsTrigger>
             <TabsTrigger value="social" className="flex items-center gap-1">

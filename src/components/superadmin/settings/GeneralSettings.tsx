@@ -45,13 +45,15 @@ const GeneralSettings = () => {
       return data;
     },
     enabled: !!selectedTenantId,
-    onSuccess: (data) => {
-      if (data) {
-        setTenantData({
-          id: data.id,
-          name: data.name,
-          description: data.description || ''
-        });
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          setTenantData({
+            id: data.id,
+            name: data.name,
+            description: data.description || ''
+          });
+        }
       }
     }
   });

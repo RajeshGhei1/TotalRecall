@@ -55,9 +55,11 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
       return data;
     },
     enabled: !!selectedTenantId,
-    onSuccess: (data) => {
-      if (data) {
-        setTenantData(data);
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          setTenantData(data);
+        }
       }
     }
   });
@@ -126,7 +128,6 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
               {currentStep === 1 && (
                 <BasicInfoStep 
                   tenantData={tenantData} 
-                  onNext={handleNext} 
                   updateTenantData={updateTenantData} 
                 />
               )}
