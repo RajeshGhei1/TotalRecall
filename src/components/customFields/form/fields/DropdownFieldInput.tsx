@@ -37,18 +37,21 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
   const categoryName = field.options?.category || 'dropdown_options';
   
   // Use dropdown options hook
-  const { addOption, isAddingOption, refetchOptions } = useDropdownOptions(categoryName);
+  const { addOption, isAddingOption, refetchOptions, options } = useDropdownOptions(categoryName);
   
   // Handle adding a new option
   const handleAddOption = async () => {
     if (!newOption.trim()) return;
     
     try {
-      await addOption.mutateAsync({
+      console.log(`Adding new option to category ${categoryName}: ${newOption}`);
+      const result = await addOption.mutateAsync({
         value: newOption,
         label: newOption,
         categoryName
       });
+      
+      console.log("New option added:", result);
       
       // Update the form
       form.setValue(fieldName, newOption);
@@ -73,7 +76,7 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
   };
 
   // Get options with "Add New" option
-  const options = [
+  const dropdownOptions = [
     ...(field.options?.options || []),
     { value: '__add_new__', label: '[+ Add New]' }
   ];
@@ -100,12 +103,12 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
               value={formField.value || ""}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent className="z-[10000] bg-white">
-                {options.map((option) => (
+                {dropdownOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

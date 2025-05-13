@@ -14,15 +14,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { useAddOptionDialog } from '@/hooks/useDialogHelpers';
 
 interface LocationSectionProps {
   form: UseFormReturn<TenantFormValues>;
 }
 
 const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
-  // Custom state for the "Add New" option dialogs
-  const [addingType, setAddingType] = useState<string | null>(null);
-  const [newOption, setNewOption] = useState('');
+  // Use our custom dialog hook
+  const { addingType, setAddingType, newOption, setNewOption, resetDialog } = useAddOptionDialog();
   
   // Get dropdown options from our hook
   const regionHook = useDropdownOptions('global_regions');
@@ -63,7 +64,9 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
 
   // Handle selection of the "Add New" option
   const handleSelectOption = (name: string, value: string) => {
+    console.log(`Select option called for ${name} with value ${value}`);
     if (value === '__add_new__') {
+      console.log(`Setting adding type to ${name}`);
       setAddingType(name);
       setNewOption('');
     }
@@ -73,43 +76,66 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
   const handleAddNewOption = async () => {
     if (!addingType || !newOption.trim()) return;
 
-    let categoryId: string | null = null;
+    console.log(`Adding new option for ${addingType}: ${newOption}`);
+    let categoryName: string;
+    let hook;
     
     switch (addingType) {
       case 'globalRegion':
-        categoryId = await regionHook.getCategoryIdByName('global_regions');
+        categoryName = 'global_regions';
+        hook = regionHook;
         break;
       case 'country': 
-        categoryId = await countryHook.getCategoryIdByName('countries');
+        categoryName = 'countries';
+        hook = countryHook;
         break;
       case 'region':
-        categoryId = await localRegionHook.getCategoryIdByName('local_regions');
+        categoryName = 'local_regions';
+        hook = localRegionHook;
         break;
       case 'hoLocation':
-        categoryId = await locationHook.getCategoryIdByName('locations');
+        categoryName = 'locations';
+        hook = locationHook;
         break;
-    }
-
-    if (!categoryId) {
-      console.error('Category not found for', addingType);
-      return;
+      default:
+        console.error('Unknown option type:', addingType);
+        toast({
+          title: "Error",
+          description: `Unknown option type: ${addingType}`,
+          variant: "destructive"
+        });
+        return;
     }
 
     try {
-      const newOptionObj = await regionHook.addOption.mutateAsync({
-        categoryId,
+      console.log(`Adding new option to category ${categoryName}: ${newOption}`);
+      const newOptionObj = await hook.addOption.mutateAsync({
         value: newOption,
-        label: newOption
+        label: newOption,
+        categoryName
       });
+      
+      console.log("New option added:", newOptionObj);
       
       // Set the form value to the newly added option
       if (addingType && newOptionObj) {
+        console.log(`Setting form value for ${addingType} to ${newOptionObj.value}`);
         form.setValue(addingType as any, newOptionObj.value);
       }
       
-      setAddingType(null);
+      toast({
+        title: "Option Added",
+        description: `Added new ${addingType} option: ${newOption}`
+      });
+      
+      resetDialog();
     } catch (error) {
       console.error('Failed to add new option:', error);
+      toast({
+        title: "Error",
+        description: `Failed to add new option: ${(error as Error).message}`,
+        variant: "destructive"
+      });
     }
   };
 
@@ -199,22 +225,23 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
               className="mt-1"
               onClick={() => setAddingType('hoLocation')}
             >
-              <Plus className="h-4 w-4 mr-1" /> Add New Location Type
+              <Plus className="h-4 w-4 mr-1" /> Add New Location
             </Button>
           )}
         </div>
       </div>
 
       {/* Dialog for adding new options */}
-      <Dialog open={!!addingType} onOpenChange={(open) => !open && setAddingType(null)}>
-        <DialogContent>
+      <Dialog open={!!addingType} onOpenChange={(open) => !open && resetDialog()}>
+        <DialogContent className="z-[10001] bg-white">
           <DialogHeader>
             <DialogTitle>
               Add New {
                 addingType === 'globalRegion' ? 'Global Region' :
                 addingType === 'country' ? 'Country' :
                 addingType === 'region' ? 'Local Region' :
-                addingType === 'hoLocation' ? 'Location Type' : ''
+                addingType === 'hoLocation' ? 'Location' :
+                'Option'
               }
             </DialogTitle>
           </DialogHeader>
@@ -225,16 +252,22 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
                 addingType === 'globalRegion' ? 'global region' :
                 addingType === 'country' ? 'country' :
                 addingType === 'region' ? 'local region' :
-                addingType === 'hoLocation' ? 'location type' : 'option'
+                addingType === 'hoLocation' ? 'location' :
+                'option'
               } name`}
               value={newOption}
               onChange={(e) => setNewOption(e.target.value)}
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !regionHook.isAddingOption && newOption.trim()) {
+                  handleAddNewOption();
+                }
+              }}
             />
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddingType(null)}>
+            <Button variant="outline" onClick={resetDialog}>
               Cancel
             </Button>
             <Button 

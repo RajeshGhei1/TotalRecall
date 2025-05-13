@@ -49,6 +49,7 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
   // Handle enter key for quick submission
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isSubmitting && value.trim()) {
+      e.preventDefault();
       onSubmit();
     }
   };
@@ -59,7 +60,7 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
       onOpenChange={(open) => !open && onClose()}
     >
       <DialogContent 
-        className="z-[10000] sm:max-w-md" 
+        className="z-[10001] sm:max-w-md" 
         style={{
           backgroundColor: "white",
           position: "fixed",
@@ -68,10 +69,6 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
           transform: "translate(-50%, -50%)",
           zIndex: 10000,
           maxWidth: "90vw"
-        }}
-        onPointerDownOutside={(e) => {
-          // Prevent closing when clicking on the dialog content
-          e.preventDefault();
         }}
       >
         <DialogHeader>

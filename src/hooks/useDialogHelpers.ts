@@ -1,18 +1,50 @@
 
-// Helper hook to manage dialog titles and placeholders
-export const createDialogHelpers = (config: Record<string, { title: string; placeholder: string }>) => {
-  const getDialogTitle = (type: string | null): string => {
-    if (!type || !config[type]) {
-      return 'Add New Option';
+import { useState } from 'react';
+
+type DialogConfig = {
+  title: string;
+  placeholder: string;
+};
+
+type DialogConfigMap = {
+  [key: string]: DialogConfig;
+};
+
+export const useIndustryDialogHelpers = () => {
+  // Get dialog title based on field name
+  const getDialogTitle = (fieldName: string | null): string => {
+    switch (fieldName) {
+      case 'industry1':
+      case 'industry2':
+      case 'industry3':
+        return 'Add New Industry';
+      case 'companySector':
+        return 'Add New Company Sector';
+      case 'companyType':
+        return 'Add New Company Type';
+      case 'entityType':
+        return 'Add New Entity Type';
+      default:
+        return 'Add New Option';
     }
-    return config[type].title;
   };
 
-  const getDialogPlaceholder = (type: string | null): string => {
-    if (!type || !config[type]) {
-      return 'Enter new option value';
+  // Get dialog placeholder based on field name
+  const getDialogPlaceholder = (fieldName: string | null): string => {
+    switch (fieldName) {
+      case 'industry1':
+      case 'industry2':
+      case 'industry3':
+        return 'Enter new industry name';
+      case 'companySector':
+        return 'Enter new company sector';
+      case 'companyType':
+        return 'Enter new company type';
+      case 'entityType':
+        return 'Enter new entity type';
+      default:
+        return 'Enter new option';
     }
-    return config[type].placeholder;
   };
 
   return {
@@ -21,34 +53,45 @@ export const createDialogHelpers = (config: Record<string, { title: string; plac
   };
 };
 
-// Specific helper for industry dropdowns
-export const useIndustryDialogHelpers = () => {
-  return createDialogHelpers({
-    'industry1': {
-      title: 'Add New Industry',
-      placeholder: 'Enter new industry name'
-    },
-    'industry2': {
-      title: 'Add New Industry',
-      placeholder: 'Enter new industry name'
-    },
-    'industry3': {
-      title: 'Add New Industry',
-      placeholder: 'Enter new industry name'
-    },
-    'companySector': {
-      title: 'Add New Company Sector',
-      placeholder: 'Enter new company sector'
-    },
-    'companyType': {
-      title: 'Add New Company Type',
-      placeholder: 'Enter new company type'
-    },
-    'entityType': {
-      title: 'Add New Entity Type',
-      placeholder: 'Enter new entity type'
-    },
-  });
+// Generic dialog helper creator
+export const createDialogHelpers = (config: DialogConfigMap) => {
+  // Get dialog title based on field name
+  const getDialogTitle = (fieldName: string | null): string => {
+    if (!fieldName || !config[fieldName]) {
+      return 'Add New Option';
+    }
+    return config[fieldName].title;
+  };
+
+  // Get dialog placeholder based on field name
+  const getDialogPlaceholder = (fieldName: string | null): string => {
+    if (!fieldName || !config[fieldName]) {
+      return 'Enter new option';
+    }
+    return config[fieldName].placeholder;
+  };
+
+  return {
+    getDialogTitle,
+    getDialogPlaceholder
+  };
 };
 
-export default createDialogHelpers;
+// Custom hook for using dialog state
+export const useAddOptionDialog = () => {
+  const [addingType, setAddingType] = useState<string | null>(null);
+  const [newOption, setNewOption] = useState('');
+  
+  const resetDialog = () => {
+    setAddingType(null);
+    setNewOption('');
+  };
+
+  return {
+    addingType,
+    setAddingType,
+    newOption,
+    setNewOption,
+    resetDialog
+  };
+};
