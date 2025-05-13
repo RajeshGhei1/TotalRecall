@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
@@ -23,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { createDialogHelpers } from '@/hooks/useDialogHelpers';
+import { toast } from '@/hooks/use-toast';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -60,7 +62,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
     isLoading: statusLoading,
     isAddingOption: isAddingStatus,
     addOption,
-    getCategoryIdByName
   } = useDropdownOptions('company_statuses');
 
   // Add an "Add New" option
@@ -85,25 +86,31 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   const handleAddNewCompanyStatus = async () => {
     if (!newCompanyStatus.trim()) return;
 
-    const categoryId = await getCategoryIdByName('company_statuses');
-    
-    if (!categoryId) {
-      console.error('Company status category not found');
-      return;
-    }
-
     try {
+      console.log("Adding new company status:", newCompanyStatus);
       const newOption = await addOption.mutateAsync({
-        categoryId,
         value: newCompanyStatus,
-        label: newCompanyStatus
+        label: newCompanyStatus,
+        categoryName: 'company_statuses'
       });
+      
+      console.log("New company status added successfully:", newOption);
       
       // Set the form value to the newly added option
       form.setValue('companyStatus', newOption.value);
       setAddingCompanyStatus(false);
+      
+      toast({
+        title: "Success",
+        description: `Added new company status: ${newCompanyStatus}`,
+      });
     } catch (error) {
       console.error('Failed to add new company status:', error);
+      toast({
+        title: "Error",
+        description: `Failed to add company status: ${(error as Error).message}`,
+        variant: "destructive"
+      });
     }
   };
 
@@ -195,7 +202,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
 
       {/* Dialog for adding new company status */}
       <Dialog open={addingCompanyStatus} onOpenChange={setAddingCompanyStatus}>
-        <DialogContent>
+        <DialogContent className="z-[10000] bg-white">
           <DialogHeader>
             <DialogTitle>{getDialogTitle('companyStatus')}</DialogTitle>
           </DialogHeader>
@@ -206,6 +213,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
               value={newCompanyStatus}
               onChange={(e) => setNewCompanyStatus(e.target.value)}
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isAddingStatus && newCompanyStatus.trim()) {
+                  handleAddNewCompanyStatus();
+                }
+              }}
             />
           </div>
           

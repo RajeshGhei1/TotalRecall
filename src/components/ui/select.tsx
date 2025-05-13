@@ -82,7 +82,25 @@ const SelectContent = React.forwardRef<
       position={position}
       style={{
         backgroundColor: "white", // Ensure background is white
-        zIndex: 9999 // Higher z-index to ensure visibility
+        zIndex: 9999, // Higher z-index to ensure visibility
+        pointerEvents: "auto" // Ensure clicks are registered
+      }}
+      sideOffset={5}
+      align="center"
+      onCloseAutoFocus={(e) => {
+        // Prevent focus from automatically going back after selection
+        e.preventDefault();
+      }}
+      onPointerDownOutside={(e) => {
+        // Only close if clicking outside the portal
+        if (e.target instanceof HTMLElement) {
+          const isPortal = e.target.closest('[data-radix-portal]');
+          if (!isPortal) {
+            // Let the event pass through only if clicking outside the portal
+            return;
+          }
+          e.preventDefault();
+        }
       }}
       {...props}
     >
@@ -121,7 +139,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 bg-white",
       className
     )}
     {...props}

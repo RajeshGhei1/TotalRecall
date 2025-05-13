@@ -26,7 +26,7 @@ export function useDropdownOptions(categoryName?: string) {
   console.log("useDropdownOptions hook initialized with categoryName:", categoryName);
 
   // Fetch all categories
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+  const { data: categories = [], isLoading: categoriesLoading, refetch: refetchCategories } = useQuery({
     queryKey: ['dropdown-categories'],
     queryFn: async () => {
       console.log("Fetching dropdown categories...");
@@ -45,7 +45,11 @@ export function useDropdownOptions(categoryName?: string) {
   });
 
   // Fetch options by category name
-  const { data: options = [], isLoading: optionsLoading } = useQuery({
+  const { 
+    data: options = [], 
+    isLoading: optionsLoading,
+    refetch: refetchOptions 
+  } = useQuery({
     queryKey: ['dropdown-options', categoryName],
     queryFn: async () => {
       if (!categoryName) {
@@ -100,6 +104,30 @@ export function useDropdownOptions(categoryName?: string) {
     return data as DropdownOption[];
   };
 
+  // Create a new category if it doesn't exist
+  const createCategory = async (name: string, description: string | null = null): Promise<string> => {
+    console.log(`Creating new category: ${name}`);
+    const { data, error } = await supabase
+      .from('dropdown_option_categories')
+      .insert([{
+        name,
+        description,
+      }])
+      .select();
+
+    if (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
+    
+    console.log('Successfully created category:', data[0]);
+    
+    // Refresh the categories list
+    refetchCategories();
+    
+    return data[0].id;
+  };
+
   // Add a new option
   const addOption = useMutation({
     mutationFn: async ({ 
@@ -107,18 +135,39 @@ export function useDropdownOptions(categoryName?: string) {
       value, 
       label,
       isDefault = false,
+      categoryName
     }: { 
-      categoryId: string; 
+      categoryId?: string; 
       value: string; 
       label: string;
       isDefault?: boolean;
+      categoryName?: string;
     }) => {
-      console.log(`Adding new option to category ${categoryId}: ${value} (${label})`);
       setIsAddingOption(true);
+      
+      let finalCategoryId = categoryId;
+      
+      // If no category ID is provided but we have a category name,
+      // try to find the category or create it if it doesn't exist
+      if (!finalCategoryId && categoryName) {
+        console.log(`No category ID provided, looking up by name: ${categoryName}`);
+        try {
+          finalCategoryId = await getCategoryIdByName(categoryName, true);
+        } catch (error) {
+          console.error(`Error getting category ID for ${categoryName}:`, error);
+          throw error;
+        }
+      }
+      
+      if (!finalCategoryId) {
+        throw new Error('No category ID provided or found');
+      }
+
+      console.log(`Adding new option to category ${finalCategoryId}: ${value} (${label})`);
       const { data, error } = await supabase
         .from('dropdown_options')
         .insert([{
-          category_id: categoryId,
+          category_id: finalCategoryId,
           value,
           label: label || value,
           is_default: isDefault,
@@ -134,11 +183,17 @@ export function useDropdownOptions(categoryName?: string) {
     },
     onSuccess: (_, variables) => {
       // Invalidate the options query to refetch the options
-      const category = categories.find(c => c.id === variables.categoryId);
-      if (category) {
-        console.log(`Invalidating query for category: ${category.name}`);
-        queryClient.invalidateQueries({ queryKey: ['dropdown-options', category.name] });
+      if (variables.categoryName) {
+        console.log(`Invalidating query for category name: ${variables.categoryName}`);
+        queryClient.invalidateQueries({ queryKey: ['dropdown-options', variables.categoryName] });
+      } else if (variables.categoryId) {
+        const category = categories.find(c => c.id === variables.categoryId);
+        if (category) {
+          console.log(`Invalidating query for category: ${category.name}`);
+          queryClient.invalidateQueries({ queryKey: ['dropdown-options', category.name] });
+        }
       }
+      
       toast({
         title: 'Option added',
         description: `"${variables.label || variables.value}" has been added successfully.`,
@@ -199,9 +254,14 @@ export function useDropdownOptions(categoryName?: string) {
     },
   });
 
-  // Get category ID by name
-  const getCategoryIdByName = async (name: string): Promise<string | null> => {
+  // Get category ID by name, optionally create if it doesn't exist
+  const getCategoryIdByName = async (
+    name: string, 
+    createIfNotExists: boolean = false
+  ): Promise<string | null> => {
     console.log(`Looking up category ID for name: ${name}`);
+    
+    // First check if it exists in our cached categories
     const category = categories.find(c => c.name === name);
     
     if (category) {
@@ -217,8 +277,20 @@ export function useDropdownOptions(categoryName?: string) {
       .eq('name', name)
       .single();
     
-    if (error || !data) {
-      console.error(`Category not found in database: ${name}`, error);
+    if (error) {
+      console.log(`Category not found in database: ${name}`);
+      
+      // If we should create it and it doesn't exist
+      if (createIfNotExists) {
+        console.log(`Creating category: ${name}`);
+        try {
+          return await createCategory(name);
+        } catch (createError) {
+          console.error(`Error creating category ${name}:`, createError);
+          throw createError;
+        }
+      }
+      
       return null;
     }
     
@@ -234,6 +306,8 @@ export function useDropdownOptions(categoryName?: string) {
     addOption,
     addCategory,
     getOptionsByCategoryId,
-    getCategoryIdByName
+    getCategoryIdByName,
+    refetchOptions,
+    refetchCategories
   };
 }

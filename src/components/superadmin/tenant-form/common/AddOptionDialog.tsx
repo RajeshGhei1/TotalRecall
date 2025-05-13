@@ -59,7 +59,16 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
       onOpenChange={(open) => !open && onClose()}
     >
       <DialogContent 
-        className="z-[10000] bg-white" // Higher z-index and explicit background
+        className="z-[10000] sm:max-w-md" 
+        style={{
+          backgroundColor: "white",
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 10000,
+          maxWidth: "90vw"
+        }}
         onPointerDownOutside={(e) => {
           // Prevent closing when clicking on the dialog content
           e.preventDefault();
@@ -76,16 +85,19 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            className="w-full"
+            autoFocus
           />
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="sm:justify-end">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button 
             onClick={onSubmit} 
             disabled={!value.trim() || isSubmitting}
+            className="ml-2"
           >
             {isSubmitting ? (
               <>

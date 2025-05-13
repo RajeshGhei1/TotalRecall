@@ -23,8 +23,7 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
     industries, 
     sectors, 
     companyTypes, 
-    entityTypes, 
-    getCategoryIdByName 
+    entityTypes 
   } = useIndustryOptions();
   
   const { getDialogTitle, getDialogPlaceholder } = useIndustryDialogHelpers();
@@ -44,24 +43,39 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
     }
 
     console.log(`Adding new option for ${addingType}: ${newOption}`);
-    const categoryId = await getCategoryIdByName(addingType);
-
-    if (!categoryId) {
-      console.error(`Category not found for ${addingType}`);
-      toast({
-        title: "Error",
-        description: `Could not find category for ${addingType}`,
-        variant: "destructive"
-      });
-      return;
+    let categoryName: string;
+    
+    switch (addingType) {
+      case 'industry1':
+      case 'industry2':
+      case 'industry3':
+        categoryName = 'industries';
+        break;
+      case 'companySector':
+        categoryName = 'company_sectors';
+        break;
+      case 'companyType':
+        categoryName = 'company_types';
+        break;
+      case 'entityType':
+        categoryName = 'entity_types';
+        break;
+      default:
+        console.error('Unknown option type:', addingType);
+        toast({
+          title: "Error",
+          description: `Unknown option type: ${addingType}`,
+          variant: "destructive"
+        });
+        return;
     }
 
     try {
-      console.log(`Adding new option to category ${categoryId}: ${newOption}`);
+      console.log(`Adding new option to category ${categoryName}: ${newOption}`);
       const newOptionObj = await industryHook.addOption.mutateAsync({
-        categoryId,
         value: newOption,
-        label: newOption
+        label: newOption,
+        categoryName
       });
       
       console.log("New option added:", newOptionObj);
