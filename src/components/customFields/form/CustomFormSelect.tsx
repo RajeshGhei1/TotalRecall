@@ -26,7 +26,7 @@ interface FormSelectProps {
   onChange?: (value: string) => void;
 }
 
-export const CustomFormSelect: React.FC<FormSelectProps> = ({
+const CustomFormSelect: React.FC<FormSelectProps> = ({
   form,
   name,
   label,

@@ -23,7 +23,8 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
     industries, 
     sectors, 
     companyTypes, 
-    entityTypes 
+    entityTypes,
+    getCategoryIdByName 
   } = useIndustryOptions();
   
   const { getDialogTitle, getDialogPlaceholder } = useIndustryDialogHelpers();
