@@ -4,7 +4,6 @@ import { UseFormReturn } from 'react-hook-form';
 import { FormSelect } from './FormFields';
 import { TenantFormValues } from './schema';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
-import { CountryOptionsProvider } from '@/components/customFields/form';
 import { 
   Dialog,
   DialogContent,
@@ -116,97 +115,95 @@ const LocationSection: React.FC<LocationSectionProps> = ({ form }) => {
 
   return (
     <>
-      <CountryOptionsProvider>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <FormSelect 
-              form={form}
-              name="globalRegion"
-              label="Global Region"
-              options={regionOptions}
-              required
-              onChange={(value) => handleSelectOption('globalRegion', value)}
-            />
-            {form.watch('globalRegion') === '__add_new__' && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="mt-1"
-                onClick={() => setAddingType('globalRegion')}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Add New Region
-              </Button>
-            )}
-          </div>
-          
-          <div className="space-y-1">
-            <FormSelect 
-              form={form}
-              name="country"
-              label="Country"
-              options={countryOptions}
-              required
-              onChange={(value) => handleSelectOption('country', value)}
-            />
-            {form.watch('country') === '__add_new__' && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="mt-1"
-                onClick={() => setAddingType('country')}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Add New Country
-              </Button>
-            )}
-          </div>
-          
-          <div className="space-y-1">
-            <FormSelect 
-              form={form}
-              name="region"
-              label="Region"
-              options={localRegionOptions}
-              required
-              onChange={(value) => handleSelectOption('region', value)}
-            />
-            {form.watch('region') === '__add_new__' && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="mt-1"
-                onClick={() => setAddingType('region')}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Add New Local Region
-              </Button>
-            )}
-          </div>
-          
-          <div className="space-y-1">
-            <FormSelect 
-              form={form}
-              name="hoLocation"
-              label="HO Location"
-              options={locationOptions}
-              required
-              onChange={(value) => handleSelectOption('hoLocation', value)}
-            />
-            {form.watch('hoLocation') === '__add_new__' && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="mt-1"
-                onClick={() => setAddingType('hoLocation')}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Add New Location Type
-              </Button>
-            )}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-1">
+          <FormSelect 
+            form={form}
+            name="globalRegion"
+            label="Global Region"
+            options={regionOptions}
+            required
+            onChange={(value) => handleSelectOption('globalRegion', value)}
+          />
+          {form.watch('globalRegion') === '__add_new__' && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="mt-1"
+              onClick={() => setAddingType('globalRegion')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add New Region
+            </Button>
+          )}
         </div>
-      </CountryOptionsProvider>
+        
+        <div className="space-y-1">
+          <FormSelect 
+            form={form}
+            name="country"
+            label="Country"
+            options={countryOptions}
+            required
+            onChange={(value) => handleSelectOption('country', value)}
+          />
+          {form.watch('country') === '__add_new__' && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="mt-1"
+              onClick={() => setAddingType('country')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add New Country
+            </Button>
+          )}
+        </div>
+        
+        <div className="space-y-1">
+          <FormSelect 
+            form={form}
+            name="region"
+            label="Region"
+            options={localRegionOptions}
+            required
+            onChange={(value) => handleSelectOption('region', value)}
+          />
+          {form.watch('region') === '__add_new__' && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="mt-1"
+              onClick={() => setAddingType('region')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add New Local Region
+            </Button>
+          )}
+        </div>
+        
+        <div className="space-y-1">
+          <FormSelect 
+            form={form}
+            name="hoLocation"
+            label="HO Location"
+            options={locationOptions}
+            required
+            onChange={(value) => handleSelectOption('hoLocation', value)}
+          />
+          {form.watch('hoLocation') === '__add_new__' && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="mt-1"
+              onClick={() => setAddingType('hoLocation')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add New Location Type
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Dialog for adding new options */}
       <Dialog open={!!addingType} onOpenChange={(open) => !open && setAddingType(null)}>
