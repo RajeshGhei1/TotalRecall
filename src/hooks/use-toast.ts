@@ -4,28 +4,20 @@ import { toast as sonnerToast } from "sonner";
 export interface ToastProps {
   title?: string;
   description?: string;
-  action?: React.ReactNode;
   variant?: "default" | "destructive";
+  action?: React.ReactNode;
 }
 
-// Create a wrapper for the sonner toast function with our app's expected API
-export function toast(props: ToastProps) {
-  const { title, description, variant, action } = props;
-  
-  if (variant === "destructive") {
-    return sonnerToast.error(title, {
-      description,
-      action
+// Re-exporting toast function with our custom props
+export const toast = (props: ToastProps) => {
+  return sonnerToast[props.variant === "destructive" ? "error" : "success"]
+    (props.title, {
+      description: props.description,
+      action: props.action,
     });
-  }
+};
 
-  return sonnerToast(title, {
-    description,
-    action
-  });
-}
-
-// Export the hook for components that need direct access
+// Adding back the useToast hook for compatibility
 export const useToast = () => {
   return {
     toast

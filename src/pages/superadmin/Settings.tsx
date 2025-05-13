@@ -8,7 +8,7 @@ import AIModelIntegration from '@/components/superadmin/AIModelIntegration';
 import { Database, ListFilter, Bot, Settings as SettingsIcon, Globe, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Import our new super admin settings components
+// Import our updated super admin settings components
 import GeneralSettings from '@/components/superadmin/settings/GeneralSettings';
 import SocialMediaSettings from '@/components/superadmin/settings/SocialMediaSettings';
 import CommunicationSettings from '@/components/superadmin/settings/CommunicationSettings';

@@ -1,15 +1,19 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PenSquare, Save } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import TenantSelector from "./TenantSelector";
+import { toast } from "@/hooks/use-toast";
+
+// Import shared components
+import SettingsCard from "./shared/SettingsCard";
+import TenantSelector from "./shared/TenantSelector";
+import EmptyState from "./shared/EmptyState";
+import LoadingState from "./shared/LoadingState";
 
 const GeneralSettings = () => {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
@@ -29,8 +33,22 @@ const GeneralSettings = () => {
 
   const queryClient = useQueryClient();
 
+  // Fetch tenants query
+  const { data: tenants, isLoading: isLoadingTenants } = useQuery({
+    queryKey: ['tenants'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, name')
+        .order('name', { ascending: true });
+        
+      if (error) throw error;
+      return data;
+    }
+  });
+
   // Fetch tenant information when a tenant is selected
-  const { data: fetchedTenantData, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['tenantDetails', selectedTenantId],
     queryFn: async () => {
       if (!selectedTenantId) return null;
@@ -107,77 +125,81 @@ const GeneralSettings = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>General Settings</CardTitle>
-        <CardDescription>
-          Manage tenant's general settings and information
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <TenantSelector 
-          selectedTenantId={selectedTenantId}
-          onTenantChange={(tenantId) => setSelectedTenantId(tenantId)}
-        />
+    <SettingsCard
+      title="General Settings"
+      description="Manage tenant's general settings and information"
+    >
+      <TenantSelector 
+        selectedTenantId={selectedTenantId}
+        onTenantChange={(tenantId) => setSelectedTenantId(tenantId)}
+        tenants={tenants}
+        isLoading={isLoadingTenants}
+      />
 
-        {isLoading && selectedTenantId ? (
-          <div className="space-y-4">
-            <div className="h-8 bg-gray-200 rounded animate-pulse" />
-            <div className="h-24 bg-gray-200 rounded animate-pulse" />
-          </div>
-        ) : selectedTenantId ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="tenant-name">Tenant Name</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="tenant-name"
-                  value={tenantData.name}
-                  onChange={(e) => setTenantData({...tenantData, name: e.target.value})}
-                  disabled={!isEditing.name}
-                  className="flex-1"
-                />
-                {isEditing.name ? (
-                  <Button onClick={handleSaveName} size="sm" className="flex-none">
-                    <Save className="h-4 w-4 mr-2" /> Save
-                  </Button>
-                ) : (
-                  <Button onClick={() => setIsEditing({...isEditing, name: true})} size="sm" className="flex-none">
-                    <PenSquare className="h-4 w-4 mr-2" /> Edit
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tenant-description">Description</Label>
-              <div className="flex items-start gap-2">
-                <Textarea
-                  id="tenant-description"
-                  rows={4}
-                  value={tenantData.description || ''}
-                  onChange={(e) => setTenantData({...tenantData, description: e.target.value})}
-                  disabled={!isEditing.description}
-                  className="flex-1"
-                />
-                {isEditing.description ? (
-                  <Button onClick={handleSaveDescription} size="sm" className="flex-none">
-                    <Save className="h-4 w-4 mr-2" /> Save
-                  </Button>
-                ) : (
-                  <Button onClick={() => setIsEditing({...isEditing, description: true})} size="sm" className="flex-none">
-                    <PenSquare className="h-4 w-4 mr-2" /> Edit
-                  </Button>
-                )}
-              </div>
+      {isLoading && selectedTenantId ? (
+        <LoadingState rows={2} />
+      ) : selectedTenantId ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="tenant-name">Tenant Name</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="tenant-name"
+                value={tenantData.name}
+                onChange={(e) => setTenantData({...tenantData, name: e.target.value})}
+                disabled={!isEditing.name}
+                className="flex-1"
+              />
+              {isEditing.name ? (
+                <Button onClick={handleSaveName} size="sm" className="flex-none">
+                  <Save className="h-4 w-4 mr-2" /> Save
+                </Button>
+              ) : (
+                <Button onClick={() => setIsEditing({...isEditing, name: true})} size="sm" className="flex-none">
+                  <PenSquare className="h-4 w-4 mr-2" /> Edit
+                </Button>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="bg-muted/50 p-6 text-center rounded-md">
-            <p className="text-muted-foreground">Select a tenant to manage its settings</p>
+          <div className="space-y-2">
+            <Label htmlFor="tenant-description">Description</Label>
+            <div className="flex items-start gap-2">
+              <Textarea
+                id="tenant-description"
+                rows={4}
+                value={tenantData.description || ''}
+                onChange={(e) => setTenantData({...tenantData, description: e.target.value})}
+                disabled={!isEditing.description}
+                className="flex-1"
+              />
+              {isEditing.description ? (
+                <Button onClick={handleSaveDescription} size="sm" className="flex-none">
+                  <Save className="h-4 w-4 mr-2" /> Save
+                </Button>
+              ) : (
+                <Button onClick={() => setIsEditing({...isEditing, description: true})} size="sm" className="flex-none">
+                  <PenSquare className="h-4 w-4 mr-2" /> Edit
+                </Button>
+              )}
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ) : (
+        <EmptyState />
+      )}
+
+      {selectedTenantId && (
+        <Button
+          onClick={() => {
+            handleSaveName();
+            handleSaveDescription();
+          }}
+          disabled={!selectedTenantId}
+        >
+          Save All Settings
+        </Button>
+      )}
+    </SettingsCard>
   );
 };
 

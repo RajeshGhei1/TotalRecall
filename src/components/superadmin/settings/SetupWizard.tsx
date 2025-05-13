@@ -21,6 +21,12 @@ interface SetupWizardProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Create a wrapper for BasicInfoStep that adapts the props
+const BasicInfoStepAdapter = ({ tenantData, updateTenantData }: { tenantData: any, updateTenantData: (data: any) => void }) => {
+  // The original BasicInfoStep expects onNext but we don't need it in this context
+  return <BasicInfoStep tenantData={tenantData} />;
+};
+
 const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
@@ -98,7 +104,7 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
         
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>Select Tenant to Configure</Label>
+            <Label>Select Tenant</Label>
             <Select value={selectedTenantId || undefined} onValueChange={setSelectedTenantId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a tenant" />
@@ -126,7 +132,7 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
             
             <div className="py-4">
               {currentStep === 1 && (
-                <BasicInfoStep 
+                <BasicInfoStepAdapter 
                   tenantData={tenantData} 
                   updateTenantData={updateTenantData} 
                 />
