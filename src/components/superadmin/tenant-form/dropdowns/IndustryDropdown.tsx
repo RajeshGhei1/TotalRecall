@@ -21,6 +21,14 @@ const IndustryDropdown: React.FC<IndustryDropdownProps> = ({
   options,
   onSelectAddNew
 }) => {
+  const handleChange = (value: string) => {
+    console.log(`Industry dropdown ${name} changed to:`, value);
+    if (value === '__add_new__') {
+      console.log(`Triggering add new for ${name}`);
+      onSelectAddNew(name);
+    }
+  };
+
   return (
     <div className="space-y-1">
       <FormSelect 
@@ -29,7 +37,7 @@ const IndustryDropdown: React.FC<IndustryDropdownProps> = ({
         label={label}
         options={options}
         required
-        onChange={(value) => value === '__add_new__' && onSelectAddNew(name)}
+        onChange={handleChange}
       />
       {form.watch(name) === '__add_new__' && (
         <Button 

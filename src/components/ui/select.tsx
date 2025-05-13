@@ -82,7 +82,7 @@ const SelectContent = React.forwardRef<
       position={position}
       style={{
         backgroundColor: "white", // Ensure background is white
-        zIndex: 9999 // High z-index
+        zIndex: 9999 // Higher z-index to ensure visibility
       }}
       {...props}
     >

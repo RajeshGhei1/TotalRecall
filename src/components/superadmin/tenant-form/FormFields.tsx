@@ -130,6 +130,16 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   required,
   onChange,
 }) => {
+  console.log(`Rendering FormSelect for ${name} with ${options.length} options`);
+  
+  const handleValueChange = (value: string) => {
+    console.log(`Select ${name} value changed to:`, value);
+    if (onChange) {
+      console.log(`Running onChange handler for ${name}`);
+      onChange(value);
+    }
+  };
+
   return (
     <FormField
       control={form.control}
@@ -140,17 +150,17 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           <Select 
             onValueChange={(value) => {
               field.onChange(value);
-              if (onChange) onChange(value);
+              handleValueChange(value);
             }} 
             defaultValue={field.value}
             value={field.value}
           >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="bg-background">
                 <SelectValue placeholder={placeholder || "Select an option"} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="z-[10000]">
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

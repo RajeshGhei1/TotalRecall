@@ -1,5 +1,6 @@
 
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
+import { useCallback } from 'react';
 
 export const useIndustryOptions = () => {
   // Get dropdown options from our hook
@@ -11,34 +12,23 @@ export const useIndustryOptions = () => {
   // Add an "Add New" option
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
   
-  // Map the options to the required format
-  const industryOptions = industryHook.isLoading 
-    ? [{ value: 'loading', label: 'Loading...' }] 
-    : [...industryHook.options.map(o => ({ 
+  // Map the options to the required format and add error handling
+  const formatOptions = useCallback((hook: ReturnType<typeof useDropdownOptions>, fallbackOptions: Array<{value: string, label: string}>) => {
+    if (hook.isLoading) {
+      return [{ value: 'loading', label: 'Loading...' }];
+    }
+    
+    if (hook.options && hook.options.length > 0) {
+      const formattedOptions = hook.options.map(o => ({ 
         value: o.value || 'unknown', 
         label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
-  
-  const companySectorOptions = companySectorHook.isLoading 
-    ? [{ value: 'loading', label: 'Loading...' }] 
-    : [...companySectorHook.options.map(o => ({ 
-        value: o.value || 'unknown', 
-        label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
-  
-  const companyTypeOptions = companyTypeHook.isLoading 
-    ? [{ value: 'loading', label: 'Loading...' }] 
-    : [...companyTypeHook.options.map(o => ({ 
-        value: o.value || 'unknown', 
-        label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
-  
-  const entityTypeOptions = entityTypeHook.isLoading 
-    ? [{ value: 'loading', label: 'Loading...' }] 
-    : [...entityTypeHook.options.map(o => ({ 
-        value: o.value || 'unknown', 
-        label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
+      }));
+      console.log('Formatted options:', formattedOptions);
+      return [...formattedOptions, addNewOption];
+    }
+    
+    return [...fallbackOptions, addNewOption];
+  }, []);
   
   // Fallback options in case API fails or has no data
   const fallbackIndustryOptions = [
@@ -71,10 +61,30 @@ export const useIndustryOptions = () => {
   ];
   
   // Use fetched options or fallbacks
-  const industries = industryOptions.length > 1 ? industryOptions : [...fallbackIndustryOptions, addNewOption];
-  const sectors = companySectorOptions.length > 1 ? companySectorOptions : [...fallbackSectorOptions, addNewOption];
-  const companyTypes = companyTypeOptions.length > 1 ? companyTypeOptions : [...fallbackCompanyTypeOptions, addNewOption];
-  const entityTypes = entityTypeOptions.length > 1 ? entityTypeOptions : [...fallbackEntityTypeOptions, addNewOption];
+  const industries = formatOptions(industryHook, fallbackIndustryOptions);
+  const sectors = formatOptions(companySectorHook, fallbackSectorOptions);
+  const companyTypes = formatOptions(companyTypeHook, fallbackCompanyTypeOptions);
+  const entityTypes = formatOptions(entityTypeHook, fallbackEntityTypeOptions);
+
+  // Get category ID by name
+  const getCategoryIdByName = async (name: string) => {
+    console.log(`Getting category ID for: ${name}`);
+    switch (name) {
+      case 'industry1':
+      case 'industry2':
+      case 'industry3':
+        return await industryHook.getCategoryIdByName('industries');
+      case 'companySector': 
+        return await companySectorHook.getCategoryIdByName('company_sectors');
+      case 'companyType':
+        return await companyTypeHook.getCategoryIdByName('company_types');
+      case 'entityType':
+        return await entityTypeHook.getCategoryIdByName('entity_types');
+      default:
+        console.error(`No category mapping for field name: ${name}`);
+        return null;
+    }
+  };
 
   // Return hooks and formatted options
   return {
@@ -86,21 +96,6 @@ export const useIndustryOptions = () => {
     sectors,
     companyTypes,
     entityTypes,
-    getCategoryIdByName: async (name: string) => {
-      switch (name) {
-        case 'industry1':
-        case 'industry2':
-        case 'industry3':
-          return await industryHook.getCategoryIdByName('industries');
-        case 'companySector': 
-          return await companySectorHook.getCategoryIdByName('company_sectors');
-        case 'companyType':
-          return await companyTypeHook.getCategoryIdByName('company_types');
-        case 'entityType':
-          return await entityTypeHook.getCategoryIdByName('entity_types');
-        default:
-          return null;
-      }
-    }
+    getCategoryIdByName
   };
 };

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
   Dialog,
   DialogContent,
@@ -32,19 +32,50 @@ const AddOptionDialog: React.FC<AddOptionDialogProps> = ({
   onSubmit,
   isSubmitting
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Focus input when dialog opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small delay to ensure the dialog is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Handle enter key for quick submission
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isSubmitting && value.trim()) {
+      onSubmit();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <DialogContent 
+        className="z-[10000] bg-white" // Higher z-index and explicit background
+        onPointerDownOutside={(e) => {
+          // Prevent closing when clicking on the dialog content
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
         <div className="py-4">
           <Input
+            ref={inputRef}
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            autoFocus
+            onKeyDown={handleKeyDown}
           />
         </div>
         
