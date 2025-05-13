@@ -19,7 +19,7 @@ const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({ tenantId, for
   const { addFieldMutation, deleteFieldMutation } = useCustomFieldsMutations(tenantId);
 
   const handleAddField = (values: FieldFormValues) => {
-    addFieldMutation.mutate(values, {
+    addFieldMutation.mutate(values as any, {
       onSuccess: () => setIsAddingField(false)
     });
   };

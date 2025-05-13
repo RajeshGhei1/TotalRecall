@@ -1,7 +1,8 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+// Remove next/navigation import and use a compatible router if needed
 
 // Define types for custom field and option
 export type CustomField = {
@@ -51,10 +52,9 @@ export const parseOptions = (values: any) => {
 // Hook for creating a custom field
 export const useCreateCustomField = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
-  return useMutation(
-    async (newField: CustomField) => {
+  return useMutation({
+    mutationFn: async (newField: CustomField) => {
       const { data, error } = await supabase
         .from("custom_fields")
         .insert([newField])
@@ -67,33 +67,29 @@ export const useCreateCustomField = () => {
       }
       return data;
     },
-    {
-      onSuccess: (data) => {
-        toast({
-          title: "Success",
-          description: "Custom field created successfully.",
-        });
-        queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
-        router.refresh();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: `Failed to create custom field: ${error.message}`,
-          variant: "destructive",
-        });
-      },
-    }
-  );
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Custom field created successfully.",
+      });
+      queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to create custom field: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 };
 
 // Hook for updating a custom field
 export const useUpdateCustomField = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
-  return useMutation(
-    async (updatedField: CustomField) => {
+  return useMutation({
+    mutationFn: async (updatedField: CustomField) => {
       const { data, error } = await supabase
         .from("custom_fields")
         .update(updatedField)
@@ -107,33 +103,29 @@ export const useUpdateCustomField = () => {
       }
       return data;
     },
-    {
-      onSuccess: (data) => {
-        toast({
-          title: "Success",
-          description: "Custom field updated successfully.",
-        });
-        queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
-        router.refresh();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: `Failed to update custom field: ${error.message}`,
-          variant: "destructive",
-        });
-      },
-    }
-  );
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Custom field updated successfully.",
+      });
+      queryClient.invalidateQueries(["custom-fields", data.tenant_id]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to update custom field: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 };
 
 // Hook for deleting a custom field
 export const useDeleteCustomField = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
-  return useMutation(
-    async (id: string) => {
+  return useMutation({
+    mutationFn: async (id: string) => {
       const { data, error } = await supabase
         .from("custom_fields")
         .delete()
@@ -147,22 +139,27 @@ export const useDeleteCustomField = () => {
       }
       return data;
     },
-    {
-      onSuccess: (data: any, id: string) => {
-        toast({
-          title: "Success",
-          description: "Custom field deleted successfully.",
-        });
-        queryClient.invalidateQueries(["custom-fields"]);
-        router.refresh();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: `Failed to delete custom field: ${error.message}`,
-          variant: "destructive",
-        });
-      },
-    }
-  );
+    onSuccess: (data: any) => {
+      toast({
+        title: "Success",
+        description: "Custom field deleted successfully.",
+      });
+      queryClient.invalidateQueries(["custom-fields"]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete custom field: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Export a combined hook for custom fields mutations
+export const useCustomFieldsMutations = (tenantId: string) => {
+  return {
+    addFieldMutation: useCreateCustomField(),
+    deleteFieldMutation: useDeleteCustomField()
+  };
 };
