@@ -3,7 +3,6 @@ import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 // Define valid table names based on your Supabase schema
 type ValidTableName = 'tenants' | 'tenant_settings' | 'tenant_communication' | 'tenant_social_media' | 
