@@ -1,9 +1,10 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AIModel } from './types';
+import { toast } from '@/hooks/use-toast';
 
-// Mock AI models - in a real application, these would come from an API or database
+// Available AI models - hardcoded for now as these are system-defined
 export const useAvailableModels = (): AIModel[] => {
   return [
     {
@@ -49,18 +50,33 @@ export const useAvailableModels = (): AIModel[] => {
   ];
 };
 
-// Mock function to get the current AI model for a tenant
-// In a real application, this would be fetched from the database
-export const getTenantModel = (tenantId: string, availableModels: AIModel[]) => {
-  // This is a placeholder. In a real application, this would be fetched from the database
-  return availableModels[0].id;
+// Hook to fetch the current AI model for a tenant
+export const useTenantModel = (tenantId: string | null) => {
+  return useQuery({
+    queryKey: ['tenant-ai-model', tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+      
+      const { data, error } = await supabase
+        .from('tenant_ai_models')
+        .select('model_id, api_key')
+        .eq('tenant_id', tenantId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching tenant model:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!tenantId,
+  });
 };
 
-// Mock function to get the API key for a tenant's AI model
-// In a real application, this would be fetched securely from the database
-export const getTenantModelApiKey = (tenantId: string, modelId: string): string => {
-  // This is a placeholder. In a real application, this would be fetched from a secure storage
-  return '';
+// Function to get a model by ID from the available models
+export const getModelById = (modelId: string, availableModels: AIModel[]): AIModel | undefined => {
+  return availableModels.find(model => model.id === modelId);
 };
 
 // Hook to fetch tenants
@@ -74,7 +90,76 @@ export const useTenants = () => {
         .order('name');
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
+};
+
+// Hook to save a tenant's AI model assignment
+export const useAssignModelToTenant = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      tenantId, 
+      modelId, 
+      apiKey 
+    }: { 
+      tenantId: string; 
+      modelId: string; 
+      apiKey?: string;
+    }) => {
+      // First check if a record already exists
+      const { data: existing } = await supabase
+        .from('tenant_ai_models')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+      
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('tenant_ai_models')
+          .update({ 
+            model_id: modelId,
+            api_key: apiKey,
+            updated_at: new Date().toISOString()
+          })
+          .eq('tenant_id', tenantId);
+          
+        if (error) throw error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('tenant_ai_models')
+          .insert({
+            tenant_id: tenantId,
+            model_id: modelId,
+            api_key: apiKey
+          });
+          
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-ai-model', variables.tenantId] });
+      toast({
+        title: "AI Model Updated",
+        description: `Successfully assigned AI model to tenant`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to assign AI model: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Helper function for backwards compatibility
+export const getTenantModel = (tenantId: string, availableModels: AIModel[]) => {
+  // This should return a default model ID until the real data is loaded
+  return availableModels[0].id;
 };

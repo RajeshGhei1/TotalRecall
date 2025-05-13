@@ -6,6 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -22,12 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTenantModel, getModelById, useAssignModelToTenant } from './AIModelData';
 
 interface ModelAssignmentFormProps {
   selectedTenantId: string | null;
   availableModels: AIModel[];
-  defaultModelId: string;
-  existingApiKey?: string;
 }
 
 interface FormValues {
@@ -37,26 +37,42 @@ interface FormValues {
 
 const ModelAssignmentForm = ({ 
   selectedTenantId, 
-  availableModels,
-  defaultModelId,
-  existingApiKey = ''
+  availableModels
 }: ModelAssignmentFormProps) => {
-  const [selectedModel, setSelectedModel] = useState<AIModel | null>(
-    availableModels.find(model => model.id === defaultModelId) || null
-  );
+  const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
+  const { data: tenantModelData, isLoading: isLoadingTenantModel } = useTenantModel(selectedTenantId);
+  const assignModelMutation = useAssignModelToTenant();
   
   const form = useForm<FormValues>({
     defaultValues: {
-      modelId: defaultModelId,
-      apiKey: existingApiKey,
+      modelId: '',
+      apiKey: '',
     },
   });
 
+  // Update form values when tenant model data changes
   useEffect(() => {
-    // Update selected model when modelId changes
+    if (tenantModelData) {
+      form.setValue('modelId', tenantModelData.model_id);
+      if (tenantModelData.api_key) {
+        form.setValue('apiKey', tenantModelData.api_key);
+      }
+      
+      // Set selected model
+      const model = getModelById(tenantModelData.model_id, availableModels);
+      if (model) {
+        setSelectedModel(model);
+      }
+    }
+  }, [tenantModelData, form, availableModels]);
+
+  // Update selected model when modelId changes
+  useEffect(() => {
     const modelId = form.watch('modelId');
-    const model = availableModels.find(m => m.id === modelId) || null;
-    setSelectedModel(model);
+    if (modelId) {
+      const model = availableModels.find(m => m.id === modelId) || null;
+      setSelectedModel(model);
+    }
   }, [form.watch('modelId'), availableModels]);
 
   const onSubmit = (data: FormValues) => {
@@ -69,19 +85,20 @@ const ModelAssignmentForm = ({
       return;
     }
 
-    // Here you would update the tenant's AI model and API key in your database
-    // For now, we'll just show a success toast
-    toast({
-      title: "AI Model Updated",
-      description: `Successfully assigned ${selectedModel?.name} model to tenant`,
-    });
-    
-    console.log("Saved model assignment:", {
+    assignModelMutation.mutate({
       tenantId: selectedTenantId,
       modelId: data.modelId,
-      apiKey: data.apiKey,
+      apiKey: data.apiKey
     });
   };
+
+  if (isLoadingTenantModel) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -95,6 +112,7 @@ const ModelAssignmentForm = ({
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -140,7 +158,16 @@ const ModelAssignmentForm = ({
           />
         )}
         
-        <Button type="submit">Save Assignment</Button>
+        <Button 
+          type="submit" 
+          disabled={assignModelMutation.isPending}
+          className="flex items-center gap-2"
+        >
+          {assignModelMutation.isPending && (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          )}
+          Save Assignment
+        </Button>
       </form>
     </Form>
   );
