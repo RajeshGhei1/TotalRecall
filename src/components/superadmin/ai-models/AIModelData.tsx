@@ -57,11 +57,12 @@ export const useTenantModel = (tenantId: string | null) => {
     queryFn: async () => {
       if (!tenantId) return null;
       
+      // We can directly query the database now that the table exists
       const { data, error } = await supabase
         .from('tenant_ai_models')
         .select('model_id, api_key')
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching tenant model:', error);
@@ -109,10 +110,11 @@ export const useAssignModelToTenant = () => {
       modelId: string; 
       apiKey?: string;
     }) => {
+      // We can use the database directly now that the table exists
       // First check if a record already exists
       const { data: existing } = await supabase
         .from('tenant_ai_models')
-        .select('*')
+        .select('id')
         .eq('tenant_id', tenantId)
         .maybeSingle();
       
@@ -135,7 +137,7 @@ export const useAssignModelToTenant = () => {
           .insert({
             tenant_id: tenantId,
             model_id: modelId,
-            api_key: apiKey
+            api_key: apiKey || null
           });
           
         if (error) throw error;
@@ -148,7 +150,7 @@ export const useAssignModelToTenant = () => {
         description: `Successfully assigned AI model to tenant`,
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: `Failed to assign AI model: ${error.message}`,

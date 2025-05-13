@@ -15,7 +15,7 @@ export type CustomField = {
   created_at?: string;
 };
 
-// Function to parse options from different formats
+// Fix the type issues in the parseOptions function
 export const parseOptions = (values: any) => {
   let optionsArray: Array<{ label: string; value: string }> = [];
 
@@ -31,8 +31,9 @@ export const parseOptions = (values: any) => {
       const optionsString = values.options as string;
       
       // Only proceed if it's a non-empty string
-      if (optionsString && optionsString.length > 0) {
+      if (optionsString && optionsString.trim().length > 0) {
         optionsArray = optionsString
+          .trim()
           .split(',')
           .map((option: string) => option.trim())
           .filter((option: string) => option)
