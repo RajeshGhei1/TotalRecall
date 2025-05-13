@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { createDialogHelpers } from '@/hooks/useDialogHelpers';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
