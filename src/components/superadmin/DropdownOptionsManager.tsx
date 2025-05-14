@@ -14,6 +14,16 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 const DropdownOptionsManager = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
