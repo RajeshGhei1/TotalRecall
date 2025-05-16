@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormDatePicker, FormSelect } from './FormFields';
 import { TenantFormValues } from './schema';
@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { createDialogHelpers } from '@/hooks/useDialogHelpers';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -67,12 +67,35 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   // Add an "Add New" option
   const addNewOption = { value: '__add_new__', label: '[+ Add New]' };
   
+  // Ensure the test option is always available along with options from the database
   const companyStatusOptions = statusLoading 
     ? [{ value: 'loading', label: 'Loading...' }] 
     : [...companyStatusOptionsRaw.map(o => ({ 
         value: o.value || 'unknown', 
         label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
+      })), 
+      { value: 'test', label: 'test' },  // Add the 'test' option here
+      addNewOption];
+
+  // Add 'test' option to the database when component mounts if it doesn't already exist
+  useEffect(() => {
+    const addTestOptionIfNeeded = async () => {
+      if (!statusLoading && !companyStatusOptionsRaw.some(o => o.value === 'test')) {
+        try {
+          console.log("Adding 'test' company status to the database");
+          await addOption.mutateAsync({
+            value: 'test',
+            label: 'test',
+            categoryName: 'company_statuses'
+          });
+        } catch (error) {
+          console.error("Failed to add 'test' company status:", error);
+        }
+      }
+    };
+    
+    addTestOptionIfNeeded();
+  }, [statusLoading, companyStatusOptionsRaw, addOption]);
 
   // Handle selection of the "Add New" option
   const handleSelectCompanyStatus = (value: string) => {
