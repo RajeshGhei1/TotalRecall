@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormTextarea, FormSelect } from './FormFields';
@@ -81,30 +82,31 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
   const handleAddNewOption = async () => {
     if (!addingType || !newOption.trim()) return;
 
-    let categoryId: string | null = null;
+    let categoryName: string | null = null;
     
     switch (addingType) {
       case 'areaOfSpecialize':
-        categoryId = await specializationHook.getCategoryIdByName('specializations');
+        categoryName = 'specializations';
         break;
       case 'serviceLine': 
-        categoryId = await serviceLineHook.getCategoryIdByName('service_lines');
+        categoryName = 'service_lines';
         break;
       case 'endUserChannel':
-        categoryId = await endUserHook.getCategoryIdByName('end_user_channels');
+        categoryName = 'end_user_channels';
         break;
     }
 
-    if (!categoryId) {
+    if (!categoryName) {
       console.error('Category not found for', addingType);
       return;
     }
 
     try {
       const newOptionObj = await specializationHook.addOption.mutateAsync({
-        categoryId,
         value: newOption,
-        label: newOption
+        label: newOption,
+        isDefault: false,
+        categoryName: categoryName
       });
       
       // Set the form value to the newly added option

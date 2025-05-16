@@ -111,34 +111,35 @@ const CompanyMetricsSection: React.FC<CompanyMetricsSectionProps> = ({ form }) =
   const handleAddNewOption = async () => {
     if (!addingType || !newOption.trim()) return;
 
-    let categoryId: string | null = null;
+    let categoryName: string | null = null;
     
     switch (addingType) {
       case 'segmentAsPerNumberOfEmployees':
-        categoryId = await employeeRangeHook.getCategoryIdByName('employee_ranges');
+        categoryName = 'employee_ranges';
         break;
       case 'segmentAsPerTurnover': 
-        categoryId = await turnoverRangeHook.getCategoryIdByName('turnover_ranges');
+        categoryName = 'turnover_ranges';
         break;
       case 'turnoverYear':
       case 'yearOfEstablishment':
-        categoryId = await yearsHook.getCategoryIdByName('years');
+        categoryName = 'years';
         break;
       case 'segmentAsPerPaidUpCapital':
-        categoryId = await segmentHook.getCategoryIdByName('specializations');
+        categoryName = 'specializations';
         break;
     }
 
-    if (!categoryId) {
+    if (!categoryName) {
       console.error('Category not found for', addingType);
       return;
     }
 
     try {
       const newOptionObj = await employeeRangeHook.addOption.mutateAsync({
-        categoryId,
         value: newOption,
-        label: newOption
+        label: newOption,
+        isDefault: false,
+        categoryName: categoryName
       });
       
       // Set the form value to the newly added option

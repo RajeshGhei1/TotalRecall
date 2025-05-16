@@ -56,8 +56,8 @@ export function useDropdownOptions(categoryName?: string) {
   };
 }
 
-// Re-export types for convenience
-export { DropdownCategory, DropdownOption } from './types';
+// Re-export types and hooks for convenience
+export type { DropdownCategory, DropdownOption } from './types';
 export { useDropdownCategories } from './useDropdownCategories';
 export { useDropdownOptionsByCategoryId } from './useDropdownOptionsByCategoryId';
 export { useDropdownOptionsByCategoryName } from './useDropdownOptionsByCategoryName';

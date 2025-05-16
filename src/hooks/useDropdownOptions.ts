@@ -1,14 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useDropdownOptions as useDropdownOptionsImpl } from './dropdown/useDropdownOptions';
-import { 
+
+export type { 
   DropdownCategory, 
   DropdownOption 
 } from './dropdown/types';
 
 export { 
-  DropdownCategory, 
-  DropdownOption,
   useDropdownCategories,
   useDropdownOptionsByCategoryId,
   useDropdownOptionsByCategoryName
