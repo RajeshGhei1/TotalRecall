@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -40,16 +39,7 @@ const Auth = () => {
   const { signIn, signUp, bypassAuth } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect to dashboard if in bypass mode
-  useEffect(() => {
-    if (bypassAuth) {
-      const timer = setTimeout(() => {
-        navigate('/superadmin/dashboard');
-      }, 3000); // Redirect after 3 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [bypassAuth, navigate]);
+  // Removed automatic redirect for bypass mode
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),

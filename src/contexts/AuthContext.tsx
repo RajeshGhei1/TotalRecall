@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bypassAuth, setBypassAuth] = useState(true); // Default to bypass for development
+  const [bypassAuth, setBypassAuth] = useState(false); // Changed from true to false
   const navigate = useNavigate();
 
   useEffect(() => {
