@@ -33,6 +33,11 @@ const signupSchema = loginSchema.extend({
   path: ["confirmPassword"],
 });
 
+// Define the missing schema for the super admin email form
+const superAdminEmailSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
 type SuperAdminEmailFormValues = z.infer<typeof superAdminEmailSchema>;
