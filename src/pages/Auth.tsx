@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { makeUserSuperAdmin } from "@/utils/makeUserSuperAdmin";
 import {
   Form,
   FormControl,
@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -34,13 +35,14 @@ const signupSchema = loginSchema.extend({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
+type SuperAdminEmailFormValues = z.infer<typeof superAdminEmailSchema>;
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const { signIn, signUp, bypassAuth } = useAuth();
   const navigate = useNavigate();
-
-  // Removed automatic redirect for bypass mode
+  const [superAdminPromoting, setSuperAdminPromoting] = useState(false);
+  const [superAdminPromoted, setSuperAdminPromoted] = useState(false);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -57,6 +59,13 @@ const Auth = () => {
       fullName: "",
       password: "",
       confirmPassword: "",
+    },
+  });
+
+  const superAdminForm = useForm<SuperAdminEmailFormValues>({
+    resolver: zodResolver(superAdminEmailSchema),
+    defaultValues: {
+      email: "",
     },
   });
 
@@ -77,8 +86,20 @@ const Auth = () => {
     }
   };
 
+  const onMakeSuperAdminSubmit = async (data: SuperAdminEmailFormValues) => {
+    setSuperAdminPromoting(true);
+    try {
+      const result = await makeUserSuperAdmin(data.email);
+      setSuperAdminPromoted(result);
+    } catch (error) {
+      console.error("Error making super admin:", error);
+    } finally {
+      setSuperAdminPromoting(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-jobmojo-primary tracking-tight">
@@ -204,6 +225,43 @@ const Auth = () => {
             </TabsContent>
           </Tabs>
         )}
+
+        {/* Super Admin Promotion Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-sm">Admin Functions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...superAdminForm}>
+              <form onSubmit={superAdminForm.handleSubmit(onMakeSuperAdminSubmit)} className="space-y-4">
+                <FormField
+                  control={superAdminForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Make Super Admin</FormLabel>
+                      <FormControl>
+                        <Input placeholder="email@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={superAdminPromoting}>
+                  {superAdminPromoting ? "Processing..." : "Promote to Super Admin"}
+                </Button>
+                {superAdminPromoted && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <AlertCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      User successfully promoted to Super Admin.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
         
         <div className="mt-4 text-center">
           <Button variant="link" onClick={() => navigate("/")}>
