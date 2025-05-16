@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormSelect } from './FormFields';
+import { FormSelect } from './fields';
 import { TenantFormValues } from './schema';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { 

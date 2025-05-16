@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormInput, FormSelect } from '../FormFields';
+import { FormInput, FormSelect } from '../fields';
 import { TenantFormValues } from '../schema';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';

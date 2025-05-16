@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormInput, FormDatePicker, FormSelect } from './FormFields';
+import { FormInput, FormDatePicker, FormSelect } from './fields';
 import { TenantFormValues } from './schema';
 import {
   Select,
