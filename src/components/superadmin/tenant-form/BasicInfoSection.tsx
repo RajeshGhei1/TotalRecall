@@ -1,29 +1,15 @@
+
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormInput, FormDatePicker, FormSelect } from './fields';
+import { FormInput, FormDatePicker } from './fields';
 import { TenantFormValues } from './schema';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Plus, Loader2 } from 'lucide-react';
-import { createDialogHelpers } from '@/hooks/useDialogHelpers';
 import { toast } from '@/hooks/use-toast';
+import ParentSelector from './basic-info/ParentSelector';
+import CompanyStatusField from './basic-info/CompanyStatusField';
+import DialogManager from './basic-info/DialogManager';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -33,14 +19,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   const [addingCompanyStatus, setAddingCompanyStatus] = useState(false);
   const [newCompanyStatus, setNewCompanyStatus] = useState('');
   
-  // Use the new dialog helpers
-  const { getDialogTitle, getDialogPlaceholder } = createDialogHelpers({
-    'companyStatus': {
-      title: 'Add New Company Status',
-      placeholder: 'Enter new company status'
-    }
-  });
-
   // Get parent tenants
   const { data: tenants = [] } = useQuery({
     queryKey: ["tenants-for-parent"],
@@ -72,14 +50,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
         value: o.value || 'unknown', 
         label: o.label || o.value || 'Unknown' 
       })), addNewOption];
-
-  // Handle selection of the "Add New" option
-  const handleSelectCompanyStatus = (value: string) => {
-    if (value === '__add_new__') {
-      setAddingCompanyStatus(true);
-      setNewCompanyStatus('');
-    }
-  };
 
   // Handle adding a new company status
   const handleAddNewCompanyStatus = async () => {
@@ -123,22 +93,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           required
         />
         
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Parent</label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="[Choose One]" />
-            </SelectTrigger>
-            <SelectContent className="z-50 bg-background">
-              <SelectItem value="none">None</SelectItem>
-              {tenants.map((tenant) => (
-                <SelectItem key={tenant.id} value={tenant.id || 'unknown'}>
-                  {tenant.name || 'Unnamed Tenant'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <ParentSelector tenants={tenants} />
         
         <FormInput 
           form={form}
@@ -169,27 +124,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           required
         />
         
-        <div className="space-y-1">
-          <FormSelect 
-            form={form}
-            name="companyStatus"
-            label="Company Status"
-            options={companyStatusOptions}
-            required
-            onChange={handleSelectCompanyStatus}
-          />
-          {form.watch('companyStatus') === '__add_new__' && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              className="mt-1"
-              onClick={() => setAddingCompanyStatus(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add New Status
-            </Button>
-          )}
-        </div>
+        <CompanyStatusField 
+          form={form}
+          options={companyStatusOptions}
+          onSelectAddNew={() => setAddingCompanyStatus(true)}
+        />
         
         <FormInput 
           form={form}
@@ -200,46 +139,15 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
       </div>
 
       {/* Dialog for adding new company status */}
-      <Dialog open={addingCompanyStatus} onOpenChange={setAddingCompanyStatus}>
-        <DialogContent className="z-[10000] bg-white">
-          <DialogHeader>
-            <DialogTitle>{getDialogTitle('companyStatus')}</DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Input
-              placeholder={getDialogPlaceholder('companyStatus')}
-              value={newCompanyStatus}
-              onChange={(e) => setNewCompanyStatus(e.target.value)}
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isAddingStatus && newCompanyStatus.trim()) {
-                  handleAddNewCompanyStatus();
-                }
-              }}
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddingCompanyStatus(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAddNewCompanyStatus} 
-              disabled={!newCompanyStatus.trim() || isAddingStatus}
-            >
-              {isAddingStatus ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>Add</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DialogManager
+        isOpen={addingCompanyStatus}
+        onClose={() => setAddingCompanyStatus(false)}
+        onAdd={handleAddNewCompanyStatus}
+        value={newCompanyStatus}
+        onChange={setNewCompanyStatus}
+        isAdding={isAddingStatus}
+        dialogType="companyStatus"
+      />
     </>
   );
 };
