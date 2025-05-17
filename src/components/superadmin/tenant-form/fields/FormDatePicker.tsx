@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parse } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import {
   FormControl,
@@ -48,8 +48,20 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   const formatDate = (date: Date | string | undefined | null) => {
     if (!date) return null;
     
+    // Handle both Date objects and string dates
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     return isValid(dateObj) ? format(dateObj, 'PPP') : null;
+  };
+
+  // Helper function to safely parse date strings
+  const parseDate = (dateStr: string) => {
+    try {
+      const parsed = parse(dateStr, 'PPP', new Date());
+      return isValid(parsed) ? parsed : null;
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return null;
+    }
   };
 
   return (
@@ -58,7 +70,9 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
       name={name}
       render={({ field }) => (
         <FormItem className={`flex flex-col ${className}`}>
-          <FormLabel>{label}{required && <span className="text-red-500 ml-1">*</span>}</FormLabel>
+          <FormLabel>
+            {label}{required && <span className="text-red-500 ml-1">*</span>}
+          </FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -66,6 +80,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                   variant={"outline"}
                   className="w-full pl-3 text-left font-normal"
                   disabled={disabled}
+                  type="button" // Prevent form submission when clicking
                 >
                   {field.value ? (
                     formatDate(field.value) || placeholder || "Select date"
@@ -83,9 +98,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                 mode="single"
                 selected={field.value ? new Date(field.value) : undefined}
                 onSelect={(date) => {
-                  if (date) {
-                    field.onChange(date);
-                  }
+                  field.onChange(date);
                 }}
                 disabled={(date) => {
                   if (disabled) return true;

@@ -51,6 +51,7 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   <Button
                     variant={"outline"}
                     className="w-full pl-3 text-left font-normal"
+                    type="button" // Prevent form submission when clicking
                   >
                     {formField.value ? (
                       formatDate(formField.value) || "Select date"
@@ -66,9 +67,7 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   mode="single"
                   selected={formField.value ? new Date(formField.value) : undefined}
                   onSelect={(date) => {
-                    if (date) {
-                      formField.onChange(date);
-                    }
+                    formField.onChange(date);
                   }}
                   initialFocus
                   className="pointer-events-auto" // Ensure the calendar is interactive
