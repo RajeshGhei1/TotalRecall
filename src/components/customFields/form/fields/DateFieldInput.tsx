@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { CustomField } from '@/hooks/customFields/types';
 import { format, isValid, parse } from 'date-fns';
 import { 
@@ -26,6 +27,8 @@ interface DateFieldInputProps {
 }
 
 const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName }) => {
+  const [showCalendar, setShowCalendar] = useState(false);
+  
   // Helper function to safely format dates
   const formatDate = (date: Date | string | undefined | null) => {
     if (!date) return '';
@@ -94,11 +97,12 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   className="rounded-r-none"
                 />
               </FormControl>
-              <Popover>
+              <Popover open={showCalendar} onOpenChange={setShowCalendar}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className="rounded-l-none border-l-0"
+                    onClick={() => setShowCalendar(true)}
                     type="button" // Prevent form submission
                   >
                     <CalendarIcon className="h-4 w-4" />
@@ -109,9 +113,8 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                     mode="single"
                     selected={dateValue}
                     onSelect={(date) => {
-                      // Only send the date or undefined to ensure consistent handling
-                      formField.onChange(date ? date : undefined);
-                      console.log("Custom field date selected:", date);
+                      formField.onChange(date);
+                      setShowCalendar(false);
                     }}
                     initialFocus
                     className="pointer-events-auto" // Ensure the calendar is interactive

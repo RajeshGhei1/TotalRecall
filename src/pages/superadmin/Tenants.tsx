@@ -11,7 +11,7 @@ import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
 import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
 import { TenantFormValues } from '@/components/superadmin/tenant-form';
 import { useCustomFields } from '@/hooks/useCustomFields';
-import { isValid, parse } from 'date-fns';
+import { format, isValid, parse } from 'date-fns';
 
 interface Tenant {
   id: string;
