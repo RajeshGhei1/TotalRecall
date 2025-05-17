@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -66,11 +65,20 @@ const Tenants = () => {
     mutationFn: async (tenantData: TenantFormValues) => {
       console.log("Form data received:", tenantData);
       
+      // Prepare the registration date for database storage
+      let formattedDate = null;
+      if (tenantData.registrationDate) {
+        // Convert to ISO string for consistent database storage
+        formattedDate = new Date(tenantData.registrationDate).toISOString();
+        console.log("Formatted registration date:", formattedDate);
+      }
+      
       // Extract the basic tenant data that the database expects
       const basicTenantData = {
         name: tenantData.name,
         domain: tenantData.domain || tenantData.webSite, // Use website as domain if domain not provided
         description: tenantData.companyProfile, // Use company profile as description
+        registration_date: formattedDate, // Add registration date
       };
 
       console.log("Sending to database:", basicTenantData);

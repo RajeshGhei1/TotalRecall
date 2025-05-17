@@ -62,7 +62,12 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
               <Calendar
                 mode="single"
                 selected={field.value ? new Date(field.value) : undefined}
-                onSelect={field.onChange}
+                onSelect={(date) => {
+                  if (date) {
+                    console.log("Date selected:", date);
+                    field.onChange(date);
+                  }
+                }}
                 initialFocus
               />
             </PopoverContent>

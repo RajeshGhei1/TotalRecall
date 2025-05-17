@@ -10,7 +10,6 @@ import {
   FormDescription, 
   FormMessage 
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -58,7 +57,12 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                 <Calendar
                   mode="single"
                   selected={formField.value ? new Date(formField.value) : undefined}
-                  onSelect={formField.onChange}
+                  onSelect={(date) => {
+                    if (date) {
+                      console.log("Custom field date selected:", date);
+                      formField.onChange(date);
+                    }
+                  }}
                   initialFocus
                 />
               </PopoverContent>

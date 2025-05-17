@@ -8,7 +8,7 @@ export const tenantFormSchema = z.object({
   cin: z.string().min(1, "CIN is required"),
   registrationDate: z.date({
     required_error: "Registration date is required",
-  }),
+  }).or(z.string().transform(str => new Date(str))), // Handle both date and string
   companyStatus: z.string().optional(),
   registeredOfficeAddress: z.string().min(1, "Registered office address is required"),
   registeredEmailAddress: z.string().email("Invalid email address").min(1, "Registered email address is required"),
