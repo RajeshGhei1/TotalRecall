@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -65,6 +64,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
+                onClick={() => navigate("/superadmin/settings")}
+              >
+                <Settings className="mr-2 h-4 w-4" /> Tenant Settings
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
                 onClick={() => navigate("/superadmin/users")}
               >
                 <Users className="mr-2 h-4 w-4" /> Users
@@ -75,13 +81,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 onClick={() => navigate("/superadmin/talents")}
               >
                 <Briefcase className="mr-2 h-4 w-4" /> Talents
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start" 
-                onClick={() => navigate("/superadmin/settings")}
-              >
-                <Settings className="mr-2 h-4 w-4" /> Settings
               </Button>
             </>
           ) : (
