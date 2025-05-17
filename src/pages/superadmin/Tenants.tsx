@@ -1,25 +1,13 @@
 
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 import TenantUserManager from '@/components/TenantUserManager';
 import TenantsHeader from '@/components/superadmin/TenantsHeader';
 import TenantList from '@/components/superadmin/TenantList';
 import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
 import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
 import { TenantFormValues } from '@/components/superadmin/tenant-form';
-import { useCustomFields } from '@/hooks/useCustomFields';
-import { format, isValid, parse } from 'date-fns';
-
-interface Tenant {
-  id: string;
-  name: string;
-  domain?: string;
-  description?: string;
-  created_at: string;
-}
+import { useTenants, Tenant } from '@/hooks/useTenants';
 
 const Tenants = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -27,138 +15,11 @@ const Tenants = () => {
   const [isUserManagerOpen, setIsUserManagerOpen] = useState(false);
   const [isCustomFieldsOpen, setIsCustomFieldsOpen] = useState(false);
 
-  const queryClient = useQueryClient();
-  const { saveCustomFieldValues } = useCustomFields();
-
-  // Fetch tenants from the database
-  const { data: tenants = [], isLoading } = useQuery({
-    queryKey: ['tenants'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Tenant[];
-    },
-  });
-
-  // Extract custom field values from form data
-  const extractCustomFieldValues = (formData: TenantFormValues) => {
-    const customFields: Record<string, any> = {};
-    
-    console.log("Extracting custom fields from form data:", formData);
-    
-    // Loop through all form values and extract those that start with "custom_"
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key.startsWith('custom_')) {
-        const fieldKey = key.replace('custom_', '');
-        customFields[fieldKey] = value;
-      }
-    });
-    
-    console.log("Extracted custom fields:", customFields);
-    return customFields;
-  };
-
-  // Helper function to parse various date formats
-  const parseFormDate = (dateValue: any): string | null => {
-    if (!dateValue) return null;
-    
-    try {
-      // If it's already a Date object
-      if (dateValue instanceof Date) {
-        if (isValid(dateValue)) {
-          return dateValue.toISOString();
-        }
-        return null;
-      }
-      
-      // If it's a string, try parsing it as DD/MM/YYYY
-      if (typeof dateValue === 'string') {
-        // Try to parse as DD/MM/YYYY
-        const parsedDate = parse(dateValue, 'dd/MM/yyyy', new Date());
-        if (isValid(parsedDate)) {
-          return parsedDate.toISOString();
-        }
-        
-        // Try as standard ISO date
-        const dateObj = new Date(dateValue);
-        if (isValid(dateObj)) {
-          return dateObj.toISOString();
-        }
-      }
-      
-      return null;
-    } catch (error) {
-      console.error("Error parsing date:", error, dateValue);
-      return null;
-    }
-  };
-
-  // Mutation for creating a new tenant
-  const createTenant = useMutation({
-    mutationFn: async (tenantData: TenantFormValues) => {
-      console.log("Form data received:", tenantData);
-      
-      // Parse the registration date for database storage
-      const formattedDate = parseFormDate(tenantData.registrationDate);
-      console.log("Parsed registration date:", formattedDate);
-      
-      if (tenantData.registrationDate && !formattedDate) {
-        throw new Error("Invalid registration date format");
-      }
-      
-      // Extract the basic tenant data that the database expects
-      const basicTenantData = {
-        name: tenantData.name,
-        domain: tenantData.domain || tenantData.webSite, // Use website as domain if domain not provided
-        description: tenantData.companyProfile, // Use company profile as description
-        registration_date: formattedDate, // Add registration date
-      };
-
-      console.log("Sending to database:", basicTenantData);
-
-      const { data, error } = await supabase
-        .from('tenants')
-        .insert([basicTenantData])
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      // Handle custom fields if any exist
-      const customFieldValues = extractCustomFieldValues(tenantData);
-      console.log("Custom field values:", customFieldValues);
-      
-      if (Object.keys(customFieldValues).length > 0) {
-        await saveCustomFieldValues('tenant', data.id, customFieldValues);
-      }
-      
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      setIsCreateDialogOpen(false);
-      toast({
-        title: 'Tenant created',
-        description: 'The tenant has been created successfully',
-      });
-    },
-    onError: (error: any) => {
-      console.error("Error creating tenant:", error);
-      toast({
-        title: 'Error',
-        description: `Failed to create tenant: ${error.message}`,
-        variant: 'destructive',
-      });
-    },
-  });
+  const { tenants, isLoading, createTenant } = useTenants();
 
   const handleCreateTenant = (data: TenantFormValues) => {
-    console.log("Submitting tenant form:", data);
     createTenant.mutate(data);
+    setIsCreateDialogOpen(false);
   };
 
   const handleOpenUserManager = (tenant: Tenant) => {
