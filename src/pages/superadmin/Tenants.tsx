@@ -11,6 +11,7 @@ import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
 import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
 import { TenantFormValues } from '@/components/superadmin/tenant-form';
 import { useCustomFields } from '@/hooks/useCustomFields';
+import { isValid, parse } from 'date-fns';
 
 interface Tenant {
   id: string;
@@ -61,27 +62,52 @@ const Tenants = () => {
     return customFields;
   };
 
+  // Helper function to parse various date formats
+  const parseFormDate = (dateValue: any): string | null => {
+    if (!dateValue) return null;
+    
+    try {
+      // If it's already a Date object
+      if (dateValue instanceof Date) {
+        if (isValid(dateValue)) {
+          return dateValue.toISOString();
+        }
+        return null;
+      }
+      
+      // If it's a string, try parsing it as DD/MM/YYYY
+      if (typeof dateValue === 'string') {
+        // Try to parse as DD/MM/YYYY
+        const parsedDate = parse(dateValue, 'dd/MM/yyyy', new Date());
+        if (isValid(parsedDate)) {
+          return parsedDate.toISOString();
+        }
+        
+        // Try as standard ISO date
+        const dateObj = new Date(dateValue);
+        if (isValid(dateObj)) {
+          return dateObj.toISOString();
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error parsing date:", error, dateValue);
+      return null;
+    }
+  };
+
   // Mutation for creating a new tenant
   const createTenant = useMutation({
     mutationFn: async (tenantData: TenantFormValues) => {
       console.log("Form data received:", tenantData);
       
-      // Prepare the registration date for database storage
-      let formattedDate = null;
-      if (tenantData.registrationDate) {
-        try {
-          // Convert to ISO string for consistent database storage
-          formattedDate = new Date(tenantData.registrationDate).toISOString();
-          console.log("Formatted registration date:", formattedDate);
-        } catch (error) {
-          console.error("Error formatting registration date:", error);
-          throw new Error("Invalid registration date format");
-        }
-      }
+      // Parse the registration date for database storage
+      const formattedDate = parseFormDate(tenantData.registrationDate);
+      console.log("Parsed registration date:", formattedDate);
       
-      if (!formattedDate && tenantData.registrationDate) {
-        console.error("Failed to format registration date:", tenantData.registrationDate);
-        throw new Error("Invalid registration date provided");
+      if (tenantData.registrationDate && !formattedDate) {
+        throw new Error("Invalid registration date format");
       }
       
       // Extract the basic tenant data that the database expects

@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { CustomField } from '@/hooks/customFields/types';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parse } from 'date-fns';
 import { 
   FormField, 
   FormItem, 
@@ -11,6 +10,7 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -28,10 +28,26 @@ interface DateFieldInputProps {
 const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName }) => {
   // Helper function to safely format dates
   const formatDate = (date: Date | string | undefined | null) => {
-    if (!date) return null;
+    if (!date) return '';
     
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return isValid(dateObj) ? format(dateObj, 'PPP') : null;
+    return isValid(dateObj) ? format(dateObj, 'dd/MM/yyyy') : '';
+  };
+
+  // Helper function to safely parse date strings
+  const parseDate = (dateStr: string) => {
+    if (!dateStr) return undefined;
+    
+    try {
+      const parsed = parse(dateStr, 'dd/MM/yyyy', new Date());
+      if (isValid(parsed)) return parsed;
+      
+      const dateObj = new Date(dateStr);
+      return isValid(dateObj) ? dateObj : undefined;
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return undefined;
+    }
   };
 
   return (
@@ -40,8 +56,8 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
       name={fieldName}
       render={({ field: formField }) => {
         // Ensure date value is properly handled
-        const dateValue = formField.value ? new Date(formField.value) : undefined;
-        const isValidDate = dateValue ? isValid(dateValue) : false;
+        const dateValue = formField.value ? parseDate(formField.value) : undefined;
+        const formattedDate = formatDate(dateValue);
         
         return (
           <FormItem>
@@ -49,28 +65,49 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
               {field.name}
               {field.required && <span className="text-destructive ml-1">*</span>}
             </FormLabel>
-            <FormControl>
+            <div className="flex">
+              <FormControl>
+                <Input
+                  placeholder="DD/MM/YYYY"
+                  value={formattedDate}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (!inputValue) {
+                      formField.onChange(undefined);
+                      return;
+                    }
+                    
+                    // Don't attempt to parse until we have enough characters
+                    if (inputValue.length >= 8) {
+                      const parsedDate = parseDate(inputValue);
+                      if (parsedDate) {
+                        formField.onChange(parsedDate);
+                      } else {
+                        // Keep the text input value even if it's not a valid date yet
+                        formField.onChange(inputValue);
+                      }
+                    } else {
+                      // Keep the text input value
+                      formField.onChange(inputValue);
+                    }
+                  }}
+                  className="rounded-r-none"
+                />
+              </FormControl>
               <Popover>
                 <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className="w-full pl-3 text-left font-normal"
-                      type="button" // Prevent form submission when clicking
-                    >
-                      {isValidDate ? (
-                        formatDate(dateValue) || "Select date"
-                      ) : (
-                        <span className="text-muted-foreground">Select date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
+                  <Button
+                    variant="outline"
+                    className="rounded-l-none border-l-0"
+                    type="button" // Prevent form submission
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[1000]" align="start">
+                <PopoverContent className="w-auto p-0 z-[1000]" align="end">
                   <Calendar
                     mode="single"
-                    selected={isValidDate ? dateValue : undefined}
+                    selected={dateValue}
                     onSelect={(date) => {
                       // Only send the date or undefined to ensure consistent handling
                       formField.onChange(date ? date : undefined);
@@ -81,7 +118,7 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   />
                 </PopoverContent>
               </Popover>
-            </FormControl>
+            </div>
             {field.description && <FormDescription>{field.description}</FormDescription>}
             <FormMessage />
           </FormItem>
