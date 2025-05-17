@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { format, isValid, parse } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import {
   FormControl,
@@ -18,6 +17,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { formatDate, parseFormDate } from '@/utils/dateUtils';
 
 interface FormDatePickerProps {
   form: UseFormReturn<any>;
@@ -45,41 +45,18 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   className,
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  
-  // Helper function to safely format dates
-  const formatDate = (date: Date | string | undefined | null) => {
-    if (!date) return '';
-    
-    // Handle both Date objects and string dates
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return isValid(dateObj) ? format(dateObj, 'dd/MM/yyyy') : '';
-  };
-
-  // Helper function to safely parse date strings
-  const parseDate = (dateStr: string) => {
-    if (!dateStr) return undefined;
-    
-    try {
-      // Try to parse input in format dd/MM/yyyy
-      const parsed = parse(dateStr, 'dd/MM/yyyy', new Date());
-      if (isValid(parsed)) return parsed;
-      
-      // If that fails, try standard ISO parsing
-      const dateObj = new Date(dateStr);
-      return isValid(dateObj) ? dateObj : undefined;
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      return undefined;
-    }
-  };
 
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => {
-        // Ensure field.value is properly handled
-        const dateValue = field.value ? parseDate(field.value) : undefined;
+        // Parse the current value to a Date object if possible
+        const dateValue = field.value ? 
+          (field.value instanceof Date ? field.value : new Date(field.value)) : 
+          undefined;
+        
+        // Format the date as a string for display in the input
         const formattedDate = formatDate(dateValue);
 
         return (
@@ -100,17 +77,23 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                       return;
                     }
                     
-                    // Don't attempt to parse until we have enough characters
+                    // Only try to parse when we have enough characters
                     if (inputValue.length >= 8) {
-                      const parsedDate = parseDate(inputValue);
-                      if (parsedDate) {
-                        field.onChange(parsedDate);
-                      } else {
-                        // Keep the text input value even if it's not a valid date yet
+                      try {
+                        // Attempt to create a date from the input string
+                        const dateObj = new Date(inputValue);
+                        if (isNaN(dateObj.getTime())) {
+                          // Keep the raw input if it's not a valid date yet
+                          field.onChange(inputValue);
+                        } else {
+                          field.onChange(dateObj);
+                        }
+                      } catch (error) {
+                        // Keep the raw text input if parsing fails
                         field.onChange(inputValue);
                       }
                     } else {
-                      // Keep the text input value even if it's not a valid date yet
+                      // Keep the raw text input during typing
                       field.onChange(inputValue);
                     }
                   }}
@@ -132,7 +115,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                 <PopoverContent className="w-auto p-0 z-[1000]" align="end">
                   <Calendar
                     mode="single"
-                    selected={dateValue}
+                    selected={dateValue && !isNaN(dateValue.getTime()) ? dateValue : undefined}
                     onSelect={(date) => {
                       field.onChange(date);
                       setShowCalendar(false);
