@@ -48,7 +48,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                   className="w-full pl-3 text-left font-normal"
                 >
                   {field.value ? (
-                    format(field.value, "PPP")
+                    format(new Date(field.value), "PPP")
                   ) : (
                     <span className="text-muted-foreground">
                       {placeholder || "Pick a date"}
@@ -58,12 +58,11 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 z-[1000]" align="start">
               <Calendar
                 mode="single"
-                selected={field.value}
+                selected={field.value ? new Date(field.value) : undefined}
                 onSelect={field.onChange}
-                disabled={(date) => date > new Date()}
                 initialFocus
               />
             </PopoverContent>
