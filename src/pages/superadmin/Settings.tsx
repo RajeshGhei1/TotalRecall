@@ -67,7 +67,7 @@ const Settings = () => {
               </TabsTrigger>
               <TabsTrigger value="general" className="flex items-center gap-2 h-12">
                 <SettingsIcon className="h-4 w-4" />
-                <span>General</span>
+                <span>Tenant Settings</span>
               </TabsTrigger>
               <TabsTrigger value="social" className="flex items-center gap-2 h-12">
                 <Globe className="h-4 w-4" />
