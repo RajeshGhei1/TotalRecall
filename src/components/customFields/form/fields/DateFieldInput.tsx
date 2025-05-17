@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { CustomField } from '@/hooks/customFields/types';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { 
   FormField, 
   FormItem, 
@@ -26,6 +26,14 @@ interface DateFieldInputProps {
 }
 
 const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName }) => {
+  // Helper function to safely format dates
+  const formatDate = (date: Date | string | undefined | null) => {
+    if (!date) return null;
+    
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return isValid(dateObj) ? format(dateObj, 'PPP') : null;
+  };
+
   return (
     <FormField
       control={form.control}
@@ -45,9 +53,9 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                     className="w-full pl-3 text-left font-normal"
                   >
                     {formField.value ? (
-                      format(new Date(formField.value), "PPP")
+                      formatDate(formField.value) || "Select date"
                     ) : (
-                      <span className="text-muted-foreground">Pick a date</span>
+                      <span className="text-muted-foreground">Select date</span>
                     )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
@@ -59,11 +67,11 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   selected={formField.value ? new Date(formField.value) : undefined}
                   onSelect={(date) => {
                     if (date) {
-                      console.log("Custom field date selected:", date);
                       formField.onChange(date);
                     }
                   }}
                   initialFocus
+                  className="pointer-events-auto" // Ensure the calendar is interactive
                 />
               </PopoverContent>
             </Popover>
