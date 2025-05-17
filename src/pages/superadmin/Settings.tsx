@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,7 +66,7 @@ const Settings = () => {
               </TabsTrigger>
               <TabsTrigger value="general" className="flex items-center gap-2 h-12">
                 <SettingsIcon className="h-4 w-4" />
-                <span>Tenant Settings</span>
+                <span>Settings</span>
               </TabsTrigger>
               <TabsTrigger value="social" className="flex items-center gap-2 h-12">
                 <Globe className="h-4 w-4" />
@@ -88,7 +87,6 @@ const Settings = () => {
             </TabsList>
           </div>
           
-          {/* Original Super Admin Tabs */}
           <TabsContent value="dropdown-options" className="mt-6">
             <DropdownOptionsManager />
           </TabsContent>
@@ -101,7 +99,6 @@ const Settings = () => {
             <AIModelIntegration />
           </TabsContent>
           
-          {/* New Tenant Admin Replicated Tabs */}
           <TabsContent value="general" className="mt-6">
             <GeneralSettings />
           </TabsContent>
