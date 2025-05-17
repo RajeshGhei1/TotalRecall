@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { CustomField } from '@/hooks/customFields/types';
-import { format, isValid, parse } from 'date-fns';
 import { 
   FormField, 
   FormItem, 
@@ -19,6 +17,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import { formatDate, parseFormDate } from '@/utils/dateUtils';
 
 interface DateFieldInputProps {
   field: CustomField;
@@ -29,37 +28,17 @@ interface DateFieldInputProps {
 const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   
-  // Helper function to safely format dates
-  const formatDate = (date: Date | string | undefined | null) => {
-    if (!date) return '';
-    
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return isValid(dateObj) ? format(dateObj, 'dd/MM/yyyy') : '';
-  };
-
-  // Helper function to safely parse date strings
-  const parseDate = (dateStr: string) => {
-    if (!dateStr) return undefined;
-    
-    try {
-      const parsed = parse(dateStr, 'dd/MM/yyyy', new Date());
-      if (isValid(parsed)) return parsed;
-      
-      const dateObj = new Date(dateStr);
-      return isValid(dateObj) ? dateObj : undefined;
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      return undefined;
-    }
-  };
-
   return (
     <FormField
       control={form.control}
       name={fieldName}
       render={({ field: formField }) => {
-        // Ensure date value is properly handled
-        const dateValue = formField.value ? parseDate(formField.value) : undefined;
+        // Parse the current value to a Date object if possible
+        const dateValue = formField.value ? 
+          (formField.value instanceof Date ? formField.value : new Date(formField.value)) : 
+          undefined;
+        
+        // Format the date as a string for display in the input
         const formattedDate = formatDate(dateValue);
         
         return (
@@ -80,17 +59,23 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                       return;
                     }
                     
-                    // Don't attempt to parse until we have enough characters
+                    // Only try to parse when we have enough characters
                     if (inputValue.length >= 8) {
-                      const parsedDate = parseDate(inputValue);
-                      if (parsedDate) {
-                        formField.onChange(parsedDate);
-                      } else {
-                        // Keep the text input value even if it's not a valid date yet
+                      try {
+                        // Attempt to create a date from the input string
+                        const dateObj = new Date(inputValue);
+                        if (isNaN(dateObj.getTime())) {
+                          // Keep the raw input if it's not a valid date yet
+                          formField.onChange(inputValue);
+                        } else {
+                          formField.onChange(dateObj);
+                        }
+                      } catch (error) {
+                        // Keep the raw text input if parsing fails
                         formField.onChange(inputValue);
                       }
                     } else {
-                      // Keep the text input value
+                      // Keep the raw text input during typing
                       formField.onChange(inputValue);
                     }
                   }}
@@ -111,7 +96,7 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                 <PopoverContent className="w-auto p-0 z-[1000]" align="end">
                   <Calendar
                     mode="single"
-                    selected={dateValue}
+                    selected={dateValue && !isNaN(dateValue.getTime()) ? dateValue : undefined}
                     onSelect={(date) => {
                       formField.onChange(date);
                       setShowCalendar(false);
