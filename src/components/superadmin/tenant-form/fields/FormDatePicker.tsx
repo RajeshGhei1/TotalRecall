@@ -68,53 +68,61 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem className={`flex flex-col ${className}`}>
-          <FormLabel>
-            {label}{required && <span className="text-red-500 ml-1">*</span>}
-          </FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className="w-full pl-3 text-left font-normal"
-                  disabled={disabled}
-                  type="button" // Prevent form submission when clicking
-                >
-                  {field.value ? (
-                    formatDate(field.value) || placeholder || "Select date"
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {placeholder || "Select date"}
-                    </span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 z-[1000]" align="start">
-              <Calendar
-                mode="single"
-                selected={field.value ? new Date(field.value) : undefined}
-                onSelect={(date) => {
-                  field.onChange(date);
-                }}
-                disabled={(date) => {
-                  if (disabled) return true;
-                  if (minDate && date < minDate) return true;
-                  if (maxDate && date > maxDate) return true;
-                  return false;
-                }}
-                initialFocus
-                className="pointer-events-auto" // Ensure the calendar is interactive
-              />
-            </PopoverContent>
-          </Popover>
-          {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field }) => {
+        // Ensure field.value is properly converted to a Date object if it's a string
+        const dateValue = field.value ? new Date(field.value) : undefined;
+        const isValidDate = dateValue ? isValid(dateValue) : false;
+
+        return (
+          <FormItem className={`flex flex-col ${className}`}>
+            <FormLabel>
+              {label}{required && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className="w-full pl-3 text-left font-normal"
+                    disabled={disabled}
+                    type="button" // Prevent form submission when clicking
+                  >
+                    {isValidDate ? (
+                      formatDate(dateValue) || placeholder || "Select date"
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {placeholder || "Select date"}
+                      </span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[1000]" align="start">
+                <Calendar
+                  mode="single"
+                  selected={isValidDate ? dateValue : undefined}
+                  onSelect={(date) => {
+                    // Only send string or undefined to ensure consistent handling
+                    field.onChange(date ? date : undefined);
+                    console.log("Date selected:", date);
+                  }}
+                  disabled={(date) => {
+                    if (disabled) return true;
+                    if (minDate && date < minDate) return true;
+                    if (maxDate && date > maxDate) return true;
+                    return false;
+                  }}
+                  initialFocus
+                  className="pointer-events-auto" // Ensure the calendar is interactive
+                />
+              </PopoverContent>
+            </Popover>
+            {description && <FormDescription>{description}</FormDescription>}
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 };

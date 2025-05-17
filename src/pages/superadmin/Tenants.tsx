@@ -69,9 +69,19 @@ const Tenants = () => {
       // Prepare the registration date for database storage
       let formattedDate = null;
       if (tenantData.registrationDate) {
-        // Convert to ISO string for consistent database storage
-        formattedDate = new Date(tenantData.registrationDate).toISOString();
-        console.log("Formatted registration date:", formattedDate);
+        try {
+          // Convert to ISO string for consistent database storage
+          formattedDate = new Date(tenantData.registrationDate).toISOString();
+          console.log("Formatted registration date:", formattedDate);
+        } catch (error) {
+          console.error("Error formatting registration date:", error);
+          throw new Error("Invalid registration date format");
+        }
+      }
+      
+      if (!formattedDate && tenantData.registrationDate) {
+        console.error("Failed to format registration date:", tenantData.registrationDate);
+        throw new Error("Invalid registration date provided");
       }
       
       // Extract the basic tenant data that the database expects
