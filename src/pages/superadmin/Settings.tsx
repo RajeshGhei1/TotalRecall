@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GlobalCustomFieldsManager from '@/components/superadmin/GlobalCustomFieldsManager';
-import DropdownOptionsManager from '@/components/superadmin/DropdownOptionsManager';
+import DropdownOptionsManager from '@/components/superadmin/dropdown-manager/DropdownOptionsManager';
 import AIModelIntegration from '@/components/superadmin/AIModelIntegration';
 import { 
   Database, 
