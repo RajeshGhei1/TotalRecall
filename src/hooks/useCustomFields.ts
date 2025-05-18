@@ -64,7 +64,7 @@ export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions
           tenant_id: field.tenant_id,
           created_at: field.created_at,
           updated_at: field.updated_at,
-          sort_order: field.sort_order
+          sort_order: field.sort_order || 0 // Ensure sort_order has a default value
         })) || [];
         
         setCustomFields(typedFields);

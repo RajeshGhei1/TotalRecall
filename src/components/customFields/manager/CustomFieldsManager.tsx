@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -44,6 +43,13 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 
   const handleSubmit = async (values: FieldFormValues) => {
     try {
+      // Make sure name is always provided (it's required by the type)
+      // This should not be necessary as the form validation should catch this,
+      // but we're being defensive
+      if (!values.name) {
+        throw new Error('Field name is required');
+      }
+      
       await createField(values, tenantId);
       setIsDialogOpen(false);
       await refetch();
