@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import RenderCustomField from './RenderCustomField';
 import FormHeader from './FormHeader';
 import FormFooter from './FormFooter';
-import { useCustomFields } from '@/hooks/useCustomFields';
+import { useCustomFieldsHook } from '@/hooks/customFields/useCustomFieldsHook';
 import { CustomField } from '@/hooks/customFields/types';
 import { UseFormReturn } from 'react-hook-form';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -47,7 +46,7 @@ const CustomFieldsForm = ({
     getCustomFieldValues,
     saveCustomFieldValues,
     updateFieldOrder,
-  } = useCustomFields(tenantId, { formContext });
+  } = useCustomFieldsHook(tenantId, { formContext });
   
   const [fieldValues, setFieldValues] = React.useState<Record<string, any>>({});
   const [orderedFields, setOrderedFields] = React.useState<CustomField[]>([]);

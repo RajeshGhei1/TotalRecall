@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -105,6 +104,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     options: {},
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    sort_order: 0 // Adding the required sort_order property with a default value
   };
 
   return (

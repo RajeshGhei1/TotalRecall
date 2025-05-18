@@ -14,7 +14,7 @@ export interface CustomField {
   description?: string;
   created_at: string;
   updated_at: string;
-  sort_order: number; // Changed from optional to required with a default value
+  sort_order: number;
 }
 
 export interface CustomFieldValue {

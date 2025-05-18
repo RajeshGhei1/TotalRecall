@@ -64,6 +64,7 @@ export function useCustomFieldsList(
       
       // Convert the result to the CustomField type
       const typedFields: CustomField[] = data?.map(field => ({
+        ...field,
         id: field.id,
         name: field.name,
         field_key: field.field_key,

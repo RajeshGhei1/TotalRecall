@@ -148,11 +148,22 @@ export function useCustomFields(
     }
   };
 
+  // Adding updateFieldOrder to match the expected API
+  const updateFieldOrder = async (
+    fields: CustomField[],
+    tenantId?: string,
+    formContext?: string
+  ): Promise<any> => {
+    console.warn('Field order updates not implemented in legacy hook');
+    return Promise.resolve(fields);
+  };
+
   return {
     customFields,
     isLoading,
     error,
     getCustomFieldValues,
-    saveCustomFieldValues
+    saveCustomFieldValues,
+    updateFieldOrder
   };
 }
