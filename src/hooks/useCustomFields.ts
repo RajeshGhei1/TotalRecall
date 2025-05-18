@@ -2,19 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { CustomField } from './customFields/types';
+import { CustomField, CustomFieldValue } from './customFields/types';
 
 interface CustomFieldsOptions {
   formContext?: string;
-}
-
-interface CustomFieldValue {
-  id: string;
-  entity_id: string;
-  entity_type: string;
-  field_id: string;
-  value: any;
-  custom_fields?: CustomField;
 }
 
 export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions) {
@@ -53,14 +44,30 @@ export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions
         }
 
         // Order by sort_order if available, then by creation date
-        query = query.order('sort_order', { ascending: true, nullsLast: true })
+        query = query.order('sort_order', { ascending: true })
                      .order('created_at', { ascending: true });
         
         const { data, error } = await query;
         
         if (error) throw error;
         
-        setCustomFields(data || []);
+        // Convert the result to the CustomField type
+        const typedFields: CustomField[] = data?.map(field => ({
+          id: field.id,
+          name: field.name,
+          field_key: field.field_key,
+          field_type: field.field_type,
+          required: field.required,
+          description: field.description,
+          options: field.options as Record<string, any>,
+          applicable_forms: field.applicable_forms as string[] | null,
+          tenant_id: field.tenant_id,
+          created_at: field.created_at,
+          updated_at: field.updated_at,
+          sort_order: field.sort_order
+        })) || [];
+        
+        setCustomFields(typedFields);
       } catch (err) {
         console.error('Error fetching custom fields:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -86,7 +93,19 @@ export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions
       
       if (error) throw error;
       
-      return data || [];
+      // Convert to CustomFieldValue type
+      const typedValues: CustomFieldValue[] = data?.map(item => ({
+        id: item.id,
+        field_id: item.field_id,
+        entity_id: item.entity_id,
+        entity_type: item.entity_type,
+        value: item.value,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        custom_fields: item.custom_fields as unknown as CustomField
+      })) || [];
+      
+      return typedValues;
     } catch (err) {
       console.error('Error fetching custom field values:', err);
       throw err;
@@ -122,7 +141,7 @@ export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions
         for (const item of upsertArray) {
           const existing = existingValues.find(ev => ev.field_id === item.field_id);
           if (existing) {
-            item.id = existing.id;
+            (item as any).id = existing.id;
           }
         }
       }
@@ -143,17 +162,20 @@ export function useCustomFields(tenantId?: string, options?: CustomFieldsOptions
 
   // Update field order
   const updateFieldOrder = async (
-    fields: (CustomField & { sort_order?: number })[],
+    fields: CustomField[],
     tenantId?: string,
     formContext?: string
   ) => {
     if (!fields || fields.length === 0) return;
     
     try {
-      // Prepare update array with updated sort order
+      // Prepare update array with updated sort order and all required fields
       const updateArray = fields.map((field, index) => ({
         id: field.id,
-        sort_order: index
+        sort_order: index,
+        name: field.name,
+        field_key: field.field_key,
+        field_type: field.field_type
       }));
       
       // Update fields in database

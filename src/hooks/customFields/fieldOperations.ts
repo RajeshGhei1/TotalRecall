@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { QueryClient } from '@tanstack/react-query';
-import { FieldFormValues } from '@/components/customFields/form/CustomFieldForm';
+import { FieldFormValues } from '@/hooks/customFields/types';
 import { CustomField } from './types';
 
 /**
@@ -12,12 +12,12 @@ export async function createCustomField(values: FieldFormValues, tenantId?: stri
     .from('custom_fields')
     .insert({
       name: values.name,
-      field_key: values.field_key,
-      field_type: values.field_type,
-      description: values.description,
+      field_key: values.label.toLowerCase().replace(/\s+/g, '_'), // Convert label to field_key
+      field_type: values.fieldType, // Map fieldType to field_type
+      description: values.info, // Map info to description
       required: values.required,
-      applicable_forms: values.applicable_forms || [],
-      options: values.options,
+      applicable_forms: values.forms || [], // Map forms to applicable_forms
+      options: values.options ? { options: values.options } : {},
       tenant_id: tenantId !== 'global' ? tenantId : null
     })
     .select();
@@ -143,7 +143,7 @@ export async function saveCustomFieldValues(
     }, {} as Record<string, string>);
 
     // Prepare upserts (update or insert)
-    const upserts = [];
+    const upserts: any[] = [];
 
     // Go through all values
     for (const [fieldKey, value] of Object.entries(values)) {

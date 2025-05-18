@@ -1,8 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CustomField } from './types';
-import { FieldFormValues } from '@/components/customFields/form/CustomFieldForm';
+import { CustomField, FieldFormValues } from './types';
 import { createCustomField, updateCustomField, deleteCustomField } from './fieldOperations';
 
 export function useCustomFieldsMutations() {
@@ -47,11 +46,10 @@ export function useCustomFieldsMutations() {
       fields: (CustomField & { sort_order: number })[]; 
       tenantId?: string 
     }) => {
-      // Prepare updates - only include id and sort_order
+      // Prepare updates - include all required fields
       const updates = fields.map(field => ({
         id: field.id,
         sort_order: field.sort_order,
-        // Include these minimal required fields to satisfy TypeScript
         name: field.name,
         field_key: field.field_key,
         field_type: field.field_type

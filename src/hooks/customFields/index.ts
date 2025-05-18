@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchCustomFields, filterFieldsByFormContext, fetchCustomFieldValues } from './fetchHelpers';
 import { saveCustomFieldValues } from './fieldOperations';
@@ -64,17 +63,16 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
 
   // Update field order
   const updateFieldOrder = async (
-    fields: (CustomField & { sort_order: number })[], 
-    tenantId: string,
+    fields: CustomField[],
+    tenantId: string = effectiveTenantId,
     formContext?: string
   ) => {
     try {
-      // Prepare updates - only include id and sort_order
-      const updates = fields.map(field => ({
+      // Prepare updates with all required fields
+      const updates = fields.map((field, index) => ({
         id: field.id,
-        sort_order: field.sort_order,
-        // Include these required fields
-        name: field.name,
+        sort_order: index,
+        name: field.name, 
         field_key: field.field_key,
         field_type: field.field_type
       }));

@@ -4,7 +4,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 
 export interface CustomField {
   id: string;
-  tenant_id: string;
+  tenant_id: string | null;
   name: string;
   field_key: string;
   field_type: string;
@@ -14,6 +14,7 @@ export interface CustomField {
   description?: string;
   created_at: string;
   updated_at: string;
+  sort_order?: number;
 }
 
 export interface CustomFieldValue {
@@ -23,6 +24,8 @@ export interface CustomFieldValue {
   entity_type: string;
   value: any;
   custom_fields?: CustomField;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UseCustomFieldsOptions {
@@ -34,4 +37,24 @@ export interface UseCustomFieldsReturn {
   isLoading: boolean;
   getCustomFieldValues: (entityType: string, entityId: string) => Promise<any[]>;
   saveCustomFieldValues: (entityType: string, entityId: string, values: Record<string, any>) => Promise<void>;
+  updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => Promise<any>;
+}
+
+// Export interface for form values
+export interface FieldFormValues {
+  name: string;
+  label: string;
+  fieldType: "text" | "textarea" | "dropdown" | "number" | "boolean" | "date";
+  required: boolean;
+  placeholder?: string;
+  defaultValue?: string;
+  minLength?: number;
+  maxLength?: number;
+  options?: { value: string; label: string }[];
+  min?: number;
+  max?: number;
+  step?: string;
+  forms: string[];
+  info?: string;
+  validation?: string;
 }
