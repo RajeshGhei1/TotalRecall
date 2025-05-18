@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +18,7 @@ import {
   LogOut,
   Building,
   Briefcase,
-  ContactRound
+  UserRound
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -79,9 +78,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
-                onClick={() => navigate("/superadmin/talents")}
+                onClick={() => navigate("/superadmin/people")}
               >
-                <Briefcase className="mr-2 h-4 w-4" /> Talents
+                <UserRound className="mr-2 h-4 w-4" /> People
               </Button>
               <Button 
                 variant="ghost" 
@@ -89,13 +88,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 onClick={() => navigate("/superadmin/companies")}
               >
                 <Building className="mr-2 h-4 w-4" /> Companies
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start" 
-                onClick={() => navigate("/superadmin/contacts")}
-              >
-                <ContactRound className="mr-2 h-4 w-4" /> Contacts
               </Button>
             </>
           ) : (

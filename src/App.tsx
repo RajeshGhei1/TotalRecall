@@ -11,9 +11,8 @@ import Dashboard from "./pages/superadmin/Dashboard";
 import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
 import Settings from "./pages/superadmin/Settings";
-import Talents from "./pages/superadmin/Talents";
+import People from "./pages/superadmin/People";
 import Companies from "./pages/superadmin/Companies";
-import Contacts from "./pages/superadmin/Contacts";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminUsers from "./pages/tenant-admin/Users";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
@@ -66,10 +65,10 @@ const App = () => (
               }
             />
             <Route
-              path="/superadmin/talents"
+              path="/superadmin/people"
               element={
                 <AuthGuard requiresSuperAdmin={true}>
-                  <Talents />
+                  <People />
                 </AuthGuard>
               }
             />
@@ -82,20 +81,22 @@ const App = () => (
               }
             />
             <Route
-              path="/superadmin/contacts"
-              element={
-                <AuthGuard requiresSuperAdmin={true}>
-                  <Contacts />
-                </AuthGuard>
-              }
-            />
-            <Route
               path="/superadmin/settings"
               element={
                 <AuthGuard requiresSuperAdmin={true}>
                   <Settings />
                 </AuthGuard>
               }
+            />
+            
+            {/* Redirect old Talents and Contacts routes to the new People page */}
+            <Route
+              path="/superadmin/talents"
+              element={<Navigate to="/superadmin/people" replace />}
+            />
+            <Route
+              path="/superadmin/contacts"
+              element={<Navigate to="/superadmin/people" replace />}
             />
             
             {/* Tenant Admin Routes with Authentication Guard */}
