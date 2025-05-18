@@ -22,6 +22,7 @@ export function useDropdownOptions(categoryName?: string) {
     isLoading: optionsLoading,
     isAddingOption,
     addOption,
+    updateOptionOrder,
     refetchOptions
   } = useDropdownOptionsByCategoryName(categoryName);
 
@@ -32,7 +33,7 @@ export function useDropdownOptions(categoryName?: string) {
       .from('dropdown_options')
       .select('*')
       .eq('category_id', categoryId)
-      .order('sort_order');
+      .order('sort_order', { ascending: true });
 
     if (error) {
       console.error(`Error fetching options for category ID ${categoryId}:`, error);
@@ -51,6 +52,7 @@ export function useDropdownOptions(categoryName?: string) {
     addCategory,
     getOptionsByCategoryId,
     getCategoryIdByName,
+    updateOptionOrder,
     refetchOptions,
     refetchCategories
   };

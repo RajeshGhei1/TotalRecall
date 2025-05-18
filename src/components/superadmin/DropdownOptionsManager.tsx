@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, Save, Trash } from 'lucide-react';
+import { Loader2, Plus, Save, Trash, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -25,6 +25,69 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable item component for dropdown options
+const SortableOptionItem = ({ option, onDelete }) => {
+  const { 
+    attributes, 
+    listeners, 
+    setNodeRef, 
+    transform, 
+    transition 
+  } = useSortable({ id: option.id });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <tr 
+      ref={setNodeRef} 
+      style={style} 
+      className="group hover:bg-slate-50"
+    >
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-grab">
+        <div className="flex items-center" {...attributes} {...listeners}>
+          <GripVertical className="h-5 w-5 text-gray-400 opacity-50 group-hover:opacity-100" />
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {option.value}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {option.label}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => onDelete(option.id)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Trash className="h-4 w-4 text-red-500" />
+        </Button>
+      </td>
+    </tr>
+  );
+};
 
 const DropdownOptionsManager = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -33,9 +96,30 @@ const DropdownOptionsManager = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [localOptions, setLocalOptions] = useState([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const queryClient = useQueryClient();
   
   const { categories, options, isLoading, addCategory, getCategoryIdByName } = useDropdownOptions(selectedCategory);
+
+  // Sensors for drag and drop functionality
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Update local options when options change from the API
+  useEffect(() => {
+    if (options && options.length > 0) {
+      setLocalOptions(options);
+      setHasUnsavedChanges(false);
+    } else {
+      setLocalOptions([]);
+      setHasUnsavedChanges(false);
+    }
+  }, [options]);
 
   useEffect(() => {
     console.log("DropdownOptionsManager mounted");
@@ -71,20 +155,28 @@ const DropdownOptionsManager = () => {
           category_id: categoryId,
           value: newOptionValue,
           label: newOptionLabel || newOptionValue,
+          sort_order: localOptions.length > 0 ? Math.max(...localOptions.map(opt => opt.sort_order || 0)) + 1 : 0
         }])
         .select();
 
       if (error) throw error;
       return data[0];
     },
-    onSuccess: () => {
+    onSuccess: (newOption) => {
       toast({
         title: 'Option added',
         description: `Added new option "${newOptionLabel || newOptionValue}"`,
       });
       setNewOptionValue('');
       setNewOptionLabel('');
-      queryClient.invalidateQueries({ queryKey: ['dropdown-options', selectedCategory] });
+      
+      if (newOption) {
+        // Update local state to avoid a refetch
+        setLocalOptions(prev => [...prev, newOption]);
+      } else {
+        // If we don't have the new option, refetch
+        queryClient.invalidateQueries({ queryKey: ['dropdown-options', selectedCategory] });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -105,12 +197,14 @@ const DropdownOptionsManager = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       toast({
         title: 'Option deleted',
         description: 'The option has been removed',
       });
-      queryClient.invalidateQueries({ queryKey: ['dropdown-options', selectedCategory] });
+      
+      // Update local state to avoid a refetch
+      setLocalOptions(prev => prev.filter(opt => opt.id !== deletedId));
     },
     onError: (error: any) => {
       toast({
@@ -121,6 +215,40 @@ const DropdownOptionsManager = () => {
     },
   });
 
+  // Save the order of options
+  const saveOptionOrder = useMutation({
+    mutationFn: async (sortedOptions) => {
+      // Create a batch of updates for each option
+      const updates = sortedOptions.map((option, index) => ({
+        id: option.id,
+        sort_order: index
+      }));
+      
+      // Update all options in a single transaction
+      const { error } = await supabase
+        .from('dropdown_options')
+        .upsert(updates, { onConflict: 'id' });
+
+      if (error) throw error;
+      
+      return sortedOptions;
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Order saved',
+        description: 'The new order has been saved',
+      });
+      setHasUnsavedChanges(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error saving order',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
   const handleAddOption = () => {
     addOption.mutate();
   };
@@ -129,6 +257,27 @@ const DropdownOptionsManager = () => {
     if (window.confirm('Are you sure you want to delete this option?')) {
       deleteOption.mutate(id);
     }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      // Find the indices of the items
+      const oldIndex = localOptions.findIndex(item => item.id === active.id);
+      const newIndex = localOptions.findIndex(item => item.id === over.id);
+      
+      // Reorder the array
+      const newArray = arrayMove(localOptions, oldIndex, newIndex);
+      
+      // Update state
+      setLocalOptions(newArray);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleSaveOrder = () => {
+    saveOptionOrder.mutate(localOptions);
   };
 
   const handleAddCategory = () => {
@@ -295,9 +444,38 @@ const DropdownOptionsManager = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
+              {hasUnsavedChanges && (
+                <div className="bg-amber-50 p-3 flex items-center justify-between border-b">
+                  <p className="text-sm text-amber-700">
+                    You've changed the order of items. Remember to save your changes.
+                  </p>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleSaveOrder}
+                    disabled={saveOptionOrder.isPending}
+                  >
+                    {saveOptionOrder.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Order
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Order
+                    </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Value
                     </th>
@@ -312,37 +490,35 @@ const DropdownOptionsManager = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-4 text-center">
+                      <td colSpan={4} className="px-6 py-4 text-center">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                       </td>
                     </tr>
-                  ) : options.length === 0 ? (
+                  ) : localOptions.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-4 text-center">
+                      <td colSpan={4} className="px-6 py-4 text-center">
                         No options found for this category. Add some options above.
                       </td>
                     </tr>
                   ) : (
-                    options.map((option) => (
-                      <tr key={option.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {option.value}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {option.label}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleDeleteOption(option.id)}
-                            disabled={deleteOption.isPending}
-                          >
-                            <Trash className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={localOptions.map(option => option.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {localOptions.map((option) => (
+                          <SortableOptionItem 
+                            key={option.id} 
+                            option={option} 
+                            onDelete={handleDeleteOption} 
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
                   )}
                 </tbody>
               </table>
