@@ -31,6 +31,13 @@ const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ form }) => {
         label="Facebook"
         placeholder="https://facebook.com/example"
       />
+      
+      <FormInput
+        form={form}
+        name="website"
+        label="Website"
+        placeholder="https://example.com"
+      />
     </div>
   );
 };

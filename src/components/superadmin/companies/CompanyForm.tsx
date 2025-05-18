@@ -14,6 +14,12 @@ import SocialMediaSection from './sections/SocialMediaSection';
 import CustomFieldsForm from '@/components/CustomFieldsForm';
 import { useCustomFields } from '@/hooks/useCustomFields';
 
+// Import sections from tenant form
+import LocationSection from '@/components/superadmin/tenant-form/LocationSection';
+import IndustrySection from '@/components/superadmin/tenant-form/IndustrySection';
+import CompanyMetricsSection from '@/components/superadmin/tenant-form/CompanyMetricsSection';
+import AdditionalInfoSection from '@/components/superadmin/tenant-form/AdditionalInfoSection';
+
 interface CompanyFormProps {
   onSubmit: (data: CompanyFormValues) => void;
   isSubmitting: boolean;
@@ -46,6 +52,36 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
       linkedin: initialData.linkedin || '',
       twitter: initialData.twitter || '',
       facebook: initialData.facebook || '',
+      // Add tenant-specific fields
+      cin: initialData.cin || '',
+      companyStatus: initialData.companyStatus || '',
+      registeredOfficeAddress: initialData.registeredOfficeAddress || '',
+      registrationDate: initialData.registrationDate || undefined,
+      registeredEmailAddress: initialData.registeredEmailAddress || '',
+      noOfDirectives: initialData.noOfDirectives || '',
+      globalRegion: initialData.globalRegion || '',
+      country: initialData.country || '',
+      region: initialData.region || '',
+      hoLocation: initialData.hoLocation || '',
+      industry1: initialData.industry1 || '',
+      industry2: initialData.industry2 || '',
+      industry3: initialData.industry3 || '',
+      companySector: initialData.companySector || '',
+      companyType: initialData.companyType || '',
+      entityType: initialData.entityType || '',
+      noOfEmployee: initialData.noOfEmployee || '',
+      segmentAsPerNumberOfEmployees: initialData.segmentAsPerNumberOfEmployees || '',
+      turnOver: initialData.turnOver || '',
+      segmentAsPerTurnover: initialData.segmentAsPerTurnover || '',
+      turnoverYear: initialData.turnoverYear || '',
+      yearOfEstablishment: initialData.yearOfEstablishment || '',
+      paidupCapital: initialData.paidupCapital || '',
+      segmentAsPerPaidUpCapital: initialData.segmentAsPerPaidUpCapital || '',
+      areaOfSpecialize: initialData.areaOfSpecialize || '',
+      serviceLine: initialData.serviceLine || '',
+      verticles: initialData.verticles || '',
+      companyProfile: initialData.companyProfile || '',
+      endUserChannel: initialData.endUserChannel || '',
       ...initialData
     }
   });
@@ -66,10 +102,12 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="w-full grid grid-cols-4 mb-6">
+          <TabsList className="w-full grid grid-cols-6 mb-6">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="contact">Contact Details</TabsTrigger>
-            <TabsTrigger value="social">Social Media</TabsTrigger>
+            <TabsTrigger value="location">Location</TabsTrigger>
+            <TabsTrigger value="industry">Industry & Type</TabsTrigger>
+            <TabsTrigger value="metrics">Metrics</TabsTrigger>
+            <TabsTrigger value="additional">Additional</TabsTrigger>
             <TabsTrigger value="custom" className="relative">
               Custom Fields
               {!customFieldsLoading && customFields.length > 0 && (
@@ -85,14 +123,24 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
             <BasicInfoSection form={form} options={formOptions} />
           </TabsContent>
           
-          <TabsContent value="contact" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Contact Details</h3>
-            <ContactDetailsSection form={form} />
+          <TabsContent value="location" className="space-y-4">
+            <h3 className="text-lg font-medium border-b pb-2">Location</h3>
+            <LocationSection form={form} />
           </TabsContent>
           
-          <TabsContent value="social" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Social Media</h3>
-            <SocialMediaSection form={form} />
+          <TabsContent value="industry" className="space-y-4">
+            <h3 className="text-lg font-medium border-b pb-2">Industry & Company Type</h3>
+            <IndustrySection form={form} />
+          </TabsContent>
+          
+          <TabsContent value="metrics" className="space-y-4">
+            <h3 className="text-lg font-medium border-b pb-2">Company Metrics</h3>
+            <CompanyMetricsSection form={form} />
+          </TabsContent>
+          
+          <TabsContent value="additional" className="space-y-4">
+            <h3 className="text-lg font-medium border-b pb-2">Additional Information</h3>
+            <AdditionalInfoSection form={form} />
           </TabsContent>
           
           <TabsContent value="custom" className="space-y-4">

@@ -29,7 +29,7 @@ const CreateCompanyDialog: React.FC<CreateCompanyDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Add New Company</DialogTitle>
           <DialogDescription>
-            Add a new company to the JobMojo.ai platform.
+            Add a new company to the JobMojo.ai platform using the same fields as the tenant form.
           </DialogDescription>
         </DialogHeader>
 

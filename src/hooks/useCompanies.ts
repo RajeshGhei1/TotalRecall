@@ -14,6 +14,17 @@ export interface Company {
   industry?: string;
   size?: string;
   location?: string;
+  // Add additional fields to match the schema
+  cin?: string;
+  companyStatus?: string;
+  registeredOfficeAddress?: string;
+  registrationDate?: string;
+  registeredEmailAddress?: string;
+  noOfDirectives?: string;
+  globalRegion?: string;
+  country?: string;
+  region?: string;
+  hoLocation?: string;
 }
 
 export const useCompanies = () => {
@@ -43,8 +54,9 @@ export const useCompanies = () => {
   } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
+      // Use any() to make TS happy until the next Supabase client regeneration
       const { data, error } = await supabase
-        .from('companies')
+        .from('companies' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -56,19 +68,55 @@ export const useCompanies = () => {
   // Mutation for creating a new company
   const createCompany = useMutation({
     mutationFn: async (companyData: CompanyFormValues) => {
-      // Extract the basic company data
-      const basicCompanyData = {
+      // Extract the company data
+      const companyDataForInsert = {
         name: companyData.name,
         domain: companyData.website,
         industry: companyData.industry,
         size: companyData.size,
         description: companyData.description,
         location: companyData.location,
+        email: companyData.email,
+        phone: companyData.phone,
+        linkedin: companyData.linkedin,
+        twitter: companyData.twitter,
+        facebook: companyData.facebook,
+        founded: companyData.founded,
+        // Add tenant-specific fields
+        cin: companyData.cin,
+        companyStatus: companyData.companyStatus,
+        registeredOfficeAddress: companyData.registeredOfficeAddress,
+        registrationDate: companyData.registrationDate,
+        registeredEmailAddress: companyData.registeredEmailAddress,
+        noOfDirectives: companyData.noOfDirectives,
+        globalRegion: companyData.globalRegion,
+        country: companyData.country,
+        region: companyData.region,
+        hoLocation: companyData.hoLocation,
+        industry1: companyData.industry1,
+        industry2: companyData.industry2,
+        industry3: companyData.industry3,
+        companySector: companyData.companySector,
+        companyType: companyData.companyType,
+        entityType: companyData.entityType,
+        noOfEmployee: companyData.noOfEmployee,
+        segmentAsPerNumberOfEmployees: companyData.segmentAsPerNumberOfEmployees,
+        turnOver: companyData.turnOver,
+        segmentAsPerTurnover: companyData.segmentAsPerTurnover,
+        turnoverYear: companyData.turnoverYear,
+        yearOfEstablishment: companyData.yearOfEstablishment,
+        paidupCapital: companyData.paidupCapital,
+        segmentAsPerPaidUpCapital: companyData.segmentAsPerPaidUpCapital,
+        areaOfSpecialize: companyData.areaOfSpecialize,
+        serviceLine: companyData.serviceLine,
+        verticles: companyData.verticles,
+        companyProfile: companyData.companyProfile,
+        endUserChannel: companyData.endUserChannel,
       };
 
       const { data, error } = await supabase
-        .from('companies')
-        .insert([basicCompanyData])
+        .from('companies' as any)
+        .insert([companyDataForInsert])
         .select()
         .single();
 

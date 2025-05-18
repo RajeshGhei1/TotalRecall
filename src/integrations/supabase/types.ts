@@ -9,6 +9,150 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      companies: {
+        Row: {
+          areaofspecialize: string | null
+          cin: string | null
+          companyprofile: string | null
+          companysector: string | null
+          companystatus: string | null
+          companytype: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          domain: string | null
+          email: string | null
+          enduserchannel: string | null
+          entitytype: string | null
+          facebook: string | null
+          founded: number | null
+          globalregion: string | null
+          holocation: string | null
+          id: string
+          industry: string | null
+          industry1: string | null
+          industry2: string | null
+          industry3: string | null
+          linkedin: string | null
+          location: string | null
+          name: string
+          noofdirectives: string | null
+          noofemployee: string | null
+          paidupcapital: string | null
+          phone: string | null
+          region: string | null
+          registeredemailaddress: string | null
+          registeredofficeaddress: string | null
+          registrationdate: string | null
+          segmentaspernumberofemployees: string | null
+          segmentasperpaidupcapital: string | null
+          segmentasperturnover: string | null
+          serviceline: string | null
+          size: string | null
+          turnover: string | null
+          turnoveryear: string | null
+          twitter: string | null
+          updated_at: string
+          verticles: string | null
+          website: string | null
+          yearofestablishment: string | null
+        }
+        Insert: {
+          areaofspecialize?: string | null
+          cin?: string | null
+          companyprofile?: string | null
+          companysector?: string | null
+          companystatus?: string | null
+          companytype?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          email?: string | null
+          enduserchannel?: string | null
+          entitytype?: string | null
+          facebook?: string | null
+          founded?: number | null
+          globalregion?: string | null
+          holocation?: string | null
+          id?: string
+          industry?: string | null
+          industry1?: string | null
+          industry2?: string | null
+          industry3?: string | null
+          linkedin?: string | null
+          location?: string | null
+          name: string
+          noofdirectives?: string | null
+          noofemployee?: string | null
+          paidupcapital?: string | null
+          phone?: string | null
+          region?: string | null
+          registeredemailaddress?: string | null
+          registeredofficeaddress?: string | null
+          registrationdate?: string | null
+          segmentaspernumberofemployees?: string | null
+          segmentasperpaidupcapital?: string | null
+          segmentasperturnover?: string | null
+          serviceline?: string | null
+          size?: string | null
+          turnover?: string | null
+          turnoveryear?: string | null
+          twitter?: string | null
+          updated_at?: string
+          verticles?: string | null
+          website?: string | null
+          yearofestablishment?: string | null
+        }
+        Update: {
+          areaofspecialize?: string | null
+          cin?: string | null
+          companyprofile?: string | null
+          companysector?: string | null
+          companystatus?: string | null
+          companytype?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          email?: string | null
+          enduserchannel?: string | null
+          entitytype?: string | null
+          facebook?: string | null
+          founded?: number | null
+          globalregion?: string | null
+          holocation?: string | null
+          id?: string
+          industry?: string | null
+          industry1?: string | null
+          industry2?: string | null
+          industry3?: string | null
+          linkedin?: string | null
+          location?: string | null
+          name?: string
+          noofdirectives?: string | null
+          noofemployee?: string | null
+          paidupcapital?: string | null
+          phone?: string | null
+          region?: string | null
+          registeredemailaddress?: string | null
+          registeredofficeaddress?: string | null
+          registrationdate?: string | null
+          segmentaspernumberofemployees?: string | null
+          segmentasperpaidupcapital?: string | null
+          segmentasperturnover?: string | null
+          serviceline?: string | null
+          size?: string | null
+          turnover?: string | null
+          turnoveryear?: string | null
+          twitter?: string | null
+          updated_at?: string
+          verticles?: string | null
+          website?: string | null
+          yearofestablishment?: string | null
+        }
+        Relationships: []
+      }
       custom_field_values: {
         Row: {
           created_at: string
