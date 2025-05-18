@@ -11,6 +11,7 @@ import { companyFormSchema, CompanyFormValues, formOptions } from './schema';
 import BasicInfoSection from './sections/BasicInfoSection';
 import ContactDetailsSection from './sections/ContactDetailsSection';
 import SocialMediaSection from './sections/SocialMediaSection';
+import PeopleSection from './sections/PeopleSection';
 import CustomFieldsForm from '@/components/CustomFieldsForm';
 import { useCustomFields } from '@/hooks/useCustomFields';
 
@@ -102,11 +103,12 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="w-full grid grid-cols-6 mb-6">
+          <TabsList className="w-full grid grid-cols-7 mb-6">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="location">Location</TabsTrigger>
             <TabsTrigger value="industry">Industry & Type</TabsTrigger>
             <TabsTrigger value="metrics">Metrics</TabsTrigger>
+            <TabsTrigger value="people">People</TabsTrigger>
             <TabsTrigger value="additional">Additional</TabsTrigger>
             <TabsTrigger value="custom" className="relative">
               Custom Fields
@@ -136,6 +138,11 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
           <TabsContent value="metrics" className="space-y-4">
             <h3 className="text-lg font-medium border-b pb-2">Company Metrics</h3>
             <CompanyMetricsSection form={form} />
+          </TabsContent>
+          
+          <TabsContent value="people" className="space-y-4">
+            <h3 className="text-lg font-medium border-b pb-2">Associated People</h3>
+            <PeopleSection form={form} />
           </TabsContent>
           
           <TabsContent value="additional" className="space-y-4">
