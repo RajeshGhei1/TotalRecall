@@ -7,6 +7,9 @@ import { FormSelect } from '../FormFields';
 interface IndustryDropdownSectionProps {
   form: UseFormReturn<TenantFormValues>;
   industryOptions: { value: string; label: string }[];
+  industry1Options?: { value: string; label: string }[];
+  industry2Options?: { value: string; label: string }[];
+  industry3Options?: { value: string; label: string }[];
   companySectorOptions: { value: string; label: string }[];
   companyTypeOptions: { value: string; label: string }[];
   entityTypeOptions: { value: string; label: string }[];
@@ -16,11 +19,19 @@ interface IndustryDropdownSectionProps {
 const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
   form,
   industryOptions,
+  industry1Options,
+  industry2Options,
+  industry3Options,
   companySectorOptions,
   companyTypeOptions,
   entityTypeOptions,
   onSelectAddNew,
 }) => {
+  // Use specific industry options when available, fall back to general industry options
+  const industry1 = industry1Options || industryOptions;
+  const industry2 = industry2Options || industryOptions;
+  const industry3 = industry3Options || industryOptions;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-1">
@@ -28,7 +39,7 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
           form={form}
           name="industry1"
           label="Industry 1"
-          options={industryOptions}
+          options={industry1}
           required
           onChange={(value) => {
             if (value === '__add_new__') {
@@ -48,7 +59,7 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
           form={form}
           name="industry2"
           label="Industry 2"
-          options={industryOptions}
+          options={industry2}
           onChange={(value) => {
             if (value === '__add_new__') {
               onSelectAddNew('industry2');
@@ -67,7 +78,7 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
           form={form}
           name="industry3"
           label="Industry 3"
-          options={industryOptions}
+          options={industry3}
           onChange={(value) => {
             if (value === '__add_new__') {
               onSelectAddNew('industry3');

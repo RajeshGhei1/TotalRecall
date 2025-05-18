@@ -19,7 +19,10 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
   
   // Get dropdown options and helper functions
   const { 
-    industryHook, 
+    industryHook,
+    industry1Options,
+    industry2Options,
+    industry3Options,
     industries, 
     sectors, 
     companyTypes, 
@@ -48,9 +51,13 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
     
     switch (addingType) {
       case 'industry1':
+        categoryName = 'industry1';
+        break;
       case 'industry2':
+        categoryName = 'industry2';
+        break;
       case 'industry3':
-        categoryName = 'industries';
+        categoryName = 'industry3';
         break;
       case 'companySector':
         categoryName = 'company_sectors';
@@ -108,6 +115,9 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
       <IndustryDropdownSection
         form={form}
         industryOptions={industries}
+        industry1Options={industry1Options}
+        industry2Options={industry2Options}
+        industry3Options={industry3Options}
         companySectorOptions={sectors}
         companyTypeOptions={companyTypes}
         entityTypeOptions={entityTypes}

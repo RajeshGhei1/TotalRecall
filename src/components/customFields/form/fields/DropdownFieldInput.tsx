@@ -27,7 +27,9 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
   const [newOption, setNewOption] = useState('');
   
   // Get category name from field options if available
-  const categoryName = field.options?.category || 'dropdown_options';
+  const categoryName = field.options && typeof field.options === 'object' && 'category' in field.options
+    ? field.options.category
+    : 'dropdown_options';
   
   // Use dropdown options hook
   const { addOption, isAddingOption, refetchOptions } = useDropdownOptions(categoryName);
@@ -70,7 +72,9 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
 
   // Get options with "Add New" option
   const dropdownOptions = [
-    ...(field.options?.options || []),
+    ...((field.options && typeof field.options === 'object' && 'options' in field.options) 
+      ? field.options.options || [] 
+      : []),
     { value: '__add_new__', label: '[+ Add New]' }
   ];
 
