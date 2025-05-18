@@ -27,7 +27,7 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
       
       // Order by sort_order, then by creation date
       query = query
-        .order('sort_order', { ascending: true, nullsLast: true })
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
       
       const { data, error } = await query;

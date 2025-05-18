@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchCustomFields, filterFieldsByFormContext, fetchCustomFieldValues } from './fetchHelpers';
 import { saveCustomFieldValues } from './fieldOperations';
 import { UseCustomFieldsOptions, UseCustomFieldsReturn, CustomField } from './types';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Hook for managing custom fields and their values
@@ -61,11 +62,48 @@ export function useCustomFields(tenantId?: string, options?: UseCustomFieldsOpti
     );
   };
 
+  // Update field order
+  const updateFieldOrder = async (
+    fields: (CustomField & { sort_order: number })[], 
+    tenantId: string,
+    formContext?: string
+  ) => {
+    try {
+      // Prepare updates - only include id and sort_order
+      const updates = fields.map(field => ({
+        id: field.id,
+        sort_order: field.sort_order,
+        // Include these required fields
+        name: field.name,
+        field_key: field.field_key,
+        field_type: field.field_type
+      }));
+
+      // Update all fields in one go
+      const { data, error } = await supabase
+        .from('custom_fields')
+        .upsert(updates, { onConflict: 'id' });
+
+      if (error) throw error;
+
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({
+        queryKey: ['customFields', tenantId, formContext]
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error updating field order:', error);
+      throw error;
+    }
+  };
+
   return {
     customFields,
     isLoading,
     getCustomFieldValues,
-    saveCustomFieldValues: saveValues
+    saveCustomFieldValues: saveValues,
+    updateFieldOrder
   };
 }
 

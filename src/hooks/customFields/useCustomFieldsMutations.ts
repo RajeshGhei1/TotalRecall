@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField } from './types';
-import { FieldFormValues } from '../components/customFields/form/CustomFieldForm';
+import { FieldFormValues } from '@/components/customFields/form/CustomFieldForm';
 import { createCustomField, updateCustomField, deleteCustomField } from './fieldOperations';
 
 export function useCustomFieldsMutations() {
@@ -50,7 +50,11 @@ export function useCustomFieldsMutations() {
       // Prepare updates - only include id and sort_order
       const updates = fields.map(field => ({
         id: field.id,
-        sort_order: field.sort_order
+        sort_order: field.sort_order,
+        // Include these minimal required fields to satisfy TypeScript
+        name: field.name,
+        field_key: field.field_key,
+        field_type: field.field_type
       }));
       
       // Update all fields in one go

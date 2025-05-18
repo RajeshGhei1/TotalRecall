@@ -1,6 +1,82 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { QueryClient } from '@tanstack/react-query';
+import { FieldFormValues } from '@/components/customFields/form/CustomFieldForm';
+import { CustomField } from './types';
+
+/**
+ * Creates a new custom field
+ */
+export async function createCustomField(values: FieldFormValues, tenantId?: string) {
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .insert({
+      name: values.name,
+      field_key: values.field_key,
+      field_type: values.field_type,
+      description: values.description,
+      required: values.required,
+      applicable_forms: values.applicable_forms || [],
+      options: values.options,
+      tenant_id: tenantId !== 'global' ? tenantId : null
+    })
+    .select();
+
+  if (error) {
+    console.error('Error creating custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
+
+/**
+ * Updates an existing custom field
+ */
+export async function updateCustomField(id: string, values: Partial<CustomField>) {
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .update(values)
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('Error updating custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
+
+/**
+ * Deletes an existing custom field
+ */
+export async function deleteCustomField(id: string) {
+  // First delete any values associated with this field
+  const { error: valuesError } = await supabase
+    .from('custom_field_values')
+    .delete()
+    .eq('field_id', id);
+
+  if (valuesError) {
+    console.error('Error deleting custom field values:', valuesError);
+    throw valuesError;
+  }
+
+  // Then delete the field itself
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .delete()
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('Error deleting custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
 
 /**
  * Saves custom field values for an entity
