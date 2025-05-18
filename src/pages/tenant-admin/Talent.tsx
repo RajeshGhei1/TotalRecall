@@ -12,13 +12,17 @@ import TalentForm from "@/components/talent/TalentForm";
 import TalentDetail from "@/components/talent/TalentDetail";
 import { CustomFieldsManager } from "@/components/customFields";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, UserPlus, Upload, Database } from "lucide-react";
+import BulkUploadDialog from "@/components/common/BulkUploadDialog";
+import ApiConnectionDialog from "@/components/common/ApiConnectionDialog";
 
 const TenantAdminTalent = () => {
   const { action, id } = useParams(); 
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("talents");
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
 
   // Fetch tenant information for the current user
   const { data: tenantData } = useQuery({
@@ -111,6 +115,26 @@ const TenantAdminTalent = () => {
             </TabsList>
             <CardContent className="pt-6">
               <TabsContent value="talents" className="mt-0">
+                <div className="flex justify-end space-x-2 mb-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsBulkUploadOpen(true)}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Bulk Upload
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsApiConnectionOpen(true)}
+                  >
+                    <Database className="mr-2 h-4 w-4" />
+                    API Connection
+                  </Button>
+                  <Button onClick={() => navigate('/tenant-admin/talent/add')}>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Add Talent
+                  </Button>
+                </div>
                 <TalentList />
               </TabsContent>
               <TabsContent value="custom-fields" className="mt-0">
@@ -138,6 +162,18 @@ const TenantAdminTalent = () => {
         </div>
         
         {renderContent()}
+
+        <BulkUploadDialog 
+          isOpen={isBulkUploadOpen}
+          onClose={() => setIsBulkUploadOpen(false)}
+          entityType="talent"
+        />
+
+        <ApiConnectionDialog 
+          isOpen={isApiConnectionOpen}
+          onClose={() => setIsApiConnectionOpen(false)}
+          entityType="talent"
+        />
       </div>
     </AdminLayout>
   );

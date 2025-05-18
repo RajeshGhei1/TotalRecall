@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, UserPlus, Building } from 'lucide-react';
+import { Search, UserPlus, Building, Upload, Database } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PeopleActionBarProps {
@@ -10,6 +10,8 @@ interface PeopleActionBarProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   onAddPerson: () => void;
+  onBulkUpload?: () => void;
+  onApiConnection?: () => void;
   companyFilter?: string;
   setCompanyFilter?: (value: string) => void;
   companyOptions?: { id: string; name: string }[];
@@ -20,6 +22,8 @@ const PeopleActionBar = ({
   searchQuery, 
   setSearchQuery, 
   onAddPerson,
+  onBulkUpload,
+  onApiConnection,
   companyFilter,
   setCompanyFilter,
   companyOptions = []
@@ -62,10 +66,26 @@ const PeopleActionBar = ({
         )}
       </div>
       
-      <Button onClick={onAddPerson}>
-        <UserPlus className="mr-2 h-4 w-4" />
-        Add {personType === 'talent' ? 'Talent' : 'Contact'}
-      </Button>
+      <div className="flex space-x-2">
+        {onBulkUpload && (
+          <Button variant="outline" onClick={onBulkUpload}>
+            <Upload className="mr-2 h-4 w-4" />
+            Bulk Upload
+          </Button>
+        )}
+        
+        {onApiConnection && (
+          <Button variant="outline" onClick={onApiConnection}>
+            <Database className="mr-2 h-4 w-4" />
+            API Connection
+          </Button>
+        )}
+        
+        <Button onClick={onAddPerson}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Add {personType === 'talent' ? 'Talent' : 'Contact'}
+        </Button>
+      </div>
     </div>
   );
 };

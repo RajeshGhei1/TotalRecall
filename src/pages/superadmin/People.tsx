@@ -16,6 +16,8 @@ import { supabase } from '@/integrations/supabase/client';
 import CompanyLinkForm from '@/components/people/CompanyLinkForm';
 import PeopleActionBar from '@/components/people/PeopleActionBar';
 import PeopleTabsContent from '@/components/people/PeopleTabsContent';
+import BulkUploadDialog from '@/components/common/BulkUploadDialog';
+import ApiConnectionDialog from '@/components/common/ApiConnectionDialog';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const People = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [personType, setPersonType] = useState<'talent' | 'contact'>('talent');
   const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>('');
@@ -110,6 +114,8 @@ const People = () => {
             companyFilter={companyFilter}
             setCompanyFilter={setCompanyFilter}
             companyOptions={companies}
+            onBulkUpload={() => setIsBulkUploadOpen(true)}
+            onApiConnection={() => setIsApiConnectionOpen(true)}
           />
 
           <PeopleTabsContent
@@ -128,6 +134,20 @@ const People = () => {
             personType={personType}
             personId={selectedPersonId || undefined}
             isSubmitting={false}
+          />
+
+          {/* Bulk upload dialog */}
+          <BulkUploadDialog 
+            isOpen={isBulkUploadOpen}
+            onClose={() => setIsBulkUploadOpen(false)}
+            entityType={personType}
+          />
+
+          {/* API connection dialog */}
+          <ApiConnectionDialog 
+            isOpen={isApiConnectionOpen}
+            onClose={() => setIsApiConnectionOpen(false)}
+            entityType={personType}
           />
         </div>
       </QueryClientProvider>
