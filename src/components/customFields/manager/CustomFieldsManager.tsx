@@ -53,8 +53,16 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         return;
       }
       
+      // Fix the options type to ensure they have required properties
+      const processedOptions = values.options ? 
+        values.options.map(opt => ({
+          value: opt.value || '',  // Ensure value is never undefined
+          label: opt.label || ''   // Ensure label is never undefined
+        })) : 
+        [];
+      
       await createField({
-        name: values.name, // Make sure name is always provided
+        name: values.name,
         label: values.label,
         fieldType: values.fieldType,
         required: values.required,
@@ -62,7 +70,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         defaultValue: values.defaultValue,
         minLength: values.minLength,
         maxLength: values.maxLength,
-        options: values.options,
+        options: processedOptions, // Use the processed options
         min: values.min,
         max: values.max,
         step: values.step,

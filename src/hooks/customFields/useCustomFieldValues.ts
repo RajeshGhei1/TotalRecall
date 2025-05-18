@@ -41,6 +41,7 @@ export async function fetchCustomFieldValues(entityType: string, entityId: strin
 
 /**
  * Save custom field values for an entity
+ * This function is overloaded to work with and without customFields parameter
  */
 export async function saveEntityCustomFieldValues(
   entityType: string, 
@@ -102,13 +103,38 @@ export function useCustomFieldValues() {
     return fetchCustomFieldValues(entityType, entityId);
   };
 
+  // Create a function that matches both interfaces
+  // Note: This implementation allows calling with or without customFields parameter
   const saveValues = async (
     entityType: string, 
     entityId: string, 
     values: Record<string, any>,
-    customFields: CustomField[]
-  ): Promise<boolean> => {
-    return saveEntityCustomFieldValues(entityType, entityId, values, customFields);
+    customFields?: CustomField[]
+  ): Promise<any> => {
+    if (customFields) {
+      return saveEntityCustomFieldValues(entityType, entityId, values, customFields);
+    } else {
+      // For backward compatibility, try to get fields from the database
+      const { data: fields } = await supabase
+        .from('custom_fields')
+        .select('*');
+      
+      if (!fields || fields.length === 0) {
+        console.warn('No custom fields found when saving values');
+        return false;
+      }
+
+      // Transform the database fields to match our CustomField type
+      const typedFields: CustomField[] = fields.map(field => ({
+        ...field,
+        sort_order: field.sort_order || 0,
+        description: field.description || '',
+        options: field.options || {},
+        applicable_forms: field.applicable_forms as string[] || null
+      }));
+      
+      return saveEntityCustomFieldValues(entityType, entityId, values, typedFields);
+    }
   };
 
   return {

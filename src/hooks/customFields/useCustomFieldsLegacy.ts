@@ -43,18 +43,27 @@ export function useCustomFields(
           query = query.or(`applicable_forms.cs.{${formContext}},applicable_forms.eq.[]`);
         }
 
-        // Order by sort_order, then by creation date
-        query = query
-          .order('sort_order', { ascending: true })
-          .order('created_at', { ascending: true });
+        // Check if sort_order column exists
+        const { data: columns, error: columnsError } = await supabase
+          .from('custom_fields')
+          .select('sort_order')
+          .limit(1);
+
+        // Only order by sort_order if the column exists
+        if (columns && !columnsError) {
+          query = query.order('sort_order', { ascending: true });
+        }
+
+        // Always add a secondary ordering by creation date
+        query = query.order('created_at', { ascending: true });
 
         const { data, error } = await query;
 
         if (error) throw error;
 
-        const typedFields = (data || []).map(field => ({
+        const typedFields = (data || []).map((field, index) => ({
           ...field,
-          sort_order: field.sort_order || 0, // Provide default value for sort_order
+          sort_order: field.sort_order !== undefined ? field.sort_order : index, // Provide default index-based value for sort_order
           applicable_forms: field.applicable_forms as string[] | null
         })) as CustomField[];
 

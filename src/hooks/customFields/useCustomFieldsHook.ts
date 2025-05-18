@@ -15,11 +15,21 @@ export function useCustomFieldsHook(
   const { getCustomFieldValues, saveCustomFieldValues } = useCustomFieldValues();
   const { updateFieldOrder } = useFieldOrder();
 
+  // Create a wrapper function that matches the expected interface
+  // This function handles passing the customFields to the saveCustomFieldValues function
+  const saveValuesWrapper = async (
+    entityType: string, 
+    entityId: string, 
+    values: Record<string, any>
+  ): Promise<void> => {
+    await saveCustomFieldValues(entityType, entityId, values, customFields);
+  };
+
   return {
     customFields,
     isLoading,
     getCustomFieldValues,
-    saveCustomFieldValues,
+    saveCustomFieldValues: saveValuesWrapper,
     updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => 
       updateFieldOrder(fields, tenantId, typeof formContext === 'string')
   };
