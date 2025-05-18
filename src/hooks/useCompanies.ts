@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CompanyFormValues } from '@/components/superadmin/companies/schema';
-import { useCustomFields } from '@/hooks/customFields';
+import { useCustomFields } from '@/hooks/useCustomFields';
 
 export interface Company {
   id: string;
@@ -54,14 +54,16 @@ export const useCompanies = () => {
   } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
-      // Use any() to make TS happy until the next Supabase client regeneration
+      // Fix the type issue by explicitly casting the data
       const { data, error } = await supabase
-        .from('companies' as any)
+        .from('companies')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Company[];
+      
+      // Explicitly cast the result to Company[] to fix the TypeScript error
+      return (data as unknown) as Company[];
     },
   });
 
@@ -115,7 +117,7 @@ export const useCompanies = () => {
       };
 
       const { data, error } = await supabase
-        .from('companies' as any)
+        .from('companies')
         .insert([companyDataForInsert])
         .select()
         .single();
@@ -126,7 +128,8 @@ export const useCompanies = () => {
       const customFieldValues = extractCustomFieldValues(companyData);
       
       if (Object.keys(customFieldValues).length > 0) {
-        await saveCustomFieldValues('company', data.id, customFieldValues);
+        // Fix the TypeScript error by using a type assertion for data.id
+        await saveCustomFieldValues('company', (data as any).id, customFieldValues);
       }
       
       return data;
