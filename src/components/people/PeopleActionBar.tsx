@@ -54,7 +54,7 @@ const PeopleActionBar = ({
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Companies</SelectItem>
+                <SelectItem value="all">All Companies</SelectItem>
                 {companyOptions.map(company => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.name}

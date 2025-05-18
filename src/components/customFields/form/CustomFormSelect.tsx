@@ -60,7 +60,7 @@ const CustomFormSelect: React.FC<FormSelectProps> = ({
               handleValueChange(value);
             }} 
             defaultValue={field.value}
-            value={field.value}
+            value={field.value || undefined}
           >
             <FormControl>
               <SelectTrigger>
@@ -68,11 +68,15 @@ const CustomFormSelect: React.FC<FormSelectProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent className="z-[10000] bg-white">
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {options.length === 0 ? (
+                <SelectItem value="no-options-available">No options available</SelectItem>
+              ) : (
+                options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <FormMessage />

@@ -96,11 +96,15 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
               <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent className="z-[10000] bg-white">
-              {dropdownOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {dropdownOptions.length === 1 ? (
+                <SelectItem value="no-options-available">No options available</SelectItem>
+              ) : (
+                dropdownOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         )}

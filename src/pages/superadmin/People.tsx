@@ -31,7 +31,7 @@ const People = () => {
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
-  const [companyFilter, setCompanyFilter] = useState<string>('');
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
 
   // Fetch companies for the dropdown

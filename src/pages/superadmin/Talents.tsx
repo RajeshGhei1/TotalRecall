@@ -13,15 +13,19 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, Upload, Database } from 'lucide-react';
 import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import BulkUploadDialog from '@/components/common/BulkUploadDialog';
+import ApiConnectionDialog from '@/components/common/ApiConnectionDialog';
 
 // Create a client
 const queryClient = new QueryClient();
 
 const Talents = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
 
   return (
     <AdminLayout>
@@ -54,10 +58,26 @@ const Talents = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Talent
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Upload
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsApiConnectionOpen(true)}
+              >
+                <Database className="h-4 w-4 mr-2" />
+                API Connection
+              </Button>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Talent
+              </Button>
+            </div>
           </div>
 
           <Tabs defaultValue="dashboard">
@@ -129,6 +149,18 @@ const Talents = () => {
               </Card>
             </TabsContent>
           </Tabs>
+
+          <BulkUploadDialog 
+            isOpen={isBulkUploadOpen}
+            onClose={() => setIsBulkUploadOpen(false)}
+            entityType="talent"
+          />
+
+          <ApiConnectionDialog 
+            isOpen={isApiConnectionOpen}
+            onClose={() => setIsApiConnectionOpen(false)}
+            entityType="talent"
+          />
         </div>
       </QueryClientProvider>
     </AdminLayout>

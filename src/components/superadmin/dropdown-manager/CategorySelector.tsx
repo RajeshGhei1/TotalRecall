@@ -45,7 +45,7 @@ const CategorySelector = ({
           </SelectTrigger>
           <SelectContent className="bg-white z-[1000]">
             {!categories || categories.length === 0 ? (
-              <SelectItem value="no-categories" disabled>No categories available</SelectItem>
+              <SelectItem value="no-categories-available">No categories available</SelectItem>
             ) : (
               categories.map((category) => (
                 <SelectItem key={category.id} value={category.name}>
