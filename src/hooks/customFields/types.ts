@@ -14,7 +14,7 @@ export interface CustomField {
   description?: string;
   created_at: string;
   updated_at: string;
-  sort_order?: number;
+  sort_order: number; // Changed from optional to required with a default value
 }
 
 export interface CustomFieldValue {
@@ -42,7 +42,7 @@ export interface UseCustomFieldsReturn {
 
 // Export interface for form values
 export interface FieldFormValues {
-  name: string;            // Required field as per the error message
+  name: string;            // Required field
   label: string;
   fieldType: "text" | "textarea" | "dropdown" | "number" | "boolean" | "date";
   required: boolean;

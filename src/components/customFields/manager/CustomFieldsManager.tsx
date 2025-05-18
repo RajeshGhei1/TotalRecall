@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,6 @@ import { FieldFormValues } from '../form/CustomFieldForm';
 import CustomFieldList from '../CustomFieldList';
 import CustomFieldForm from '../form/CustomFieldForm';
 import { toast } from '@/hooks/use-toast';
-import { arrayMove } from '@dnd-kit/sortable';
 import { CustomField } from '@/hooks/customFields/types';
 
 interface CustomFieldsManagerProps {

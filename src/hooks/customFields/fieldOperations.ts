@@ -22,7 +22,8 @@ export async function createCustomField(values: FieldFormValues, tenantId?: stri
       required: values.required,
       applicable_forms: values.forms || [], // Map forms to applicable_forms
       options: values.options ? { options: values.options } : {},
-      tenant_id: tenantId !== 'global' ? tenantId : null
+      tenant_id: tenantId !== 'global' ? tenantId : null,
+      sort_order: 0 // Default sort_order for new fields
     })
     .select();
 
