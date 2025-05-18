@@ -1,5 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField, CustomFieldValue } from './types';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Get custom field values for an entity

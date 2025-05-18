@@ -14,4 +14,4 @@ export * from './types';
 
 // Export legacy hook for backward compatibility
 // This will ensure existing code doesn't break
-export { useCustomFields as useCustomFieldsLegacy } from './useCustomFieldsLegacy';
+export { useCustomFieldsLegacy } from './useCustomFieldsLegacy';
