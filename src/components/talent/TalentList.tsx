@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,14 +60,13 @@ const TalentList: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['talents'] });
       setTalentToDelete(null);
       
-      toast("Talent Deleted", {
+      toast.success("Talent Deleted", {
         description: "The talent has been successfully removed."
       });
     },
     onError: (error) => {
-      toast("Error", {
-        description: `Failed to delete talent: ${error.message}`,
-        variant: "destructive"
+      toast.error("Error", {
+        description: `Failed to delete talent: ${error.message}`
       });
     },
   });
