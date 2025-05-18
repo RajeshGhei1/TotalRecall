@@ -9,9 +9,10 @@ export interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
-  options?: Record<string, any>;
+  options?: Record<string, any> | any[] | string | null;
   applicable_forms?: string[] | null;
   description?: string;
+  sort_order?: number;
   created_at: string;
   updated_at: string;
 }

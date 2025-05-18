@@ -2,21 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-// Define types for custom field and option
-export type CustomField = {
-  id?: string;
-  tenant_id: string;
-  name: string;
-  type: string;
-  field_key?: string;
-  field_type?: string;
-  description?: string;
-  required: boolean;
-  options?: Array<{ label: string; value: string }>;
-  applicable_forms?: string[];
-  created_at?: string;
-};
+import { CustomField } from "./types";
 
 // Fix the type issues in the parseOptions function
 export const parseOptions = (values: any) => {
@@ -52,17 +38,21 @@ export const parseOptions = (values: any) => {
 };
 
 // Prepare field for database insertion
-const prepareFieldForDb = (field: CustomField) => {
+const prepareFieldForDb = (field: Partial<CustomField>) => {
+  // Handle special case for "global" tenant_id
+  const tenant_id = field.tenant_id === 'global' ? null : field.tenant_id;
+  
   // Map the form field type to database field_type
   return {
-    tenant_id: field.tenant_id,
+    tenant_id,
     name: field.name,
-    field_key: field.field_key || field.name.toLowerCase().replace(/\s+/g, '_'),
+    field_key: field.field_key || (field.name && field.name.toLowerCase().replace(/\s+/g, '_')),
     field_type: field.field_type || field.type,
     description: field.description,
     required: field.required || false,
     options: field.options ? JSON.stringify(field.options) : null,
     applicable_forms: field.applicable_forms || [],
+    sort_order: field.sort_order || 0,
   };
 };
 
@@ -71,7 +61,7 @@ export const useCreateCustomField = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newField: CustomField) => {
+    mutationFn: async (newField: Partial<CustomField>) => {
       const dbField = prepareFieldForDb(newField);
       
       const { data, error } = await supabase
@@ -91,7 +81,7 @@ export const useCreateCustomField = () => {
         title: "Success",
         description: "Custom field created successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id] });
+      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id || 'global'] });
     },
     onError: (error: any) => {
       toast({
@@ -108,7 +98,7 @@ export const useUpdateCustomField = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updatedField: CustomField) => {
+    mutationFn: async (updatedField: Partial<CustomField>) => {
       const dbField = prepareFieldForDb(updatedField);
       
       const { data, error } = await supabase
@@ -129,7 +119,7 @@ export const useUpdateCustomField = () => {
         title: "Success",
         description: "Custom field updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id] });
+      queryClient.invalidateQueries({ queryKey: ['customFields', data.tenant_id || 'global'] });
     },
     onError: (error: any) => {
       toast({

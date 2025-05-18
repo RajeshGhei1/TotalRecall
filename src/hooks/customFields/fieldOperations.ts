@@ -18,11 +18,20 @@ export async function saveCustomFieldValues(
   console.log(`Saving custom field values for ${entityType}:${entityId}`, values);
 
   try {
-    // Get all custom fields
-    const { data: fields, error: fieldsError } = await supabase
+    // Handle special case for "global" tenant
+    let query = supabase
       .from('custom_fields')
-      .select('id, field_key, applicable_forms')
-      .or(`tenant_id.is.null,tenant_id.eq.${tenantId}`);
+      .select('id, field_key, applicable_forms');
+    
+    // Adjust query based on tenant type
+    if (tenantId === 'global') {
+      query = query.is('tenant_id', null);
+    } else {
+      query = query.or(`tenant_id.is.null,tenant_id.eq.${tenantId}`);
+    }
+    
+    // Get all custom fields
+    const { data: fields, error: fieldsError } = await query;
 
     if (fieldsError) {
       console.error("Error fetching custom fields:", fieldsError);
