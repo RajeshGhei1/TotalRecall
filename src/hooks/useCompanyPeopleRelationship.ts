@@ -23,10 +23,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
     
     const { data, error } = await supabase
       .from('company_relationships')
-      .select(`
-        *,
-        person:people(id, full_name, email)
-      `)
+      .select('*')
       .eq('company_id', companyId)
       .order('is_current', { ascending: false });
       

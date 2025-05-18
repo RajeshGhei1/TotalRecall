@@ -12,6 +12,7 @@ interface Person {
   id: string;
   full_name: string;
   email: string;
+  phone?: string | null;
   type: 'talent' | 'contact';
 }
 
@@ -31,17 +32,38 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
   // Load existing relationships when component mounts
   useEffect(() => {
     if (relationships) {
-      const existingPeople = relationships
-        .filter(rel => rel.person)
-        .map(rel => ({
-          id: rel.person.id,
-          full_name: rel.person.full_name,
-          email: rel.person.email,
-          type: rel.relationship_type === 'employment' ? 'talent' as const : 'contact' as const,
-          role: rel.role
-        }));
+      // Since we're having issues with the relationship, let's fetch people separately
+      const loadPeopleForRelationships = async () => {
+        const personIds = relationships.map(rel => rel.person_id);
+        if (personIds.length === 0) return;
+        
+        const { data } = await supabase
+          .from('people')
+          .select('*')
+          .in('id', personIds);
+        
+        if (data) {
+          const peopleMap = new Map(data.map(p => [p.id, p]));
+          
+          const existingPeople = relationships.map(rel => {
+            const person = peopleMap.get(rel.person_id);
+            if (!person) return null;
+            
+            return {
+              id: person.id,
+              full_name: person.full_name,
+              email: person.email,
+              phone: person.phone,
+              type: person.type as 'talent' | 'contact',
+              role: rel.role
+            };
+          }).filter(Boolean) as (Person & { role: string })[];
+          
+          setSelectedPeople(existingPeople);
+        }
+      };
       
-      setSelectedPeople(existingPeople);
+      loadPeopleForRelationships();
     }
   }, [relationships]);
 
@@ -59,7 +81,13 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
         
       if (error) throw error;
       
-      setPeople(data || []);
+      if (data) {
+        // Explicitly cast the data as Person[] to ensure type compatibility
+        setPeople(data.map(person => ({
+          ...person,
+          type: person.type as 'talent' | 'contact'
+        })));
+      }
     } catch (error) {
       console.error('Error searching people:', error);
       toast.error('Failed to search people');
@@ -153,7 +181,7 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
-                  {!relationships?.some(rel => rel.person?.id === person.id) && (
+                  {!relationships?.some(rel => rel.person_id === person.id) && (
                     <Button 
                       size="sm" 
                       onClick={() => handleLinkPerson(person)}
