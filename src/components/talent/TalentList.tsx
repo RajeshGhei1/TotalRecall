@@ -59,16 +59,14 @@ const TalentList: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['talents'] });
       setTalentToDelete(null);
       
-      toast({
-        title: "Talent Deleted",
-        description: "The talent has been successfully removed.",
+      toast("Talent Deleted", {
+        description: "The talent has been successfully removed."
       });
     },
     onError: (error) => {
-      toast({
-        title: "Error",
+      toast("Error", {
         description: `Failed to delete talent: ${error.message}`,
-        variant: "destructive",
+        variant: "destructive"
       });
     },
   });
