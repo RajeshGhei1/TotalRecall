@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
   Breadcrumb,
@@ -12,6 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import CompanyLinkForm from '@/components/people/CompanyLinkForm';
 import PeopleActionBar from '@/components/people/PeopleActionBar';
 import PeopleTabsContent from '@/components/people/PeopleTabsContent';
@@ -25,6 +26,33 @@ const People = () => {
   const [personType, setPersonType] = useState<'talent' | 'contact'>('talent');
   const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
+  const [companyFilter, setCompanyFilter] = useState<string>('');
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+
+  // Fetch companies for the dropdown
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoadingCompanies(true);
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('id, name')
+          .order('name');
+          
+        if (error) throw error;
+        
+        setCompanies(data || []);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        toast.error('Failed to load companies');
+      } finally {
+        setIsLoadingCompanies(false);
+      }
+    };
+    
+    fetchCompanies();
+  }, []);
 
   // Function to handle linking a person to a company
   const handleLinkToCompany = (personId: string) => {
@@ -41,16 +69,6 @@ const People = () => {
       // Navigate to add contact form
       toast.info("Add contact functionality will be implemented soon");
     }
-  };
-
-  // Mock function for handling company link submission
-  const handleCompanyLinkSubmit = (values: any) => {
-    console.log("Linking person to company:", selectedPersonId, values);
-    
-    // Here you would make an API call to save the relationship
-    toast.success("Person linked to company successfully!");
-    setIsCompanyLinkFormOpen(false);
-    setSelectedPersonId(null);
   };
 
   return (
@@ -89,6 +107,9 @@ const People = () => {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onAddPerson={handleAddPerson}
+            companyFilter={companyFilter}
+            setCompanyFilter={setCompanyFilter}
+            companyOptions={companies}
           />
 
           <PeopleTabsContent
@@ -102,14 +123,10 @@ const People = () => {
           <CompanyLinkForm 
             isOpen={isCompanyLinkFormOpen}
             onClose={() => setIsCompanyLinkFormOpen(false)}
-            onSubmit={handleCompanyLinkSubmit}
-            companies={[
-              { id: '1', name: 'Acme Corp' },
-              { id: '2', name: 'Globex Corporation' },
-              { id: '3', name: 'Initech' },
-              { id: '4', name: 'Umbrella Corporation' },
-            ]}
+            onSubmit={() => {}}
+            companies={companies}
             personType={personType}
+            personId={selectedPersonId || undefined}
             isSubmitting={false}
           />
         </div>
