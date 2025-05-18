@@ -13,13 +13,14 @@ export function useCustomFieldsHook(
 ): UseCustomFieldsReturn {
   const { customFields, isLoading, error, refetch } = useCustomFieldsList(tenantId, options);
   const { getCustomFieldValues, saveCustomFieldValues } = useCustomFieldValues();
-  const { updateFieldOrder } = useFieldOrder(refetch);
+  const { updateFieldOrder } = useFieldOrder();
 
   return {
     customFields,
     isLoading,
     getCustomFieldValues,
     saveCustomFieldValues,
-    updateFieldOrder
+    updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => 
+      updateFieldOrder(fields, tenantId, typeof formContext === 'string')
   };
 }

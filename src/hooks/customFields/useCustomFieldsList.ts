@@ -1,102 +1,77 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CustomField } from './types';
-
-interface UseCustomFieldsListOptions {
-  formContext?: string;
-}
-
-interface UseCustomFieldsListResult {
-  customFields: CustomField[];
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => Promise<void>;
-}
+import { CustomField, UseCustomFieldsOptions } from './types';
 
 /**
- * Hook for fetching and managing custom fields
+ * Hook to fetch and filter custom fields
  */
-export function useCustomFieldsList(
-  tenantId?: string, 
-  options?: UseCustomFieldsListOptions
-): UseCustomFieldsListResult {
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  
+export const useCustomFieldsList = (tenantId?: string, options?: UseCustomFieldsOptions) => {
   const formContext = options?.formContext;
 
-  const fetchCustomFields = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Define the query base
+  const { data: customFields = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['customFields', tenantId, formContext],
+    queryFn: async () => {
       let query = supabase
         .from('custom_fields')
         .select('*');
-      
-      // Add tenant filter if provided
+
+      // Filter by tenant_id if provided
       if (tenantId) {
-        if (tenantId === 'global') {
-          // For global, get fields where tenant_id is null
-          query = query.is('tenant_id', null);
-        } else {
-          // For specific tenant
-          query = query.eq('tenant_id', tenantId);
-        }
-      }
-      
-      // Add form context filter if provided
-      if (formContext) {
-        // We need to check if 'formContext' is in the applicable_forms array or if applicable_forms is empty
-        query = query.or(`applicable_forms.cs.{${formContext}},applicable_forms.eq.[]`);
+        query = query.eq('tenant_id', tenantId);
+      } else {
+        query = query.is('tenant_id', null);
       }
 
-      // Order by sort_order if available, then by creation date
-      query = query.order('sort_order', { ascending: true })
-                  .order('created_at', { ascending: true });
-      
+      // Order by sort_order if the column exists
+      query = query.order('sort_order', { ascending: true });
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
-      
-      // Convert the result to the CustomField type
-      const typedFields: CustomField[] = data?.map(field => ({
+
+      // Filter by form context if provided
+      let filteredFields = data || [];
+      if (formContext) {
+        filteredFields = filteredFields.filter(field => {
+          // Check if the field has applicable_forms that include the formContext
+          if (!field.applicable_forms) return false;
+
+          // The applicable_forms field is a JSON array in the database
+          let applicableForms: string[] = [];
+
+          try {
+            if (typeof field.applicable_forms === 'string') {
+              applicableForms = JSON.parse(field.applicable_forms);
+            } else if (Array.isArray(field.applicable_forms)) {
+              applicableForms = field.applicable_forms as string[];
+            } else if (field.applicable_forms !== null) {
+              // Handle case where applicable_forms is a JSON object
+              const formsObj = field.applicable_forms as Record<string, any>;
+              if (formsObj.hasOwnProperty('forms')) {
+                applicableForms = formsObj.forms as string[];
+              }
+            }
+          } catch (e) {
+            console.error('Error parsing applicable_forms:', e);
+          }
+
+          return applicableForms.includes(formContext);
+        });
+      }
+
+      // Map the database fields to our CustomField type
+      return filteredFields.map(field => ({
         ...field,
-        id: field.id,
-        name: field.name,
-        field_key: field.field_key,
-        field_type: field.field_type,
-        required: field.required,
-        description: field.description || '',
-        options: field.options as Record<string, any>,
-        applicable_forms: field.applicable_forms as string[] | null,
-        tenant_id: field.tenant_id,
-        created_at: field.created_at,
-        updated_at: field.updated_at,
-        sort_order: field.sort_order || 0 // Ensure sort_order has a default value
-      })) || [];
-      
-      setCustomFields(typedFields);
-    } catch (err) {
-      console.error('Error fetching custom fields:', err);
-      setError(err instanceof Error ? err : new Error(String(err)));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        sort_order: field.sort_order || 0, // Ensure sort_order exists
+        options: typeof field.options === 'string' ? JSON.parse(field.options) : field.options,
+        applicable_forms: typeof field.applicable_forms === 'string' 
+          ? JSON.parse(field.applicable_forms) 
+          : field.applicable_forms
+      } as CustomField));
+    },
+    enabled: true,
+  });
 
-  // Initial fetch
-  useEffect(() => {
-    fetchCustomFields();
-  }, [tenantId, formContext]);
-
-  return {
-    customFields,
-    isLoading,
-    error,
-    refetch: fetchCustomFields
-  };
-}
+  return { customFields, isLoading, error, refetch };
+};
