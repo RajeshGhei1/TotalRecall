@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { CustomField, UseCustomFieldsOptions, UseCustomFieldsReturn } from './types';
 import { useCustomFieldValues } from './useCustomFieldValues';
 import { useFieldOrder } from './useFieldOrder';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Legacy hook for custom fields functionality
  * Kept for backward compatibility
  */
-export const useCustomFields = (tenantId?: string, options?: UseCustomFieldsOptions): UseCustomFieldsReturn => {
+export const useCustomFieldsLegacy = (tenantId?: string, options?: UseCustomFieldsOptions): UseCustomFieldsReturn => {
   const { getCustomFieldValues, saveCustomFieldValues } = useCustomFieldValues();
   const { updateFieldOrder } = useFieldOrder();
   
@@ -95,7 +96,8 @@ export const useCustomFields = (tenantId?: string, options?: UseCustomFieldsOpti
             required: field.required || false,
             tenant_id: field.tenant_id,
             // Add sort_order with index fallback
-            sort_order: field.sort_order !== undefined ? field.sort_order : index,
+            // Use hasOwnProperty to safely check if sort_order exists
+            sort_order: 'sort_order' in field ? field.sort_order : index,
             description: field.description || '',
             options: parsedOptions,
             applicable_forms: applicableForms,
@@ -112,14 +114,26 @@ export const useCustomFields = (tenantId?: string, options?: UseCustomFieldsOpti
     },
   });
 
+  // Create a wrapper function that converts the third parameter to match expected signature
+  const updateFieldOrderWrapper = (
+    fields: CustomField[], 
+    tenantId?: string, 
+    formContext?: string
+  ): Promise<any> => {
+    // Convert formContext to boolean for showToast parameter
+    // If formContext is a string, we'll use true for showToast
+    const showToast = typeof formContext === 'string';
+    return updateFieldOrder(fields, tenantId, showToast);
+  };
+
   return {
     customFields: data || [],
     isLoading,
     getCustomFieldValues,
     saveCustomFieldValues,
-    updateFieldOrder
+    updateFieldOrder: updateFieldOrderWrapper
   };
 };
 
-// Export for legacy support
-export const useCustomFieldsLegacy = useCustomFields;
+// Export legacy hook
+export { useCustomFieldsLegacy as useCustomFields };
