@@ -35,14 +35,7 @@ const TenantAdminNav = () => {
         className="w-full justify-start" 
         onClick={() => navigate("/tenant-admin/talent")}
       >
-        <Users className="mr-2 h-4 w-4" /> Talent
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/companies")}
-      >
-        <Building className="mr-2 h-4 w-4" /> Companies
+        <UserRound className="mr-2 h-4 w-4" /> Talent
       </Button>
       <Button 
         variant="ghost" 
@@ -50,6 +43,13 @@ const TenantAdminNav = () => {
         onClick={() => navigate("/tenant-admin/contacts")}
       >
         <UserRound className="mr-2 h-4 w-4" /> Contacts
+      </Button>
+      <Button 
+        variant="ghost" 
+        className="w-full justify-start" 
+        onClick={() => navigate("/tenant-admin/companies")}
+      >
+        <Building className="mr-2 h-4 w-4" /> Companies
       </Button>
       <Button 
         variant="ghost" 
