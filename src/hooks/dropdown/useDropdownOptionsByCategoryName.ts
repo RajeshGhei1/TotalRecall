@@ -161,6 +161,10 @@ export function useDropdownOptionsByCategoryName(categoryName?: string) {
       // Create update payloads for each option with its new order
       const updates = updatedOptions.map((option, index) => ({
         id: option.id,
+        category_id: option.category_id,
+        value: option.value,
+        label: option.label,
+        is_default: option.is_default,
         sort_order: index
       }));
       

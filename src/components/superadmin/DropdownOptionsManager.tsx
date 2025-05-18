@@ -42,6 +42,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { DropdownOption } from '@/hooks/dropdown/types';
 
 // Sortable item component for dropdown options
 const SortableOptionItem = ({ option, onDelete }) => {
@@ -96,11 +97,18 @@ const DropdownOptionsManager = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [localOptions, setLocalOptions] = useState([]);
+  const [localOptions, setLocalOptions] = useState<DropdownOption[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const queryClient = useQueryClient();
   
-  const { categories, options, isLoading, addCategory, getCategoryIdByName } = useDropdownOptions(selectedCategory);
+  const { 
+    categories, 
+    options, 
+    isLoading, 
+    addCategory, 
+    getCategoryIdByName,
+    updateOptionOrder 
+  } = useDropdownOptions(selectedCategory);
 
   // Sensors for drag and drop functionality
   const sensors = useSensors(
@@ -135,7 +143,7 @@ const DropdownOptionsManager = () => {
           description: 'Please select a category and provide a value',
           variant: 'destructive',
         });
-        return;
+        return null;
       }
       
       const categoryId = await getCategoryIdByName(selectedCategory);
@@ -146,7 +154,7 @@ const DropdownOptionsManager = () => {
           description: 'Category not found',
           variant: 'destructive',
         });
-        return;
+        return null;
       }
 
       const { data, error } = await supabase
@@ -163,6 +171,8 @@ const DropdownOptionsManager = () => {
       return data[0];
     },
     onSuccess: (newOption) => {
+      if (!newOption) return;
+      
       toast({
         title: 'Option added',
         description: `Added new option "${newOptionLabel || newOptionValue}"`,
@@ -196,8 +206,9 @@ const DropdownOptionsManager = () => {
         .eq('id', id);
 
       if (error) throw error;
+      return id;
     },
-    onSuccess: (_, deletedId) => {
+    onSuccess: (deletedId) => {
       toast({
         title: 'Option deleted',
         description: 'The option has been removed',
@@ -213,40 +224,6 @@ const DropdownOptionsManager = () => {
         variant: 'destructive',
       });
     },
-  });
-
-  // Save the order of options
-  const saveOptionOrder = useMutation({
-    mutationFn: async (sortedOptions) => {
-      // Create a batch of updates for each option
-      const updates = sortedOptions.map((option, index) => ({
-        id: option.id,
-        sort_order: index
-      }));
-      
-      // Update all options in a single transaction
-      const { error } = await supabase
-        .from('dropdown_options')
-        .upsert(updates, { onConflict: 'id' });
-
-      if (error) throw error;
-      
-      return sortedOptions;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Order saved',
-        description: 'The new order has been saved',
-      });
-      setHasUnsavedChanges(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error saving order',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
   });
 
   const handleAddOption = () => {
@@ -277,7 +254,9 @@ const DropdownOptionsManager = () => {
   };
 
   const handleSaveOrder = () => {
-    saveOptionOrder.mutate(localOptions);
+    if (localOptions && localOptions.length > 0) {
+      updateOptionOrder.mutate(localOptions);
+    }
   };
 
   const handleAddCategory = () => {
@@ -327,10 +306,10 @@ const DropdownOptionsManager = () => {
                 <SelectValue placeholder="Choose a category" />
               </SelectTrigger>
               <SelectContent className="bg-white" style={{ zIndex: 1000 }}>
-                {categories.length === 0 ? (
+                {categories?.length === 0 ? (
                   <SelectItem value="no-categories" disabled>No categories available</SelectItem>
                 ) : (
-                  categories.map((category) => (
+                  categories?.map((category) => (
                     <SelectItem key={category.id} value={category.name}>
                       {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </SelectItem>
@@ -402,7 +381,7 @@ const DropdownOptionsManager = () => {
           </Dialog>
         </div>
 
-        {selectedCategory && categories.length > 0 && (
+        {selectedCategory && categories && categories.length > 0 && (
           <>
             <div className="border rounded-md p-4">
               <h3 className="font-medium mb-3">Add New Option</h3>
@@ -453,9 +432,9 @@ const DropdownOptionsManager = () => {
                     variant="default"
                     size="sm"
                     onClick={handleSaveOrder}
-                    disabled={saveOptionOrder.isPending}
+                    disabled={updateOptionOrder.isPending}
                   >
-                    {saveOptionOrder.isPending ? (
+                    {updateOptionOrder.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Saving...
@@ -526,7 +505,7 @@ const DropdownOptionsManager = () => {
           </>
         )}
 
-        {categories.length === 0 && (
+        {(!categories || categories.length === 0) && (
           <div className="border rounded-md p-8 text-center">
             <p className="text-muted-foreground mb-4">No dropdown categories available. Create a category first.</p>
             <Button 
