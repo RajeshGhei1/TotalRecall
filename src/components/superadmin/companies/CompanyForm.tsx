@@ -41,6 +41,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
+      id: initialData.id || undefined, // Add id field for existing companies
       name: initialData.name || '',
       website: initialData.website || '',
       industry: initialData.industry || '',

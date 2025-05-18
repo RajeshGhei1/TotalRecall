@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 // Define the form schema with Zod
 export const companyFormSchema = z.object({
+  id: z.string().optional(), // Add id field for existing companies
   name: z.string().min(1, "Company name is required"),
   website: z.string().url("Invalid website URL").optional().or(z.literal('')),
   industry: z.string().min(1, "Industry is required"),
