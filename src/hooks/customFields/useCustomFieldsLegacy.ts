@@ -54,7 +54,7 @@ export function useCustomFields(
 
         const typedFields = (data || []).map(field => ({
           ...field,
-          sort_order: field.sort_order || 0, // Ensure sort_order has a default value
+          sort_order: field.sort_order || 0, // Provide default value for sort_order
           applicable_forms: field.applicable_forms as string[] | null
         })) as CustomField[];
 

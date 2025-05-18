@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,24 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         return;
       }
       
-      await createField(values, tenantId);
+      await createField({
+        name: values.name, // Make sure name is always provided
+        label: values.label,
+        fieldType: values.fieldType,
+        required: values.required,
+        placeholder: values.placeholder,
+        defaultValue: values.defaultValue,
+        minLength: values.minLength,
+        maxLength: values.maxLength,
+        options: values.options,
+        min: values.min,
+        max: values.max,
+        step: values.step,
+        forms: values.forms,
+        info: values.info,
+        validation: values.validation
+      }, tenantId);
+      
       setIsDialogOpen(false);
       await refetch();
       

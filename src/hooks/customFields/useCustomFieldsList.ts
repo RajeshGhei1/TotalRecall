@@ -70,7 +70,7 @@ export function useCustomFieldsList(
         field_key: field.field_key,
         field_type: field.field_type,
         required: field.required,
-        description: field.description,
+        description: field.description || '',
         options: field.options as Record<string, any>,
         applicable_forms: field.applicable_forms as string[] | null,
         tenant_id: field.tenant_id,
