@@ -1,46 +1,50 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { CustomField } from './types';
 
-interface CustomField {
-  id: string;
-  tenant_id: string;
-  name: string;
-  field_key: string;
-  field_type: string;
-  required: boolean;
-  applicable_forms?: string[];
-  options?: Record<string, any>;
-  description?: string;
-}
-
-export const useCustomFieldsQuery = (tenantId: string, formContext?: string) => {
-  return useQuery({
-    queryKey: ['customFields', tenantId, formContext],
+export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
+  // Query to fetch custom fields
+  const { data: fields = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['custom-fields', tenantId, formContext],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('custom_fields')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('name');
-
-      if (error) throw error;
+      // Build the query
+      let query = supabase.from('custom_fields').select('*');
       
-      // If a formContext is specified, filter fields to only those applicable to this form
-      let fields = data as CustomField[];
-      if (formContext) {
-        fields = fields.filter(field => {
-          // If applicable_forms is empty array or null, field applies to all forms
-          if (!field.applicable_forms || field.applicable_forms.length === 0) {
-            return true;
-          }
-          // Otherwise, check if this form is in the applicable_forms array
-          return field.applicable_forms.includes(formContext);
-        });
+      // Filter by tenant if provided
+      if (tenantId) {
+        if (tenantId === 'global') {
+          query = query.is('tenant_id', null);
+        } else {
+          query = query.eq('tenant_id', tenantId);
+        }
       }
       
-      return fields;
-    },
+      // Filter by form context if provided
+      if (formContext) {
+        query = query.or(`applicable_forms.cs.{${formContext}},applicable_forms.eq.[]`);
+      }
+      
+      // Order by sort_order, then by creation date
+      query = query
+        .order('sort_order', { ascending: true, nullsLast: true })
+        .order('created_at', { ascending: true });
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching custom fields:', error);
+        throw error;
+      }
+      
+      return data as CustomField[];
+    }
   });
-};
 
-export type { CustomField };
+  return {
+    fields,
+    isLoading,
+    error,
+    refetch
+  };
+}
