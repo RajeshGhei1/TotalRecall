@@ -42,7 +42,7 @@ export interface UseCustomFieldsReturn {
 
 // Export interface for form values
 export interface FieldFormValues {
-  name: string;
+  name: string;            // Required field as per the error message
   label: string;
   fieldType: "text" | "textarea" | "dropdown" | "number" | "boolean" | "date";
   required: boolean;

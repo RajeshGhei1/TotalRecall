@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -153,6 +154,6 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       </Dialog>
     </div>
   );
-};
+}
 
 export default CustomFieldsManager;

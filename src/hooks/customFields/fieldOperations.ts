@@ -1,13 +1,17 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { QueryClient } from '@tanstack/react-query';
-import { FieldFormValues } from '@/hooks/customFields/types';
-import { CustomField } from './types';
+import { FieldFormValues, CustomField } from './types';
 
 /**
  * Creates a new custom field
  */
 export async function createCustomField(values: FieldFormValues, tenantId?: string) {
+  // Ensure name is provided since it's required
+  if (!values.name) {
+    throw new Error('Field name is required');
+  }
+
   const { data, error } = await supabase
     .from('custom_fields')
     .insert({
