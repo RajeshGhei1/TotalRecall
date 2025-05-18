@@ -37,7 +37,11 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
         throw error;
       }
       
-      return data as CustomField[];
+      // Convert the result to the CustomField type with sort_order
+      return (data || []).map(field => ({
+        ...field,
+        sort_order: field.sort_order || 0 // Ensure sort_order has a default value
+      })) as CustomField[];
     }
   });
 

@@ -44,11 +44,14 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 
   const handleSubmit = async (values: FieldFormValues) => {
     try {
-      // Make sure name is always provided (it's required by the type)
-      // This should not be necessary as the form validation should catch this,
-      // but we're being defensive
+      // Ensure name is provided
       if (!values.name) {
-        throw new Error('Field name is required');
+        toast({
+          title: 'Validation Error',
+          description: 'Field name is required',
+          variant: 'destructive',
+        });
+        return;
       }
       
       await createField(values, tenantId);

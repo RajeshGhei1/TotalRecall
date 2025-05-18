@@ -43,13 +43,13 @@ export function useCustomFieldsMutations() {
       fields, 
       tenantId 
     }: { 
-      fields: (CustomField & { sort_order: number })[]; 
+      fields: CustomField[]; 
       tenantId?: string 
     }) => {
       // Prepare updates - include all required fields
-      const updates = fields.map(field => ({
+      const updates = fields.map((field, index) => ({
         id: field.id,
-        sort_order: field.sort_order,
+        sort_order: index,
         name: field.name,
         field_key: field.field_key,
         field_type: field.field_type
@@ -71,6 +71,10 @@ export function useCustomFieldsMutations() {
   
   // Convenience functions with proper typing
   const createField = (values: FieldFormValues, tenantId?: string) => {
+    // Ensure name is required
+    if (!values.name) {
+      throw new Error('Field name is required');
+    }
     return createMutation.mutateAsync({ values, tenantId });
   };
   
@@ -82,7 +86,7 @@ export function useCustomFieldsMutations() {
     return deleteMutation.mutateAsync(id);
   };
   
-  const updateFieldsOrder = (fields: (CustomField & { sort_order: number })[], tenantId?: string) => {
+  const updateFieldsOrder = (fields: CustomField[], tenantId?: string) => {
     return updateOrderMutation.mutateAsync({ fields, tenantId });
   };
 
