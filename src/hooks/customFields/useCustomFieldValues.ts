@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField, CustomFieldValue } from './types';
 
@@ -125,14 +124,59 @@ export function useCustomFieldValues() {
       }
 
       // Transform the database fields to match our CustomField type
-      const typedFields = fields.map(field => ({
-        ...field,
-        // Add default sort_order if not present
-        sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : 0,
-        description: field.description || '',
-        options: field.options,
-        applicable_forms: Array.isArray(field.applicable_forms) ? field.applicable_forms : []
-      })) as CustomField[];
+      const processAndReturnCustomFields = (data) => {
+        try {
+          return (data || []).map((field, index) => {
+            // Handle options parsing safely
+            let parsedOptions: Record<string, any> | Json | string | number | boolean;
+            if (typeof field.options === 'string') {
+              try {
+                parsedOptions = JSON.parse(field.options);
+              } catch (e) {
+                parsedOptions = field.options;
+              }
+            } else {
+              parsedOptions = field.options || {};
+            }
+            
+            // Handle applicable_forms parsing
+            let applicableForms: string[] | null;
+            if (typeof field.applicable_forms === 'string') {
+              try {
+                applicableForms = JSON.parse(field.applicable_forms);
+              } catch (e) {
+                applicableForms = [];
+              }
+            } else if (Array.isArray(field.applicable_forms)) {
+              applicableForms = field.applicable_forms;
+            } else {
+              applicableForms = field.applicable_forms ? [field.applicable_forms.toString()] : null;
+            }
+            
+            return {
+              ...field,
+              id: field.id,
+              name: field.name,
+              field_key: field.field_key,
+              field_type: field.field_type,
+              required: field.required || false,
+              tenant_id: field.tenant_id,
+              // Handle the sort_order field specifically to avoid TS error
+              sort_order: 'sort_order' in field ? field.sort_order : index,
+              description: field.description || '',
+              options: parsedOptions,
+              applicable_forms: applicableForms,
+              created_at: field.created_at,
+              updated_at: field.updated_at
+            } as CustomField;
+          });
+        } catch (error) {
+          console.error("Error processing custom fields:", error);
+          return [];
+        }
+      };
+      
+      const typedFields = processAndReturnCustomFields(fields);
       
       return saveEntityCustomFieldValues(entityType, entityId, values, typedFields);
     }

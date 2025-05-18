@@ -1,3 +1,4 @@
+
 // Type definitions for custom fields functionality
 import { UseQueryResult } from '@tanstack/react-query';
 import { Json } from '@/integrations/supabase/types';
@@ -9,12 +10,12 @@ export interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
-  options?: Record<string, any> | Json;
+  options?: Record<string, any> | Json | string | number | boolean;
   applicable_forms?: string[] | null;
   description?: string;
   created_at: string;
   updated_at: string;
-  sort_order?: number;  // Make this optional since it's not in DB
+  sort_order?: number;  // This must be optional since it might not exist in DB
 }
 
 export interface CustomFieldValue {

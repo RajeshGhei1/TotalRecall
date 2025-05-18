@@ -82,8 +82,10 @@ export const useCustomFieldsList = (tenantId?: string, options?: UseCustomFields
         return filteredFields.map((field, index) => ({
           ...field,
           // Use index as default for sort_order if it doesn't exist
-          sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : index,
-          options: typeof field.options === 'string' ? JSON.parse(field.options) : (field.options || {}),
+          sort_order: 'sort_order' in field ? field.sort_order : index,
+          options: typeof field.options === 'string' 
+            ? JSON.parse(field.options) 
+            : (field.options || {}),
           applicable_forms: typeof field.applicable_forms === 'string' 
             ? JSON.parse(field.applicable_forms) 
             : (field.applicable_forms || null)

@@ -1,179 +1,133 @@
-
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField } from './types';
 
-interface UseCustomFieldsOptions {
-  formContext?: string;
-}
-
 /**
- * Legacy hook for fetching and managing custom fields
- * @deprecated Use useCustomFieldsHook instead
+ * Hook for querying custom fields (Legacy version - might be deprecated)
  */
-export function useCustomFields(
-  tenantId?: string,
-  options?: UseCustomFieldsOptions
-) {
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const formContext = options?.formContext;
-
-  useEffect(() => {
-    const fetchCustomFields = async () => {
+export function useCustomFieldsLegacy(tenantId?: string, formContext?: string) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['customFieldsLegacy', tenantId, formContext],
+    queryFn: async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        
-        let query = supabase.from('custom_fields').select('*');
-        
+        let query = supabase
+          .from('custom_fields')
+          .select('*');
+
+        // Filter by tenant_id if provided
         if (tenantId) {
           if (tenantId === 'global') {
             query = query.is('tenant_id', null);
           } else {
             query = query.eq('tenant_id', tenantId);
           }
+        } else {
+          query = query.is('tenant_id', null);
         }
 
-        if (formContext) {
-          // We need to check if the form context is in the applicable_forms array
-          // or if the applicable_forms array is empty (which means it applies to all forms)
-          query = query.or(`applicable_forms.cs.{${formContext}},applicable_forms.eq.[]`);
-        }
-
-        // Check if sort_order column exists
+        // Check if the sort_order column exists
         const { data: columns, error: columnsError } = await supabase
           .from('custom_fields')
           .select('sort_order')
           .limit(1);
 
+        let orderQuery = query;
         // Only order by sort_order if the column exists
         if (columns && !columnsError) {
-          query = query.order('sort_order', { ascending: true });
+          // The column exists, we can use it for ordering
+          orderQuery = query.order('sort_order', { ascending: true });
         }
 
         // Always add a secondary ordering by creation date
-        query = query.order('created_at', { ascending: true });
+        orderQuery = orderQuery.order('created_at', { ascending: true });
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        const typedFields = (data || []).map((field, index) => ({
-          ...field,
-          // Use index as the default sort_order if it doesn't exist in the database
-          sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : index, 
-          applicable_forms: field.applicable_forms as string[] | null
-        })) as CustomField[];
-
-        setCustomFields(typedFields);
-      } catch (err) {
-        console.error('Error fetching custom fields:', err);
-        setError(err instanceof Error ? err : new Error(String(err)));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCustomFields();
-  }, [tenantId, formContext]);
-
-  // Function to get custom field values for a specific entity
-  const getCustomFieldValues = async (entityType: string, entityId: string): Promise<any[]> => {
-    try {
-      if (!entityId) return [];
-
-      const { data, error } = await supabase
-        .from('custom_field_values')
-        .select('*, custom_fields(*)')
-        .eq('entity_type', entityType)
-        .eq('entity_id', entityId);
-
-      if (error) throw error;
-
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching custom field values:', error);
-      throw error;
-    }
-  };
-
-  // Function to save custom field values
-  const saveCustomFieldValues = async (
-    entityType: string,
-    entityId: string,
-    values: Record<string, any>
-  ): Promise<void> => {
-    try {
-      if (!entityId) return;
-
-      // Get field IDs by field_key
-      const fieldKeyToId: Record<string, string> = {};
-      customFields.forEach(field => {
-        fieldKeyToId[field.field_key] = field.id;
-      });
-
-      // Get existing values
-      const { data: existingValues, error: fetchError } = await supabase
-        .from('custom_field_values')
-        .select('id, field_id')
-        .eq('entity_type', entityType)
-        .eq('entity_id', entityId);
-
-      if (fetchError) throw fetchError;
-
-      // Create a map of field_id to existing value id
-      const fieldIdToValueId: Record<string, string> = {};
-      existingValues?.forEach(val => {
-        fieldIdToValueId[val.field_id] = val.id;
-      });
-
-      // Prepare upserts
-      const upserts = [];
-      for (const [fieldKey, value] of Object.entries(values)) {
-        const fieldId = fieldKeyToId[fieldKey];
-        if (!fieldId) continue;
-
-        upserts.push({
-          id: fieldIdToValueId[fieldId],
-          field_id: fieldId,
-          entity_type: entityType,
-          entity_id: entityId,
-          value
-        });
-      }
-
-      if (upserts.length > 0) {
-        const { error } = await supabase
-          .from('custom_field_values')
-          .upsert(upserts);
+        const { data, error } = await orderQuery;
 
         if (error) throw error;
-      }
-    } catch (error) {
-      console.error('Error saving custom field values:', error);
-      throw error;
-    }
-  };
 
-  // Adding updateFieldOrder to match the expected API
-  const updateFieldOrder = async (
-    fields: CustomField[],
-    tenantId?: string,
-    formContext?: string
-  ): Promise<any> => {
-    console.warn('Field order updates not implemented in legacy hook');
-    return Promise.resolve(fields);
-  };
+        // Filter by form context if provided
+        let filteredFields = data || [];
+        if (formContext) {
+          filteredFields = filteredFields.filter(field => {
+            // Check if the field has applicable_forms that include the formContext
+            if (!field.applicable_forms) return false;
+
+            // The applicable_forms field is a JSON array in the database
+            let applicableForms: string[] = [];
+
+            try {
+              if (typeof field.applicable_forms === 'string') {
+                applicableForms = JSON.parse(field.applicable_forms);
+              } else if (Array.isArray(field.applicable_forms)) {
+                applicableForms = field.applicable_forms as string[];
+              } else if (field.applicable_forms !== null) {
+                // Handle case where applicable_forms is a JSON object
+                const formsObj = field.applicable_forms as Record<string, any>;
+                if (formsObj.hasOwnProperty('forms')) {
+                  applicableForms = formsObj.forms as string[];
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing applicable_forms:', e);
+            }
+
+            return applicableForms.includes(formContext);
+          });
+        }
+
+        return processFields(filteredFields);
+      } catch (error) {
+        console.error("Error in useCustomFieldsLegacy:", error);
+        throw error;
+      }
+    },
+  });
 
   return {
-    customFields,
+    fields: data || [],
     isLoading,
     error,
-    getCustomFieldValues,
-    saveCustomFieldValues,
-    updateFieldOrder
+    refetch,
   };
 }
+
+// Helper function to process the fields
+const processFields = (data) => {
+  return (data || []).map((field, index) => {
+    // Make sure to handle sort_order properly
+    const fieldWithSortOrder = {
+      ...field,
+      sort_order: 'sort_order' in field ? field.sort_order : index
+    };
+    
+    // Handle options
+    let parsedOptions;
+    if (typeof field.options === 'string') {
+      try {
+        parsedOptions = JSON.parse(field.options);
+      } catch (e) {
+        parsedOptions = {};
+      }
+    } else {
+      parsedOptions = field.options || {};
+    }
+    
+    // Handle applicable_forms
+    let applicableForms;
+    if (typeof field.applicable_forms === 'string') {
+      try {
+        applicableForms = JSON.parse(field.applicable_forms);
+      } catch (e) {
+        applicableForms = [];
+      }
+    } else {
+      applicableForms = field.applicable_forms || [];
+    }
+    
+    return {
+      ...fieldWithSortOrder,
+      options: parsedOptions,
+      applicable_forms: applicableForms
+    } as CustomField;
+  });
+};

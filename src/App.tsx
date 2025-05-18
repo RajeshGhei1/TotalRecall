@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,8 @@ import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
 import Settings from "./pages/superadmin/Settings";
 import Talents from "./pages/superadmin/Talents";
+import Companies from "./pages/superadmin/Companies";
+import Contacts from "./pages/superadmin/Contacts";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminUsers from "./pages/tenant-admin/Users";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
@@ -67,6 +70,22 @@ const App = () => (
               element={
                 <AuthGuard requiresSuperAdmin={true}>
                   <Talents />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/superadmin/companies"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Companies />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/superadmin/contacts"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Contacts />
                 </AuthGuard>
               }
             />
