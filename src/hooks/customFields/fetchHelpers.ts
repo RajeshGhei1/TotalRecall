@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField } from './types';
 
@@ -9,33 +8,33 @@ export async function fetchCustomFields(tenantId: string): Promise<CustomField[]
   console.log(`Starting custom fields query for tenant: ${tenantId}`);
   
   try {
-    // Handle special case for "global" tenant
-    if (tenantId === 'global') {
-      const { data, error } = await supabase
-        .from('custom_fields')
-        .select('*')
-        .is('tenant_id', null)
-        .order('sort_order', { ascending: true })
-        .order('name');
-        
-      if (error) {
-        console.error('Error fetching global custom fields:', error);
-        throw error;
-      }
-      
-      console.log(`Retrieved ${data?.length || 0} global custom fields`);
-      return data as CustomField[];
-    }
-    
-    // Regular tenant case
     const { data, error } = await supabase
       .from('custom_fields')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order('sort_order', { ascending: true })
       .order('name');
 
     if (error) {
+      // Special handling for global tenant
+      if (tenantId === 'global' && error.code === '22P02') {
+        console.log('Using alternative query for global tenant');
+        
+        // For global tenant, get fields where tenant_id is null or 'global'
+        const { data: globalData, error: globalError } = await supabase
+          .from('custom_fields')
+          .select('*')
+          .is('tenant_id', null)
+          .order('name');
+          
+        if (globalError) {
+          console.error('Error fetching global custom fields:', globalError);
+          throw globalError;
+        }
+        
+        console.log(`Retrieved ${globalData?.length || 0} global custom fields`);
+        return globalData as CustomField[];
+      }
+      
       console.error('Error fetching custom fields:', error);
       throw error;
     }
@@ -86,7 +85,7 @@ export async function fetchCustomFieldValues(
         id, 
         value,
         field_id,
-        custom_fields(id, name, field_key, field_type, required, options, applicable_forms, sort_order)
+        custom_fields(id, name, field_key, field_type, required, options, applicable_forms)
       `)
       .eq('entity_type', entityType)
       .eq('entity_id', entityId);

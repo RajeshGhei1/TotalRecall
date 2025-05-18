@@ -2,14 +2,6 @@
 import React, { useState } from 'react';
 import { CustomField } from '@/hooks/customFields/types';
 import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage
-} from '@/components/ui/form';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -19,9 +11,10 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { toast } from '@/hooks/use-toast';
+import BaseFieldInput from './BaseFieldInput';
 
 interface DropdownFieldInputProps {
   field: CustomField;
@@ -37,7 +30,7 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
   const categoryName = field.options?.category || 'dropdown_options';
   
   // Use dropdown options hook
-  const { addOption, isAddingOption, refetchOptions, options } = useDropdownOptions(categoryName);
+  const { addOption, isAddingOption, refetchOptions } = useDropdownOptions(categoryName);
   
   // Handle adding a new option
   const handleAddOption = async () => {
@@ -83,43 +76,31 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
 
   return (
     <>
-      <FormField
-        control={form.control}
-        name={fieldName}
-        render={({ field: formField }) => (
-          <FormItem>
-            <FormLabel>
-              {field.name}
-              {field.required && <span className="text-destructive ml-1">*</span>}
-            </FormLabel>
-            <Select
-              onValueChange={(value) => {
-                if (value === '__add_new__') {
-                  setAddingOption(true);
-                  return;
-                }
-                formField.onChange(value);
-              }}
-              value={formField.value || ""}
-            >
-              <FormControl>
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className="z-[10000] bg-white">
-                {dropdownOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {field.description && <FormDescription>{field.description}</FormDescription>}
-            <FormMessage />
-          </FormItem>
+      <BaseFieldInput field={field} form={form} fieldName={fieldName}>
+        {(formField) => (
+          <Select
+            onValueChange={(value) => {
+              if (value === '__add_new__') {
+                setAddingOption(true);
+                return;
+              }
+              formField.onChange(value);
+            }}
+            value={formField.value || ""}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />
+            </SelectTrigger>
+            <SelectContent className="z-[10000] bg-white">
+              {dropdownOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
-      />
+      </BaseFieldInput>
 
       {/* Dialog for adding new option */}
       <Dialog open={addingOption} onOpenChange={setAddingOption}>

@@ -1,6 +1,87 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { QueryClient } from '@tanstack/react-query';
+import { FieldFormValues, CustomField } from './types';
+
+/**
+ * Creates a new custom field
+ */
+export async function createCustomField(values: FieldFormValues, tenantId?: string) {
+  // Ensure name is provided since it's required
+  if (!values.name) {
+    throw new Error('Field name is required');
+  }
+
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .insert({
+      name: values.name,
+      field_key: values.label.toLowerCase().replace(/\s+/g, '_'), // Convert label to field_key
+      field_type: values.fieldType, // Map fieldType to field_type
+      description: values.info, // Map info to description
+      required: values.required,
+      applicable_forms: values.forms || [], // Map forms to applicable_forms
+      options: values.options ? { options: values.options } : {},
+      tenant_id: tenantId !== 'global' ? tenantId : null,
+      sort_order: 0 // Default sort_order for new fields
+    })
+    .select();
+
+  if (error) {
+    console.error('Error creating custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
+
+/**
+ * Updates an existing custom field
+ */
+export async function updateCustomField(id: string, values: Partial<CustomField>) {
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .update(values)
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('Error updating custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
+
+/**
+ * Deletes an existing custom field
+ */
+export async function deleteCustomField(id: string) {
+  // First delete any values associated with this field
+  const { error: valuesError } = await supabase
+    .from('custom_field_values')
+    .delete()
+    .eq('field_id', id);
+
+  if (valuesError) {
+    console.error('Error deleting custom field values:', valuesError);
+    throw valuesError;
+  }
+
+  // Then delete the field itself
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .delete()
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('Error deleting custom field:', error);
+    throw error;
+  }
+
+  return data?.[0];
+}
 
 /**
  * Saves custom field values for an entity
@@ -18,20 +99,11 @@ export async function saveCustomFieldValues(
   console.log(`Saving custom field values for ${entityType}:${entityId}`, values);
 
   try {
-    // Handle special case for "global" tenant
-    let query = supabase
-      .from('custom_fields')
-      .select('id, field_key, applicable_forms');
-    
-    // Adjust query based on tenant type
-    if (tenantId === 'global') {
-      query = query.is('tenant_id', null);
-    } else {
-      query = query.or(`tenant_id.is.null,tenant_id.eq.${tenantId}`);
-    }
-    
     // Get all custom fields
-    const { data: fields, error: fieldsError } = await query;
+    const { data: fields, error: fieldsError } = await supabase
+      .from('custom_fields')
+      .select('id, field_key, applicable_forms')
+      .or(`tenant_id.is.null,tenant_id.eq.${tenantId}`);
 
     if (fieldsError) {
       console.error("Error fetching custom fields:", fieldsError);
@@ -76,7 +148,7 @@ export async function saveCustomFieldValues(
     }, {} as Record<string, string>);
 
     // Prepare upserts (update or insert)
-    const upserts = [];
+    const upserts: any[] = [];
 
     // Go through all values
     for (const [fieldKey, value] of Object.entries(values)) {

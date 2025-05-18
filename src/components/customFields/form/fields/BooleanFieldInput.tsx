@@ -1,15 +1,12 @@
 
 import React from 'react';
 import { CustomField } from '@/hooks/customFields/types';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   FormField,
   FormItem,
-  FormLabel,
-  FormControl,
   FormDescription,
-  FormMessage
 } from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface BooleanFieldInputProps {
   field: CustomField;
@@ -24,18 +21,22 @@ const BooleanFieldInput: React.FC<BooleanFieldInputProps> = ({ field, form, fiel
       name={fieldName}
       render={({ field: formField }) => (
         <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-          <FormControl>
-            <Checkbox
-              checked={formField.value}
-              onCheckedChange={formField.onChange}
-            />
-          </FormControl>
+          <Checkbox
+            checked={formField.value}
+            onCheckedChange={formField.onChange}
+            id={fieldName}
+          />
           <div className="space-y-1 leading-none">
-            <FormLabel>
+            <label
+              htmlFor={fieldName}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               {field.name}
               {field.required && <span className="text-destructive ml-1">*</span>}
-            </FormLabel>
-            {field.description && <FormDescription>{field.description}</FormDescription>}
+            </label>
+            {field.description && (
+              <FormDescription>{field.description}</FormDescription>
+            )}
           </div>
         </FormItem>
       )}
