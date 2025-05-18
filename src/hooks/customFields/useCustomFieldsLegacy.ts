@@ -63,7 +63,8 @@ export function useCustomFields(
 
         const typedFields = (data || []).map((field, index) => ({
           ...field,
-          sort_order: field.sort_order !== undefined ? field.sort_order : index, // Provide default index-based value for sort_order
+          // Use index as the default sort_order if it doesn't exist in the database
+          sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : index, 
           applicable_forms: field.applicable_forms as string[] | null
         })) as CustomField[];
 

@@ -53,22 +53,20 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
         
         // Convert the result to the CustomField type
         const typedFields: CustomField[] = (data || []).map((field, index) => {
-          // Parse options if it's a string or use empty object as fallback
-          let options: Record<string, any>;
-          
+          // Handle options parsing safely
+          let parsedOptions: Record<string, any> | any;
           if (typeof field.options === 'string') {
             try {
-              options = JSON.parse(field.options);
+              parsedOptions = JSON.parse(field.options);
             } catch (e) {
-              options = {};
+              parsedOptions = {};
             }
           } else {
-            options = field.options || {};
+            parsedOptions = field.options || {};
           }
           
-          // Parse applicable_forms if it's a string
+          // Handle applicable_forms parsing
           let applicableForms: string[] | null;
-          
           if (typeof field.applicable_forms === 'string') {
             try {
               applicableForms = JSON.parse(field.applicable_forms);
@@ -87,10 +85,10 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
             field_type: field.field_type,
             required: field.required || false,
             tenant_id: field.tenant_id,
-            // Ensure all required fields have values
-            sort_order: field.sort_order !== undefined ? field.sort_order : index,
+            // Add sort_order with index fallback
+            sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : index,
             description: field.description || '',
-            options: options,
+            options: parsedOptions,
             applicable_forms: applicableForms,
             created_at: field.created_at,
             updated_at: field.updated_at

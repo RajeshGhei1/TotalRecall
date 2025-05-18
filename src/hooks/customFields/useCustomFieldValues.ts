@@ -125,13 +125,14 @@ export function useCustomFieldValues() {
       }
 
       // Transform the database fields to match our CustomField type
-      const typedFields: CustomField[] = fields.map(field => ({
+      const typedFields = fields.map(field => ({
         ...field,
-        sort_order: field.sort_order || 0,
+        // Add default sort_order if not present
+        sort_order: typeof field.sort_order !== 'undefined' ? field.sort_order : 0,
         description: field.description || '',
-        options: field.options || {},
-        applicable_forms: field.applicable_forms as string[] || null
-      }));
+        options: field.options,
+        applicable_forms: Array.isArray(field.applicable_forms) ? field.applicable_forms : []
+      })) as CustomField[];
       
       return saveEntityCustomFieldValues(entityType, entityId, values, typedFields);
     }

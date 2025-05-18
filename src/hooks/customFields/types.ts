@@ -1,6 +1,6 @@
-
 // Type definitions for custom fields functionality
 import { UseQueryResult } from '@tanstack/react-query';
+import { Json } from '@/integrations/supabase/types';
 
 export interface CustomField {
   id: string;
@@ -9,12 +9,12 @@ export interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
-  options?: Record<string, any>;
+  options?: Record<string, any> | Json;
   applicable_forms?: string[] | null;
   description?: string;
   created_at: string;
   updated_at: string;
-  sort_order: number;
+  sort_order?: number;  // Make this optional since it's not in DB
 }
 
 export interface CustomFieldValue {
