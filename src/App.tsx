@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/superadmin/Dashboard";
 import Tenants from "./pages/superadmin/Tenants";
 import Users from "./pages/superadmin/Users";
@@ -38,6 +38,9 @@ const App = () => (
             
             {/* Auth Route */}
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Pricing Page */}
+            <Route path="/pricing" element={<Pricing />} />
             
             {/* Superadmin Routes with Authentication Guard */}
             <Route
