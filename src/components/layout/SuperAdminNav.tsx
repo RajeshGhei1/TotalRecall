@@ -8,7 +8,8 @@ import {
   Users, 
   Building,
   Briefcase,
-  UserRound
+  UserRound,
+  DollarSign
 } from "lucide-react";
 
 const SuperAdminNav = () => {
@@ -62,6 +63,13 @@ const SuperAdminNav = () => {
         onClick={() => navigate("/superadmin/companies")}
       >
         <Building className="mr-2 h-4 w-4" /> Companies
+      </Button>
+      <Button 
+        variant={isActive("/superadmin/revenue")}
+        className="w-full justify-start" 
+        onClick={() => navigate("/superadmin/revenue")}
+      >
+        <DollarSign className="mr-2 h-4 w-4" /> Revenue
       </Button>
     </nav>
   );

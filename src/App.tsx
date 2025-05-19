@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import Users from "./pages/superadmin/Users";
 import Settings from "./pages/superadmin/Settings";
 import People from "./pages/superadmin/People";
 import Companies from "./pages/superadmin/Companies";
+import Revenue from "./pages/superadmin/Revenue";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminUsers from "./pages/tenant-admin/Users";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
@@ -88,6 +90,14 @@ const App = () => (
               element={
                 <AuthGuard requiresSuperAdmin={true}>
                   <Settings />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/superadmin/revenue"
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <Revenue />
                 </AuthGuard>
               }
             />
