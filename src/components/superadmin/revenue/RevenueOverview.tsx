@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, DollarSign } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, DollarSign, Users, Briefcase, Building } from 'lucide-react';
 
 const revenueData = [
   { month: 'Jan', mrr: 12500 },
@@ -21,6 +21,25 @@ const customerData = [
   { month: 'May', recruiters: 43, employers: 62, talent: 185 },
   { month: 'Jun', recruiters: 48, employers: 68, talent: 201 },
 ];
+
+// User type data
+const userTypesData = {
+  jobSeekers: {
+    count: 1245,
+    growth: 12.8,
+    icon: Users
+  },
+  recruitmentAgencies: {
+    count: 87,
+    growth: 8.5,
+    icon: Briefcase
+  },
+  employerCompanies: {
+    count: 156,
+    growth: 15.2,
+    icon: Building
+  }
+};
 
 const RevenueOverview = () => {
   // Calculate revenue growth metrics
@@ -100,6 +119,69 @@ const RevenueOverview = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      {/* New section for user types metrics */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-3">Platform Usage by User Type</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Job Seekers Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Job Seekers
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userTypesData.jobSeekers.count.toLocaleString()}</div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                <span className="text-green-500">
+                  {userTypesData.jobSeekers.growth}% growth
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recruitment Agencies Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Recruitment Agencies
+              </CardTitle>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userTypesData.recruitmentAgencies.count.toLocaleString()}</div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                <span className="text-green-500">
+                  {userTypesData.recruitmentAgencies.growth}% growth
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Companies Posting Jobs Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Companies Posting Jobs
+              </CardTitle>
+              <Building className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userTypesData.employerCompanies.count.toLocaleString()}</div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                <span className="text-green-500">
+                  {userTypesData.employerCompanies.growth}% growth
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
