@@ -3,6 +3,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Building } from 'lucide-react';
 import CurrentCompanyBadge from './CurrentCompanyBadge';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface PeopleListProps {
   personType: 'talent' | 'contact';
@@ -10,6 +19,8 @@ interface PeopleListProps {
 }
 
 const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
+  const isMobile = useIsMobile();
+
   // Mock data for talents and contacts
   const mockTalents = [
     { id: 't1', full_name: 'John Doe', email: 'john@example.com', location: 'New York', years_of_experience: 5 },
@@ -40,37 +51,81 @@ const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
     );
   }
 
+  // Mobile card view
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {data.map((person) => (
+          <div 
+            key={person.id} 
+            className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+          >
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <div className="font-medium">{person.full_name}</div>
+                <div className="text-sm text-gray-500">{person.email}</div>
+              </div>
+              {mockCompanies[person.id as keyof typeof mockCompanies] && (
+                <CurrentCompanyBadge 
+                  companyName={mockCompanies[person.id as keyof typeof mockCompanies].name} 
+                  role={mockCompanies[person.id as keyof typeof mockCompanies].role}
+                />
+              )}
+            </div>
+            
+            <div className="text-sm mb-1">
+              <span className="font-medium mr-1">
+                {personType === 'talent' ? 'Location:' : 'Company:'}
+              </span>
+              {personType === 'talent' 
+                ? (person as any).location 
+                : (person as any).company}
+            </div>
+            
+            <div className="text-sm mb-3">
+              <span className="font-medium mr-1">
+                {personType === 'talent' ? 'Experience:' : 'Position:'}
+              </span>
+              {personType === 'talent' 
+                ? `${(person as any).years_of_experience} years` 
+                : (person as any).position}
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onLinkToCompany(person.id)}
+              className="w-full"
+            >
+              <Building className="h-4 w-4 mr-2" /> Link to Company
+            </Button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Desktop table view
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Email
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {personType === 'talent' ? 'Location' : 'Company'}
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {personType === 'talent' ? 'Experience' : 'Position'}
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>{personType === 'talent' ? 'Location' : 'Company'}</TableHead>
+            <TableHead>{personType === 'talent' ? 'Experience' : 'Position'}</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {data.map((person) => (
-            <tr key={person.id}>
-              <td className="px-6 py-4 whitespace-nowrap">
+            <TableRow key={person.id}>
+              <TableCell>
                 <div className="flex items-center">
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
+                  <div>
+                    <div className="font-medium">
                       {person.full_name}
-                      {/* Show company badge if they have a current company */}
                       {mockCompanies[person.id as keyof typeof mockCompanies] && (
                         <span className="ml-2">
                           <CurrentCompanyBadge 
@@ -82,33 +137,31 @@ const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
                     </div>
                   </div>
                 </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{person.email}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {personType === 'talent' 
-                    ? (person as any).location 
-                    : (person as any).company}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {personType === 'talent' 
-                    ? `${(person as any).years_of_experience} years` 
-                    : (person as any).position}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <Button variant="outline" size="sm" onClick={() => onLinkToCompany(person.id)}>
+              </TableCell>
+              <TableCell>{person.email}</TableCell>
+              <TableCell>
+                {personType === 'talent' 
+                  ? (person as any).location 
+                  : (person as any).company}
+              </TableCell>
+              <TableCell>
+                {personType === 'talent' 
+                  ? `${(person as any).years_of_experience} years` 
+                  : (person as any).position}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onLinkToCompany(person.id)}
+                >
                   <Building className="h-4 w-4 mr-2" /> Link to Company
                 </Button>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

@@ -18,11 +18,13 @@ import PeopleActionBar from '@/components/people/PeopleActionBar';
 import PeopleTabsContent from '@/components/people/PeopleTabsContent';
 import BulkUploadDialog from '@/components/common/BulkUploadDialog';
 import ApiConnectionDialog from '@/components/common/ApiConnectionDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Create a client
 const queryClient = new QueryClient();
 
 const People = () => {
+  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [personType, setPersonType] = useState<'talent' | 'contact'>('talent');
@@ -83,8 +85,8 @@ const People = () => {
   return (
     <AdminLayout>
       <QueryClientProvider client={queryClient}>
-        <div className="p-6">
-          <Breadcrumb className="mb-6">
+        <div className="p-3 sm:p-6">
+          <Breadcrumb className="mb-4 md:mb-6">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink href="/superadmin/dashboard">Superadmin</BreadcrumbLink>
@@ -96,14 +98,14 @@ const People = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">People Management</h1>
-            <p className="text-muted-foreground">Manage talents and business contacts across the JobMojo platform.</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">People Management</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Manage talents and business contacts across the JobMojo platform.</p>
           </div>
 
           {/* Person type selector */}
-          <div className="mb-6">
-            <Tabs defaultValue={personType} onValueChange={(value) => setPersonType(value as 'talent' | 'contact')} className="w-[400px]">
+          <div className="mb-4 md:mb-6">
+            <Tabs defaultValue={personType} onValueChange={(value) => setPersonType(value as 'talent' | 'contact')} className="w-full sm:w-[400px]">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="talent">Talent Pool</TabsTrigger>
                 <TabsTrigger value="contact">Business Contacts</TabsTrigger>

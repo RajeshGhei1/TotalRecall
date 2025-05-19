@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, UserPlus, Building, Upload, Database } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PeopleActionBarProps {
   personType: 'talent' | 'contact';
@@ -28,9 +29,11 @@ const PeopleActionBar = ({
   setCompanyFilter,
   companyOptions = []
 }: PeopleActionBarProps) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-      <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
+    <div className="flex flex-col gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center w-full">
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
@@ -66,24 +69,24 @@ const PeopleActionBar = ({
         )}
       </div>
       
-      <div className="flex space-x-2">
+      <div className="flex flex-wrap gap-2">
         {onBulkUpload && (
-          <Button variant="outline" onClick={onBulkUpload}>
+          <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={onBulkUpload} className="flex-grow sm:flex-grow-0">
             <Upload className="mr-2 h-4 w-4" />
-            Bulk Upload
+            {!isMobile && "Bulk Upload"}
           </Button>
         )}
         
         {onApiConnection && (
-          <Button variant="outline" onClick={onApiConnection}>
+          <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={onApiConnection} className="flex-grow sm:flex-grow-0">
             <Database className="mr-2 h-4 w-4" />
-            API Connection
+            {!isMobile && "API Connection"}
           </Button>
         )}
         
-        <Button onClick={onAddPerson}>
+        <Button onClick={onAddPerson} className="flex-grow sm:flex-grow-0">
           <UserPlus className="mr-2 h-4 w-4" />
-          Add {personType === 'talent' ? 'Talent' : 'Contact'}
+          {isMobile ? `Add ${personType === 'talent' ? 'Talent' : 'Contact'}` : `Add ${personType === 'talent' ? 'Talent' : 'Contact'}`}
         </Button>
       </div>
     </div>

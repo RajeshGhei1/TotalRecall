@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
 import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
 import PeopleList from './PeopleList';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PeopleTabsContentProps {
   personType: 'talent' | 'contact';
@@ -14,16 +16,20 @@ interface PeopleTabsContentProps {
 }
 
 const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompany }: PeopleTabsContentProps) => {
+  const isMobile = useIsMobile();
+  
   if (personType === 'talent') {
     return (
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="dashboard">Talent Dashboard</TabsTrigger>
-          <TabsTrigger value="all">All Talents</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive</TabsTrigger>
-          <TabsTrigger value="new">New Applications</TabsTrigger>
-        </TabsList>
+        <ScrollArea className="w-full" orientation="horizontal">
+          <TabsList className="mb-4 w-full md:w-auto inline-flex">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="all">All Talents</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            <TabsTrigger value="new">New Applications</TabsTrigger>
+          </TabsList>
+        </ScrollArea>
         
         <TabsContent value="dashboard">
           <TalentMetricsDashboard />
@@ -31,11 +37,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="all">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>All Talents</CardTitle>
               <CardDescription>View and manage all talents registered in the platform</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <PeopleList 
                 personType="talent" 
                 onLinkToCompany={onLinkToCompany} 
@@ -46,11 +52,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="active">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Active Talents</CardTitle>
               <CardDescription>View and manage currently active talents</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No active talents found.</p>
               </div>
@@ -60,11 +66,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="inactive">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Inactive Talents</CardTitle>
               <CardDescription>View and manage inactive talents</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No inactive talents found.</p>
               </div>
@@ -74,11 +80,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="new">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>New Applications</CardTitle>
               <CardDescription>View and process new talent applications</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No new applications found.</p>
               </div>
@@ -90,13 +96,15 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
   } else {
     return (
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="dashboard">Contact Dashboard</TabsTrigger>
-          <TabsTrigger value="all">All Contacts</TabsTrigger>
-          <TabsTrigger value="clients">Clients</TabsTrigger>
-          <TabsTrigger value="prospects">Prospects</TabsTrigger>
-          <TabsTrigger value="vendors">Vendors</TabsTrigger>
-        </TabsList>
+        <ScrollArea className="w-full" orientation="horizontal">
+          <TabsList className="mb-4 w-full md:w-auto inline-flex">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="all">All Contacts</TabsTrigger>
+            <TabsTrigger value="clients">Clients</TabsTrigger>
+            <TabsTrigger value="prospects">Prospects</TabsTrigger>
+            <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          </TabsList>
+        </ScrollArea>
         
         <TabsContent value="dashboard">
           <ContactMetricsDashboard />
@@ -104,11 +112,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
 
         <TabsContent value="all">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>All Business Contacts</CardTitle>
               <CardDescription>View and manage all business contacts</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <PeopleList 
                 personType="contact" 
                 onLinkToCompany={onLinkToCompany} 
@@ -119,11 +127,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="clients">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Client Contacts</CardTitle>
               <CardDescription>View and manage client contacts</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No client contacts found.</p>
               </div>
@@ -133,11 +141,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="prospects">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Prospect Contacts</CardTitle>
               <CardDescription>View and manage prospect contacts</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No prospect contacts found.</p>
               </div>
@@ -147,11 +155,11 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         
         <TabsContent value="vendors">
           <Card>
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Vendor Contacts</CardTitle>
               <CardDescription>View and manage vendor contacts</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <div className="text-center py-8 text-muted-foreground">
                 <p>No vendor contacts found.</p>
               </div>
