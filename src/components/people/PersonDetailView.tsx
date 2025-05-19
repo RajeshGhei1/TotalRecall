@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -266,7 +265,7 @@ const PersonDetailView = () => {
                       <Skeleton className="h-12 w-full" />
                     </div>
                   ) : employmentHistory.length > 0 ? (
-                    <JobHistoryList employmentHistory={employmentHistory} />
+                    <JobHistoryList history={employmentHistory} />
                   ) : (
                     <div className="rounded-md bg-muted p-4 text-center">
                       <p>No company associations found.</p>
