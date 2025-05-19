@@ -11,8 +11,11 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Database } from 'lucide-react';
+import { Plus, Upload, Database, BarChart } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import CompanyList from '@/components/superadmin/companies/CompanyList';
+import CompanyMetricsDashboard from '@/components/superadmin/companies/CompanyMetricsDashboard';
 import CreateCompanyDialog from '@/components/superadmin/companies/CreateCompanyDialog';
 import BulkUploadDialog from '@/components/superadmin/companies/BulkUploadDialog';
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
@@ -22,6 +25,7 @@ const Companies = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("companies");
   
   const { companies, isLoading, createCompany } = useCompanies();
 
@@ -40,7 +44,7 @@ const Companies = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-6 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Companies</h1>
             <p className="text-muted-foreground">Manage companies across all tenants</p>
@@ -58,18 +62,39 @@ const Companies = () => {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Companies Management</CardTitle>
-            <CardDescription>View and manage all companies in the system</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CompanyList 
-              companies={companies || []} 
-              isLoading={isLoading} 
-            />
-          </CardContent>
-        </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList>
+            <TabsTrigger value="companies">Companies List</TabsTrigger>
+            <TabsTrigger value="dashboard" className="flex items-center gap-1">
+              <BarChart className="h-4 w-4" />
+              <span>Dashboard</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="companies">
+            <Card>
+              <CardHeader>
+                <CardTitle>Companies Management</CardTitle>
+                <CardDescription>View and manage all companies in the system</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CompanyList />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="dashboard">
+            <Card>
+              <CardHeader>
+                <CardTitle>Companies Dashboard</CardTitle>
+                <CardDescription>Overview and metrics of all companies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CompanyMetricsDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Dialogs */}
         <CreateCompanyDialog
