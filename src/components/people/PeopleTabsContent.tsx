@@ -3,6 +3,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
+import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
 import PeopleList from './PeopleList';
 
 interface PeopleTabsContentProps {
@@ -88,14 +89,19 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
     );
   } else {
     return (
-      <Tabs defaultValue="all">
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
+          <TabsTrigger value="dashboard">Contact Dashboard</TabsTrigger>
           <TabsTrigger value="all">All Contacts</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="prospects">Prospects</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
         </TabsList>
         
+        <TabsContent value="dashboard">
+          <ContactMetricsDashboard />
+        </TabsContent>
+
         <TabsContent value="all">
           <Card>
             <CardHeader>

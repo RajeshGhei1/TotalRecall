@@ -58,6 +58,11 @@ const People = () => {
     fetchCompanies();
   }, []);
 
+  // Reset activeTab to dashboard when switching person type
+  useEffect(() => {
+    setActiveTab('dashboard');
+  }, [personType]);
+
   // Function to handle linking a person to a company
   const handleLinkToCompany = (personId: string) => {
     setSelectedPersonId(personId);
