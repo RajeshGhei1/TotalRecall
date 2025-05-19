@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building } from 'lucide-react';
+import { Building, Trash2, Pencil } from 'lucide-react';
 import CurrentCompanyBadge from './CurrentCompanyBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePeople } from '@/hooks/usePeople';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -16,34 +19,59 @@ import {
 interface PeopleListProps {
   personType: 'talent' | 'contact';
   onLinkToCompany: (id: string) => void;
+  searchQuery?: string;
+  companyFilter?: string;
 }
 
-const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
+const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }: PeopleListProps) => {
   const isMobile = useIsMobile();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [personToDelete, setPersonToDelete] = useState<string | null>(null);
 
-  // Mock data for talents and contacts
-  const mockTalents = [
-    { id: 't1', full_name: 'John Doe', email: 'john@example.com', location: 'New York', years_of_experience: 5 },
-    { id: 't2', full_name: 'Jane Smith', email: 'jane@example.com', location: 'San Francisco', years_of_experience: 8 },
-    { id: 't3', full_name: 'Michael Johnson', email: 'michael@example.com', location: 'Chicago', years_of_experience: 3 },
-  ];
+  const {
+    people,
+    isLoading,
+    isError,
+    error,
+    deletePerson
+  } = usePeople(personType, searchQuery, companyFilter);
 
-  const mockContacts = [
-    { id: 'c1', full_name: 'Alice Brown', email: 'alice@example.com', company: 'Acme Corp', position: 'HR Manager' },
-    { id: 'c2', full_name: 'Bob Williams', email: 'bob@example.com', company: 'Globex', position: 'CEO' },
-    { id: 'c3', full_name: 'Charlie Davis', email: 'charlie@example.com', company: 'Initech', position: 'CTO' },
-  ];
-
-  // Mock company data
-  const mockCompanies = {
-    't1': { name: 'Tech Corp', role: 'Senior Developer' },
-    'c2': { name: 'Globex', role: 'CEO' },
+  const handleDelete = (id: string) => {
+    setPersonToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
-  // In a real implementation, this would be replaced with a query to get the data
-  const data = personType === 'talent' ? mockTalents : mockContacts;
+  const confirmDelete = () => {
+    if (personToDelete) {
+      deletePerson.mutate(personToDelete);
+    }
+    setDeleteDialogOpen(false);
+    setPersonToDelete(null);
+  };
 
-  if (data.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex flex-col space-y-3">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-8 text-destructive">
+        <p>Error loading data: {(error as Error).message}</p>
+      </div>
+    );
+  }
+
+  if (people.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p>No {personType === 'talent' ? 'talents' : 'contacts'} found.</p>
@@ -55,7 +83,7 @@ const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
   if (isMobile) {
     return (
       <div className="space-y-4">
-        {data.map((person) => (
+        {people.map((person) => (
           <div 
             key={person.id} 
             className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
@@ -65,40 +93,58 @@ const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
                 <div className="font-medium">{person.full_name}</div>
                 <div className="text-sm text-gray-500">{person.email}</div>
               </div>
-              {mockCompanies[person.id as keyof typeof mockCompanies] && (
+              {person.current_company && (
                 <CurrentCompanyBadge 
-                  companyName={mockCompanies[person.id as keyof typeof mockCompanies].name} 
-                  role={mockCompanies[person.id as keyof typeof mockCompanies].role}
+                  companyName={person.current_company.name}
+                  role={person.current_company.role}
                 />
               )}
             </div>
             
-            <div className="text-sm mb-1">
-              <span className="font-medium mr-1">
-                {personType === 'talent' ? 'Location:' : 'Company:'}
-              </span>
-              {personType === 'talent' 
-                ? (person as any).location 
-                : (person as any).company}
+            <div className="flex flex-col space-y-1 mb-3">
+              {person.phone && (
+                <div className="text-sm">
+                  <span className="font-medium mr-1">Phone:</span>
+                  {person.phone}
+                </div>
+              )}
+              
+              {person.location && (
+                <div className="text-sm">
+                  <span className="font-medium mr-1">Location:</span>
+                  {person.location}
+                </div>
+              )}
             </div>
             
-            <div className="text-sm mb-3">
-              <span className="font-medium mr-1">
-                {personType === 'talent' ? 'Experience:' : 'Position:'}
-              </span>
-              {personType === 'talent' 
-                ? `${(person as any).years_of_experience} years` 
-                : (person as any).position}
+            <div className="flex flex-col space-y-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => onLinkToCompany(person.id)}
+                className="w-full"
+              >
+                <Building className="h-4 w-4 mr-2" /> Link to Company
+              </Button>
+              
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-1"
+                >
+                  <Pencil className="h-4 w-4 mr-2" /> Edit
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleDelete(person.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                </Button>
+              </div>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onLinkToCompany(person.id)}
-              className="w-full"
-            >
-              <Building className="h-4 w-4 mr-2" /> Link to Company
-            </Button>
           </div>
         ))}
       </div>
@@ -107,62 +153,82 @@ const PeopleList = ({ personType, onLinkToCompany }: PeopleListProps) => {
   
   // Desktop table view
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>{personType === 'talent' ? 'Location' : 'Company'}</TableHead>
-            <TableHead>{personType === 'talent' ? 'Experience' : 'Position'}</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map((person) => (
-            <TableRow key={person.id}>
-              <TableCell>
-                <div className="flex items-center">
-                  <div>
-                    <div className="font-medium">
-                      {person.full_name}
-                      {mockCompanies[person.id as keyof typeof mockCompanies] && (
-                        <span className="ml-2">
-                          <CurrentCompanyBadge 
-                            companyName={mockCompanies[person.id as keyof typeof mockCompanies].name} 
-                            role={mockCompanies[person.id as keyof typeof mockCompanies].role} 
-                          />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>{person.email}</TableCell>
-              <TableCell>
-                {personType === 'talent' 
-                  ? (person as any).location 
-                  : (person as any).company}
-              </TableCell>
-              <TableCell>
-                {personType === 'talent' 
-                  ? `${(person as any).years_of_experience} years` 
-                  : (person as any).position}
-              </TableCell>
-              <TableCell className="text-right">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onLinkToCompany(person.id)}
-                >
-                  <Building className="h-4 w-4 mr-2" /> Link to Company
-                </Button>
-              </TableCell>
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {people.map((person) => (
+              <TableRow key={person.id}>
+                <TableCell>
+                  <div className="font-medium">
+                    {person.full_name}
+                    {person.current_company && (
+                      <span className="ml-2">
+                        <CurrentCompanyBadge
+                          companyName={person.current_company.name}
+                          role={person.current_company.role}
+                        />
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>{person.email}</TableCell>
+                <TableCell>{person.phone || '-'}</TableCell>
+                <TableCell>{person.location || '-'}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onLinkToCompany(person.id)}
+                    >
+                      <Building className="h-4 w-4 mr-2" /> Link to Company
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => handleDelete(person.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this {personType === 'talent' ? 'talent' : 'contact'} and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

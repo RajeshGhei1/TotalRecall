@@ -8,6 +8,7 @@ import People from "@/pages/superadmin/People";
 import Companies from "@/pages/superadmin/Companies";
 import Revenue from "@/pages/superadmin/Revenue";
 import AuthGuard from "@/components/AuthGuard";
+import PersonDetailView from "@/components/people/PersonDetailView";
 
 const SuperAdminRoutes = () => [
   /* Superadmin Routes with Authentication Guard */
@@ -46,6 +47,15 @@ const SuperAdminRoutes = () => [
       </AuthGuard>
     }
     key="superadmin-people"
+  />,
+  <Route
+    path="/superadmin/people/:id"
+    element={
+      <AuthGuard requiresSuperAdmin={true}>
+        <PersonDetailView />
+      </AuthGuard>
+    }
+    key="superadmin-person-detail"
   />,
   <Route
     path="/superadmin/companies"

@@ -13,9 +13,18 @@ interface PeopleTabsContentProps {
   activeTab: string;
   setActiveTab: (value: string) => void;
   onLinkToCompany: (id: string) => void;
+  searchQuery?: string;
+  companyFilter?: string;
 }
 
-const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompany }: PeopleTabsContentProps) => {
+const PeopleTabsContent = ({ 
+  personType, 
+  activeTab, 
+  setActiveTab, 
+  onLinkToCompany,
+  searchQuery,
+  companyFilter
+}: PeopleTabsContentProps) => {
   const isMobile = useIsMobile();
   
   if (personType === 'talent') {
@@ -45,6 +54,8 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
               <PeopleList 
                 personType="talent" 
                 onLinkToCompany={onLinkToCompany} 
+                searchQuery={searchQuery}
+                companyFilter={companyFilter}
               />
             </CardContent>
           </Card>
@@ -119,7 +130,9 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
             <CardContent className={isMobile ? "px-3 py-4" : ""}>
               <PeopleList 
                 personType="contact" 
-                onLinkToCompany={onLinkToCompany} 
+                onLinkToCompany={onLinkToCompany}
+                searchQuery={searchQuery}
+                companyFilter={companyFilter}
               />
             </CardContent>
           </Card>

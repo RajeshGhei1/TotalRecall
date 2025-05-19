@@ -19,6 +19,7 @@ import PeopleTabsContent from '@/components/people/PeopleTabsContent';
 import BulkUploadDialog from '@/components/common/BulkUploadDialog';
 import ApiConnectionDialog from '@/components/common/ApiConnectionDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import CreatePersonDialog from '@/components/people/CreatePersonDialog';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const People = () => {
   const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
+  const [isCreatePersonDialogOpen, setIsCreatePersonDialogOpen] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>('all');
@@ -72,14 +74,13 @@ const People = () => {
   };
 
   const handleAddPerson = () => {
-    // Logic to add a new person based on the current type
-    if (personType === 'talent') {
-      // Navigate to add talent form
-      toast.info("Add talent functionality will be implemented soon");
-    } else {
-      // Navigate to add contact form
-      toast.info("Add contact functionality will be implemented soon");
-    }
+    setIsCreatePersonDialogOpen(true);
+  };
+
+  const handlePersonCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['people', personType] });
+    toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} added successfully`);
+    setIsCreatePersonDialogOpen(false);
   };
 
   return (
@@ -130,17 +131,30 @@ const People = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onLinkToCompany={handleLinkToCompany}
+            searchQuery={searchQuery}
+            companyFilter={companyFilter}
           />
 
           {/* Company link form */}
           <CompanyLinkForm 
             isOpen={isCompanyLinkFormOpen}
             onClose={() => setIsCompanyLinkFormOpen(false)}
-            onSubmit={() => {}}
+            onSubmit={() => {
+              queryClient.invalidateQueries({ queryKey: ['people', personType] });
+              setIsCompanyLinkFormOpen(false);
+            }}
             companies={companies}
             personType={personType}
             personId={selectedPersonId || undefined}
             isSubmitting={false}
+          />
+
+          {/* Create person dialog */}
+          <CreatePersonDialog
+            isOpen={isCreatePersonDialogOpen}
+            onClose={() => setIsCreatePersonDialogOpen(false)}
+            onSuccess={handlePersonCreated}
+            personType={personType}
           />
 
           {/* Bulk upload dialog */}
