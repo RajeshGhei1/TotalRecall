@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -19,7 +18,7 @@ import PeopleTabsContent from '@/components/people/PeopleTabsContent';
 import BulkUploadDialog from '@/components/common/BulkUploadDialog';
 import ApiConnectionDialog from '@/components/common/ApiConnectionDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
-import CreatePersonDialog from '@/components/people/CreatePersonDialog';
+import { CreatePersonDialog } from '@/components/people/personForm';
 
 // Create a client
 const queryClient = new QueryClient();
