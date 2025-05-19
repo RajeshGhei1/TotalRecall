@@ -21,7 +21,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
   if (personType === 'talent') {
     return (
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <ScrollArea className="w-full" orientation="horizontal">
+        <ScrollArea className="w-full">
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="all">All Talents</TabsTrigger>
@@ -96,7 +96,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
   } else {
     return (
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <ScrollArea className="w-full" orientation="horizontal">
+        <ScrollArea className="w-full">
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="all">All Contacts</TabsTrigger>
