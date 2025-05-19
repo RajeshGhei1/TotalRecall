@@ -101,8 +101,8 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
 
   return {
     linkPersonToCompany,
-    createRelationship, // Add the alias
-    relationships, // Add the relationships data
+    createRelationship, // Explicitly expose the alias
+    relationships, 
     getPersonEmploymentHistory
   };
 };
