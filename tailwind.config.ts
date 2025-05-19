@@ -64,9 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				jobmojo: {
-					primary: '#4F46E5', // deep indigo
-					secondary: '#8B5CF6', // purple
-					accent: '#0EA5E9', // sky blue
+					primary: '#5B5BFC', // vibrant indigo
+					secondary: '#9E58FF', // vibrant purple
+					accent: '#00B0FF', // vibrant sky blue
 					light: '#F1F0FB', // very light purple
 					dark: '#1E293B', // slate dark
 				}
@@ -96,16 +96,32 @@ export default {
 				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.8' },
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' },
+				},
+				'shimmer': {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'float': 'float 4s ease-in-out infinite',
+				'shimmer': 'shimmer 2s linear infinite',
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
 				heading: ['Poppins', 'sans-serif'],
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'hero-pattern': 'linear-gradient(to right, rgb(93, 91, 252, 0.05), rgb(158, 88, 255, 0.05))',
+				'card-shimmer': 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
 			},
 		}
 	},

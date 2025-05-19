@@ -36,7 +36,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="all">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>All Talents</CardTitle>
               <CardDescription>View and manage all talents registered in the platform</CardDescription>
@@ -51,7 +51,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="active">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Active Talents</CardTitle>
               <CardDescription>View and manage currently active talents</CardDescription>
@@ -65,7 +65,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="inactive">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Inactive Talents</CardTitle>
               <CardDescription>View and manage inactive talents</CardDescription>
@@ -79,7 +79,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="new">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>New Applications</CardTitle>
               <CardDescription>View and process new talent applications</CardDescription>
@@ -111,7 +111,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
 
         <TabsContent value="all">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>All Business Contacts</CardTitle>
               <CardDescription>View and manage all business contacts</CardDescription>
@@ -126,7 +126,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="clients">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Client Contacts</CardTitle>
               <CardDescription>View and manage client contacts</CardDescription>
@@ -140,7 +140,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="prospects">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Prospect Contacts</CardTitle>
               <CardDescription>View and manage prospect contacts</CardDescription>
@@ -154,7 +154,7 @@ const PeopleTabsContent = ({ personType, activeTab, setActiveTab, onLinkToCompan
         </TabsContent>
         
         <TabsContent value="vendors">
-          <Card>
+          <Card className="card-gradient">
             <CardHeader className={isMobile ? "px-3 py-4" : ""}>
               <CardTitle>Vendor Contacts</CardTitle>
               <CardDescription>View and manage vendor contacts</CardDescription>

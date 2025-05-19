@@ -38,7 +38,7 @@ const PeopleActionBar = ({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder={`Search ${personType === 'talent' ? 'talents' : 'contacts'}...`} 
-            className="pl-8" 
+            className="pl-8 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -50,7 +50,7 @@ const PeopleActionBar = ({
               value={companyFilter} 
               onValueChange={setCompanyFilter}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full focus:border-primary focus:ring-1 focus:ring-primary/30">
                 <div className="flex items-center">
                   <Building className="mr-2 h-4 w-4 text-muted-foreground" />
                   <SelectValue placeholder="Filter by company" />
@@ -84,7 +84,7 @@ const PeopleActionBar = ({
           </Button>
         )}
         
-        <Button onClick={onAddPerson} className="flex-grow sm:flex-grow-0">
+        <Button variant="gradient" onClick={onAddPerson} className="flex-grow sm:flex-grow-0">
           <UserPlus className="mr-2 h-4 w-4" />
           {isMobile ? `Add ${personType === 'talent' ? 'Talent' : 'Contact'}` : `Add ${personType === 'talent' ? 'Talent' : 'Contact'}`}
         </Button>
