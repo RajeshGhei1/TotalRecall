@@ -1,57 +1,38 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { 
-  Settings, 
-  User, 
-  LogOut,
-} from "lucide-react";
+import { Menu } from "lucide-react";
+import AdminSidebar from "./AdminSidebar";
 
 interface AdminHeaderProps {
   isSuperAdmin: boolean;
 }
 
 const AdminHeader = ({ isSuperAdmin }: AdminHeaderProps) => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <header className="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
-      <h1 className="text-xl font-semibold">
-        {isSuperAdmin ? "Super Admin Portal" : "Tenant Admin Portal"}
-      </h1>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <User className="h-4 w-4 mr-2" /> 
-            {user?.email}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => navigate(isSuperAdmin ? "/superadmin/profile" : "/tenant-admin/profile")}>
-            <User className="h-4 w-4 mr-2" /> Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate(isSuperAdmin ? "/superadmin/settings" : "/tenant-admin/settings")}>
-            <Settings className="h-4 w-4 mr-2" /> Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={signOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Log Out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <header className="bg-white border-b px-4 py-3 flex justify-between items-center md:hidden">
+      <div className="flex items-center">
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="mr-2">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <AdminSidebar isSuperAdmin={isSuperAdmin} />
+          </SheetContent>
+        </Sheet>
+        <h1 className="text-lg font-semibold text-jobmojo-primary">
+          JobMojo.ai
+        </h1>
+      </div>
+      <div className="text-xs text-gray-500">
+        {isSuperAdmin ? "Super Admin" : "Tenant Admin"}
+      </div>
     </header>
   );
 };

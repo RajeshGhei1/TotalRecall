@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -15,8 +15,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Building, Users, Briefcase, Users as UsersIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
+  const isMobile = useIsMobile();
+  
   // Fetch companies data
   const { companies, isLoading: isLoadingCompanies } = useCompanies();
 
@@ -76,151 +79,156 @@ const Dashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/superadmin/dashboard">Superadmin</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Dashboard</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Superadmin Dashboard</h1>
-          <p className="text-muted-foreground">Overview of the JobMojo.ai platform.</p>
+      <div className="p-4 md:p-6">
+        {/* Breadcrumb - hide on small mobile screens */}
+        <div className="hidden sm:block mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/superadmin/dashboard">Superadmin</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Superadmin Dashboard</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Overview of the JobMojo.ai platform.</p>
+        </div>
+
+        {/* Dashboard cards - responsive grid layout */}
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {/* Users Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <UsersIcon className="h-4 w-4 text-muted-foreground" />
                 <span>Total Users</span>
               </CardTitle>
-              <CardDescription>Platform user count</CardDescription>
+              <CardDescription className="text-xs md:text-sm">Platform user count</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{platformMetrics?.userCount}</div>
+                <div className="text-2xl md:text-3xl font-bold">{platformMetrics?.userCount}</div>
               )}
             </CardContent>
           </Card>
 
           {/* Tenants Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <Building className="h-4 w-4 text-muted-foreground" />
                 <span>Active Tenants</span>
               </CardTitle>
-              <CardDescription>Organizations using the platform</CardDescription>
+              <CardDescription className="text-xs md:text-sm">Organizations using the platform</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{platformMetrics?.tenantCount}</div>
+                <div className="text-2xl md:text-3xl font-bold">{platformMetrics?.tenantCount}</div>
               )}
             </CardContent>
           </Card>
 
           {/* Jobs Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <Briefcase className="h-4 w-4 text-muted-foreground" />
                 <span>Jobs Posted</span>
               </CardTitle>
-              <CardDescription>In the last 30 days</CardDescription>
+              <CardDescription className="text-xs md:text-sm">In the last 30 days</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{platformMetrics?.jobCount}</div>
+                <div className="text-2xl md:text-3xl font-bold">{platformMetrics?.jobCount}</div>
               )}
             </CardContent>
           </Card>
 
           {/* Companies Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <Building className="h-4 w-4 text-muted-foreground" />
                 <span>Companies</span>
               </CardTitle>
-              <CardDescription>Registered companies</CardDescription>
+              <CardDescription className="text-xs md:text-sm">Registered companies</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{companies?.length || 0}</div>
+                <div className="text-2xl md:text-3xl font-bold">{companies?.length || 0}</div>
               )}
             </CardContent>
           </Card>
 
           {/* Talent Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span>Talent</span>
               </CardTitle>
-              <CardDescription>Candidate pool</CardDescription>
+              <CardDescription className="text-xs md:text-sm">Candidate pool</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{peopleData?.talentCount || 0}</div>
+                <div className="text-2xl md:text-3xl font-bold">{peopleData?.talentCount || 0}</div>
               )}
             </CardContent>
           </Card>
 
           {/* Contacts Card */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
+          <Card className="xl:col-span-2 shadow-sm">
+            <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
+              <CardTitle className="flex text-base md:text-lg items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span>Business Contacts</span>
               </CardTitle>
-              <CardDescription>Professional network</CardDescription>
+              <CardDescription className="text-xs md:text-sm">Professional network</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
               {isLoading ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-6 md:h-8 w-20" />
               ) : (
-                <div className="text-3xl font-bold">{peopleData?.contactCount || 0}</div>
+                <div className="text-2xl md:text-3xl font-bold">{peopleData?.contactCount || 0}</div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest platform events</CardDescription>
+        {/* Additional cards in responsive layout */}
+        <div className="mt-6 md:mt-8 grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+          <Card className="shadow-sm">
+            <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6">
+              <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
+              <CardDescription className="text-xs md:text-sm">Latest platform events</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Activity data will be displayed here.</p>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
+              <p className="text-sm text-muted-foreground">Activity data will be displayed here.</p>
             </CardContent>
           </Card>
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>Platform health metrics</CardDescription>
+          <Card className="shadow-sm">
+            <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6">
+              <CardTitle className="text-base md:text-lg">System Status</CardTitle>
+              <CardDescription className="text-xs md:text-sm">Platform health metrics</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">System status information will be displayed here.</p>
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
+              <p className="text-sm text-muted-foreground">System status information will be displayed here.</p>
             </CardContent>
           </Card>
         </div>
