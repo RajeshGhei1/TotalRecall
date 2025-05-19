@@ -1,8 +1,9 @@
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { JobHistoryItem } from '@/components/people/JobHistoryList';
+import { CompanyRelationship } from '@/types/company-relationship';
 
 interface LinkCompanyRelationshipData {
   person_id: string;
@@ -14,7 +15,7 @@ interface LinkCompanyRelationshipData {
   relationship_type: string;
 }
 
-export const useCompanyPeopleRelationship = () => {
+export const useCompanyPeopleRelationship = (companyId?: string) => {
   const queryClient = useQueryClient();
 
   const linkPersonToCompany = useMutation({
@@ -44,12 +45,34 @@ export const useCompanyPeopleRelationship = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['people'] });
+      queryClient.invalidateQueries({ queryKey: ['company-relationships'] });
       toast.success('Company relationship added successfully');
     },
     onError: (error: any) => {
       console.error('Error linking person to company:', error);
       toast.error(`Failed to link to company: ${error.message}`);
     }
+  });
+  
+  // Alias for linkPersonToCompany to match component usage
+  const createRelationship = linkPersonToCompany;
+  
+  // Query to get relationships for a specific company
+  const { data: relationships = [] } = useQuery({
+    queryKey: ['company-relationships', companyId],
+    queryFn: async () => {
+      if (!companyId) return [];
+      
+      const { data, error } = await supabase
+        .from('company_relationships')
+        .select('*')
+        .eq('company_id', companyId);
+        
+      if (error) throw error;
+      
+      return data as CompanyRelationship[];
+    },
+    enabled: !!companyId,
   });
   
   const getPersonEmploymentHistory = async (personId: string): Promise<JobHistoryItem[]> => {
@@ -78,6 +101,8 @@ export const useCompanyPeopleRelationship = () => {
 
   return {
     linkPersonToCompany,
+    createRelationship, // Add the alias
+    relationships, // Add the relationships data
     getPersonEmploymentHistory
   };
 };

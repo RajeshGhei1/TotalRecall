@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 interface CompanyLinkFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: any) => void;
+  onSubmit?: (values: any) => void;
   companies: { id: string; name: string }[];
   personType: 'talent' | 'contact';
   personId?: string;

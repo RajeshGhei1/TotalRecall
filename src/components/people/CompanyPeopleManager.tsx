@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Search, Trash2, UserPlus, Building } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import CreatePersonDialog from './CreatePersonDialog';
 
 interface Person {
   id: string;
@@ -26,8 +26,9 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
   const [people, setPeople] = useState<Person[]>([]);
   const [selectedPeople, setSelectedPeople] = useState<(Person & { role?: string })[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatePersonDialogOpen, setIsCreatePersonDialogOpen] = useState(false);
   
-  const { relationships, createRelationship } = useCompanyPeopleRelationship(companyId);
+  const { linkPersonToCompany, relationships } = useCompanyPeopleRelationship(companyId);
   
   // Load existing relationships when component mounts
   useEffect(() => {
@@ -122,7 +123,7 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
     }
     
     try {
-      await createRelationship.mutateAsync({
+      await linkPersonToCompany.mutateAsync({
         person_id: person.id,
         company_id: companyId,
         role: person.role || '',
@@ -135,9 +136,16 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
     }
   };
 
-  const createNewPerson = async () => {
-    // This would open a dialog to create a new person
-    toast.info(`Create new ${personType} feature will be implemented soon`);
+  const handleCreatePerson = () => {
+    setIsCreatePersonDialogOpen(true);
+  };
+
+  const handlePersonCreated = () => {
+    // Refresh the search if there's a query
+    if (searchQuery) {
+      searchPeople();
+    }
+    setIsCreatePersonDialogOpen(false);
   };
 
   return (
@@ -243,11 +251,19 @@ const CompanyPeopleManager: React.FC<CompanyPeopleManagerProps> = ({ companyId }
           )}
         </div>
         
-        <Button variant="outline" className="w-full" onClick={createNewPerson}>
+        <Button variant="outline" className="w-full" onClick={handleCreatePerson}>
           <UserPlus className="mr-2 h-4 w-4" />
           {personType === 'talent' ? 'Create New Talent' : 'Create New Contact'}
         </Button>
       </div>
+      
+      {/* Create person dialog */}
+      <CreatePersonDialog
+        isOpen={isCreatePersonDialogOpen}
+        onClose={() => setIsCreatePersonDialogOpen(false)}
+        onSuccess={handlePersonCreated}
+        personType={personType}
+      />
     </div>
   );
 };
