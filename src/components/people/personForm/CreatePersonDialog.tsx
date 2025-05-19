@@ -39,12 +39,13 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
           <DialogTitle>Add New {personType === 'talent' ? 'Talent' : 'Contact'}</DialogTitle>
           <DialogDescription>
             Add a new {personType === 'talent' ? 'talent' : 'business contact'} to the system.
+            {personType === 'contact' && " You can optionally associate them with a company."}
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleCreatePerson)} className="space-y-4">
-            <PersonFormFields form={form} />
+            <PersonFormFields form={form} personType={personType} />
             
             {error && (
               <div className="text-sm font-medium text-destructive">

@@ -6,6 +6,8 @@ export const personFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   phone: z.string().optional(),
   location: z.string().optional(),
+  company_id: z.string().optional(),
+  role: z.string().optional(),
 });
 
 export type PersonFormValues = z.infer<typeof personFormSchema>;

@@ -646,12 +646,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      test_data_view: {
+        Row: {
+          record_count: number | null
+          table_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_user_profile: {
         Args: { user_email: string; user_full_name: string; user_role: string }
         Returns: string
+      }
+      delete_test_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       is_super_admin: {
         Args: { user_id: string }

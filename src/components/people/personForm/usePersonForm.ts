@@ -23,12 +23,15 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
       email: '',
       phone: '',
       location: '',
+      company_id: undefined,
+      role: '',
     },
   });
 
   const createPerson = useMutation({
     mutationFn: async (values: PersonFormValues) => {
-      const { data, error } = await supabase
+      // First create the person
+      const { data: personData, error: personError } = await supabase
         .from('people')
         .insert([
           { 
@@ -41,8 +44,27 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
         ])
         .select();
       
-      if (error) throw error;
-      return data;
+      if (personError) throw personError;
+
+      // If company_id and role are provided and this is a contact, create a company relationship
+      if (personType === 'contact' && values.company_id && values.role && personData && personData[0]) {
+        const { error: relationshipError } = await supabase
+          .from('company_relationships')
+          .insert([
+            {
+              person_id: personData[0].id,
+              company_id: values.company_id,
+              role: values.role,
+              relationship_type: 'business_contact',
+              start_date: new Date().toISOString().split('T')[0],
+              is_current: true
+            }
+          ]);
+        
+        if (relationshipError) throw relationshipError;
+      }
+      
+      return personData;
     },
     onSuccess: () => {
       form.reset();
