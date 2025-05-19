@@ -4,19 +4,15 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Pricing from "@/pages/Pricing";
 
-const PublicRoutes = () => {
-  return (
-    <>
-      {/* Home Route */}
-      <Route path="/" element={<Index />} />
-      
-      {/* Auth Route */}
-      <Route path="/auth" element={<Auth />} />
-      
-      {/* Pricing Page */}
-      <Route path="/pricing" element={<Pricing />} />
-    </>
-  );
-};
+const PublicRoutes = () => [
+  /* Home Route */
+  <Route path="/" element={<Index />} key="home" />,
+  
+  /* Auth Route */
+  <Route path="/auth" element={<Auth />} key="auth" />,
+  
+  /* Pricing Page */
+  <Route path="/pricing" element={<Pricing />} key="pricing" />
+];
 
 export default PublicRoutes;

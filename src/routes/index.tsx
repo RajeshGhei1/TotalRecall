@@ -13,13 +13,13 @@ const AppRoutes = () => {
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
-          <PublicRoutes />
+          {PublicRoutes()}
           
           {/* Super Admin Routes */}
-          <SuperAdminRoutes />
+          {SuperAdminRoutes()}
           
           {/* Tenant Admin Routes */}
-          <TenantAdminRoutes />
+          {TenantAdminRoutes()}
           
           {/* Redirect old admin routes to tenant-admin for backward compatibility */}
           <Route path="/admin/dashboard" element={<Navigate to="/tenant-admin/dashboard" replace />} />
