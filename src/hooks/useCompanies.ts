@@ -9,6 +9,7 @@ export interface Company {
   id: string;
   name: string;
   domain?: string;
+  website?: string; // Added website property
   description?: string;
   created_at: string;
   industry?: string;

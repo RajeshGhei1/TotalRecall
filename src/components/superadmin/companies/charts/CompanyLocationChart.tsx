@@ -13,7 +13,7 @@ const CompanyLocationChart: React.FC = () => {
   // Process data for the chart
   const getLocationData = () => {
     // Group companies by location
-    const locationGroups = companies.reduce((acc, company) => {
+    const locationGroups = companies.reduce<Record<string, number>>((acc, company) => {
       const location = company.location || 'Unknown';
       
       if (!acc[location]) {
@@ -27,8 +27,8 @@ const CompanyLocationChart: React.FC = () => {
     return Object.entries(locationGroups)
       .map(([name, value]) => ({ name, value }))
       // Get the top 5 locations and group the rest as "Others"
-      .sort((a, b) => (b.value as number) - (a.value as number))
-      .reduce((acc, curr, index) => {
+      .sort((a, b) => b.value - a.value)
+      .reduce<Array<{ name: string; value: number }>>((acc, curr, index) => {
         if (index < 5) {
           acc.push(curr);
         } else {
@@ -36,11 +36,11 @@ const CompanyLocationChart: React.FC = () => {
           if (othersIndex === -1) {
             acc.push({ name: 'Others', value: curr.value });
           } else {
-            acc[othersIndex].value = (acc[othersIndex].value as number) + (curr.value as number);
+            acc[othersIndex].value = acc[othersIndex].value + curr.value;
           }
         }
         return acc;
-      }, [] as { name: string; value: number }[]);
+      }, []);
   };
 
   const data = getLocationData();

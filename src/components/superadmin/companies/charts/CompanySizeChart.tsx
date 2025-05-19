@@ -22,7 +22,7 @@ const CompanySizeChart: React.FC = () => {
     };
 
     // Initialize counts
-    const counts = Object.keys(sizeRanges).reduce((acc, size) => {
+    const counts = Object.keys(sizeRanges).reduce<Record<string, number>>((acc, size) => {
       acc[size] = 0;
       return acc;
     }, {});

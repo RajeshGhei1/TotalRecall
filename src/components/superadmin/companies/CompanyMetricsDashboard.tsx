@@ -24,17 +24,23 @@ const CompanyMetricsDashboard: React.FC = () => {
           isLoading: isStatsLoading } = useQuery({
     queryKey: ['company_people_stats'],
     queryFn: async () => {
-      // Count companies with relationships
-      const { data: companiesWithRelationships, error: companyError } = await supabase
+      // Count companies with relationships - using select count instead of distinct
+      const { data: companyRelationships, error: companyError } = await supabase
         .from('company_relationships')
-        .select('company_id')
-        .distinct();
+        .select('company_id', { count: 'exact', head: false });
 
-      // Count people with relationships
-      const { data: peopleWithRelationships, error: peopleError } = await supabase
+      // Count people with relationships - using select count instead of distinct
+      const { data: peopleRelationships, error: peopleError } = await supabase
         .from('company_relationships')
-        .select('person_id')
-        .distinct();
+        .select('person_id', { count: 'exact', head: false });
+
+      // Count unique companies with relationships
+      const uniqueCompanies = companyRelationships ? 
+        Array.from(new Set(companyRelationships.map(rel => rel.company_id))).length : 0;
+
+      // Count unique people with relationships
+      const uniquePeople = peopleRelationships ? 
+        Array.from(new Set(peopleRelationships.map(rel => rel.person_id))).length : 0;
 
       // Count total relationships
       const { count: relationshipCount, error: countError } = await supabase
@@ -47,15 +53,15 @@ const CompanyMetricsDashboard: React.FC = () => {
       }
 
       return {
-        company_count: companiesWithRelationships?.length || 0,
-        people_count: peopleWithRelationships?.length || 0,
+        company_count: uniqueCompanies,
+        people_count: uniquePeople,
         relationship_count: relationshipCount || 0
       };
     }
   });
 
   const totalCompanies = companies?.length || 0;
-  const withWebsite = companies?.filter(c => c.website || c.domain).length || 0;
+  const withWebsite = companies?.filter(c => c.domain || c.website).length || 0;
   const withDescription = companies?.filter(c => c.description).length || 0;
 
   return (
