@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,21 +21,22 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Building, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Phone, MapPin, Plus } from 'lucide-react';
 import JobHistoryList, { JobHistoryItem } from './JobHistoryList';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
+import CompanyLinkForm from './CompanyLinkForm';
 
-// We'll implement this in a future iteration
 const PersonDetailView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [person, setPerson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('info');
+  const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
+  const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
   
-  const { getPersonEmploymentHistory } = useCompanyPeopleRelationship();
-  const [employmentHistory, setEmploymentHistory] = useState<JobHistoryItem[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const { usePersonEmploymentHistory } = useCompanyPeopleRelationship();
+  const { data: employmentHistory, isLoading: loadingHistory } = usePersonEmploymentHistory(id);
   
   useEffect(() => {
     const fetchPerson = async () => {
@@ -51,12 +51,6 @@ const PersonDetailView = () => {
           
         if (error) throw error;
         setPerson(data);
-        
-        // Fetch employment history
-        setLoadingHistory(true);
-        const history = await getPersonEmploymentHistory(id);
-        setEmploymentHistory(history);
-        setLoadingHistory(false);
       } catch (error) {
         console.error('Error fetching person:', error);
         toast.error('Failed to load person details');
@@ -67,6 +61,36 @@ const PersonDetailView = () => {
     
     fetchPerson();
   }, [id]);
+
+  // Fetch companies for the dropdown in the company link form
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('id, name')
+          .order('name');
+          
+        if (error) throw error;
+        
+        setCompanies(data || []);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        toast.error('Failed to load companies');
+      }
+    };
+    
+    fetchCompanies();
+  }, []);
+
+  const handleAddEmployment = () => {
+    setIsCompanyLinkFormOpen(true);
+  };
+
+  const handleCompanyLinkSuccess = () => {
+    setIsCompanyLinkFormOpen(false);
+    // The query is automatically invalidated in the useCompanyPeopleRelationship hook
+  };
 
   if (loading) {
     return (
@@ -253,10 +277,15 @@ const PersonDetailView = () => {
               <TabsContent value="companies" className="mt-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Work History</h3>
-                    <Button size="sm" variant="outline" className="gap-1">
-                      <Building className="h-4 w-4" />
-                      <span>Add Employment</span>
+                    <h3 className="text-lg font-medium">Company History</h3>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="gap-1"
+                      onClick={handleAddEmployment}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add Company</span>
                     </Button>
                   </div>
                   
@@ -265,8 +294,8 @@ const PersonDetailView = () => {
                       <Skeleton className="h-12 w-full" />
                       <Skeleton className="h-12 w-full" />
                     </div>
-                  ) : employmentHistory.length > 0 ? (
-                    <JobHistoryList history={employmentHistory} />
+                  ) : employmentHistory && employmentHistory.length > 0 ? (
+                    <JobHistoryList history={employmentHistory} showAllHistory={true} />
                   ) : (
                     <div className="rounded-md bg-muted p-4 text-center">
                       <p>No company associations found.</p>
@@ -292,6 +321,17 @@ const PersonDetailView = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Company link form */}
+        <CompanyLinkForm 
+          isOpen={isCompanyLinkFormOpen}
+          onClose={() => setIsCompanyLinkFormOpen(false)}
+          onSubmit={handleCompanyLinkSuccess}
+          companies={companies}
+          personType={person?.type}
+          personId={id}
+          isSubmitting={false}
+        />
       </div>
     </AdminLayout>
   );

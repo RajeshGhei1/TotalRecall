@@ -17,12 +17,26 @@ export interface JobHistoryItem {
 
 export interface JobHistoryListProps {
   history: JobHistoryItem[];
+  showAllHistory?: boolean;
 }
 
-const JobHistoryList = ({ history }: JobHistoryListProps) => {
+const JobHistoryList = ({ history, showAllHistory = true }: JobHistoryListProps) => {
+  // If showAllHistory is false, only show current positions
+  const displayHistory = showAllHistory 
+    ? history 
+    : history.filter(job => job.is_current);
+
+  if (displayHistory.length === 0) {
+    return (
+      <div className="rounded-md bg-muted p-4 text-center">
+        <p>No company associations found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {history.map((job) => (
+      {displayHistory.map((job) => (
         <div key={job.id} className="border rounded-md p-4">
           <div className="flex justify-between items-start">
             <div>

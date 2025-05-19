@@ -25,7 +25,10 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
         // Update any other current relationships to not be current
         const { error: updateError } = await supabase
           .from('company_relationships')
-          .update({ is_current: false })
+          .update({ 
+            is_current: false,
+            end_date: new Date().toISOString().split('T')[0]
+          })
           .eq('person_id', data.person_id)
           .eq('is_current', true);
           
@@ -46,6 +49,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['people'] });
       queryClient.invalidateQueries({ queryKey: ['company-relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['person-employment-history'] });
       toast.success('Company relationship added successfully');
     },
     onError: (error: any) => {
@@ -88,6 +92,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
           company:companies(id, name)
         `)
         .eq('person_id', personId)
+        .order('is_current', { ascending: false })
         .order('start_date', { ascending: false });
         
       if (error) throw error;
@@ -99,10 +104,23 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
     }
   };
 
+  // Hook for fetching a person's employment history with caching
+  const usePersonEmploymentHistory = (personId?: string) => {
+    return useQuery({
+      queryKey: ['person-employment-history', personId],
+      queryFn: async () => {
+        if (!personId) return [];
+        return getPersonEmploymentHistory(personId);
+      },
+      enabled: !!personId,
+    });
+  };
+
   return {
     linkPersonToCompany,
     createRelationship, // Explicitly expose the alias
     relationships, 
-    getPersonEmploymentHistory
+    getPersonEmploymentHistory,
+    usePersonEmploymentHistory
   };
 };
