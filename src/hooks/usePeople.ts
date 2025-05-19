@@ -67,11 +67,13 @@ export const usePeople = (personType?: 'talent' | 'contact', searchQuery?: strin
       throw error;
     }
     
+    const peopleData = data as Person[];
+    
     // Fetch current company for each person if needed
     if (companyFilter && companyFilter !== 'all') {
       const filteredData: Person[] = [];
       
-      for (const person of data as Person[]) {
+      for (const person of peopleData) {
         const { data: relationships } = await supabase
           .from('company_relationships')
           .select(`
@@ -99,7 +101,7 @@ export const usePeople = (personType?: 'talent' | 'contact', searchQuery?: strin
     
     // If no company filter, just get current company info for display
     const enhancedData = await Promise.all(
-      (data as Person[]).map(async (person) => {
+      peopleData.map(async (person) => {
         const { data: relationship } = await supabase
           .from('company_relationships')
           .select(`

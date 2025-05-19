@@ -69,7 +69,10 @@ const CreatePersonDialog = ({
         .from('people')
         .insert([
           { 
-            ...values,
+            full_name: values.full_name,
+            email: values.email,
+            phone: values.phone || null,
+            location: values.location || null,
             type: personType
           }
         ])

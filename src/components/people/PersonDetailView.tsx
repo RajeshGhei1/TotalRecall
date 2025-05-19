@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Building, Mail, Phone, MapPin } from 'lucide-react';
-import JobHistoryList from './JobHistoryList';
+import JobHistoryList, { JobHistoryItem } from './JobHistoryList';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 
 // We'll implement this in a future iteration
@@ -34,7 +35,7 @@ const PersonDetailView = () => {
   const [activeTab, setActiveTab] = useState('info');
   
   const { getPersonEmploymentHistory } = useCompanyPeopleRelationship();
-  const [employmentHistory, setEmploymentHistory] = useState<any[]>([]);
+  const [employmentHistory, setEmploymentHistory] = useState<JobHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   
   useEffect(() => {
@@ -147,16 +148,16 @@ const PersonDetailView = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{person.full_name}</BreadcrumbPage>
+              <BreadcrumbPage>{person?.full_name}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{person.full_name}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{person?.full_name}</h1>
             <p className="text-muted-foreground">
-              {person.type === 'talent' ? 'Talent' : 'Business Contact'}
+              {person?.type === 'talent' ? 'Talent' : 'Business Contact'}
             </p>
           </div>
           
@@ -175,17 +176,17 @@ const PersonDetailView = () => {
               <div className="space-y-4">
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 text-muted-foreground mr-2" />
-                  <span>{person.email}</span>
+                  <span>{person?.email}</span>
                 </div>
                 
-                {person.phone && (
+                {person?.phone && (
                   <div className="flex items-center">
                     <Phone className="h-4 w-4 text-muted-foreground mr-2" />
                     <span>{person.phone}</span>
                   </div>
                 )}
                 
-                {person.location && (
+                {person?.location && (
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
                     <span>{person.location}</span>
@@ -194,12 +195,12 @@ const PersonDetailView = () => {
                 
                 <div className="pt-4">
                   <p className="text-sm text-muted-foreground mb-1">Created</p>
-                  <p>{new Date(person.created_at).toLocaleDateString()}</p>
+                  <p>{person && new Date(person.created_at).toLocaleDateString()}</p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
-                  <p>{new Date(person.updated_at).toLocaleDateString()}</p>
+                  <p>{person && new Date(person.updated_at).toLocaleDateString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -222,7 +223,7 @@ const PersonDetailView = () => {
                   >
                     Companies
                   </TabsTrigger>
-                  {person.type === 'talent' && (
+                  {person?.type === 'talent' && (
                     <TabsTrigger
                       value="skills"
                       className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary"
@@ -237,7 +238,7 @@ const PersonDetailView = () => {
               <TabsContent value="info" className="mt-0">
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    {person.type === 'talent'
+                    {person?.type === 'talent'
                       ? 'Additional information about this talent.'
                       : 'Additional information about this business contact.'}
                   </p>
@@ -274,7 +275,7 @@ const PersonDetailView = () => {
                 </div>
               </TabsContent>
               
-              {person.type === 'talent' && (
+              {person?.type === 'talent' && (
                 <TabsContent value="skills" className="mt-0">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
