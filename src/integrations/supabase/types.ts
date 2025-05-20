@@ -249,6 +249,7 @@ export type Database = {
           name: string
           options: Json | null
           required: boolean | null
+          sort_order: number | null
           tenant_id: string | null
           updated_at: string
         }
@@ -262,6 +263,7 @@ export type Database = {
           name: string
           options?: Json | null
           required?: boolean | null
+          sort_order?: number | null
           tenant_id?: string | null
           updated_at?: string
         }
@@ -275,6 +277,7 @@ export type Database = {
           name?: string
           options?: Json | null
           required?: boolean | null
+          sort_order?: number | null
           tenant_id?: string | null
           updated_at?: string
         }
