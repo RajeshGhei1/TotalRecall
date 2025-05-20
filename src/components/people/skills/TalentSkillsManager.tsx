@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Skill, TalentSkill } from '@/types/talent';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchSkills, fetchTalentSkills } from '@/services/talentService';
@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, X, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddSkillDialog from './AddSkillDialog';
 

@@ -79,7 +79,7 @@ const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
         if (error) throw error;
         return existingSkill.id;
       } else {
-        // Create new skill
+        // Create new skill - use person_id as the talent_id
         const { data: newSkill, error } = await supabase
           .from('talent_skills')
           .insert({

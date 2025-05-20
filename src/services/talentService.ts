@@ -102,14 +102,14 @@ export const fetchSkills = async (): Promise<Skill[]> => {
   return data || [];
 };
 
-export const fetchTalentSkills = async (talentId: string): Promise<TalentSkill[]> => {
+export const fetchTalentSkills = async (personId: string): Promise<TalentSkill[]> => {
   const { data, error } = await supabase
     .from('talent_skills')
     .select(`
       *,
       skill:skill_id (*)
     `)
-    .eq('talent_id', talentId);
+    .eq('talent_id', personId);
   
   if (error) throw error;
   return data || [];
