@@ -70,7 +70,11 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType })
       />
       
       {/* Type field is hidden since we don't want to allow changing it */}
-      <input type="hidden" {...form.register("type")} />
+      <input 
+        type="hidden" 
+        {...form.register("type")} 
+        value={personType} 
+      />
     </div>
   );
 };

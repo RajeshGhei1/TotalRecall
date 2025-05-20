@@ -25,6 +25,7 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
       location: '',
       company_id: undefined,
       role: '',
+      type: personType,
     },
   });
 
