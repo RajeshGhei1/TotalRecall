@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skill, TalentSkill } from '@/types/talent';
 import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { createTalentSkill, updateTalentSkill } from '@/services/talentService';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -59,40 +59,22 @@ const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
 
   // Handle save skill mutation
   const saveSkillMutation = useMutation({
-    mutationFn: async (data: {
-      id?: string;
-      talent_id: string;
-      skill_id: string;
-      proficiency_level?: string;
-      years_of_experience?: number;
-    }) => {
+    mutationFn: async () => {
       if (existingSkill) {
         // Update existing skill
-        const { error } = await supabase
-          .from('talent_skills')
-          .update({
-            proficiency_level: data.proficiency_level,
-            years_of_experience: data.years_of_experience
-          })
-          .eq('id', existingSkill.id);
-          
-        if (error) throw error;
+        await updateTalentSkill(existingSkill.id, {
+          proficiency_level: proficiencyLevel || undefined,
+          years_of_experience: yearsOfExperience ? parseFloat(yearsOfExperience) : undefined
+        });
         return existingSkill.id;
       } else {
-        // Create new skill - use person_id as the talent_id
-        const { data: newSkill, error } = await supabase
-          .from('talent_skills')
-          .insert({
-            talent_id: data.talent_id,
-            skill_id: data.skill_id,
-            proficiency_level: data.proficiency_level,
-            years_of_experience: data.years_of_experience
-          })
-          .select()
-          .single();
-          
-        if (error) throw error;
-        return newSkill.id;
+        // Create new skill
+        return await createTalentSkill(
+          talentId,
+          selectedSkillId,
+          proficiencyLevel || undefined,
+          yearsOfExperience ? parseFloat(yearsOfExperience) : undefined
+        );
       }
     },
     onSuccess: () => {
@@ -117,13 +99,7 @@ const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
     }
     
     setIsSubmitting(true);
-    
-    saveSkillMutation.mutate({
-      talent_id: talentId,
-      skill_id: selectedSkillId,
-      proficiency_level: proficiencyLevel || undefined,
-      years_of_experience: yearsOfExperience ? parseFloat(yearsOfExperience) : undefined
-    });
+    saveSkillMutation.mutate();
   };
 
   // Filter out skills that the talent already has (for new skills only)

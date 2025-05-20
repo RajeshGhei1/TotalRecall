@@ -115,6 +115,72 @@ export const fetchTalentSkills = async (personId: string): Promise<TalentSkill[]
   return data || [];
 };
 
+export const createTalentSkill = async (talentId: string, skillId: string, proficiencyLevel?: string, yearsOfExperience?: number): Promise<string> => {
+  // First check if this person already has a talent record
+  const { data: existingTalent } = await supabase
+    .from('talents')
+    .select('id')
+    .eq('id', talentId)
+    .maybeSingle();
+  
+  // If no talent record exists, create one
+  if (!existingTalent) {
+    // Get person data to create a talent record
+    const { data: person, error: personError } = await supabase
+      .from('people')
+      .select('full_name, email, phone, location')
+      .eq('id', talentId)
+      .single();
+    
+    if (personError) throw personError;
+    
+    // Create talent record
+    const { data: newTalent, error: talentError } = await supabase
+      .from('talents')
+      .insert({
+        id: talentId, // Use the same ID as the person record
+        full_name: person.full_name,
+        email: person.email,
+        phone: person.phone,
+        location: person.location
+      })
+      .select('id')
+      .single();
+    
+    if (talentError) throw talentError;
+  }
+  
+  // Now create the skill association
+  const { data: newSkill, error } = await supabase
+    .from('talent_skills')
+    .insert({
+      talent_id: talentId,
+      skill_id: skillId,
+      proficiency_level: proficiencyLevel,
+      years_of_experience: yearsOfExperience
+    })
+    .select('id')
+    .single();
+    
+  if (error) throw error;
+  return newSkill.id;
+};
+
+export const updateTalentSkill = async (
+  skillId: string,
+  updates: { proficiency_level?: string, years_of_experience?: number }
+): Promise<void> => {
+  const { error } = await supabase
+    .from('talent_skills')
+    .update({
+      proficiency_level: updates.proficiency_level,
+      years_of_experience: updates.years_of_experience
+    })
+    .eq('id', skillId);
+    
+  if (error) throw error;
+};
+
 // Helper functions
 
 function getExperienceLevel(years: number): string {

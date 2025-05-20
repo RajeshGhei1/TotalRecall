@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { fetchTalentSkills } from '@/services/talentService';
-import { Skill } from '@/types/talent';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TalentSkillsSectionProps {
