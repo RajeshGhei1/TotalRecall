@@ -1,15 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skill, TalentSkill } from '@/types/talent';
-import { useMutation } from '@tanstack/react-query';
-import { createTalentSkill, updateTalentSkill } from '@/services/talentService';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { useSkillForm } from '@/hooks/skills/useSkillForm';
+import SkillForm from './SkillForm';
+import SkillDialogFooter from './SkillDialogFooter';
 
 interface AddSkillDialogProps {
   isOpen: boolean;
@@ -20,13 +15,6 @@ interface AddSkillDialogProps {
   availableSkills: Skill[];
 }
 
-const proficiencyLevels = [
-  { value: 'Beginner', label: 'Beginner' },
-  { value: 'Intermediate', label: 'Intermediate' },
-  { value: 'Advanced', label: 'Advanced' },
-  { value: 'Expert', label: 'Expert' }
-];
-
 const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
   isOpen,
   onClose,
@@ -35,72 +23,20 @@ const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
   existingSkill,
   availableSkills
 }) => {
-  const [selectedSkillId, setSelectedSkillId] = useState<string>('');
-  const [proficiencyLevel, setProficiencyLevel] = useState<string>('');
-  const [yearsOfExperience, setYearsOfExperience] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Reset form when dialog opens/closes or when existing skill changes
-  useEffect(() => {
-    if (isOpen) {
-      if (existingSkill) {
-        setSelectedSkillId(existingSkill.skill_id);
-        setProficiencyLevel(existingSkill.proficiency_level || '');
-        setYearsOfExperience(
-          existingSkill.years_of_experience ? existingSkill.years_of_experience.toString() : ''
-        );
-      } else {
-        setSelectedSkillId('');
-        setProficiencyLevel('');
-        setYearsOfExperience('');
-      }
-    }
-  }, [isOpen, existingSkill]);
-
-  // Handle save skill mutation
-  const saveSkillMutation = useMutation({
-    mutationFn: async () => {
-      if (existingSkill) {
-        // Update existing skill
-        await updateTalentSkill(existingSkill.id, {
-          proficiency_level: proficiencyLevel || undefined,
-          years_of_experience: yearsOfExperience ? parseFloat(yearsOfExperience) : undefined
-        });
-        return existingSkill.id;
-      } else {
-        // Create new skill
-        return await createTalentSkill(
-          talentId,
-          selectedSkillId,
-          proficiencyLevel || undefined,
-          yearsOfExperience ? parseFloat(yearsOfExperience) : undefined
-        );
-      }
-    },
-    onSuccess: () => {
-      toast.success(existingSkill ? 'Skill updated successfully' : 'Skill added successfully');
-      onSkillSaved();
-    },
-    onError: (error) => {
-      console.error('Error saving skill:', error);
-      toast.error('Failed to save skill');
-    },
-    onSettled: () => {
-      setIsSubmitting(false);
-    }
+  const {
+    selectedSkillId,
+    setSelectedSkillId,
+    proficiencyLevel,
+    setProficiencyLevel,
+    yearsOfExperience,
+    setYearsOfExperience,
+    isSubmitting,
+    handleSubmit
+  } = useSkillForm({
+    talentId,
+    existingSkill,
+    onSkillSaved
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedSkillId) {
-      toast.error('Please select a skill');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    saveSkillMutation.mutate();
-  };
 
   // Filter out skills that the talent already has (for new skills only)
   const getFilteredSkills = () => {
@@ -119,73 +55,23 @@ const AddSkillDialog: React.FC<AddSkillDialogProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="skill">Skill</Label>
-            <Select 
-              value={selectedSkillId} 
-              onValueChange={setSelectedSkillId}
-              disabled={!!existingSkill}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a skill" />
-              </SelectTrigger>
-              <SelectContent>
-                {getFilteredSkills().map((skill) => (
-                  <SelectItem key={skill.id} value={skill.id}>
-                    {skill.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SkillForm 
+            selectedSkillId={selectedSkillId}
+            onSkillChange={setSelectedSkillId}
+            proficiencyLevel={proficiencyLevel}
+            onProficiencyChange={setProficiencyLevel}
+            yearsOfExperience={yearsOfExperience}
+            onYearsChange={setYearsOfExperience}
+            availableSkills={getFilteredSkills()}
+            existingSkill={!!existingSkill}
+          />
           
-          <div className="space-y-2">
-            <Label htmlFor="proficiency">Proficiency Level</Label>
-            <Select 
-              value={proficiencyLevel} 
-              onValueChange={setProficiencyLevel}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select proficiency level" />
-              </SelectTrigger>
-              <SelectContent>
-                {proficiencyLevels.map((level) => (
-                  <SelectItem key={level.value} value={level.value}>
-                    {level.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="years">Years of Experience</Label>
-            <Input 
-              id="years"
-              type="number"
-              step="0.5"
-              min="0"
-              placeholder="Years of experience with this skill"
-              value={yearsOfExperience}
-              onChange={(e) => setYearsOfExperience(e.target.value)}
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting || !selectedSkillId}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {existingSkill ? 'Updating...' : 'Adding...'}
-                </>
-              ) : (
-                existingSkill ? 'Update Skill' : 'Add Skill'
-              )}
-            </Button>
-          </DialogFooter>
+          <SkillDialogFooter 
+            onClose={onClose}
+            isSubmitting={isSubmitting}
+            isEditMode={!!existingSkill}
+            isFormValid={!!selectedSkillId}
+          />
         </form>
       </DialogContent>
     </Dialog>
