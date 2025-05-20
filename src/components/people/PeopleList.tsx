@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useNavigate } from 'react-router-dom';
 
 interface PeopleListProps {
   personType: 'talent' | 'contact';
@@ -25,6 +26,7 @@ interface PeopleListProps {
 
 const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }: PeopleListProps) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [personToDelete, setPersonToDelete] = useState<string | null>(null);
 
@@ -47,6 +49,10 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
     }
     setDeleteDialogOpen(false);
     setPersonToDelete(null);
+  };
+  
+  const handleViewPerson = (id: string) => {
+    navigate(`/superadmin/people/${id}`);
   };
 
   if (isLoading) {
@@ -89,8 +95,11 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
             className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
           >
             <div className="flex justify-between items-start mb-2">
-              <div>
-                <div className="font-medium">{person.full_name}</div>
+              <div 
+                className="cursor-pointer" 
+                onClick={() => handleViewPerson(person.id)}
+              >
+                <div className="font-medium text-primary">{person.full_name}</div>
                 <div className="text-sm text-gray-500">{person.email}</div>
               </div>
               {person.current_company && (
@@ -169,7 +178,10 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
             {people.map((person) => (
               <TableRow key={person.id}>
                 <TableCell>
-                  <div className="font-medium">
+                  <div 
+                    className="font-medium cursor-pointer text-primary hover:underline"
+                    onClick={() => handleViewPerson(person.id)}
+                  >
                     {person.full_name}
                     {person.current_company && (
                       <span className="ml-2">
