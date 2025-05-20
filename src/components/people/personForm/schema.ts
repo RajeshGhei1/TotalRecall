@@ -8,6 +8,7 @@ export const personFormSchema = z.object({
   location: z.string().optional(),
   company_id: z.string().optional(),
   role: z.string().optional(),
+  type: z.enum(['talent', 'contact']),
 });
 
 export type PersonFormValues = z.infer<typeof personFormSchema>;

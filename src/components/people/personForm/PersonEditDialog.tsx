@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import PersonFormFields from './PersonFormFields';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { personFormSchema } from './schema';
+import { personFormSchema, PersonFormValues } from './schema';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -28,7 +28,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const form = useForm({
+  const form = useForm<PersonFormValues>({
     resolver: zodResolver(personFormSchema),
     defaultValues: {
       full_name: person?.full_name || '',
@@ -36,6 +36,8 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
       phone: person?.phone || '',
       location: person?.location || '',
       type: person?.type || 'talent',
+      company_id: undefined,
+      role: '',
     }
   });
 
@@ -48,12 +50,14 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         phone: person.phone || '',
         location: person.location || '',
         type: person.type,
+        company_id: undefined,
+        role: '',
       });
     }
   }, [person, form]);
 
   const updatePersonMutation = useMutation({
-    mutationFn: async (values: any) => {
+    mutationFn: async (values: PersonFormValues) => {
       if (!person?.id) throw new Error('Person ID is required');
       
       const { data, error } = await supabase
@@ -85,7 +89,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
     }
   });
   
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: PersonFormValues) => {
     updatePersonMutation.mutate(values);
   };
 

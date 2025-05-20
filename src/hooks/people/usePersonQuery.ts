@@ -29,7 +29,15 @@ export const usePersonQuery = (id?: string) => {
         throw error;
       }
       
-      return data;
+      // Ensure type is properly cast as 'talent' | 'contact'
+      if (data) {
+        return {
+          ...data,
+          type: data.type as 'talent' | 'contact'
+        };
+      }
+      
+      return null;
     },
     enabled: !!id
   });
