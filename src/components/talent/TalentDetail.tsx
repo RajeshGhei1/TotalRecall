@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Edit } from "lucide-react";
+import TalentSkillsSection from "./TalentSkillsSection";
 
 interface TalentDetailProps {
   talentId: string;
@@ -133,6 +134,9 @@ const TalentDetail: React.FC<TalentDetailProps> = ({ talentId }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Skills Section */}
+      <TalentSkillsSection talentId={talentId} />
 
       {customFieldValues.length > 0 && (
         <Card>

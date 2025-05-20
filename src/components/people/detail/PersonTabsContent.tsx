@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from 'lucide-react';
 import JobHistoryList from '../JobHistoryList';
 import { Person } from '@/types/person';
+import TalentSkillsManager from '../skills/TalentSkillsManager';
 
 interface PersonTabsContentProps {
   person: Person;
@@ -96,16 +97,7 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
           
           {person?.type === 'talent' && (
             <TabsContent value="skills" className="mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Skills</h3>
-                  <Button size="sm" variant="outline">Add Skill</Button>
-                </div>
-                
-                <div className="rounded-md bg-muted p-4 text-center">
-                  <p>No skills have been added yet.</p>
-                </div>
-              </div>
+              {person?.id && <TalentSkillsManager personId={person.id} />}
             </TabsContent>
           )}
         </CardContent>
