@@ -101,7 +101,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PersonFormFields form={form} />
+            <PersonFormFields form={form} personType={person?.type} />
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 

@@ -7,9 +7,10 @@ import { PersonFormValues } from './schema';
 
 interface PersonFormFieldsProps {
   form: UseFormReturn<PersonFormValues>;
+  personType?: 'talent' | 'contact';
 }
 
-const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form }) => {
+const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType }) => {
   return (
     <div className="space-y-4">
       <FormField
