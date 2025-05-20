@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,6 +41,7 @@ export const customFieldSchema = z.object({
   validation: z.string().optional(),
 });
 
+// Explicitly export the type
 export type FieldFormValues = z.infer<typeof customFieldSchema>;
 
 // Define available forms for the application
