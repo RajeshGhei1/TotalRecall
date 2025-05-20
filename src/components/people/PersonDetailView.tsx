@@ -22,47 +22,27 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Building, Mail, Phone, MapPin, Plus } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Phone, MapPin, Plus, Pencil } from 'lucide-react';
 import JobHistoryList from './JobHistoryList';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 import CompanyLinkForm from './CompanyLinkForm';
+import PersonEditDialog from './personForm/PersonEditDialog';
+import { usePersonQuery } from '@/hooks/people/usePersonQuery';
+import PersonNavigation from './PersonNavigation';
 
 const PersonDetailView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [person, setPerson] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('info');
   const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
+  
+  const { data: person, isLoading: loading } = usePersonQuery(id);
   
   const { usePersonEmploymentHistory } = useCompanyPeopleRelationship();
   const { data: employmentHistory, isLoading: loadingHistory } = usePersonEmploymentHistory(id);
   
-  useEffect(() => {
-    const fetchPerson = async () => {
-      if (!id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('people')
-          .select('*')
-          .eq('id', id)
-          .single();
-          
-        if (error) throw error;
-        setPerson(data);
-      } catch (error) {
-        console.error('Error fetching person:', error);
-        toast.error('Failed to load person details');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPerson();
-  }, [id]);
-
   // Fetch companies for the dropdown in the company link form
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -91,6 +71,10 @@ const PersonDetailView = () => {
   const handleCompanyLinkSuccess = () => {
     setIsCompanyLinkFormOpen(false);
     // The query is automatically invalidated in the useCompanyPeopleRelationship hook
+  };
+
+  const handleEditPerson = () => {
+    setIsEditDialogOpen(true);
   };
 
   if (loading) {
@@ -178,6 +162,11 @@ const PersonDetailView = () => {
           </BreadcrumbList>
         </Breadcrumb>
         
+        {/* Person navigation */}
+        <div className="mb-6">
+          {id && <PersonNavigation currentPersonId={id} personType={person?.type} />}
+        </div>
+        
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{person?.full_name}</h1>
@@ -186,9 +175,14 @@ const PersonDetailView = () => {
             </p>
           </div>
           
-          <Button variant="outline" onClick={() => navigate('/superadmin/people')}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleEditPerson}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/superadmin/people')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+          </div>
         </div>
         
         <div className="grid gap-6 md:grid-cols-3">
@@ -331,6 +325,13 @@ const PersonDetailView = () => {
           personType={person?.type}
           personId={id}
           isSubmitting={false}
+        />
+
+        {/* Person edit dialog */}
+        <PersonEditDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          person={person}
         />
       </div>
     </AdminLayout>

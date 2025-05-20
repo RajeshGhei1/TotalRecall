@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useNavigate } from 'react-router-dom';
+import PersonEditDialog from './personForm/PersonEditDialog';
 
 interface PeopleListProps {
   personType: 'talent' | 'contact';
@@ -29,6 +30,8 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [personToDelete, setPersonToDelete] = useState<string | null>(null);
+  const [editPerson, setEditPerson] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const {
     people,
@@ -53,6 +56,16 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
   
   const handleViewPerson = (id: string) => {
     navigate(`/superadmin/people/${id}`);
+  };
+
+  const handleEditPerson = (person: any) => {
+    setEditPerson(person);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+    setEditPerson(null);
   };
 
   if (isLoading) {
@@ -141,6 +154,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
                   variant="outline" 
                   size="sm"
                   className="flex-1"
+                  onClick={() => handleEditPerson(person)}
                 >
                   <Pencil className="h-4 w-4 mr-2" /> Edit
                 </Button>
@@ -208,6 +222,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
                     <Button 
                       variant="outline" 
                       size="sm"
+                      onClick={() => handleEditPerson(person)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -226,6 +241,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
         </Table>
       </div>
 
+      {/* Delete confirmation dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -240,6 +256,13 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit person dialog */}
+      <PersonEditDialog
+        isOpen={isEditDialogOpen}
+        onClose={handleEditDialogClose}
+        person={editPerson}
+      />
     </>
   );
 };
