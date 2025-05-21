@@ -7,11 +7,11 @@ export interface UseCustomFieldsListParams {
   entityType?: string;
 }
 
-export const useCustomFieldsList = (entityTypeOrParams?: string | UseCustomFieldsListParams) => {
+export const useCustomFieldsList = (params?: UseCustomFieldsListParams | string) => {
   // Handle both string and object parameters for backward compatibility
-  const entityType = typeof entityTypeOrParams === 'string' 
-    ? entityTypeOrParams 
-    : entityTypeOrParams?.entityType;
+  const entityType = typeof params === 'string' 
+    ? params 
+    : params?.entityType;
   
   const { data: customFields, isLoading, error, refetch } = useQuery({
     queryKey: ['custom-fields', entityType],

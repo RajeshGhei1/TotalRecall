@@ -11,7 +11,9 @@ export function useCustomFieldsHook(
   tenantId?: string,
   options?: UseCustomFieldsOptions
 ): UseCustomFieldsReturn {
-  const { customFields, isLoading, error, refetch } = useCustomFieldsList(tenantId, options);
+  // Pass parameters as a single object to match the expected interface
+  const params = tenantId ? { entityType: tenantId } : undefined;
+  const { customFields, isLoading, error, refetch } = useCustomFieldsList(params);
   const { getCustomFieldValues, saveCustomFieldValues } = useCustomFieldValues();
   const { updateFieldOrder } = useFieldOrder();
 
