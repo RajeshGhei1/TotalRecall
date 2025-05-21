@@ -1,11 +1,6 @@
 
 import React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Company } from '@/hooks/useCompanies';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,87 +9,42 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 interface CompanyDeleteDialogProps {
-  company: Company | null;
+  company: any | null;
   onClose: () => void;
   onConfirm: () => void;
-  isOpen?: boolean; // Added missing prop
-  companyName?: string; // Added missing prop
+  companyName: string;
+  isOpen: boolean; // Added isOpen prop
 }
 
 const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
   company,
   onClose,
   onConfirm,
-  isOpen,
-  companyName
+  companyName,
+  isOpen, // Added isOpen prop
 }) => {
-  const queryClient = useQueryClient();
-  const displayName = companyName || company?.name || '';
-  const isDialogOpen = isOpen !== undefined ? isOpen : !!company;
-
-  // Delete company mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (companyId: string) => {
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyId);
-        
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      onConfirm();
-      
-      toast.success("Company Deleted", {
-        description: "The company has been successfully removed."
-      });
-    },
-    onError: (error) => {
-      toast.error("Error", {
-        description: `Failed to delete company: ${error.message}`
-      });
-    },
-  });
-
-  const confirmDelete = () => {
-    if (company) {
-      deleteMutation.mutate(company.id);
-    }
-  };
-
   return (
-    <Dialog open={isDialogOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-destructive" />
+            Delete Company
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete {displayName}? This action cannot be undone.
+            Are you sure you want to delete <span className="font-semibold">{companyName}</span>?
+            This action cannot be undone and will permanently remove the company and all associated data.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+        <DialogFooter className="sm:justify-end">
+          <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={confirmDelete}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete"
-            )}
+          <Button type="button" variant="destructive" onClick={onConfirm}>
+            Delete
           </Button>
         </DialogFooter>
       </DialogContent>

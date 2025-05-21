@@ -19,7 +19,8 @@ import { ArrowLeft, Building2, Edit, Trash, Users, MapPin, Mail, Phone, Link, Br
 import { toast } from 'sonner';
 import { Company } from '@/hooks/useCompanies';
 import { CompanyFormValues } from './schema';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
 import PeopleSection from './sections/PeopleSection';
 import BasicInfoSection from './sections/BasicInfoSection';
 import ContactDetailsSection from './sections/ContactDetailsSection';
@@ -285,7 +286,9 @@ const CompanyDetailView = () => {
           </TabsList>
           
           <TabsContent value="people" className="mt-4">
-            <PeopleSection form={form} showFullView={true} />
+            <FormProvider {...form}>
+              <PeopleSection form={form} showFullView={true} />
+            </FormProvider>
           </TabsContent>
           
           <TabsContent value="details" className="mt-4">
@@ -302,17 +305,19 @@ const CompanyDetailView = () => {
                     <TabsTrigger value="social">Social Media</TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="basic">
-                    <BasicInfoSection form={form} readOnly={true} />
-                  </TabsContent>
-                  
-                  <TabsContent value="contact">
-                    <ContactDetailsSection form={form} readOnly={true} />
-                  </TabsContent>
-                  
-                  <TabsContent value="social">
-                    <SocialMediaSection form={form} readOnly={true} />
-                  </TabsContent>
+                  <FormProvider {...form}>
+                    <TabsContent value="basic">
+                      <BasicInfoSection form={form} readOnly={true} />
+                    </TabsContent>
+                    
+                    <TabsContent value="contact">
+                      <ContactDetailsSection form={form} readOnly={true} />
+                    </TabsContent>
+                    
+                    <TabsContent value="social">
+                      <SocialMediaSection form={form} readOnly={true} />
+                    </TabsContent>
+                  </FormProvider>
                 </Tabs>
               </CardContent>
             </Card>
@@ -321,10 +326,10 @@ const CompanyDetailView = () => {
         
         <CompanyDeleteDialog 
           company={null}
-          isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={confirmDelete}
           companyName={company.name}
+          isOpen={isDeleteDialogOpen}
         />
       </div>
     </AdminLayout>
