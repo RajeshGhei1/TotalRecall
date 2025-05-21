@@ -113,12 +113,13 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           
         if (error) throw error;
         
-        if (data) {
-          // Make sure we handle types properly by checking each item's structure
+        if (data && Array.isArray(data)) {
+          // Use a type guard to filter and ensure we have valid person objects
           const peopleList = data
             .filter(item => {
-              // Only include items where person is not null, has valid data, and is not the current person
+              // Filter out items with invalid person data
               return (
+                item && 
                 item.person !== null && 
                 typeof item.person === 'object' &&
                 'id' in item.person &&
@@ -127,7 +128,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               );
             })
             .map(item => {
-              // Now we can safely access the person properties with proper type checking
+              // We've already checked person is valid in the filter above
               const person = item.person as { id: string; full_name: string };
               return {
                 id: person.id,
