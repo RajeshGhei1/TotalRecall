@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -114,9 +113,18 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (error) throw error;
         
         if (data && Array.isArray(data)) {
+          // Define a proper type for valid items
+          type ValidPersonData = {
+            person_id: string;
+            person: {
+              id: string;
+              full_name: string;
+            };
+          };
+          
           // Use a type guard to filter and ensure we have valid person objects
           const peopleList = data
-            .filter((item): item is typeof item & { person: { id: string; full_name: string } } => {
+            .filter((item): item is ValidPersonData => {
               // Filter out items with invalid person data and items where person is null
               return (
                 item !== null &&
@@ -130,7 +138,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               );
             })
             .map(item => {
-              // Since we've validated in the filter above, we can safely access properties
+              // Now TypeScript knows item.person is valid and not null
               return {
                 id: item.person.id,
                 name: item.person.full_name
