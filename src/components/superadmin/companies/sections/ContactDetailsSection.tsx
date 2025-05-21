@@ -7,9 +7,10 @@ import { FormSelect } from '@/components/superadmin/tenant-form/fields';
 
 interface ContactDetailsSectionProps {
   form: UseFormReturn<CompanyFormValues>;
+  readOnly?: boolean; // Added missing prop
 }
 
-const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form }) => {
+const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form, readOnly = false }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormInput
@@ -18,6 +19,7 @@ const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form }) =
         label="Business Email Address"
         placeholder="contact@company.com"
         type="email"
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -25,6 +27,7 @@ const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form }) =
         name="phone"
         label="Business Phone Number"
         placeholder="+1 (555) 123-4567"
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -32,6 +35,7 @@ const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form }) =
         name="location"
         label="Primary Business Location"
         placeholder="City, Country"
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -40,6 +44,7 @@ const ContactDetailsSection: React.FC<ContactDetailsSectionProps> = ({ form }) =
         label="Year Founded"
         type="number"
         placeholder="2023"
+        readOnly={readOnly}
       />
     </div>
   );

@@ -320,6 +320,7 @@ const CompanyDetailView = () => {
         </Tabs>
         
         <CompanyDeleteDialog 
+          company={null}
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={confirmDelete}

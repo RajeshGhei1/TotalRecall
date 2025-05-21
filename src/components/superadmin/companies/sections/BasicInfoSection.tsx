@@ -9,13 +9,14 @@ import { FormDatePicker } from '@/components/superadmin/tenant-form/fields';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<CompanyFormValues>;
-  options: {
+  options?: {
     industryOptions: { value: string; label: string }[];
     sizeOptions: { value: string; label: string }[];
   };
+  readOnly?: boolean; // Added missing prop
 }
 
-const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) => {
+const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options, readOnly = false }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormInput
@@ -23,6 +24,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="name"
         label="Company Name"
         required
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -30,6 +32,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="cin"
         label="CIN"
         required
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -37,6 +40,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="website"
         label="Website"
         placeholder="https://example.com"
+        readOnly={readOnly}
       />
       
       <FormInput
@@ -44,6 +48,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="registeredOfficeAddress" 
         label="Registered Office Address"
         required
+        readOnly={readOnly}
       />
       
       <FormSelect
@@ -55,6 +60,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
           { value: 'inactive', label: 'Inactive' },
           { value: 'pending', label: 'Pending' }
         ]}
+        disabled={readOnly}
       />
       
       <FormDatePicker
@@ -62,6 +68,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="registrationDate"
         label="Registration Date"
         required
+        disabled={readOnly}
       />
       
       <FormInput
@@ -70,6 +77,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         label="Registered Email Address"
         type="email"
         required
+        readOnly={readOnly}
       />
       
       <FormInput 
@@ -77,6 +85,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
         name="noOfDirectives"
         label="No Of Directives/Partner"
         required
+        readOnly={readOnly}
       />
       
       <div className="col-span-1 md:col-span-2">
@@ -85,6 +94,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options }) =>
           name="description"
           label="Company Description"
           rows={4}
+          readOnly={readOnly}
         />
       </div>
     </div>

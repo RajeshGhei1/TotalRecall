@@ -20,14 +20,20 @@ interface CompanyDeleteDialogProps {
   company: Company | null;
   onClose: () => void;
   onConfirm: () => void;
+  isOpen?: boolean; // Added missing prop
+  companyName?: string; // Added missing prop
 }
 
 const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
   company,
   onClose,
-  onConfirm
+  onConfirm,
+  isOpen,
+  companyName
 }) => {
   const queryClient = useQueryClient();
+  const displayName = companyName || company?.name || '';
+  const isDialogOpen = isOpen !== undefined ? isOpen : !!company;
 
   // Delete company mutation
   const deleteMutation = useMutation({
@@ -61,12 +67,12 @@ const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
   };
 
   return (
-    <Dialog open={!!company} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isDialogOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete {company?.name}? This action cannot be undone.
+            Are you sure you want to delete {displayName}? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

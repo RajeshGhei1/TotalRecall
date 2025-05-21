@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useCompanies } from '@/hooks/useCompanies';
+import { useCompanies, Company } from '@/hooks/useCompanies';
 
 import CompanySearch from './CompanySearch';
 import CompanyTable from './CompanyTable';
@@ -11,7 +11,7 @@ import CompanyDeleteDialog from './CompanyDeleteDialog';
 const CompanyListContainer: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [companyToDelete, setCompanyToDelete] = useState(null);
+  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   
   const { companies, isLoading } = useCompanies();
   
@@ -36,11 +36,15 @@ const CompanyListContainer: React.FC = () => {
   };
 
   const handleViewDetails = (companyId: string) => {
-    navigate(`/superadmin/companies/view/${companyId}`);
+    navigate(`/superadmin/companies/${companyId}`);
   };
 
-  const handleDelete = (company) => {
+  const handleDelete = (company: Company) => {
     setCompanyToDelete(company);
+  };
+
+  const handleConfirmDelete = () => {
+    setCompanyToDelete(null);
   };
 
   if (isLoading) {
@@ -61,6 +65,8 @@ const CompanyListContainer: React.FC = () => {
       
       <CompanyTable 
         companies={filteredCompanies}
+        onDeleteCompany={() => {}} // Provide the required prop
+        onEditCompany={() => {}} // Provide the required prop
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -70,7 +76,7 @@ const CompanyListContainer: React.FC = () => {
       <CompanyDeleteDialog
         company={companyToDelete}
         onClose={() => setCompanyToDelete(null)}
-        onConfirm={() => setCompanyToDelete(null)}
+        onConfirm={handleConfirmDelete}
       />
     </>
   );

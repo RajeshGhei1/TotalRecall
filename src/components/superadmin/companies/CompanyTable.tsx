@@ -16,17 +16,46 @@ interface CompanyTableProps {
   companies: Company[];
   onDeleteCompany: (id: string) => void;
   onEditCompany: (company: Company) => void;
+  isLoading?: boolean; // Added missing prop
+  onEdit?: (id: string) => void; // Added missing prop
+  onDelete?: (company: any) => void; // Added missing prop  
+  onViewDetails?: (id: string) => void; // Added missing prop
 }
 
 const CompanyTable: React.FC<CompanyTableProps> = ({
   companies,
   onDeleteCompany,
-  onEditCompany
+  onEditCompany,
+  onEdit,
+  onDelete,
+  onViewDetails
 }) => {
   const navigate = useNavigate();
 
   const handleViewCompany = (id: string) => {
-    navigate(`/superadmin/companies/${id}`);
+    if (onViewDetails) {
+      onViewDetails(id);
+    } else {
+      navigate(`/superadmin/companies/${id}`);
+    }
+  };
+
+  const handleEditCompany = (company: Company, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(company.id);
+    } else {
+      onEditCompany(company);
+    }
+  };
+
+  const handleDeleteCompany = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete({id});
+    } else {
+      onDeleteCompany(id);
+    }
   };
 
   return (
@@ -78,19 +107,13 @@ const CompanyTable: React.FC<CompanyTableProps> = ({
                       <Eye className="mr-2 h-4 w-4" />
                       View
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation();
-                      onEditCompany(company);
-                    }}>
+                    <DropdownMenuItem onClick={(e) => handleEditCompany(company, e)}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteCompany(company.id);
-                      }}
+                      onClick={(e) => handleDeleteCompany(company.id, e)}
                     >
                       <Trash className="mr-2 h-4 w-4" />
                       Delete

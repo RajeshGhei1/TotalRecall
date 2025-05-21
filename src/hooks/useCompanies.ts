@@ -9,13 +9,20 @@ export interface Company {
   id: string;
   name: string;
   domain?: string;
-  website?: string; // Added website property
+  website?: string;
   description?: string;
   created_at: string;
   industry?: string;
   size?: string;
   location?: string;
-  // Add additional fields to match the schema
+  // Add missing properties to match the schema
+  email?: string;
+  phone?: string;
+  founded?: number;
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  // Tenant-specific properties
   cin?: string;
   companyStatus?: string;
   registeredOfficeAddress?: string;
@@ -26,6 +33,25 @@ export interface Company {
   country?: string;
   region?: string;
   hoLocation?: string;
+  noOfEmployee?: string;
+  turnover?: string;
+  industry1?: string;
+  industry2?: string;
+  industry3?: string;
+  companySector?: string;
+  companyType?: string;
+  entityType?: string;
+  segmentAsPerNumberOfEmployees?: string;
+  segmentAsPerTurnover?: string;
+  turnoverYear?: string;
+  yearOfEstablishment?: string;
+  paidupCapital?: string;
+  segmentAsPerPaidUpCapital?: string;
+  areaOfSpecialize?: string;
+  serviceLine?: string;
+  verticles?: string;
+  companyProfile?: string;
+  endUserChannel?: string;
 }
 
 export const useCompanies = () => {
