@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import JobHistoryList from '../JobHistoryList';
 import { Person } from '@/types/person';
 import TalentSkillsManager from '../skills/TalentSkillsManager';
+import { CustomFieldsForm } from '@/components/customFields';
 
 interface PersonTabsContentProps {
   person: Person;
@@ -59,9 +60,13 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
                   : 'Additional information about this business contact.'}
               </p>
               
-              <div className="rounded-md bg-muted p-4 text-center">
-                <p>No additional information available.</p>
-              </div>
+              {person?.id && (
+                <CustomFieldsForm
+                  entityType={person.type === 'talent' ? 'talent_form' : 'contact_form'}
+                  entityId={person.id}
+                  formContext={person.type === 'talent' ? 'talent_form' : 'contact_form'}
+                />
+              )}
             </div>
           </TabsContent>
           

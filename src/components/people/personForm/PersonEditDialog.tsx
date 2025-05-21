@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Person } from '@/types/person';
+import { CustomFieldsForm } from '@/components/customFields';
 
 interface PersonEditDialogProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
   });
 
   // Reset form values when person changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (person) {
       form.reset({
         full_name: person.full_name,
@@ -102,6 +103,18 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <PersonFormFields form={form} personType={person?.type} />
+            
+            {person?.id && person?.type && (
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-medium mb-2">Custom Fields</h3>
+                <CustomFieldsForm
+                  entityType={person.type === 'talent' ? 'talent_form' : 'contact_form'}
+                  entityId={person.id}
+                  formContext={person.type === 'talent' ? 'talent_form' : 'contact_form'}
+                  form={form}
+                />
+              </div>
+            )}
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 

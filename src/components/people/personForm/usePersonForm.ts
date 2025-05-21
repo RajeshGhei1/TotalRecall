@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { personFormSchema, PersonFormValues } from './schema';
+import { useCustomFieldValues } from '@/hooks/customFields';
 
 interface UsePersonFormProps {
   personType: 'talent' | 'contact';
@@ -15,6 +16,8 @@ interface UsePersonFormProps {
 export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { saveCustomFieldValues } = useCustomFieldValues();
 
   const form = useForm<PersonFormValues>({
     resolver: zodResolver(personFormSchema),
@@ -31,6 +34,17 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
 
   const createPerson = useMutation({
     mutationFn: async (values: PersonFormValues) => {
+      // Extract custom field values from form data
+      const standardFields = ['full_name', 'email', 'phone', 'location', 'company_id', 'role', 'type'];
+      const customFieldValues: Record<string, any> = {};
+      
+      // Extract any fields starting with 'custom_' as custom field values
+      Object.keys(values).forEach(key => {
+        if (key.startsWith('custom_')) {
+          customFieldValues[key.replace('custom_', '')] = values[key as keyof PersonFormValues];
+        }
+      });
+      
       // First create the person
       const { data: personData, error: personError } = await supabase
         .from('people')
@@ -46,6 +60,16 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
         .select();
       
       if (personError) throw personError;
+
+      // If we have a person created and custom field values
+      if (personData && personData[0] && Object.keys(customFieldValues).length > 0) {
+        // Save custom field values for this person
+        await saveCustomFieldValues(
+          personType === 'talent' ? 'talent_form' : 'contact_form', 
+          personData[0].id, 
+          customFieldValues
+        );
+      }
 
       // If company_id and role are provided and this is a contact, create a company relationship
       if (personType === 'contact' && values.company_id && values.role && personData && personData[0]) {
@@ -69,6 +93,7 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
     },
     onSuccess: () => {
       form.reset();
+      queryClient.invalidateQueries({ queryKey: ['people', personType] });
       onSuccess();
       toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} created successfully`);
     },

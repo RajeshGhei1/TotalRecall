@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { usePersonForm } from './usePersonForm';
 import PersonFormFields from './PersonFormFields';
+import { CustomFieldsForm } from '@/components/customFields';
 
 interface CreatePersonDialogProps {
   isOpen: boolean;
@@ -46,6 +47,15 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleCreatePerson)} className="space-y-4">
             <PersonFormFields form={form} personType={personType} />
+            
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-sm font-medium mb-2">Custom Fields</h3>
+              <CustomFieldsForm
+                entityType={personType === 'talent' ? 'talent_form' : 'contact_form'}
+                formContext={personType === 'talent' ? 'talent_form' : 'contact_form'}
+                form={form}
+              />
+            </div>
             
             {error && (
               <div className="text-sm font-medium text-destructive">
