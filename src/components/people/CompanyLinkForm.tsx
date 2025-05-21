@@ -56,6 +56,8 @@ const formSchema = z.object({
   reports_to: z.string().optional(),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   isOpen,
   onClose,
@@ -69,7 +71,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [people, setPeople] = useState<Array<{id: string; name: string}>>([]);
 
-  const defaultValues = {
+  const defaultValues: FormValues = {
     company_id: '',
     role: '',
     start_date: new Date(),
@@ -79,7 +81,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     reports_to: '',
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
@@ -100,7 +102,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         const { supabase } = await import('@/integrations/supabase/client');
         
         // Get current people in the company for manager selection
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('company_relationships')
           .select(`
             person_id,
@@ -109,16 +111,20 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           .eq('company_id', watchCompanyId)
           .eq('is_current', true);
           
+        if (error) throw error;
+        
         if (data) {
           const peopleList = data
-            .filter(item => item.person && item.person.id !== personId) // exclude self
-            .map(item => ({
-              id: item.person?.id,
-              name: item.person?.full_name
-            }))
-            .filter((item): item is {id: string; name: string} => 
-              item.id !== undefined && item.name !== undefined
-            );
+            .filter(item => item.person && item.person_id !== personId) // exclude self
+            .map(item => {
+              // Safely access person object with type checking
+              const person = item.person as { id: string; full_name: string } | null;
+              return {
+                id: person?.id || '',
+                name: person?.full_name || ''
+              };
+            })
+            .filter(item => item.id !== '' && item.name !== '');
             
           setPeople(peopleList);
         }
@@ -130,7 +136,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     fetchPeopleFromCompany();
   }, [watchCompanyId, personId]);
   
-  const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleFormSubmit = async (values: FormValues) => {
     if (!personId) return;
     
     await createRelationship.mutateAsync({
@@ -141,6 +147,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : null,
       is_current: values.is_current,
       relationship_type: values.relationship_type,
+      reports_to: values.reports_to,
     });
     
     form.reset(defaultValues);
@@ -336,6 +343,31 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                 )}
               />
             )}
+
+            <FormField
+              control={form.control}
+              name="relationship_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Relationship Type</FormLabel>
+                  <Select 
+                    onValueChange={(value: 'employment' | 'business_contact') => field.onChange(value)}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select relationship type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="employment">Employment</SelectItem>
+                      <SelectItem value="business_contact">Business Contact</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>

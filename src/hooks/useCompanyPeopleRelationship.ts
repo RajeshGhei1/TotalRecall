@@ -12,7 +12,8 @@ interface LinkCompanyRelationshipData {
   start_date: string;
   end_date?: string | null;
   is_current: boolean;
-  relationship_type: string;
+  relationship_type: 'employment' | 'business_contact';
+  reports_to?: string;
 }
 
 export const useCompanyPeopleRelationship = (companyId?: string) => {
@@ -49,6 +50,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['people'] });
       queryClient.invalidateQueries({ queryKey: ['company-relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['company-org-chart'] });
       queryClient.invalidateQueries({ queryKey: ['person-employment-history'] });
       toast.success('Company relationship added successfully');
     },
