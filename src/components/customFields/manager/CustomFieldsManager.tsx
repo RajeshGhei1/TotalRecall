@@ -8,8 +8,9 @@ import { useCustomFieldsQuery } from '@/hooks/customFields/useCustomFieldsQuery'
 import { FieldFormValues } from '../form/CustomFieldForm';
 import CustomFieldList from '../CustomFieldList';
 import CustomFieldForm from '../form/CustomFieldForm';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CustomField } from '@/hooks/customFields/types';
+import CustomFieldsHeader from './CustomFieldsHeader';
 
 interface CustomFieldsManagerProps {
   tenantId?: string;
