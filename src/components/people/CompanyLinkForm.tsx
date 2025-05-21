@@ -128,11 +128,12 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               );
             })
             .map(item => {
-              // We've already checked person is valid in the filter above
-              const person = item.person as { id: string; full_name: string };
+              // Type assertion after validation in the filter above
+              // We can safely assert this type since we've verified the structure in the filter
+              const personData = item.person as { id: string; full_name: string };
               return {
-                id: person.id,
-                name: person.full_name
+                id: personData.id,
+                name: personData.full_name
               };
             });
             
