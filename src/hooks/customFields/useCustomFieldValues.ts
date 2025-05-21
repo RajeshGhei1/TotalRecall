@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CustomField, CustomFieldValue } from './types';
 import { fetchCustomFieldValues } from './operations/fetchCustomFieldValues';
 import { saveCustomFieldValues } from './operations/saveCustomFieldValues';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Hook for managing custom field values
