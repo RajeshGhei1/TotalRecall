@@ -9,11 +9,19 @@ export function useCustomFieldsMutations() {
   
   // Create field mutation
   const createMutation = useMutation({
-    mutationFn: async ({ values, tenantId }: { values: FieldFormValues; tenantId?: string }) => {
-      return await createCustomField(values, tenantId);
+    mutationFn: async ({ values, tenantId }: { 
+      values: FieldFormValues & { fieldKey?: string }; 
+      tenantId?: string 
+    }) => {
+      console.log('Mutation executing with values:', values, 'tenantId:', tenantId);
+      return await createCustomField({ ...values, tenantId });
     },
-    onSettled: () => {
+    onSuccess: (data) => {
+      console.log('Mutation succeeded:', data);
       queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
+    },
+    onError: (error) => {
+      console.error('Mutation error:', error);
     }
   });
   
@@ -22,7 +30,7 @@ export function useCustomFieldsMutations() {
     mutationFn: async ({ id, values }: { id: string; values: Partial<CustomField> }) => {
       return await updateCustomField(id, values);
     },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
     }
   });
@@ -32,7 +40,7 @@ export function useCustomFieldsMutations() {
     mutationFn: async (id: string) => {
       return await deleteCustomField(id);
     },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
     }
   });
@@ -55,6 +63,8 @@ export function useCustomFieldsMutations() {
         field_type: field.field_type
       }));
       
+      console.log('Updating field order with:', updates);
+      
       // Update all fields in one go
       const { data, error } = await supabase
         .from('custom_fields')
@@ -64,13 +74,13 @@ export function useCustomFieldsMutations() {
       
       return data;
     },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
     }
   });
   
   // Convenience functions with proper typing
-  const createField = (values: FieldFormValues, tenantId?: string) => {
+  const createField = (values: FieldFormValues & { fieldKey?: string }, tenantId?: string) => {
     // Ensure name is required
     if (!values.name) {
       throw new Error('Field name is required');

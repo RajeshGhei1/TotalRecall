@@ -52,31 +52,49 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         return;
       }
       
-      // Fix the options type to ensure they have required properties
+      // Generate a field_key from the label if not provided
+      const fieldKey = values.label ? 
+        values.label.toLowerCase().replace(/\s+/g, '_') : 
+        values.name.toLowerCase().replace(/\s+/g, '_');
+      
+      // Process options to ensure they have valid structure
       const processedOptions = values.options ? 
         values.options.map(opt => ({
-          value: opt.value || '',  // Ensure value is never undefined
-          label: opt.label || ''   // Ensure label is never undefined
+          value: opt.value || '',
+          label: opt.label || ''
         })) : 
         [];
       
+      // Log submission data for debugging
+      console.log('Submitting custom field:', {
+        name: values.name,
+        label: values.label || values.name,
+        fieldType: values.fieldType,
+        fieldKey,
+        options: processedOptions,
+        tenantId: tenantId === 'global' ? null : tenantId
+      });
+      
+      // Create the field with properly formatted data
       await createField({
         name: values.name,
-        label: values.label,
+        label: values.label || values.name, // Use name as fallback for label
         fieldType: values.fieldType,
-        required: values.required,
+        fieldKey: fieldKey,
+        required: values.required || false,
         placeholder: values.placeholder,
         defaultValue: values.defaultValue,
         minLength: values.minLength,
         maxLength: values.maxLength,
-        options: processedOptions, // Use the processed options
+        options: processedOptions,
         min: values.min,
         max: values.max,
         step: values.step,
-        forms: values.forms,
+        forms: values.forms || [],
         info: values.info,
-        validation: values.validation
-      }, tenantId);
+        validation: values.validation,
+        tenantId: tenantId === 'global' ? null : tenantId
+      });
       
       setIsDialogOpen(false);
       await refetch();
@@ -84,10 +102,10 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       toast.success('Custom field created', {
         description: `Field "${values.name}" has been created successfully.`
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating field:', error);
       toast.error('Error', {
-        description: 'Failed to create custom field. Please try again.'
+        description: `Failed to create custom field: ${error.message || 'Unknown error'}`
       });
     }
   };
@@ -102,10 +120,10 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         toast.success('Custom field deleted', {
           description: 'The field has been deleted successfully.'
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting field:', error);
         toast.error('Error', {
-          description: 'Failed to delete custom field. Please try again.'
+          description: `Failed to delete custom field: ${error.message || 'Please try again.'}`
         });
       }
     }
@@ -119,12 +137,12 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
     }));
     
     try {
-      await updateFieldsOrder(fieldsWithOrder, tenantId);
+      await updateFieldsOrder(fieldsWithOrder, tenantId === 'global' ? undefined : tenantId);
       await refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error reordering fields:', error);
       toast.error('Error', {
-        description: 'Failed to reorder custom fields. Please try again.'
+        description: `Failed to reorder custom fields: ${error.message || 'Please try again.'}`
       });
     }
   };
