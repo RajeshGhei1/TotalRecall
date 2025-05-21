@@ -62,6 +62,7 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
       if (personError) throw personError;
 
       // Get the correct form context based on person type
+      // This should match the form context IDs defined in availableForms in CustomFieldForm.tsx
       const formContext = personType === 'talent' ? 'talent_form' : 'contact_form';
 
       // If we have a person created and custom field values
