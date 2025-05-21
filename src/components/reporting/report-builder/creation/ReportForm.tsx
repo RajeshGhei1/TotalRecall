@@ -76,7 +76,11 @@ const ReportForm: React.FC<ReportFormProps> = ({
       <FiltersInput 
         filters={reportState.filters}
         setFilters={(newFilters) => {
-          setReportState(prev => ({ ...prev, filters: newFilters }));
+          // Fix: Explicitly cast the newFilters as Filter[] to avoid type issues
+          setReportState(prev => ({ 
+            ...prev, 
+            filters: Array.isArray(newFilters) ? newFilters : [] 
+          }));
         }}
         availableFields={availableFields}
         operatorOptions={operatorOptions}
