@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { useCustomFieldsList } from '@/hooks/customFields';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { fetchSavedReports, saveReport, Filter, Aggregation, SavedReport } from '@/services/reportingService';
 
 const availableEntities = [
   { label: 'Talents', value: 'talents' },
@@ -45,40 +45,22 @@ const ReportBuilder = () => {
   const [selectedEntity, setSelectedEntity] = useState<string>('');
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [availableColumns, setAvailableColumns] = useState<string[]>([]);
-  const [filters, setFilters] = useState<{field: string, operator: string, value: string}[]>([]);
+  const [filters, setFilters] = useState<Filter[]>([]);
   const [groupBy, setGroupBy] = useState<string>('');
-  const [aggregation, setAggregation] = useState<{function: string, field: string}[]>([]);
+  const [aggregation, setAggregation] = useState<Aggregation[]>([]);
   const [visualizationType, setVisualizationType] = useState<string>('table');
   const [reportResults, setReportResults] = useState<any[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [savedReports, setSavedReports] = useState<any[]>([]);
   
   // Get custom fields for the selected entity
-  const { data: customFields = [] } = useCustomFieldsList({ 
-    entityType: selectedEntity || undefined
-  });
+  const { customFields = [] } = useCustomFieldsList(selectedEntity || undefined);
 
   // Fetch saved reports
-  const { data: savedReportsData } = useQuery({
+  const { data: savedReports = [], refetch: refetchSavedReports } = useQuery({
     queryKey: ['saved-reports'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('saved_reports')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: fetchSavedReports,
     enabled: true,
   });
-
-  // Update saved reports when data is loaded
-  React.useEffect(() => {
-    if (savedReportsData) {
-      setSavedReports(savedReportsData);
-    }
-  }, [savedReportsData]);
 
   // Update available columns when entity changes
   React.useEffect(() => {
@@ -106,7 +88,9 @@ const ReportBuilder = () => {
   };
 
   const addFilter = () => {
-    setFilters([...filters, { field: availableColumns[0] || '', operator: 'equals', value: '' }]);
+    if (availableColumns.length > 0) {
+      setFilters([...filters, { field: availableColumns[0], operator: 'equals', value: '' }]);
+    }
   };
 
   const removeFilter = (index: number) => {
@@ -168,11 +152,11 @@ const ReportBuilder = () => {
       }
 
       // Process aggregations if needed
-      let processedData = data;
-      if (groupBy && aggregation.length > 0) {
+      let processedData = data || [];
+      if (groupBy && aggregation.length > 0 && data) {
         // Simple client-side aggregation
-        const grouped = data.reduce((acc: any, item: any) => {
-          const key = item[groupBy];
+        const grouped = data.reduce((acc: Record<string, any[]>, item: any) => {
+          const key = item[groupBy]?.toString() || 'Unknown';
           if (!acc[key]) {
             acc[key] = [];
           }
@@ -181,12 +165,12 @@ const ReportBuilder = () => {
         }, {});
 
         // Apply aggregations
-        processedData = Object.entries(grouped).map(([key, values]: [string, any]) => {
-          const result: any = { [groupBy]: key };
+        processedData = Object.entries(grouped).map(([key, values]: [string, any[]]) => {
+          const result: Record<string, any> = { [groupBy]: key };
           aggregation.forEach(agg => {
             const field = agg.field;
             const func = agg.function;
-            const numbers = (values as any[]).map(v => Number(v[field])).filter(n => !isNaN(n));
+            const numbers = (values).map(v => Number(v[field])).filter(n => !isNaN(n));
             
             switch (func) {
               case 'count':
@@ -213,7 +197,7 @@ const ReportBuilder = () => {
         });
       }
 
-      setReportResults(processedData || []);
+      setReportResults(processedData);
       toast.success('Report generated successfully');
     } catch (error) {
       console.error('Error running report:', error);
@@ -223,9 +207,14 @@ const ReportBuilder = () => {
     }
   };
 
-  const saveReport = async () => {
+  const handleSaveReport = async () => {
     if (!reportName) {
       toast.error('Please enter a report name');
+      return;
+    }
+
+    if (!selectedEntity || selectedColumns.length === 0) {
+      toast.error('Please select an entity and at least one column');
       return;
     }
 
@@ -240,23 +229,11 @@ const ReportBuilder = () => {
         visualization_type: visualizationType
       };
 
-      const { data, error } = await supabase
-        .from('saved_reports')
-        .insert([reportConfig])
-        .select();
-
-      if (error) throw error;
-
+      await saveReport(reportConfig);
       toast.success('Report saved successfully');
       
       // Refresh saved reports
-      const { data: refreshedData, error: refreshError } = await supabase
-        .from('saved_reports')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (refreshError) throw refreshError;
-      setSavedReports(refreshedData || []);
+      refetchSavedReports();
       
     } catch (error) {
       console.error('Error saving report:', error);
@@ -264,7 +241,7 @@ const ReportBuilder = () => {
     }
   };
 
-  const loadReport = (report: any) => {
+  const loadReport = (report: SavedReport) => {
     setReportName(report.name);
     setSelectedEntity(report.entity);
     setSelectedColumns(report.columns);
@@ -566,7 +543,7 @@ const ReportBuilder = () => {
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={saveReport}
+                      onClick={handleSaveReport}
                       disabled={!reportName || isRunning}
                     >
                       <Save className="h-4 w-4 mr-2" />

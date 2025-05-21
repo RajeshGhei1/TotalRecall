@@ -416,6 +416,45 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_reports: {
+        Row: {
+          aggregation: Json | null
+          columns: Json
+          created_at: string | null
+          entity: string
+          filters: Json
+          group_by: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          visualization_type: string | null
+        }
+        Insert: {
+          aggregation?: Json | null
+          columns?: Json
+          created_at?: string | null
+          entity: string
+          filters?: Json
+          group_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          visualization_type?: string | null
+        }
+        Update: {
+          aggregation?: Json | null
+          columns?: Json
+          created_at?: string | null
+          entity?: string
+          filters?: Json
+          group_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          visualization_type?: string | null
+        }
+        Relationships: []
+      }
       skills: {
         Row: {
           category: string | null

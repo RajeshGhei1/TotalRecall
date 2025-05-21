@@ -1,14 +1,25 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+export interface Filter {
+  field: string;
+  operator: string;
+  value: string;
+}
+
+export interface Aggregation {
+  function: string;
+  field: string;
+}
+
 export interface SavedReport {
   id: string;
   name: string;
   entity: string;
   columns: string[];
-  filters: {field: string, operator: string, value: string}[];
+  filters: Filter[];
   group_by: string;
-  aggregation: {function: string, field: string}[];
+  aggregation: Aggregation[];
   visualization_type: string;
   created_at: string;
   updated_at: string;
@@ -25,7 +36,15 @@ export const fetchSavedReports = async (): Promise<SavedReport[]> => {
     throw error;
   }
   
-  return data || [];
+  // Parse the JSONB columns to proper JavaScript types
+  const parsedData = data?.map(item => ({
+    ...item,
+    columns: Array.isArray(item.columns) ? item.columns : JSON.parse(String(item.columns || '[]')),
+    filters: Array.isArray(item.filters) ? item.filters : JSON.parse(String(item.filters || '[]')),
+    aggregation: Array.isArray(item.aggregation) ? item.aggregation : JSON.parse(String(item.aggregation || '[]'))
+  })) as SavedReport[];
+  
+  return parsedData || [];
 };
 
 export const saveReport = async (report: Omit<SavedReport, 'id' | 'created_at' | 'updated_at'>): Promise<SavedReport> => {
@@ -40,7 +59,12 @@ export const saveReport = async (report: Omit<SavedReport, 'id' | 'created_at' |
     throw error;
   }
   
-  return data;
+  return {
+    ...data,
+    columns: Array.isArray(data.columns) ? data.columns : JSON.parse(String(data.columns || '[]')),
+    filters: Array.isArray(data.filters) ? data.filters : JSON.parse(String(data.filters || '[]')),
+    aggregation: Array.isArray(data.aggregation) ? data.aggregation : JSON.parse(String(data.aggregation || '[]'))
+  };
 };
 
 export const deleteReport = async (reportId: string): Promise<void> => {
@@ -58,11 +82,17 @@ export const deleteReport = async (reportId: string): Promise<void> => {
 export const runDynamicReport = async (
   entity: string,
   columns: string[],
-  filters: {field: string, operator: string, value: string}[],
+  filters: Filter[],
   groupBy?: string,
 ): Promise<any[]> => {
   if (!entity || columns.length === 0) {
     throw new Error('Entity and columns are required');
+  }
+  
+  // Validate that the entity is a valid table in the database
+  const validEntities = ['companies', 'people', 'talents', 'tenants', 'dropdown_options'];
+  if (!validEntities.includes(entity)) {
+    throw new Error(`Invalid entity: ${entity}. Must be one of: ${validEntities.join(', ')}`);
   }
   
   // Build the query
