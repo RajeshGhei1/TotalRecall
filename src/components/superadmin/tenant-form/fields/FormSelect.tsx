@@ -24,6 +24,7 @@ interface FormSelectProps {
   placeholder?: string;
   required?: boolean;
   onChange?: (value: string) => void;
+  disabled?: boolean;
 }
 
 export const FormSelect: React.FC<FormSelectProps> = ({
@@ -34,6 +35,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   placeholder,
   required,
   onChange,
+  disabled = false,
 }) => {
   console.log(`Rendering FormSelect for ${name} with ${options.length} options`);
   
@@ -59,9 +61,10 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             }} 
             defaultValue={field.value}
             value={field.value || undefined}
+            disabled={disabled}
           >
             <FormControl>
-              <SelectTrigger className="bg-background">
+              <SelectTrigger className={`bg-background ${disabled ? "bg-gray-50" : ""}`}>
                 <SelectValue placeholder={placeholder || "Select an option"} />
               </SelectTrigger>
             </FormControl>

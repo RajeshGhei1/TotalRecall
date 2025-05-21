@@ -17,6 +17,7 @@ interface FormInputProps {
   placeholder?: string;
   required?: boolean;
   type?: string;
+  readOnly?: boolean;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -26,6 +27,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   placeholder,
   required,
   type = 'text',
+  readOnly = false,
 }) => {
   return (
     <FormField
@@ -39,6 +41,8 @@ export const FormInput: React.FC<FormInputProps> = ({
               placeholder={placeholder}
               {...field}
               type={type}
+              readOnly={readOnly}
+              className={readOnly ? "bg-gray-50" : ""}
             />
           </FormControl>
           <FormMessage />

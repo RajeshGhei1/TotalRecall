@@ -17,6 +17,7 @@ interface FormTextareaProps {
   placeholder?: string;
   required?: boolean;
   rows?: number;
+  readOnly?: boolean;
 }
 
 export const FormTextarea: React.FC<FormTextareaProps> = ({
@@ -26,6 +27,7 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
   placeholder,
   required,
   rows = 4,
+  readOnly = false,
 }) => {
   return (
     <FormField
@@ -39,6 +41,8 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
               placeholder={placeholder}
               rows={rows}
               {...field}
+              readOnly={readOnly}
+              className={readOnly ? "bg-gray-50" : ""}
             />
           </FormControl>
           <FormMessage />
