@@ -1,79 +1,115 @@
 
-import React from 'react';
-import { Route } from 'react-router-dom';
-import Dashboard from '@/pages/superadmin/Dashboard';
-import Tenants from '@/pages/superadmin/Tenants';
-import Users from '@/pages/superadmin/Users';
-import Companies from '@/pages/superadmin/Companies';
-import People from '@/pages/superadmin/People';
-import Talents from '@/pages/superadmin/Talents';
-import Contacts from '@/pages/superadmin/Contacts';
-import Revenue from '@/pages/superadmin/Revenue';
-import Settings from '@/pages/superadmin/Settings';
-import Analytics from '@/pages/superadmin/Analytics';
-import AuthGuard from '@/components/AuthGuard';
+import { Route } from "react-router-dom";
+import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
+import SuperAdminAnalytics from "@/pages/superadmin/Analytics";
+import SuperAdminUsers from "@/pages/superadmin/Users";
+import SuperAdminTenants from "@/pages/superadmin/Tenants";
+import SuperAdminSettings from "@/pages/superadmin/Settings";
+import SuperAdminTalents from "@/pages/superadmin/Talents";
+import SuperAdminCompanies from "@/pages/superadmin/Companies";
+import SuperAdminPeople from "@/pages/superadmin/People";
+import SuperAdminContacts from "@/pages/superadmin/Contacts";
+import SuperAdminRevenue from "@/pages/superadmin/Revenue";
+import AuthGuard from "@/components/AuthGuard";
+import CompanyDetailView from "@/components/superadmin/companies/CompanyDetailView";
+import { PersonDetailView } from "@/components/people";
 
 const SuperAdminRoutes = () => [
-  /* Super Admin Routes with Authentication Guard */
   <Route
     path="/superadmin/dashboard"
     element={
       <AuthGuard>
-        <Dashboard />
+        <SuperAdminDashboard />
       </AuthGuard>
     }
     key="superadmin-dashboard"
   />,
   <Route
-    path="/superadmin/tenants"
+    path="/superadmin/analytics"
     element={
       <AuthGuard>
-        <Tenants />
+        <SuperAdminAnalytics />
       </AuthGuard>
     }
-    key="superadmin-tenants"
+    key="superadmin-analytics"
   />,
   <Route
     path="/superadmin/users"
     element={
       <AuthGuard>
-        <Users />
+        <SuperAdminUsers />
       </AuthGuard>
     }
     key="superadmin-users"
   />,
   <Route
-    path="/superadmin/companies"
+    path="/superadmin/tenants"
     element={
       <AuthGuard>
-        <Companies />
+        <SuperAdminTenants />
       </AuthGuard>
     }
-    key="superadmin-companies"
+    key="superadmin-tenants"
   />,
   <Route
-    path="/superadmin/people"
+    path="/superadmin/settings"
     element={
       <AuthGuard>
-        <People />
+        <SuperAdminSettings />
       </AuthGuard>
     }
-    key="superadmin-people"
+    key="superadmin-settings"
   />,
   <Route
     path="/superadmin/talents"
     element={
       <AuthGuard>
-        <Talents />
+        <SuperAdminTalents />
       </AuthGuard>
     }
     key="superadmin-talents"
   />,
   <Route
+    path="/superadmin/companies"
+    element={
+      <AuthGuard>
+        <SuperAdminCompanies />
+      </AuthGuard>
+    }
+    key="superadmin-companies"
+  />,
+  <Route
+    path="/superadmin/companies/:id"
+    element={
+      <AuthGuard>
+        <CompanyDetailView />
+      </AuthGuard>
+    }
+    key="superadmin-company-detail"
+  />,
+  <Route
+    path="/superadmin/people"
+    element={
+      <AuthGuard>
+        <SuperAdminPeople />
+      </AuthGuard>
+    }
+    key="superadmin-people"
+  />,
+  <Route
+    path="/superadmin/people/:id"
+    element={
+      <AuthGuard>
+        <PersonDetailView />
+      </AuthGuard>
+    }
+    key="superadmin-person-detail"
+  />,
+  <Route
     path="/superadmin/contacts"
     element={
       <AuthGuard>
-        <Contacts />
+        <SuperAdminContacts />
       </AuthGuard>
     }
     key="superadmin-contacts"
@@ -82,28 +118,10 @@ const SuperAdminRoutes = () => [
     path="/superadmin/revenue"
     element={
       <AuthGuard>
-        <Revenue />
+        <SuperAdminRevenue />
       </AuthGuard>
     }
     key="superadmin-revenue"
-  />,
-  <Route
-    path="/superadmin/settings"
-    element={
-      <AuthGuard>
-        <Settings />
-      </AuthGuard>
-    }
-    key="superadmin-settings"
-  />,
-  <Route
-    path="/superadmin/analytics"
-    element={
-      <AuthGuard>
-        <Analytics />
-      </AuthGuard>
-    }
-    key="superadmin-analytics"
   />
 ];
 

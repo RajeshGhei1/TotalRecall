@@ -1,87 +1,102 @@
 
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { MoreVertical, Pencil, Trash, Eye } from 'lucide-react';
 import { Company } from '@/hooks/useCompanies';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 interface CompanyTableProps {
   companies: Company[];
-  isLoading: boolean;
-  onEdit: (id: string) => void;
-  onDelete: (company: Company) => void;
-  onViewDetails: (id: string) => void;
+  onDeleteCompany: (id: string) => void;
+  onEditCompany: (company: Company) => void;
 }
 
-const CompanyTable: React.FC<CompanyTableProps> = ({ 
-  companies, 
-  isLoading,
-  onEdit,
-  onDelete,
-  onViewDetails
+const CompanyTable: React.FC<CompanyTableProps> = ({
+  companies,
+  onDeleteCompany,
+  onEditCompany
 }) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="flex items-center gap-4">
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-6 w-1/4" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const navigate = useNavigate();
 
-  if (companies.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">No companies have been added yet.</p>
-      </div>
-    );
-  }
+  const handleViewCompany = (id: string) => {
+    navigate(`/superadmin/companies/${id}`);
+  };
 
   return (
-    <div className="rounded-md border">
+    <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Industry</TableHead>
             <TableHead>Location</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead className="text-right w-[150px]">Actions</TableHead>
+            <TableHead>Website</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {companies.map((company) => (
-            <TableRow key={company.id}>
+            <TableRow key={company.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewCompany(company.id)}>
               <TableCell className="font-medium">{company.name}</TableCell>
-              <TableCell>{company.industry || 'N/A'}</TableCell>
-              <TableCell>{company.location || 'N/A'}</TableCell>
-              <TableCell>{company.size || 'N/A'}</TableCell>
+              <TableCell>{company.industry || '-'}</TableCell>
+              <TableCell>{company.location || '-'}</TableCell>
               <TableCell>
-                <div className="flex gap-2 justify-end">
-                  <Button variant="ghost" size="icon" onClick={() => onViewDetails(company.id)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(company.id)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(company)}>
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
+                {company.website ? (
+                  <a 
+                    href={company.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {company.website}
+                  </a>
+                ) : (
+                  '-'
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewCompany(company.id);
+                    }}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      View
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      onEditCompany(company);
+                    }}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteCompany(company.id);
+                      }}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
