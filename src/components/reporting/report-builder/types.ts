@@ -1,4 +1,3 @@
-
 import { Filter, Aggregation, SavedReport } from '@/services/reportingService';
 import { FieldOption } from './hooks/useReportFields';
 
@@ -30,6 +29,7 @@ export interface ReportResultsProps {
   reportResults: any[];
   columns: string[];
   availableFields: FieldOption[];
+  visualizationType?: string;
 }
 
 export interface SavedReportsTabProps {

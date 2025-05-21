@@ -84,6 +84,7 @@ const ReportCreationTab: React.FC<ReportCreationTabProps> = ({
         reportResults={reportResults}
         columns={reportState.columns}
         availableFields={availableFields}
+        visualizationType={reportState.visualizationType}
       />
     </div>
   );
