@@ -116,11 +116,11 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (data && Array.isArray(data)) {
           // Use a type guard to filter and ensure we have valid person objects
           const peopleList = data
-            .filter(item => {
-              // Filter out items with invalid person data
+            .filter((item): item is typeof item & { person: { id: string; full_name: string } } => {
+              // Filter out items with invalid person data and items where person is null
               return (
-                item && 
-                item.person !== null && 
+                item !== null &&
+                item.person !== null &&
                 typeof item.person === 'object' &&
                 'id' in item.person &&
                 'full_name' in item.person &&
@@ -130,12 +130,10 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               );
             })
             .map(item => {
-              // We've already validated the structure in the filter above
-              // TypeScript still needs a type assertion
-              const personData = item.person as { id: string; full_name: string };
+              // Since we've validated in the filter above, we can safely access properties
               return {
-                id: personData.id,
-                name: personData.full_name
+                id: item.person.id,
+                name: item.person.full_name
               };
             });
             
