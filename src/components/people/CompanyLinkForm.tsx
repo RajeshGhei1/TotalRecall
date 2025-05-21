@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -113,19 +114,24 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (error) throw error;
         
         if (data) {
-          // Fixed: Properly handle the data mapping with type safety
+          // Make sure we handle types properly by checking each item's structure
           const peopleList = data
             .filter(item => {
-              // Only include items where person is not null and not the current person
-              const personData = item.person as { id: string; full_name: string } | null;
-              return personData && item.person_id !== personId;
+              // Only include items where person is not null, has valid data, and is not the current person
+              return (
+                item.person !== null && 
+                typeof item.person === 'object' &&
+                'id' in item.person &&
+                'full_name' in item.person &&
+                item.person_id !== personId
+              );
             })
             .map(item => {
-              // Use type assertion after we've filtered out null values
-              const personData = item.person as { id: string; full_name: string };
+              // Now we can safely access the person properties with proper type checking
+              const person = item.person as { id: string; full_name: string };
               return {
-                id: personData.id,
-                name: personData.full_name
+                id: person.id,
+                name: person.full_name
               };
             });
             
