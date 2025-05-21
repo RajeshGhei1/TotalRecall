@@ -6,7 +6,7 @@ export { useCustomFieldValues } from './useCustomFieldValues';
 export { useFieldOrder } from './useFieldOrder';
 
 // Export utility functions
-export { fetchCustomFieldValues } from './useCustomFieldValues';
+export { fetchCustomFieldValues } from './operations/fetchCustomFieldValues';
 export { updateFieldOrderInDatabase } from './useFieldOrder';
 
 // Export types
