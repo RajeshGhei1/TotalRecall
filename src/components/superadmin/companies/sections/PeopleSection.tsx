@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 import { Person } from '@/types/person';
 import { Skeleton } from '@/components/ui/skeleton';
+import CompanyOrgChart from '../charts/CompanyOrgChart';
 
 interface PeopleSectionProps {
   form: UseFormReturn<CompanyFormValues>;
@@ -39,6 +40,7 @@ const PeopleSection: React.FC<PeopleSectionProps> = ({ form, showFullView = fals
             <TabsList className="mb-4">
               <TabsTrigger value="current">Current People ({currentRelationships.length})</TabsTrigger>
               <TabsTrigger value="past">Past Associations ({pastRelationships.length})</TabsTrigger>
+              <TabsTrigger value="org-chart">Organization Chart</TabsTrigger>
               <TabsTrigger value="manage">Manage Associations</TabsTrigger>
             </TabsList>
             
@@ -64,6 +66,15 @@ const PeopleSection: React.FC<PeopleSectionProps> = ({ form, showFullView = fals
                   </div>
                 )}
               </div>
+            </TabsContent>
+            
+            <TabsContent value="org-chart">
+              {companyId !== 'new' && <CompanyOrgChart companyId={companyId} />}
+              {companyId === 'new' && (
+                <div className="text-center p-4 text-muted-foreground rounded-md border">
+                  Save the company first to view the organization chart
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="manage">
