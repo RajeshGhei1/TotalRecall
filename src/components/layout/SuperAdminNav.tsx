@@ -1,76 +1,95 @@
 
-import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, 
+  BarChart2,
+  Building2, 
+  CircleDollarSign, 
+  CreditCard, 
+  Headset, 
+  LayoutDashboard, 
   Settings, 
-  Users, 
-  Building,
-  Briefcase,
-  UserRound,
-  DollarSign
-} from "lucide-react";
+  Store, 
+  Users,
+  Users2,
+  PieChart
+} from 'lucide-react';
 
 const SuperAdminNav = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  
+  const currentPath = location.pathname;
+
   const isActive = (path: string) => {
-    return location.pathname.startsWith(path) ? "secondary" : "ghost";
+    return currentPath.includes(path);
   };
-  
+
+  const navItems = [
+    { 
+      label: 'Dashboard', 
+      icon: <LayoutDashboard size={20} />, 
+      href: '/superadmin/dashboard',
+      isActive: isActive('/dashboard') 
+    },
+    { 
+      label: 'Tenants', 
+      icon: <Store size={20} />, 
+      href: '/superadmin/tenants',
+      isActive: isActive('/tenants') 
+    },
+    { 
+      label: 'Users', 
+      icon: <Users size={20} />, 
+      href: '/superadmin/users',
+      isActive: isActive('/users') 
+    },
+    { 
+      label: 'Companies', 
+      icon: <Building2 size={20} />, 
+      href: '/superadmin/companies',
+      isActive: isActive('/companies') 
+    },
+    { 
+      label: 'People', 
+      icon: <Users2 size={20} />, 
+      href: '/superadmin/people',
+      isActive: isActive('/people') 
+    },
+    { 
+      label: 'Revenue', 
+      icon: <CircleDollarSign size={20} />, 
+      href: '/superadmin/revenue',
+      isActive: isActive('/revenue') 
+    },
+    {
+      label: 'Analytics', 
+      icon: <PieChart size={20} />, 
+      href: '/superadmin/analytics',
+      isActive: isActive('/analytics')
+    },
+    { 
+      label: 'Settings', 
+      icon: <Settings size={20} />, 
+      href: '/superadmin/settings',
+      isActive: isActive('/settings') 
+    },
+  ];
+
   return (
-    <nav className="p-4 space-y-2">
-      <Button 
-        variant={isActive("/superadmin/dashboard")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/dashboard")}
-      >
-        <Home className="mr-2 h-4 w-4" /> Dashboard
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/tenants")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/tenants")}
-      >
-        <Building className="mr-2 h-4 w-4" /> Tenants
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/settings")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/settings")}
-      >
-        <Settings className="mr-2 h-4 w-4" /> Tenant Settings
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/users")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/users")}
-      >
-        <Users className="mr-2 h-4 w-4" /> Users
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/people")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/people")}
-      >
-        <UserRound className="mr-2 h-4 w-4" /> People
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/companies")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/companies")}
-      >
-        <Building className="mr-2 h-4 w-4" /> Companies
-      </Button>
-      <Button 
-        variant={isActive("/superadmin/revenue")}
-        className="w-full justify-start" 
-        onClick={() => navigate("/superadmin/revenue")}
-      >
-        <DollarSign className="mr-2 h-4 w-4" /> Revenue
-      </Button>
+    <nav className="space-y-2 px-2">
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          to={item.href}
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+            item.isActive 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`}
+        >
+          {item.icon}
+          <span>{item.label}</span>
+        </Link>
+      ))}
     </nav>
   );
 };
