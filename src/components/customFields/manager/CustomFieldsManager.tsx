@@ -46,10 +46,8 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
     try {
       // Ensure name is provided
       if (!values.name) {
-        toast({
-          title: 'Validation Error',
+        toast.error('Validation Error', {
           description: 'Field name is required',
-          variant: 'destructive',
         });
         return;
       }
@@ -83,16 +81,13 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       setIsDialogOpen(false);
       await refetch();
       
-      toast({
-        title: 'Custom field created',
+      toast.success('Custom field created', {
         description: `Field "${values.name}" has been created successfully.`
       });
     } catch (error) {
       console.error('Error creating field:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create custom field. Please try again.',
-        variant: 'destructive',
+      toast.error('Error', {
+        description: 'Failed to create custom field. Please try again.'
       });
     }
   };
@@ -104,16 +99,13 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         await deleteField(id);
         await refetch();
         
-        toast({
-          title: 'Custom field deleted',
+        toast.success('Custom field deleted', {
           description: 'The field has been deleted successfully.'
         });
       } catch (error) {
         console.error('Error deleting field:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to delete custom field. Please try again.',
-          variant: 'destructive',
+        toast.error('Error', {
+          description: 'Failed to delete custom field. Please try again.'
         });
       }
     }
@@ -131,10 +123,8 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       await refetch();
     } catch (error) {
       console.error('Error reordering fields:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to reorder custom fields. Please try again.',
-        variant: 'destructive',
+      toast.error('Error', {
+        description: 'Failed to reorder custom fields. Please try again.'
       });
     }
   };
