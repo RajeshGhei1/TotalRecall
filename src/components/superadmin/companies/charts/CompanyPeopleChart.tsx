@@ -97,8 +97,13 @@ const CompanyPeopleChart = () => {
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip 
-              formatter={(value, name, props) => [value, 'People']}
-              labelFormatter={(label, props) => props.payload[0].payload.fullName}
+              formatter={(value, name) => [value, 'People']}
+              labelFormatter={(label) => {
+                // Find the corresponding chart data item
+                const dataItem = chartData.find(item => item.name === label);
+                // Return the full name if found, otherwise return the label
+                return dataItem ? dataItem.fullName : label;
+              }}
             />
             <Bar dataKey="count" fill="#8884d8" name="People" />
           </BarChart>

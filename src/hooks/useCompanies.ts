@@ -78,6 +78,7 @@ export const useCompanies = () => {
     data: companies = [],
     isLoading,
     error,
+    refetch, // Explicitly expose the refetch function
   } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
@@ -183,5 +184,6 @@ export const useCompanies = () => {
     isLoading,
     error,
     createCompany,
+    refetch, // Return the refetch function
   };
 };
