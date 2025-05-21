@@ -75,8 +75,8 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         tenantId: tenantId === 'global' ? null : tenantId
       });
       
-      // Create the field with properly formatted data
-      await createField({
+      // Create the field with properly formatted data and pass tenantId
+      const fieldData = {
         name: values.name,
         label: values.label || values.name, // Use name as fallback for label
         fieldType: values.fieldType,
@@ -94,7 +94,9 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         info: values.info,
         validation: values.validation,
         tenantId: tenantId === 'global' ? null : tenantId
-      });
+      };
+      
+      await createField(fieldData, tenantId === 'global' ? undefined : tenantId);
       
       setIsDialogOpen(false);
       await refetch();

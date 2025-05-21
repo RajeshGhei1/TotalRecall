@@ -10,7 +10,7 @@ export function useCustomFieldsMutations() {
   // Create field mutation
   const createMutation = useMutation({
     mutationFn: async ({ values, tenantId }: { 
-      values: FieldFormValues & { fieldKey?: string }; 
+      values: FieldFormValues & { fieldKey?: string; tenantId?: string }; 
       tenantId?: string 
     }) => {
       console.log('Mutation executing with values:', values, 'tenantId:', tenantId);
@@ -80,7 +80,10 @@ export function useCustomFieldsMutations() {
   });
   
   // Convenience functions with proper typing
-  const createField = (values: FieldFormValues & { fieldKey?: string }, tenantId?: string) => {
+  const createField = (
+    values: FieldFormValues & { fieldKey?: string; tenantId?: string }, 
+    tenantId?: string
+  ) => {
     // Ensure name is required
     if (!values.name) {
       throw new Error('Field name is required');
