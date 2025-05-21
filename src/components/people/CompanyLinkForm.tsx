@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -114,17 +113,21 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (error) throw error;
         
         if (data) {
+          // Fixed: Properly handle the data mapping with type safety
           const peopleList = data
-            .filter(item => item.person && item.person_id !== personId) // exclude self
-            .map(item => {
-              // Safely access person object with type checking
-              const person = item.person as { id: string; full_name: string } | null;
-              return {
-                id: person?.id || '',
-                name: person?.full_name || ''
-              };
+            .filter(item => {
+              // Only include items where person is not null and not the current person
+              const personData = item.person as { id: string; full_name: string } | null;
+              return personData && item.person_id !== personId;
             })
-            .filter(item => item.id !== '' && item.name !== '');
+            .map(item => {
+              // Use type assertion after we've filtered out null values
+              const personData = item.person as { id: string; full_name: string };
+              return {
+                id: personData.id,
+                name: personData.full_name
+              };
+            });
             
           setPeople(peopleList);
         }
