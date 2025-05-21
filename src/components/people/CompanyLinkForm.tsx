@@ -124,12 +124,14 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                 typeof item.person === 'object' &&
                 'id' in item.person &&
                 'full_name' in item.person &&
+                typeof item.person.id === 'string' &&
+                typeof item.person.full_name === 'string' &&
                 item.person_id !== personId
               );
             })
             .map(item => {
-              // Type assertion after validation in the filter above
-              // We can safely assert this type since we've verified the structure in the filter
+              // We've already validated the structure in the filter above
+              // TypeScript still needs a type assertion
               const personData = item.person as { id: string; full_name: string };
               return {
                 id: personData.id,
