@@ -34,6 +34,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   onCancel,
   initialData = {}
 }) => {
+  // Update formContext to use the correct identifier
   const { customFields, isLoading: customFieldsLoading } = useCustomFields('global', {
     formContext: 'company_creation'
   });

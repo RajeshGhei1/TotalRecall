@@ -3,8 +3,8 @@ import { availableForms } from '@/components/customFields';
 
 /**
  * Gets a readable form name from the form ID
- * @param formId The form identifier (e.g., 'tenant_creation')
- * @returns The readable form name (e.g., 'Tenant Creation Form')
+ * @param formId The form identifier (e.g., 'talent_form')
+ * @returns The readable form name (e.g., 'Talent Profile')
  */
 export function getFormName(formId: string): string {
   const form = availableForms.find(f => f.id === formId);

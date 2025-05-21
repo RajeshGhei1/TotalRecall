@@ -61,11 +61,14 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
       
       if (personError) throw personError;
 
+      // Get the correct form context based on person type
+      const formContext = personType === 'talent' ? 'talent_form' : 'contact_form';
+
       // If we have a person created and custom field values
       if (personData && personData[0] && Object.keys(customFieldValues).length > 0) {
         // Save custom field values for this person
         await saveCustomFieldValues(
-          personType === 'talent' ? 'talent_form' : 'contact_form', 
+          formContext,
           personData[0].id, 
           customFieldValues
         );

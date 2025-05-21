@@ -44,14 +44,23 @@ export const customFieldSchema = z.object({
 // Explicitly export the type
 export type FieldFormValues = z.infer<typeof customFieldSchema>;
 
-// Define available forms for the application
+/**
+ * Define available form contexts for the application
+ * These should match exactly with the contexts used throughout the application
+ * 
+ * IMPORTANT: When adding or modifying form contexts, make sure to update all places
+ * where these contexts are used, especially in the following files:
+ * - src/components/people/personForm/CreatePersonDialog.tsx (for talent_form and contact_form)
+ * - src/components/superadmin/companies/CompanyForm.tsx (for company_creation)
+ * - src/pages/tenant-admin/settings/CustomFieldsSettings.tsx
+ */
 export const availableForms = [
   { id: 'talent_form', label: 'Talent Profile' },
+  { id: 'contact_form', label: 'Contact Profile' },
+  { id: 'company_creation', label: 'Company Profile' },
   { id: 'job_form', label: 'Job Listing' },
-  { id: 'company_form', label: 'Company Profile' },
-  { id: 'tenants_form', label: 'Tenant Settings' },
   { id: 'application_form', label: 'Job Application' },
-  { id: 'candidate_form', label: 'Candidate Profile' },
+  { id: 'tenant_creation', label: 'Tenant Settings' },
 ];
 
 interface CustomFieldFormProps {

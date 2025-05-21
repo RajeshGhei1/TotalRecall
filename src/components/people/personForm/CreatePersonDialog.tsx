@@ -33,6 +33,9 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
     onSuccess
   });
 
+  // Get the correct form context based on person type
+  const formContext = personType === 'talent' ? 'talent_form' : 'contact_form';
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -51,8 +54,8 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
             <div className="border-t pt-4 mt-4">
               <h3 className="text-sm font-medium mb-2">Custom Fields</h3>
               <CustomFieldsForm
-                entityType={personType === 'talent' ? 'talent_form' : 'contact_form'}
-                formContext={personType === 'talent' ? 'talent_form' : 'contact_form'}
+                entityType={personType}
+                formContext={formContext}
                 form={form}
               />
             </div>
