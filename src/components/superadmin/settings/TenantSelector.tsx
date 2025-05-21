@@ -54,7 +54,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({ selectedTenantId, onTen
         </SelectTrigger>
         <SelectContent>
           {tenants.map((tenant) => (
-            <SelectItem key={tenant.id} value={tenant.id}>
+            <SelectItem key={tenant.id} value={tenant.id || "default-tenant"}>
               {tenant.name}
             </SelectItem>
           ))}

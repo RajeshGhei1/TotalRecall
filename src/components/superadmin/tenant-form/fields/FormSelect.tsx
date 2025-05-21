@@ -58,7 +58,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               handleValueChange(value);
             }} 
             defaultValue={field.value}
-            value={field.value}
+            value={field.value || undefined}
           >
             <FormControl>
               <SelectTrigger className="bg-background">
@@ -67,7 +67,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             </FormControl>
             <SelectContent className="z-[10000]">
               {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value || "default-option"}>
                   {option.label}
                 </SelectItem>
               ))}

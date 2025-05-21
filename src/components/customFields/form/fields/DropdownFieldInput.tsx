@@ -100,7 +100,7 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
                 <SelectItem value="no-options-available">No options available</SelectItem>
               ) : (
                 dropdownOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value || "default-option"}>
                     {option.label}
                   </SelectItem>
                 ))

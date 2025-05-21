@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -447,7 +446,7 @@ const ReportBuilder = () => {
                     <SelectValue placeholder="Select field (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {availableFields.map((field) => (
                       <SelectItem key={field.value} value={field.value}>
                         {field.label}

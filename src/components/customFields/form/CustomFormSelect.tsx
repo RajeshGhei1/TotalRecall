@@ -69,10 +69,10 @@ const CustomFormSelect: React.FC<FormSelectProps> = ({
             </FormControl>
             <SelectContent className="z-[10000] bg-white">
               {options.length === 0 ? (
-                <SelectItem value="no-options-available">No options available</SelectItem>
+                <SelectItem value="no-options">No options available</SelectItem>
               ) : (
                 options.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value || "default-option"}>
                     {option.label}
                   </SelectItem>
                 ))
