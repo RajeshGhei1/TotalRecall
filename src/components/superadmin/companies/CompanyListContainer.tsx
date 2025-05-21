@@ -44,6 +44,7 @@ const CompanyListContainer: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
+    // Add delete logic here
     setCompanyToDelete(null);
   };
 
@@ -65,8 +66,6 @@ const CompanyListContainer: React.FC = () => {
       
       <CompanyTable 
         companies={filteredCompanies}
-        onDeleteCompany={() => {}} // Provide the required prop
-        onEditCompany={() => {}} // Provide the required prop
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -75,6 +74,8 @@ const CompanyListContainer: React.FC = () => {
       
       <CompanyDeleteDialog
         company={companyToDelete}
+        companyName={companyToDelete?.name || ''}
+        isOpen={!!companyToDelete}
         onClose={() => setCompanyToDelete(null)}
         onConfirm={handleConfirmDelete}
       />

@@ -16,7 +16,7 @@ interface CompanyDeleteDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   companyName: string;
-  isOpen: boolean; // Added isOpen prop
+  isOpen: boolean;
 }
 
 const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
@@ -24,7 +24,7 @@ const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
   onClose,
   onConfirm,
   companyName,
-  isOpen, // Added isOpen prop
+  isOpen,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
