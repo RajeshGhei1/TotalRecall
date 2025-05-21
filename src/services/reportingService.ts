@@ -48,9 +48,17 @@ export const fetchSavedReports = async (): Promise<SavedReport[]> => {
 };
 
 export const saveReport = async (report: Omit<SavedReport, 'id' | 'created_at' | 'updated_at'>): Promise<SavedReport> => {
+  // Convert arrays to JSON strings for Supabase
+  const reportData = {
+    ...report,
+    columns: JSON.stringify(report.columns),
+    filters: JSON.stringify(report.filters),
+    aggregation: JSON.stringify(report.aggregation)
+  };
+
   const { data, error } = await supabase
     .from('saved_reports')
-    .insert([report])
+    .insert([reportData])
     .select()
     .single();
     
@@ -95,8 +103,8 @@ export const runDynamicReport = async (
     throw new Error(`Invalid entity: ${entity}. Must be one of: ${validEntities.join(', ')}`);
   }
   
-  // Build the query
-  let query = supabase.from(entity).select(columns.join(','));
+  // Build the query - fixed to use a type assertion to handle the dynamic table name
+  let query = supabase.from(entity as any).select(columns.join(','));
   
   // Apply filters
   filters.forEach(filter => {

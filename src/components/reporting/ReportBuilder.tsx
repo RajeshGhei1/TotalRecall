@@ -1,642 +1,617 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Save, PlusCircle, Trash2, BarChart2, PieChart } from "lucide-react";
-import { useCustomFieldsList } from '@/hooks/customFields';
-import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { fetchSavedReports, saveReport, Filter, Aggregation, SavedReport } from '@/services/reportingService';
 
-const availableEntities = [
-  { label: 'Talents', value: 'talents' },
-  { label: 'Business Contacts', value: 'people' },
-  { label: 'Companies', value: 'companies' }
-];
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { 
+  Table, 
+  TableBody, 
+  TableCaption, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { Filter, Aggregation, SavedReport, fetchSavedReports, saveReport, deleteReport, runDynamicReport } from '@/services/reportingService';
+import { useCustomFieldsList } from '@/hooks/customFields/useCustomFieldsList';
 
-const aggregationFunctions = [
-  { label: 'Count', value: 'count' },
-  { label: 'Sum', value: 'sum' },
-  { label: 'Average', value: 'avg' },
-  { label: 'Maximum', value: 'max' },
-  { label: 'Minimum', value: 'min' }
-];
-
-const visualizationTypes = [
-  { label: 'Table', value: 'table' },
-  { label: 'Bar Chart', value: 'bar', icon: BarChart2 },
-  { label: 'Pie Chart', value: 'pie', icon: PieChart },
-  { label: 'Line Chart', value: 'line' }
-];
-
-const defaultColumns = {
-  talents: ['id', 'full_name', 'email', 'phone', 'location', 'years_of_experience', 'current_salary'],
-  people: ['id', 'full_name', 'email', 'phone', 'type', 'location'],
-  companies: ['id', 'name', 'industry', 'location', 'size']
+type EntityOption = {
+  value: string;
+  label: string;
 };
 
+interface FieldOption {
+  value: string;
+  label: string;
+}
+
 const ReportBuilder = () => {
-  const [reportName, setReportName] = useState('');
-  const [selectedEntity, setSelectedEntity] = useState<string>('');
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [availableColumns, setAvailableColumns] = useState<string[]>([]);
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('create');
+  const [entity, setEntity] = useState<string>('companies');
+  const [columns, setColumns] = useState<string[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
+  const [newFilter, setNewFilter] = useState<Filter>({ field: '', operator: 'equals', value: '' });
   const [groupBy, setGroupBy] = useState<string>('');
   const [aggregation, setAggregation] = useState<Aggregation[]>([]);
+  const [reportName, setReportName] = useState<string>('');
   const [visualizationType, setVisualizationType] = useState<string>('table');
   const [reportResults, setReportResults] = useState<any[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
+  const [availableFields, setAvailableFields] = useState<FieldOption[]>([]);
+  const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
   
   // Get custom fields for the selected entity
-  const { customFields = [] } = useCustomFieldsList(selectedEntity || undefined);
+  const { customFields } = useCustomFieldsList({ entityType: entity });
 
-  // Fetch saved reports
-  const { data: savedReports = [], refetch: refetchSavedReports } = useQuery({
-    queryKey: ['saved-reports'],
-    queryFn: fetchSavedReports,
-    enabled: true,
-  });
+  // Entity options for the dropdown
+  const entityOptions: EntityOption[] = [
+    { value: 'companies', label: 'Companies' },
+    { value: 'people', label: 'People' },
+    { value: 'talents', label: 'Talents' },
+    { value: 'dropdown_options', label: 'Dropdown Options' },
+  ];
 
-  // Update available columns when entity changes
-  React.useEffect(() => {
-    if (selectedEntity) {
-      const standardColumns = defaultColumns[selectedEntity as keyof typeof defaultColumns] || [];
-      // Combine with custom fields
-      const customFieldColumns = customFields
-        .filter(field => field.applicable_forms?.includes(selectedEntity))
-        .map(field => `custom_${field.field_key}`);
-      
-      setAvailableColumns([...standardColumns, ...customFieldColumns]);
-      setSelectedColumns([]);
-      setFilters([]);
-      setGroupBy('');
-      setAggregation([]);
-    }
-  }, [selectedEntity, customFields]);
+  // Operator options for filters
+  const operatorOptions = [
+    { value: 'equals', label: 'Equals' },
+    { value: 'contains', label: 'Contains' },
+    { value: 'greater_than', label: 'Greater Than' },
+    { value: 'less_than', label: 'Less Than' },
+  ];
 
-  const handleColumnToggle = (column: string) => {
-    if (selectedColumns.includes(column)) {
-      setSelectedColumns(selectedColumns.filter(c => c !== column));
+  // Aggregation function options
+  const aggregationFunctions = [
+    { value: 'count', label: 'Count' },
+    { value: 'sum', label: 'Sum' },
+    { value: 'avg', label: 'Average' },
+    { value: 'min', label: 'Minimum' },
+    { value: 'max', label: 'Maximum' },
+  ];
+
+  // Visualization options
+  const visualizationOptions = [
+    { value: 'table', label: 'Table' },
+    { value: 'bar', label: 'Bar Chart' },
+    { value: 'pie', label: 'Pie Chart' },
+    { value: 'line', label: 'Line Chart' },
+  ];
+
+  // Load saved reports
+  useEffect(() => {
+    const loadSavedReports = async () => {
+      try {
+        const reports = await fetchSavedReports();
+        setSavedReports(reports);
+      } catch (error) {
+        console.error('Error loading saved reports:', error);
+        toast({
+          title: 'Error loading reports',
+          description: 'Failed to load saved reports. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    };
+
+    loadSavedReports();
+  }, [toast]);
+
+  // Update available fields when entity changes
+  useEffect(() => {
+    const getFields = async () => {
+      try {
+        // For demo purposes, we'll use a hardcoded list of fields for each entity
+        // In a real app, this would come from schema metadata or custom fields
+        let fields: FieldOption[] = [];
+
+        // Common fields
+        fields.push({ value: 'id', label: 'ID' });
+        fields.push({ value: 'created_at', label: 'Created At' });
+        fields.push({ value: 'updated_at', label: 'Updated At' });
+
+        // Entity-specific fields
+        if (entity === 'companies') {
+          fields = [
+            ...fields,
+            { value: 'name', label: 'Name' },
+            { value: 'website', label: 'Website' },
+            { value: 'industry', label: 'Industry' },
+            { value: 'size', label: 'Size' },
+          ];
+        } else if (entity === 'people') {
+          fields = [
+            ...fields,
+            { value: 'name', label: 'Name' },
+            { value: 'email', label: 'Email' },
+            { value: 'phone', label: 'Phone' },
+            { value: 'position', label: 'Position' },
+          ];
+        } else if (entity === 'talents') {
+          fields = [
+            ...fields,
+            { value: 'name', label: 'Name' },
+            { value: 'skills', label: 'Skills' },
+            { value: 'experience', label: 'Experience' },
+            { value: 'education', label: 'Education' },
+          ];
+        }
+
+        // Add custom fields if available
+        if (customFields?.length > 0) {
+          customFields.forEach(field => {
+            fields.push({
+              value: field.field_key,
+              label: field.name,
+            });
+          });
+        }
+
+        setAvailableFields(fields);
+        
+        // Reset selected columns and filters when entity changes
+        setColumns([]);
+        setFilters([]);
+        setGroupBy('');
+        setAggregation([]);
+        
+      } catch (error) {
+        console.error('Error loading fields:', error);
+      }
+    };
+
+    getFields();
+  }, [entity, customFields]);
+
+  // Handle column selection
+  const handleColumnChange = (field: string, isChecked: boolean) => {
+    if (isChecked) {
+      setColumns([...columns, field]);
     } else {
-      setSelectedColumns([...selectedColumns, column]);
+      setColumns(columns.filter(col => col !== field));
     }
   };
 
-  const addFilter = () => {
-    if (availableColumns.length > 0) {
-      setFilters([...filters, { field: availableColumns[0], operator: 'equals', value: '' }]);
+  // Add a new filter
+  const handleAddFilter = () => {
+    if (newFilter.field && newFilter.operator) {
+      setFilters([...filters, { ...newFilter }]);
+      setNewFilter({ field: '', operator: 'equals', value: '' });
     }
   };
 
-  const removeFilter = (index: number) => {
-    const newFilters = [...filters];
-    newFilters.splice(index, 1);
-    setFilters(newFilters);
+  // Remove a filter
+  const handleRemoveFilter = (index: number) => {
+    const updatedFilters = [...filters];
+    updatedFilters.splice(index, 1);
+    setFilters(updatedFilters);
   };
 
-  const addAggregation = () => {
-    if (availableColumns.length > 0) {
-      setAggregation([...aggregation, { function: 'count', field: availableColumns[0] }]);
-    }
-  };
-
-  const removeAggregation = (index: number) => {
-    const newAggregations = [...aggregation];
-    newAggregations.splice(index, 1);
-    setAggregation(newAggregations);
-  };
-
-  const runReport = async () => {
-    if (!selectedEntity || selectedColumns.length === 0) {
-      toast.error('Please select an entity and at least one column');
+  // Run the report
+  const handleRunReport = async () => {
+    if (!entity || columns.length === 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select an entity and at least one column.',
+        variant: 'destructive',
+      });
       return;
     }
 
     setIsRunning(true);
-
     try {
-      // Build the query
-      let query = supabase.from(selectedEntity).select(selectedColumns.join(','));
-
-      // Apply filters
-      filters.forEach(filter => {
-        if (filter.field && filter.value) {
-          switch (filter.operator) {
-            case 'equals':
-              query = query.eq(filter.field, filter.value);
-              break;
-            case 'contains':
-              query = query.ilike(filter.field, `%${filter.value}%`);
-              break;
-            case 'greater_than':
-              query = query.gt(filter.field, filter.value);
-              break;
-            case 'less_than':
-              query = query.lt(filter.field, filter.value);
-              break;
-            default:
-              break;
-          }
-        }
+      const results = await runDynamicReport(entity, columns, filters, groupBy);
+      setReportResults(results);
+      toast({
+        title: 'Report Generated',
+        description: `Successfully generated report with ${results.length} records.`,
       });
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      // Process aggregations if needed
-      let processedData = data || [];
-      if (groupBy && aggregation.length > 0 && data) {
-        // Simple client-side aggregation
-        const grouped = data.reduce((acc: Record<string, any[]>, item: any) => {
-          const key = item[groupBy]?.toString() || 'Unknown';
-          if (!acc[key]) {
-            acc[key] = [];
-          }
-          acc[key].push(item);
-          return acc;
-        }, {});
-
-        // Apply aggregations
-        processedData = Object.entries(grouped).map(([key, values]: [string, any[]]) => {
-          const result: Record<string, any> = { [groupBy]: key };
-          aggregation.forEach(agg => {
-            const field = agg.field;
-            const func = agg.function;
-            const numbers = (values).map(v => Number(v[field])).filter(n => !isNaN(n));
-            
-            switch (func) {
-              case 'count':
-                result[`${func}_${field}`] = values.length;
-                break;
-              case 'sum':
-                result[`${func}_${field}`] = numbers.reduce((sum, n) => sum + n, 0);
-                break;
-              case 'avg':
-                result[`${func}_${field}`] = numbers.length ? 
-                  numbers.reduce((sum, n) => sum + n, 0) / numbers.length : 0;
-                break;
-              case 'max':
-                result[`${func}_${field}`] = numbers.length ? Math.max(...numbers) : 0;
-                break;
-              case 'min':
-                result[`${func}_${field}`] = numbers.length ? Math.min(...numbers) : 0;
-                break;
-              default:
-                break;
-            }
-          });
-          return result;
-        });
-      }
-
-      setReportResults(processedData);
-      toast.success('Report generated successfully');
     } catch (error) {
       console.error('Error running report:', error);
-      toast.error('Failed to run report');
+      toast({
+        title: 'Error Running Report',
+        description: 'Failed to run the report. Please check your inputs and try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsRunning(false);
     }
   };
 
+  // Save the report
   const handleSaveReport = async () => {
     if (!reportName) {
-      toast.error('Please enter a report name');
+      toast({
+        title: 'Missing Report Name',
+        description: 'Please enter a name for your report.',
+        variant: 'destructive',
+      });
       return;
     }
 
-    if (!selectedEntity || selectedColumns.length === 0) {
-      toast.error('Please select an entity and at least one column');
-      return;
-    }
-
+    setIsSaving(true);
     try {
-      const reportConfig = {
+      const newReport = await saveReport({
         name: reportName,
-        entity: selectedEntity,
-        columns: selectedColumns,
+        entity,
+        columns,
         filters,
         group_by: groupBy,
         aggregation,
-        visualization_type: visualizationType
-      };
-
-      await saveReport(reportConfig);
-      toast.success('Report saved successfully');
+        visualization_type: visualizationType,
+      });
       
-      // Refresh saved reports
-      refetchSavedReports();
+      setSavedReports([newReport, ...savedReports]);
+      setSaveDialogOpen(false);
       
+      toast({
+        title: 'Report Saved',
+        description: 'Your report has been saved successfully.',
+      });
     } catch (error) {
       console.error('Error saving report:', error);
-      toast.error('Failed to save report');
+      toast({
+        title: 'Error Saving Report',
+        description: 'Failed to save the report. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const loadReport = (report: SavedReport) => {
-    setReportName(report.name);
-    setSelectedEntity(report.entity);
-    setSelectedColumns(report.columns);
+  // Load a saved report
+  const handleLoadReport = (report: SavedReport) => {
+    setEntity(report.entity);
+    setColumns(report.columns);
     setFilters(report.filters);
     setGroupBy(report.group_by);
     setAggregation(report.aggregation);
     setVisualizationType(report.visualization_type);
-    toast.success(`Loaded report: ${report.name}`);
+    setReportName(report.name);
+    setActiveTab('create');
   };
 
-  const downloadCsv = () => {
-    if (reportResults.length === 0) {
-      toast.error('No data to download');
-      return;
-    }
-
+  // Delete a saved report
+  const handleDeleteReport = async (id: string) => {
     try {
-      // Convert data to CSV
-      const headers = Object.keys(reportResults[0]).join(',');
-      const rows = reportResults.map(row => 
-        Object.values(row).map(value => 
-          typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value
-        ).join(',')
-      ).join('\n');
-      
-      const csv = `${headers}\n${rows}`;
-      
-      // Create blob and download
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.setAttribute('hidden', '');
-      a.setAttribute('href', url);
-      a.setAttribute('download', `${reportName || 'report'}.csv`);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
-      toast.success('CSV downloaded successfully');
+      await deleteReport(id);
+      setSavedReports(savedReports.filter(report => report.id !== id));
+      toast({
+        title: 'Report Deleted',
+        description: 'The report has been deleted successfully.',
+      });
     } catch (error) {
-      console.error('Error downloading CSV:', error);
-      toast.error('Failed to download CSV');
+      console.error('Error deleting report:', error);
+      toast({
+        title: 'Error Deleting Report',
+        description: 'Failed to delete the report. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Custom Report Builder</CardTitle>
-          <CardDescription>
-            Create custom reports by selecting entities, columns, and applying filters
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Report Builder</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="create">Create Report</TabsTrigger>
+            <TabsTrigger value="saved">Saved Reports</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="create" className="space-y-4">
+            {/* Report Builder Form */}
+            <div className="space-y-4">
+              {/* Entity Selection */}
               <div>
-                <Label htmlFor="report-name">Report Name</Label>
-                <Input 
-                  id="report-name" 
-                  value={reportName} 
-                  onChange={(e) => setReportName(e.target.value)} 
-                  placeholder="Enter a name for your report"
-                />
-              </div>
-              <div>
-                <Label>Entity</Label>
-                <Select value={selectedEntity} onValueChange={setSelectedEntity}>
-                  <SelectTrigger>
+                <Label htmlFor="entity-select">Select Entity</Label>
+                <Select value={entity} onValueChange={setEntity}>
+                  <SelectTrigger id="entity-select" className="w-full">
                     <SelectValue placeholder="Select an entity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Entities</SelectLabel>
-                      {availableEntities.map((entity) => (
-                        <SelectItem key={entity.value} value={entity.value}>
-                          {entity.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
+                    {entityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            
-            {selectedEntity && (
-              <>
-                <div>
-                  <Label>Columns</Label>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2">
-                    {availableColumns.map((column) => (
-                      <div key={column} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`column-${column}`} 
-                          checked={selectedColumns.includes(column)}
-                          onCheckedChange={() => handleColumnToggle(column)}
-                        />
-                        <label
-                          htmlFor={`column-${column}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {column}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+              
+              {/* Column Selection */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Select Columns</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {availableFields.map((field) => (
+                    <div key={field.value} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`column-${field.value}`}
+                        checked={columns.includes(field.value)}
+                        onCheckedChange={(checked) => handleColumnChange(field.value, !!checked)}
+                      />
+                      <Label htmlFor={`column-${field.value}`} className="text-sm">
+                        {field.label}
+                      </Label>
+                    </div>
+                  ))}
                 </div>
+              </div>
+              
+              {/* Filters */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Filters</h3>
                 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Filters</Label>
-                    <Button variant="outline" size="sm" onClick={addFilter}>
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Add Filter
-                    </Button>
-                  </div>
-                  {filters.length > 0 ? (
-                    <div className="space-y-2">
-                      {filters.map((filter, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Select 
-                            value={filter.field}
-                            onValueChange={(value) => {
-                              const newFilters = [...filters];
-                              newFilters[index].field = value;
-                              setFilters(newFilters);
-                            }}
-                          >
-                            <SelectTrigger className="w-[30%]">
-                              <SelectValue placeholder="Select field" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableColumns.map(column => (
-                                <SelectItem key={column} value={column}>
-                                  {column}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          
-                          <Select
-                            value={filter.operator}
-                            onValueChange={(value) => {
-                              const newFilters = [...filters];
-                              newFilters[index].operator = value;
-                              setFilters(newFilters);
-                            }}
-                          >
-                            <SelectTrigger className="w-[30%]">
-                              <SelectValue placeholder="Operator" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="equals">Equals</SelectItem>
-                              <SelectItem value="contains">Contains</SelectItem>
-                              <SelectItem value="greater_than">Greater than</SelectItem>
-                              <SelectItem value="less_than">Less than</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          
-                          <Input
-                            className="w-[30%]"
-                            value={filter.value}
-                            onChange={(e) => {
-                              const newFilters = [...filters];
-                              newFilters[index].value = e.target.value;
-                              setFilters(newFilters);
-                            }}
-                            placeholder="Value"
-                          />
-                          
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeFilter(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                {/* Add Filter */}
+                <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                  <Select 
+                    value={newFilter.field} 
+                    onValueChange={(value) => setNewFilter({...newFilter, field: value})}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select field" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableFields.map((field) => (
+                        <SelectItem key={field.value} value={field.value}>
+                          {field.label}
+                        </SelectItem>
                       ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No filters added. Add a filter to narrow down your report data.</p>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="group-by">Group By</Label>
-                    <Select value={groupBy} onValueChange={setGroupBy}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a column to group by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {availableColumns.map(column => (
-                          <SelectItem key={column} value={column}>
-                            {column}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    </SelectContent>
+                  </Select>
                   
-                  <div>
-                    <Label>Visualization</Label>
-                    <Select value={visualizationType} onValueChange={setVisualizationType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select visualization type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {visualizationTypes.map(type => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <div className="flex items-center">
-                              {type.icon && <type.icon className="mr-2 h-4 w-4" />}
-                              {type.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Select
+                    value={newFilter.operator}
+                    onValueChange={(value) => setNewFilter({...newFilter, operator: value})}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Operator" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operatorOptions.map((op) => (
+                        <SelectItem key={op.value} value={op.value}>
+                          {op.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Input
+                    placeholder="Value"
+                    value={newFilter.value}
+                    onChange={(e) => setNewFilter({...newFilter, value: e.target.value})}
+                  />
+                  
+                  <Button onClick={handleAddFilter}>Add Filter</Button>
                 </div>
                 
-                {groupBy && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label>Aggregations</Label>
-                      <Button variant="outline" size="sm" onClick={addAggregation}>
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Add Aggregation
-                      </Button>
-                    </div>
-                    
-                    {aggregation.length > 0 ? (
-                      <div className="space-y-2">
-                        {aggregation.map((agg, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Select
-                              value={agg.function}
-                              onValueChange={(value) => {
-                                const newAggs = [...aggregation];
-                                newAggs[index].function = value;
-                                setAggregation(newAggs);
-                              }}
+                {/* Filter List */}
+                {filters.length > 0 && (
+                  <div className="bg-muted/50 p-2 rounded-md">
+                    <h4 className="text-sm font-medium mb-1">Applied Filters:</h4>
+                    <ul className="space-y-1">
+                      {filters.map((filter, index) => {
+                        const fieldLabel = availableFields.find(f => f.value === filter.field)?.label || filter.field;
+                        const operatorLabel = operatorOptions.find(o => o.value === filter.operator)?.label || filter.operator;
+                        
+                        return (
+                          <li key={index} className="flex items-center justify-between text-sm p-1 border-b">
+                            <span>
+                              {fieldLabel} {operatorLabel} "{filter.value}"
+                            </span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleRemoveFilter(index)}
                             >
-                              <SelectTrigger className="w-[45%]">
-                                <SelectValue placeholder="Select function" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {aggregationFunctions.map(func => (
-                                  <SelectItem key={func.value} value={func.value}>
-                                    {func.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            
-                            <Select
-                              value={agg.field}
-                              onValueChange={(value) => {
-                                const newAggs = [...aggregation];
-                                newAggs[index].field = value;
-                                setAggregation(newAggs);
-                              }}
-                            >
-                              <SelectTrigger className="w-[45%]">
-                                <SelectValue placeholder="Select field" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableColumns.map(column => (
-                                  <SelectItem key={column} value={column}>
-                                    {column}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeAggregation(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
+                              Remove
                             </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No aggregations added. Add aggregations to summarize your grouped data.</p>
-                    )}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
+              </div>
+              
+              {/* Group By */}
+              <div>
+                <Label htmlFor="group-by">Group By (Optional)</Label>
+                <Select value={groupBy} onValueChange={setGroupBy}>
+                  <SelectTrigger id="group-by">
+                    <SelectValue placeholder="Select field (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {availableFields.map((field) => (
+                      <SelectItem key={field.value} value={field.value}>
+                        {field.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Visualization Type */}
+              <div>
+                <Label htmlFor="visualization-type">Visualization Type</Label>
+                <Select value={visualizationType} onValueChange={setVisualizationType}>
+                  <SelectTrigger id="visualization-type">
+                    <SelectValue placeholder="Select visualization type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {visualizationOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-2 pt-4">
+                <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Save Report</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Save Report</DialogTitle>
+                      <DialogDescription>
+                        Give your report a name to save it for future use.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-4">
+                      <Label htmlFor="report-name">Report Name</Label>
+                      <Input
+                        id="report-name"
+                        value={reportName}
+                        onChange={(e) => setReportName(e.target.value)}
+                        placeholder="Enter report name"
+                      />
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleSaveReport}
+                        disabled={isSaving || !reportName.trim()}
+                      >
+                        {isSaving ? 'Saving...' : 'Save Report'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 
-                <div className="flex justify-between">
-                  <div className="space-x-2">
-                    <Button onClick={runReport} disabled={isRunning}>
-                      {isRunning ? 'Running...' : 'Run Report'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleSaveReport}
-                      disabled={!reportName || isRunning}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Report
-                    </Button>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={downloadCsv}
-                    disabled={reportResults.length === 0}
+                <Button 
+                  onClick={handleRunReport} 
+                  disabled={isRunning || columns.length === 0}
+                >
+                  {isRunning ? 'Running...' : 'Run Report'}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Report Results */}
+            {reportResults.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-2">Report Results</h3>
+                <div className="border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {columns.map((col) => (
+                          <TableHead key={col}>
+                            {availableFields.find(f => f.value === col)?.label || col}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reportResults.map((row, rowIndex) => (
+                        <TableRow key={rowIndex}>
+                          {columns.map((col) => (
+                            <TableCell key={col}>
+                              {String(row[col] || '')}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                    <TableCaption>
+                      {reportResults.length} records found
+                    </TableCaption>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="saved">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Saved Reports</h3>
+              
+              {savedReports.length === 0 ? (
+                <div className="text-center p-6 bg-muted/50 rounded-md">
+                  <p className="text-muted-foreground">No saved reports yet</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2"
+                    onClick={() => setActiveTab('create')}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export CSV
+                    Create Your First Report
                   </Button>
                 </div>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {reportResults.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Report Results</CardTitle>
-            <CardDescription>
-              {reportResults.length} records found
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="relative overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {Object.keys(reportResults[0]).map((column) => (
-                      <TableHead key={column}>{column}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reportResults.map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
-                      {Object.entries(row).map(([column, value], cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {savedReports.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Saved Reports</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Entity</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              ) : (
+                <div className="space-y-2">
                   {savedReports.map((report) => (
-                    <TableRow key={report.id}>
-                      <TableCell>{report.name}</TableCell>
-                      <TableCell>{report.entity}</TableCell>
-                      <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" onClick={() => loadReport(report)}>
-                          Load
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <Card key={report.id} className="p-4">
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <h4 className="font-medium">{report.name}</h4>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            Entity: {entityOptions.find(e => e.value === report.entity)?.label || report.entity}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {new Date(report.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleLoadReport(report)}
+                          >
+                            Load
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteReport(report.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

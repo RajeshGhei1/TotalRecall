@@ -13,7 +13,7 @@ export const useCustomFieldsList = (entityTypeOrParams?: string | UseCustomField
     ? entityTypeOrParams 
     : entityTypeOrParams?.entityType;
   
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data: customFields, isLoading, error, refetch } = useQuery({
     queryKey: ['custom-fields', entityType],
     queryFn: async () => {
       let query = supabase
@@ -38,7 +38,7 @@ export const useCustomFieldsList = (entityTypeOrParams?: string | UseCustomField
   });
 
   return {
-    customFields: data || [],
+    customFields: customFields || [],
     isLoading,
     error,
     refetch,
