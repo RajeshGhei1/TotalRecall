@@ -2,7 +2,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomField, FieldFormValues } from './types';
-import { createCustomField, updateCustomField, deleteCustomField } from './fieldOperations';
+import { 
+  createCustomField, 
+  updateCustomField, 
+  deleteCustomField 
+} from './operations';
 
 export function useCustomFieldsMutations() {
   const queryClient = useQueryClient();
