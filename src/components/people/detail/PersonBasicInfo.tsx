@@ -1,52 +1,49 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 import { Person } from '@/types/person';
+import CompanyRelationshipCard from './CompanyRelationshipCard';
 
 interface PersonBasicInfoProps {
   person: Person;
 }
 
 const PersonBasicInfo: React.FC<PersonBasicInfoProps> = ({ person }) => {
+  const { usePersonEmploymentHistory } = useCompanyPeopleRelationship();
+  const { data: employmentHistory } = usePersonEmploymentHistory(person.id);
+  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Basic Information</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <Mail className="h-4 w-4 text-muted-foreground mr-2" />
-            <span>{person.email}</span>
-          </div>
-          
-          {person?.phone && (
-            <div className="flex items-center">
-              <Phone className="h-4 w-4 text-muted-foreground mr-2" />
-              <span>{person.phone}</span>
-            </div>
-          )}
-          
-          {person?.location && (
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
-              <span>{person.location}</span>
-            </div>
-          )}
-          
-          <div className="pt-4">
-            <p className="text-sm text-muted-foreground mb-1">Created</p>
-            <p>{new Date(person.created_at).toLocaleDateString()}</p>
-          </div>
-          
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Contact Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
-            <p>{new Date(person.updated_at).toLocaleDateString()}</p>
+            <div className="text-sm text-muted-foreground">Email</div>
+            <div className="font-medium">{person.email}</div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          
+          {person.phone && (
+            <div>
+              <div className="text-sm text-muted-foreground">Phone</div>
+              <div className="font-medium">{person.phone}</div>
+            </div>
+          )}
+          
+          {person.location && (
+            <div>
+              <div className="text-sm text-muted-foreground">Location</div>
+              <div className="font-medium">{person.location}</div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Current company quick view with navigation */}
+      <CompanyRelationshipCard jobHistory={employmentHistory || []} />
+    </div>
   );
 };
 

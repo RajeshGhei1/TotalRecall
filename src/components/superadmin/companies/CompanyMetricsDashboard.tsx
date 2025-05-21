@@ -7,6 +7,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 import CompanyIndustryChart from './charts/CompanyIndustryChart';
 import CompanySizeChart from './charts/CompanySizeChart';
 import CompanyLocationChart from './charts/CompanyLocationChart';
+import CompanyPeopleChart from './charts/CompanyPeopleChart';
 import { Building, Users } from 'lucide-react';
 
 // Interface for company-person relationship summary
@@ -114,7 +115,8 @@ const CompanyMetricsDashboard: React.FC = () => {
         <CompanyLocationChart />
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <CompanyPeopleChart />
         <CompanySizeChart />
       </div>
     </div>

@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useCompanies, Company } from '@/hooks/useCompanies';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 import CompanySearch from './CompanySearch';
 import CompanyTable from './CompanyTable';
@@ -13,7 +15,7 @@ const CompanyListContainer: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   
-  const { companies, isLoading } = useCompanies();
+  const { companies, isLoading, refetch } = useCompanies();
   
   // Filter companies based on search term
   const filteredCompanies = companies?.filter(company => {
@@ -43,9 +45,34 @@ const CompanyListContainer: React.FC = () => {
     setCompanyToDelete(company);
   };
 
-  const handleConfirmDelete = () => {
-    // Add delete logic here
-    setCompanyToDelete(null);
+  const handleConfirmDelete = async () => {
+    if (!companyToDelete) return;
+    
+    try {
+      // Delete any company relationships first
+      const { error: relationshipsError } = await supabase
+        .from('company_relationships')
+        .delete()
+        .eq('company_id', companyToDelete.id);
+        
+      if (relationshipsError) throw relationshipsError;
+      
+      // Then delete the company
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', companyToDelete.id);
+        
+      if (error) throw error;
+      
+      toast.success(`${companyToDelete.name} deleted successfully`);
+      refetch();
+    } catch (error: any) {
+      console.error('Error deleting company:', error);
+      toast.error(`Failed to delete company: ${error.message}`);
+    } finally {
+      setCompanyToDelete(null);
+    }
   };
 
   if (isLoading) {
