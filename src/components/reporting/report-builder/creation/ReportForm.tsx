@@ -75,7 +75,9 @@ const ReportForm: React.FC<ReportFormProps> = ({
       {/* Filters */}
       <FiltersInput 
         filters={reportState.filters}
-        setFilters={(filters) => setReportState(prev => ({ ...prev, filters }))}
+        setFilters={(newFilters) => {
+          setReportState(prev => ({ ...prev, filters: newFilters }));
+        }}
         availableFields={availableFields}
         operatorOptions={operatorOptions}
       />
