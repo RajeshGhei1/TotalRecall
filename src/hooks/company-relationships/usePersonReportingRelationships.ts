@@ -7,12 +7,7 @@ export const usePersonReportingRelationships = (
   personId?: string,
   companyId?: string
 ) => {
-  const { 
-    data: reportingRelationships = { manager: null, directReports: [] }, 
-    isLoading, 
-    isError, 
-    error 
-  } = useQuery({
+  const { data: reportingRelationships = { manager: null, directReports: [] }, isLoading, isError, error } = useQuery({
     queryKey: ['person-reporting-relationships', personId, companyId],
     queryFn: async () => {
       if (!personId || !companyId) {
@@ -68,39 +63,26 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData?.reports_to && personData?.manager) {
-          const managerRoleData = personData.manager.manager_role?.[0]?.role;
-          const managerRole = typeof managerRoleData === 'string' ? managerRoleData : '';
-          
-          if (personData.manager.id) {
-            managerPerson = {
-              id: personData.manager.id,
-              full_name: personData.manager.full_name || '',
-              email: personData.manager.email || null,
-              type: personData.manager.type || '',
-              role: managerRole
-            };
-          }
+          managerPerson = {
+            id: personData.manager.id,
+            full_name: personData.manager.full_name,
+            email: personData.manager.email,
+            type: personData.manager.type,
+            role: personData.manager.manager_role?.[0]?.role
+          };
         }
 
         const directReports: ReportingPerson[] = [];
         
-        if (reportsData && Array.isArray(reportsData)) {
+        if (reportsData) {
           for (const item of reportsData) {
-            if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
-              // Safe type check for item.person.role
-              let personRole = '';
-              if (Array.isArray(item.person.role) && item.person.role.length > 0 && 
-                  typeof item.person.role[0] === 'object' && item.person.role[0] && 
-                  'role' in item.person.role[0]) {
-                personRole = String(item.person.role[0].role || '');
-              }
-              
+            if (item && item.person) {
               directReports.push({
-                id: String(item.person.id),
-                full_name: String(item.person.full_name || ''),
-                email: item.person.email || null,
-                type: String(item.person.type || ''),
-                role: personRole
+                id: item.person.id,
+                full_name: item.person.full_name,
+                email: item.person.email,
+                type: item.person.type,
+                role: item.person.role?.[0]?.role
               });
             }
           }

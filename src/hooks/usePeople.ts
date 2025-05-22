@@ -1,41 +1,34 @@
 
-import { usePersonDetails } from '@/hooks/people/usePersonDetails';
-import { usePeopleQuery } from '@/hooks/people/usePeopleQuery';
-import { usePeopleMutations } from '@/hooks/people/usePeopleMutations';
+import { usePeopleQuery } from './people/usePeopleQuery';
+import { usePeopleMutations } from './people/usePeopleMutations';
+import { usePersonDetails } from './people/usePersonDetails';
 import { Person } from '@/types/person';
 
 export const usePeople = (
-  personType?: 'talent' | 'contact',
-  searchQuery?: string,
+  personType?: 'talent' | 'contact', 
+  searchQuery?: string, 
   companyFilter?: string
 ) => {
   const { 
-    data: people = [],
-    isLoading: isLoadingPeople,
-    isError: isPeopleError,
-    error: peopleError,
-    ...queryRest
+    data: people = [], 
+    isLoading, 
+    isError, 
+    error 
   } = usePeopleQuery(personType, searchQuery, companyFilter);
   
-  const {
-    createPerson,
-    deletePerson,
-    ...mutationRest
-  } = usePeopleMutations(personType);
-
-  // Extract filterPeopleBySearch and filterPeopleByCompany from queryRest if they exist
-  const filterPeopleBySearch = queryRest.filterPeopleBySearch;
-  const filterPeopleByCompany = queryRest.filterPeopleByCompany;
+  const { createPerson, deletePerson } = usePeopleMutations(personType);
+  const { getPersonById } = usePersonDetails();
 
   return {
     people,
-    isLoadingPeople,
-    isPeopleError,
-    peopleError,
-    filterPeopleBySearch,
-    filterPeopleByCompany,
+    isLoading,
+    isError,
+    error,
     createPerson,
     deletePerson,
-    usePersonDetails, // Exporting the hook directly 
+    getPersonById
   };
 };
+
+export type { Person };
+export type { CreatePersonData } from '@/types/person';

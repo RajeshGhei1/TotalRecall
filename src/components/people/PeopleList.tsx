@@ -26,9 +26,9 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
 
   const {
     people,
-    isLoadingPeople,
-    isPeopleError,
-    peopleError,
+    isLoading,
+    isError,
+    error,
     deletePerson
   } = usePeople(personType, searchQuery, companyFilter);
 
@@ -59,7 +59,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
     setEditPerson(null);
   };
 
-  if (isLoadingPeople) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
@@ -73,10 +73,10 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
     );
   }
 
-  if (isPeopleError) {
+  if (isError) {
     return (
       <div className="text-center py-8 text-destructive">
-        <p>Error loading data: {(peopleError as Error).message}</p>
+        <p>Error loading data: {(error as Error).message}</p>
       </div>
     );
   }

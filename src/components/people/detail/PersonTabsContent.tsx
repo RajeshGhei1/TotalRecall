@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from 'lucide-react';
-import JobHistoryList, { JobHistoryItem } from '../JobHistoryList';
+import JobHistoryList from '../JobHistoryList';
 import { Person } from '@/types/person';
 import TalentSkillsManager from '../skills/TalentSkillsManager';
 import { CustomFieldsForm } from '@/components/customFields';
@@ -13,16 +13,16 @@ import ReportingRelationships from './ReportingRelationships';
 
 interface PersonTabsContentProps {
   person: Person;
-  employmentHistory: JobHistoryItem[];
-  loadingHistory?: boolean;
-  onAddCompany?: () => void;
+  employmentHistory: any[];
+  loadingHistory: boolean;
+  onAddCompany: () => void;
 }
 
 const PersonTabsContent: React.FC<PersonTabsContentProps> = ({ 
   person, 
   employmentHistory, 
-  loadingHistory = false,
-  onAddCompany = () => {}
+  loadingHistory,
+  onAddCompany
 }) => {
   const [activeTab, setActiveTab] = useState('info');
   
@@ -31,7 +31,7 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
   const currentCompanyId = currentCompanyRelationship?.company?.id;
 
   return (
-    <Card>
+    <Card className="md:col-span-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger

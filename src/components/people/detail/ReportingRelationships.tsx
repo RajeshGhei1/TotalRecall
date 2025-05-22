@@ -15,7 +15,8 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
   personId,
   companyId
 }) => {
-  const { reportingRelationships, isLoading } = usePersonReportingRelationships(personId, companyId);
+  const reportingRelationships = usePersonReportingRelationships(personId);
+  const { data: reportingData, isLoading } = reportingRelationships;
 
   if (isLoading) {
     return (
@@ -48,10 +49,10 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
       <CardContent>
         <div className="space-y-6">
           {/* Manager section */}
-          <ManagerDisplay manager={reportingRelationships?.manager || null} />
+          <ManagerDisplay manager={reportingData?.manager || null} />
           
           {/* Direct reports section */}
-          <DirectReportsDisplay directReports={reportingRelationships?.directReports || []} />
+          <DirectReportsDisplay directReports={reportingData?.directReports || []} />
         </div>
       </CardContent>
     </Card>
