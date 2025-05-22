@@ -24,7 +24,7 @@ export const parseFormDate = (dateValue: any): string | null => {
     // If it's already a Date object
     if (dateValue instanceof Date) {
       if (isValid(dateValue)) {
-        return dateValue.toISOString();
+        return dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
       }
       return null;
     }
@@ -34,13 +34,13 @@ export const parseFormDate = (dateValue: any): string | null => {
       // Try to parse as DD/MM/YYYY
       const parsedDate = parse(dateValue, 'dd/MM/yyyy', new Date());
       if (isValid(parsedDate)) {
-        return parsedDate.toISOString();
+        return parsedDate.toISOString().split('T')[0];
       }
       
       // Try as standard ISO date
       const dateObj = new Date(dateValue);
       if (isValid(dateObj)) {
-        return dateObj.toISOString();
+        return dateObj.toISOString().split('T')[0];
       }
     }
     

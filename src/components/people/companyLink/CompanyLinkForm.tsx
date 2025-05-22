@@ -42,12 +42,12 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     company_id: '',
     role: '',
     start_date: '',
-    end_date: '',
+    end_date: null,
     is_current: true,
     relationship_type: personType as 'employment' | 'business_contact' || 'employment'
   });
   
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [potentialManagers, setPotentialManagers] = useState<Array<{ person: {
     id: string;
@@ -58,6 +58,23 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   } | null }>>([]);
   
   const { toast } = useToast();
+
+  // Reset form data when the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        person_id: personId || '',
+        company_id: '',
+        role: '',
+        start_date: '',
+        end_date: null,
+        is_current: true,
+        relationship_type: personType as 'employment' | 'business_contact' || 'employment'
+      });
+      setStartDate(new Date());
+      setEndDate(undefined);
+    }
+  }, [isOpen, personId, personType]);
   
   // Fetch potential managers for talent type
   useEffect(() => {
@@ -68,7 +85,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
-            person:people(id, full_name)
+            person:people(id, full_name, email, type)
           `)
           .eq('company_id', formData.company_id)
           .eq('is_current', true)
@@ -106,7 +123,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       const dataToSubmit = {
         ...formData,
         person_id: personId,
-        end_date: formData.end_date === '' ? null : formData.end_date,
+        end_date: formData.end_date,
         reports_to: formData.reports_to === '' ? null : formData.reports_to
       };
       
@@ -152,13 +169,27 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   };
 
   const handleStartDateChange = (date: Date | undefined) => {
-    setDate(date);
-    setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] || '' });
+    setStartDate(date);
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      setFormData({ ...formData, start_date: formattedDate });
+
+      // If end date exists and is now before start date, reset it
+      if (endDate && endDate < date) {
+        setEndDate(undefined);
+        setFormData(prev => ({ ...prev, end_date: null, is_current: true }));
+      }
+    }
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
-    setFormData({ ...formData, end_date: date?.toISOString().split('T')[0] || '' });
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      setFormData({ ...formData, end_date: formattedDate, is_current: false });
+    } else {
+      setFormData({ ...formData, end_date: null, is_current: true });
+    }
   };
 
   const handleManagerChange = (value: string) => {
@@ -187,11 +218,10 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           />
           
           <DateSelectors 
-            startDate={date}
+            startDate={startDate}
             endDate={endDate}
             onStartDateChange={handleStartDateChange}
             onEndDateChange={handleEndDateChange}
-            formStartDate={formData.start_date}
           />
           
           {potentialManagers && potentialManagers.length > 0 && (
@@ -203,7 +233,10 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           )}
           
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting || createRelationshipMutation.isPending}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || createRelationshipMutation.isPending || !formData.company_id || !formData.role || !formData.start_date}
+            >
               {isSubmitting || createRelationshipMutation.isPending ? "Submitting..." : "Save changes"}
             </Button>
           </DialogFooter>

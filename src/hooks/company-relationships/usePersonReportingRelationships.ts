@@ -62,13 +62,15 @@ export const usePersonReportingRelationships = (
         // Format data for the response
         let managerPerson: ReportingPerson | null = null;
         
-        if (personData?.reports_to && personData?.manager) {
+        if (personData && personData.reports_to && personData.manager) {
           managerPerson = {
             id: personData.manager.id,
             full_name: personData.manager.full_name,
             email: personData.manager.email,
             type: personData.manager.type,
-            role: personData.manager.manager_role?.[0]?.role
+            role: personData.manager.manager_role && 
+                  personData.manager.manager_role[0] ? 
+                  personData.manager.manager_role[0].role : undefined
           };
         }
 
@@ -82,7 +84,9 @@ export const usePersonReportingRelationships = (
                 full_name: item.person.full_name,
                 email: item.person.email,
                 type: item.person.type,
-                role: item.person.role?.[0]?.role
+                role: item.person.role && 
+                      item.person.role[0] ? 
+                      item.person.role[0].role : undefined
               });
             }
           }

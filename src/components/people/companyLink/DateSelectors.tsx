@@ -7,13 +7,13 @@ import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { parseFormDate } from "@/utils/dateUtils";
 
 interface DateSelectorsProps {
   startDate: Date | undefined;
   endDate: Date | undefined;
   onStartDateChange: (date: Date | undefined) => void;
   onEndDateChange: (date: Date | undefined) => void;
-  formStartDate: string;
 }
 
 const DateSelectors: React.FC<DateSelectorsProps> = ({
@@ -21,7 +21,6 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   endDate,
   onStartDateChange,
   onEndDateChange,
-  formStartDate
 }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -32,7 +31,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal",
                 !startDate && "text-muted-foreground"
               )}
             >
@@ -59,7 +58,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal",
                 endDate ? "" : "text-muted-foreground"
               )}
             >
