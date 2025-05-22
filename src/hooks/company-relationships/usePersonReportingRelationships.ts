@@ -93,20 +93,22 @@ export const usePersonReportingRelationships = (
               const personObj = item.person;
               let role = undefined;
               
-              if (personObj.role && 
+              if (personObj && personObj.role && 
                   Array.isArray(personObj.role) && 
                   personObj.role.length > 0 && 
                   personObj.role[0]) {
                 role = personObj.role[0]?.role;
               }
               
-              directReports.push({
-                id: personObj.id || '',
-                full_name: personObj.full_name || '',
-                email: personObj.email || null,
-                type: personObj.type || '',
-                role: role
-              });
+              if (personObj) {
+                directReports.push({
+                  id: personObj.id || '',
+                  full_name: personObj.full_name || '',
+                  email: personObj.email || null,
+                  type: personObj.type || '',
+                  role: role
+                });
+              }
             }
           }
         }

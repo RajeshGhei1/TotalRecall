@@ -35,7 +35,7 @@ const ManagerSelector: React.FC<ManagerSelectorProps> = ({
             
             return (
               <SelectItem key={item.person.id} value={item.person.id}>
-                {item.person.full_name}
+                {item.person.full_name} {item.person.role ? `(${item.person.role})` : ''}
               </SelectItem>
             );
           })}

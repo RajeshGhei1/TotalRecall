@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
 import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
 import PeopleList from './PeopleList';
+import ReportingTabContent from './tabs/ReportingTabContent';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -26,6 +27,7 @@ const PeopleTabsContent = ({
   companyFilter
 }: PeopleTabsContentProps) => {
   const isMobile = useIsMobile();
+  const showReportingTabs = companyFilter && companyFilter !== 'all';
   
   if (personType === 'talent') {
     return (
@@ -34,6 +36,12 @@ const PeopleTabsContent = ({
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="all">All Talents</TabsTrigger>
+            {showReportingTabs && (
+              <>
+                <TabsTrigger value="reports-to">Reports To</TabsTrigger>
+                <TabsTrigger value="direct-reports">Direct Reports</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="inactive">Inactive</TabsTrigger>
             <TabsTrigger value="new">New Applications</TabsTrigger>
@@ -60,6 +68,42 @@ const PeopleTabsContent = ({
             </CardContent>
           </Card>
         </TabsContent>
+        
+        {showReportingTabs && (
+          <>
+            <TabsContent value="reports-to">
+              <Card className="card-gradient">
+                <CardHeader className={isMobile ? "px-3 py-4" : ""}>
+                  <CardTitle>Manager Relationships</CardTitle>
+                  <CardDescription>View talents with management responsibilities at this company</CardDescription>
+                </CardHeader>
+                <CardContent className={isMobile ? "px-3 py-4" : ""}>
+                  <ReportingTabContent 
+                    companyId={companyFilter} 
+                    reportingType="manager"
+                    searchQuery={searchQuery}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="direct-reports">
+              <Card className="card-gradient">
+                <CardHeader className={isMobile ? "px-3 py-4" : ""}>
+                  <CardTitle>Reporting Relationships</CardTitle>
+                  <CardDescription>View talents who report to managers at this company</CardDescription>
+                </CardHeader>
+                <CardContent className={isMobile ? "px-3 py-4" : ""}>
+                  <ReportingTabContent 
+                    companyId={companyFilter} 
+                    reportingType="direct-report"
+                    searchQuery={searchQuery}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
         
         <TabsContent value="active">
           <Card className="card-gradient">
@@ -111,6 +155,12 @@ const PeopleTabsContent = ({
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="all">All Contacts</TabsTrigger>
+            {showReportingTabs && (
+              <>
+                <TabsTrigger value="reports-to">Reports To</TabsTrigger>
+                <TabsTrigger value="direct-reports">Direct Reports</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="clients">Clients</TabsTrigger>
             <TabsTrigger value="prospects">Prospects</TabsTrigger>
             <TabsTrigger value="vendors">Vendors</TabsTrigger>
@@ -137,6 +187,42 @@ const PeopleTabsContent = ({
             </CardContent>
           </Card>
         </TabsContent>
+        
+        {showReportingTabs && (
+          <>
+            <TabsContent value="reports-to">
+              <Card className="card-gradient">
+                <CardHeader className={isMobile ? "px-3 py-4" : ""}>
+                  <CardTitle>Manager Relationships</CardTitle>
+                  <CardDescription>View contacts with management responsibilities at this company</CardDescription>
+                </CardHeader>
+                <CardContent className={isMobile ? "px-3 py-4" : ""}>
+                  <ReportingTabContent 
+                    companyId={companyFilter} 
+                    reportingType="manager"
+                    searchQuery={searchQuery}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="direct-reports">
+              <Card className="card-gradient">
+                <CardHeader className={isMobile ? "px-3 py-4" : ""}>
+                  <CardTitle>Reporting Relationships</CardTitle>
+                  <CardDescription>View contacts who report to managers at this company</CardDescription>
+                </CardHeader>
+                <CardContent className={isMobile ? "px-3 py-4" : ""}>
+                  <ReportingTabContent 
+                    companyId={companyFilter} 
+                    reportingType="direct-report"
+                    searchQuery={searchQuery}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
         
         <TabsContent value="clients">
           <Card className="card-gradient">

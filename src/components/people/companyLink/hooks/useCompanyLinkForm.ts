@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { LinkCompanyRelationshipData } from '@/types/company-relationship-types';
+import { LinkCompanyRelationshipData, ReportingPerson } from '@/types/company-relationship-types';
 import { parseFormDate } from '@/utils/dateUtils';
-import { ReportingPerson } from '@/types/company-relationship-types';
 
 interface UseCompanyLinkFormProps {
   personId?: string;
@@ -11,6 +10,10 @@ interface UseCompanyLinkFormProps {
   onSubmit: () => void;
   onClose: () => void;
   isOpen: boolean;
+}
+
+interface PotentialManager {
+  person: ReportingPerson | null;
 }
 
 export const useCompanyLinkForm = ({
@@ -32,7 +35,7 @@ export const useCompanyLinkForm = ({
   
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [potentialManagers, setPotentialManagers] = useState<Array<{ person: ReportingPerson | null }>>([]);
+  const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Reset form when opened
@@ -77,8 +80,36 @@ export const useCompanyLinkForm = ({
           console.error('Error fetching potential managers:', error);
           return;
         }
+
+        // Transform data to match the expected format
+        const formattedManagers: PotentialManager[] = [];
         
-        setPotentialManagers(data || []);
+        if (data && Array.isArray(data)) {
+          for (const item of data) {
+            if (item && item.person) {
+              const personData = item.person;
+              let role = undefined;
+              
+              if (personData.role && 
+                  Array.isArray(personData.role) && 
+                  personData.role.length > 0) {
+                role = personData.role[0]?.role;
+              }
+              
+              formattedManagers.push({
+                person: {
+                  id: personData.id,
+                  full_name: personData.full_name,
+                  email: personData.email,
+                  type: personData.type,
+                  role: role
+                }
+              });
+            }
+          }
+        }
+        
+        setPotentialManagers(formattedManagers);
       } catch (error) {
         console.error('Error in fetchPotentialManagers:', error);
       }

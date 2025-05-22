@@ -25,3 +25,8 @@ export interface ReportingRelationshipsResult {
   manager: ReportingPerson | null;
   directReports: ReportingPerson[];
 }
+
+export interface CompanyReportingResult {
+  managers: ReportingPerson[];
+  directReports: ReportingPerson[];
+}
