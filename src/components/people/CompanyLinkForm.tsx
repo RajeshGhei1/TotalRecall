@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { LinkCompanyRelationshipData } from '@/types/company-relationship-types';
 
 interface CompanyLinkFormProps {
   isOpen: boolean;
@@ -35,6 +37,10 @@ interface Person {
   full_name: string;
 }
 
+interface PotentialManager {
+  person: Person | null;
+}
+
 const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   isOpen,
   onClose,
@@ -44,24 +50,25 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   personId,
   isSubmitting
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LinkCompanyRelationshipData>({
+    person_id: personId || '',
     company_id: '',
     role: '',
     start_date: '',
     end_date: '',
     is_current: true,
-    relationship_type: personType || 'employment',
-    reports_to: ''
+    relationship_type: personType as 'employment' | 'business_contact' || 'employment'
   });
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [endDate, setEndDate] = React.useState<Date | undefined>(null);
-  const [potentialManagers, setPotentialManagers] = useState<any[]>([]);
+  
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
   const { toast } = useToast();
   
   // Fetch potential managers for talent type
   useEffect(() => {
     const fetchPotentialManagers = async () => {
-      if (!personId || personType !== 'talent') return;
+      if (!personId || personType !== 'talent' || !formData.company_id) return;
       
       try {
         const { data, error } = await supabase
@@ -76,7 +83,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (error) throw error;
         
         // Filter out invalid entries
-        const validManagers = data?.filter(item => item.person && typeof item.person === 'object' && 'id' in item.person) || [];
+        const validManagers = data?.filter(item => item && item.person) || [];
         
         setPotentialManagers(validManagers);
       } catch (error) {
@@ -92,33 +99,27 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     fetchPotentialManagers();
   }, [formData.company_id, personId, personType, toast]);
   
-  const createRelationshipMutation = useMutation(
-    async () => {
+  const createRelationshipMutation = useMutation({
+    mutationFn: async () => {
       if (!personId) {
         throw new Error("Person ID is missing.");
       }
       
-      const { company_id, role, start_date, end_date, is_current, relationship_type, reports_to } = formData;
-      
-      if (!company_id || !role || !start_date) {
+      if (!formData.company_id || !formData.role || !formData.start_date) {
         throw new Error("Missing required fields.");
       }
       
+      const dataToSubmit = {
+        ...formData,
+        person_id: personId,
+        end_date: formData.end_date === '' ? null : formData.end_date,
+        reports_to: formData.reports_to === '' ? null : formData.reports_to
+      };
+      
       const { data, error } = await supabase
         .from('company_relationships')
-        .insert([
-          {
-            person_id: personId,
-            company_id: company_id,
-            role: role,
-            start_date: start_date,
-            end_date: end_date === '' ? null : end_date,
-            is_current: is_current,
-            relationship_type: relationship_type,
-            reports_to: reports_to === '' ? null : reports_to
-          }
-        ])
-        .select()
+        .insert([dataToSubmit])
+        .select();
       
       if (error) {
         throw new Error(error.message);
@@ -126,24 +127,22 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       
       return data;
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: "Success",
-          description: "Company relationship created successfully.",
-        });
-        onSubmit();
-        onClose();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create company relationship.",
-          variant: "destructive",
-        });
-      },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Company relationship created successfully.",
+      });
+      onSubmit();
+      onClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create company relationship.",
+        variant: "destructive",
+      });
     }
-  );
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,9 +160,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="company_id">Company</Label>
+            <Label htmlFor="company_select">Company</Label>
             <Select
-              id="company_id"
               value={formData.company_id}
               onValueChange={(value) => setFormData({ ...formData, company_id: value, reports_to: '' })}
             >
@@ -208,8 +206,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     mode="single"
                     selected={date}
                     onSelect={(date) => {
-                      setDate(date)
-                      setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] || '' })
+                      setDate(date);
+                      setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] || '' });
                     }}
                     disabled={(date) =>
                       date > new Date()
@@ -239,11 +237,11 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     mode="single"
                     selected={endDate}
                     onSelect={(endDate) => {
-                      setEndDate(endDate)
-                      setFormData({ ...formData, end_date: endDate?.toISOString().split('T')[0] || '' })
+                      setEndDate(endDate);
+                      setFormData({ ...formData, end_date: endDate?.toISOString().split('T')[0] || '' });
                     }}
                     disabled={(date) =>
-                      date > new Date() || (date < date && date !== undefined)
+                      date > new Date() || (date && date < new Date(formData.start_date))
                     }
                     initialFocus
                   />
@@ -254,7 +252,10 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           {potentialManagers && potentialManagers.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="reports_to">Reports To</Label>
-              <Select value={formData.reports_to || ''} onValueChange={(value) => setFormData({ ...formData, reports_to: value })}>
+              <Select 
+                value={formData.reports_to || ''} 
+                onValueChange={(value) => setFormData({ ...formData, reports_to: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a manager (optional)" />
                 </SelectTrigger>
@@ -262,7 +263,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   <SelectItem value="">None</SelectItem>
                   {potentialManagers.map(item => {
                     // Skip invalid entries where person data might be null
-                    if (!item.person || typeof item.person !== 'object' || !('id' in item.person)) {
+                    if (!item || !item.person) {
                       return null;
                     }
                     
@@ -277,8 +278,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
             </div>
           )}
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Save changes"}
+            <Button type="submit" disabled={isSubmitting || createRelationshipMutation.isPending}>
+              {isSubmitting || createRelationshipMutation.isPending ? "Submitting..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

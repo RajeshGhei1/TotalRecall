@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
+import { usePersonReportingRelationships } from '@/hooks/company-relationships/usePersonReportingRelationships';
 import ManagerDisplay from './reporting/ManagerDisplay';
 import DirectReportsDisplay from './reporting/DirectReportsDisplay';
 
@@ -15,8 +15,8 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
   personId,
   companyId
 }) => {
-  const { usePersonReportingRelationships } = useCompanyPeopleRelationship();
-  const { data: reportingData, isLoading } = usePersonReportingRelationships(personId);
+  const reportingRelationships = usePersonReportingRelationships(personId);
+  const { data: reportingData, isLoading } = reportingRelationships;
 
   if (isLoading) {
     return (
