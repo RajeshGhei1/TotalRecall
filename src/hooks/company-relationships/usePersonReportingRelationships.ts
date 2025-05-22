@@ -95,30 +95,38 @@ export const usePersonReportingRelationships = (
         
         if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
-            if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
-              // Make sure item.person is not null before accessing properties
-              const person = item.person;
+            // First, check if item and item.person exist and have the expected shape
+            if (item && 
+                item.person && 
+                typeof item.person === 'object' && 
+                item.person !== null) {
               
-              // Safe type check for person.role
-              let personRole = '';
-              if (
-                person.role && 
-                Array.isArray(person.role) && 
-                person.role.length > 0 && 
-                typeof person.role[0] === 'object' && 
-                person.role[0] && 
-                'role' in person.role[0]
-              ) {
-                personRole = String(person.role[0].role || '');
+              // TypeScript needs more explicit type checking
+              const personData = item.person;
+              
+              // Check if the required properties exist before using them
+              if ('id' in personData) {
+                // Safe type check for personData.role
+                let personRole = '';
+                if (
+                  personData.role && 
+                  Array.isArray(personData.role) && 
+                  personData.role.length > 0 && 
+                  typeof personData.role[0] === 'object' && 
+                  personData.role[0] !== null && 
+                  'role' in personData.role[0]
+                ) {
+                  personRole = String(personData.role[0].role || '');
+                }
+                
+                directReports.push({
+                  id: String(personData.id || ''),
+                  full_name: String('full_name' in personData ? personData.full_name : ''),
+                  email: 'email' in personData ? personData.email : null,
+                  type: String('type' in personData ? personData.type : ''),
+                  role: personRole
+                });
               }
-              
-              directReports.push({
-                id: String(person.id || ''),
-                full_name: String(person.full_name || ''),
-                email: person.email || null,
-                type: String(person.type || ''),
-                role: personRole
-              });
             }
           }
         }
