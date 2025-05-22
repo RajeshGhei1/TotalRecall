@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -125,15 +124,15 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
             .filter(item => 
               item !== null && 
               item.person !== null &&
-              typeof item.person === 'object' &&
-              'id' in item.person &&
-              'full_name' in item.person
+              typeof item.person === 'object'
             )
             .map(item => {
-              // Using non-null assertion since we've filtered out null values
-              const person = item.person!;
+              if (!item.person) return null;
               
-              // Additional typechecking
+              // Safely access person properties
+              const person = item.person;
+              
+              // Make sure person has the required properties and is not the current person
               if (
                 typeof person.id !== 'string' || 
                 typeof person.full_name !== 'string' ||

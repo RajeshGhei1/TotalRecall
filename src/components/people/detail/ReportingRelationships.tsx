@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { User, Users, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Person } from '@/types/person';
 
 interface ReportingRelationshipsProps {
   personId: string;
@@ -39,17 +38,16 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
           .select(`
             reports_to,
             role,
-            manager:reports_to(
-              id,
-              person:people(id, full_name, email)
-            )
+            manager:people!company_relationships_reports_to_fkey(id, full_name, email)
           `)
           .eq('person_id', personId)
           .eq('is_current', true)
           .not('reports_to', 'is', null)
           .maybeSingle();
           
-        if (managerError) throw managerError;
+        if (managerError) {
+          console.error('Error fetching manager:', managerError);
+        }
         
         // Fetch direct reports (who reports to this person)
         const { data: directReportsData, error: directReportsError } = await supabase
@@ -62,16 +60,17 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
           .eq('reports_to', personId)
           .eq('is_current', true);
           
-        if (directReportsError) throw directReportsError;
+        if (directReportsError) {
+          console.error('Error fetching direct reports:', directReportsError);
+        }
         
         // Process manager data
-        if (managerData?.manager?.person) {
-          const managerPerson = managerData.manager.person;
+        if (managerData?.manager && 'id' in managerData.manager) {
           setManager({
-            id: managerPerson.id,
-            full_name: managerPerson.full_name,
-            email: managerPerson.email,
-            role: '' // We don't have the manager's role in this query
+            id: managerData.manager.id,
+            full_name: managerData.manager.full_name,
+            email: managerData.manager.email,
+            role: managerData.role || ''
           });
         } else {
           setManager(null);
@@ -81,12 +80,20 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
         if (directReportsData && Array.isArray(directReportsData)) {
           const reports = directReportsData
             .filter(item => item.person !== null)
-            .map(item => ({
-              id: item.person.id,
-              full_name: item.person.full_name,
-              email: item.person.email,
-              role: item.role
-            }));
+            .map(item => {
+              if (!item.person || typeof item.person !== 'object' || !('id' in item.person)) {
+                return null;
+              }
+              
+              return {
+                id: item.person.id,
+                full_name: item.person.full_name,
+                email: item.person.email,
+                role: item.role
+              };
+            })
+            .filter((item): item is ReportingPerson => item !== null);
+            
           setDirectReports(reports);
         } else {
           setDirectReports([]);

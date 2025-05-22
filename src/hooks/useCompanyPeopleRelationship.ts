@@ -16,6 +16,24 @@ interface LinkCompanyRelationshipData {
   reports_to?: string;
 }
 
+interface ReportingRelationshipsResult {
+  manager: {
+    id: string;
+    full_name: string;
+    email?: string;
+    type?: string;
+  } | null;
+  directReports: Array<{
+    person: {
+      id: string;
+      full_name: string;
+      email?: string;
+      type?: string;
+    };
+    role?: string;
+  }>;
+}
+
 export const useCompanyPeopleRelationship = (companyId?: string) => {
   const queryClient = useQueryClient();
 
@@ -99,7 +117,10 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
         .order('is_current', { ascending: false })
         .order('start_date', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching employment history:', error);
+        return [];
+      }
       
       return (data || []) as JobHistoryItem[];
     } catch (error) {
@@ -122,45 +143,59 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
 
   // Hook for fetching a person's reporting relationships
   const usePersonReportingRelationships = (personId?: string) => {
-    return useQuery({
+    return useQuery<ReportingRelationshipsResult>({
       queryKey: ['person-reporting-relationships', personId],
       queryFn: async () => {
         if (!personId) return { manager: null, directReports: [] };
         
-        // Fetch manager (who this person reports to)
-        const { data: managerData, error: managerError } = await supabase
-          .from('company_relationships')
-          .select(`
-            reports_to,
-            manager:people!company_relationships_reports_to_fkey(
-              id, full_name, email, type
-            )
-          `)
-          .eq('person_id', personId)
-          .eq('is_current', true)
-          .not('reports_to', 'is', null)
-          .maybeSingle();
+        try {
+          // Fetch manager (who this person reports to)
+          const { data: managerData, error: managerError } = await supabase
+            .from('company_relationships')
+            .select(`
+              reports_to,
+              manager:people!company_relationships_reports_to_fkey(
+                id, full_name, email, type
+              )
+            `)
+            .eq('person_id', personId)
+            .eq('is_current', true)
+            .not('reports_to', 'is', null)
+            .maybeSingle();
+            
+          if (managerError) {
+            console.error('Error fetching manager:', managerError);
+            return { manager: null, directReports: [] };
+          }
           
-        if (managerError) throw managerError;
-        
-        // Fetch direct reports (who reports to this person)
-        const { data: directReportsData, error: directReportsError } = await supabase
-          .from('company_relationships')
-          .select(`
-            person:people!company_relationships_person_id_fkey(
-              id, full_name, email, type
-            ),
-            role
-          `)
-          .eq('reports_to', personId)
-          .eq('is_current', true);
+          // Fetch direct reports (who reports to this person)
+          const { data: directReportsData, error: directReportsError } = await supabase
+            .from('company_relationships')
+            .select(`
+              person:people!company_relationships_person_id_fkey(
+                id, full_name, email, type
+              ),
+              role
+            `)
+            .eq('reports_to', personId)
+            .eq('is_current', true);
+            
+          if (directReportsError) {
+            console.error('Error fetching direct reports:', directReportsError);
+            return { 
+              manager: managerData?.manager ? managerData.manager : null, 
+              directReports: [] 
+            };
+          }
           
-        if (directReportsError) throw directReportsError;
-        
-        return {
-          manager: managerData?.manager || null,
-          directReports: directReportsData || []
-        };
+          return {
+            manager: managerData?.manager || null,
+            directReports: directReportsData || []
+          };
+        } catch (error) {
+          console.error('Error in usePersonReportingRelationships:', error);
+          return { manager: null, directReports: [] };
+        }
       },
       enabled: !!personId,
     });

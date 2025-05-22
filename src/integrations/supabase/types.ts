@@ -162,6 +162,7 @@ export type Database = {
           is_current: boolean
           person_id: string
           relationship_type: string
+          reports_to: string | null
           role: string
           start_date: string
           updated_at: string
@@ -174,6 +175,7 @@ export type Database = {
           is_current?: boolean
           person_id: string
           relationship_type: string
+          reports_to?: string | null
           role: string
           start_date: string
           updated_at?: string
@@ -186,6 +188,7 @@ export type Database = {
           is_current?: boolean
           person_id?: string
           relationship_type?: string
+          reports_to?: string | null
           role?: string
           start_date?: string
           updated_at?: string
@@ -196,6 +199,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_relationships_reports_to_fkey"
+            columns: ["reports_to"]
+            isOneToOne: false
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]
