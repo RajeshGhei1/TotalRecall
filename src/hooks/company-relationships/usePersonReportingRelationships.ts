@@ -68,29 +68,33 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData?.reports_to && personData?.manager) {
-          const managerRole = personData.manager.manager_role?.[0]?.role || '';
+          const managerRoleData = personData.manager.manager_role?.[0]?.role;
+          const managerRole = typeof managerRoleData === 'string' ? managerRoleData : '';
           
-          managerPerson = {
-            id: personData.manager.id,
-            full_name: personData.manager.full_name,
-            email: personData.manager.email,
-            type: personData.manager.type,
-            role: managerRole
-          };
+          if (personData.manager.id) {
+            managerPerson = {
+              id: personData.manager.id,
+              full_name: personData.manager.full_name || '',
+              email: personData.manager.email || null,
+              type: personData.manager.type || '',
+              role: managerRole
+            };
+          }
         }
 
         const directReports: ReportingPerson[] = [];
         
         if (reportsData) {
           for (const item of reportsData) {
-            if (item && item.person) {
-              const personRole = item.person.role?.[0]?.role || '';
+            if (item && item.person && item.person.id) {
+              const personRoleData = item.person.role?.[0]?.role;
+              const personRole = typeof personRoleData === 'string' ? personRoleData : '';
               
               directReports.push({
                 id: item.person.id,
-                full_name: item.person.full_name,
-                email: item.person.email,
-                type: item.person.type,
+                full_name: item.person.full_name || '',
+                email: item.person.email || null,
+                type: item.person.type || '',
                 role: personRole
               });
             }

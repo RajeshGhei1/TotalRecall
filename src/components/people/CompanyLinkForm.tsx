@@ -7,17 +7,17 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LinkCompanyRelationshipData } from '@/types/company-relationship-types';
@@ -65,12 +65,33 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
   const { toast } = useToast();
   
+  // Reset form data when isOpen changes
+  useEffect(() => {
+    if (isOpen) {
+      setDate(new Date());
+      setEndDate(undefined);
+      setFormData({
+        person_id: personId || '',
+        company_id: '',
+        role: '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: '',
+        is_current: true,
+        relationship_type: personType as 'employment' | 'business_contact' || 'employment'
+      });
+    }
+  }, [isOpen, personId, personType]);
+  
   // Fetch potential managers for talent type
   useEffect(() => {
     const fetchPotentialManagers = async () => {
-      if (!personId || personType !== 'talent' || !formData.company_id) return;
+      if (!personId || personType !== 'talent' || !formData.company_id) {
+        setPotentialManagers([]);
+        return;
+      }
       
       try {
+        console.log("Fetching managers for company:", formData.company_id);
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
@@ -84,6 +105,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         
         // Filter out invalid entries
         const validManagers = data?.filter(item => item && item.person) || [];
+        console.log("Found potential managers:", validManagers.length, validManagers);
         
         setPotentialManagers(validManagers);
       } catch (error) {
@@ -93,6 +115,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           description: "Failed to load potential managers",
           variant: "destructive"
         });
+        setPotentialManagers([]);
       }
     };
     
@@ -146,6 +169,15 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure we have a start date
+    if (!formData.start_date && date) {
+      setFormData({
+        ...formData,
+        start_date: date.toISOString().split('T')[0]
+      });
+    }
+    
     createRelationshipMutation.mutate();
   };
 
@@ -177,6 +209,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               </SelectContent>
             </Select>
           </div>
+          
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <Input
@@ -185,15 +218,17 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button" 
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal",
                       !date && "text-muted-foreground"
                     )}
                   >
@@ -205,26 +240,27 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={(date) => {
-                      setDate(date);
-                      setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] || '' });
+                    onSelect={(newDate) => {
+                      setDate(newDate);
+                      setFormData({ ...formData, start_date: newDate?.toISOString().split('T')[0] || '' });
                     }}
-                    disabled={(date) =>
-                      date > new Date()
-                    }
+                    disabled={(date) => date > new Date()}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             </div>
+            
             <div className="space-y-2">
               <Label>End Date (optional)</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal",
                       endDate ? "" : "text-muted-foreground"
                     )}
                   >
@@ -236,20 +272,22 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   <Calendar
                     mode="single"
                     selected={endDate}
-                    onSelect={(endDate) => {
-                      setEndDate(endDate);
-                      setFormData({ ...formData, end_date: endDate?.toISOString().split('T')[0] || '' });
+                    onSelect={(newEndDate) => {
+                      setEndDate(newEndDate);
+                      setFormData({ ...formData, end_date: newEndDate?.toISOString().split('T')[0] || '' });
                     }}
                     disabled={(date) =>
                       date > new Date() || (date && date < new Date(formData.start_date))
                     }
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
-          {potentialManagers && potentialManagers.length > 0 && (
+          
+          {personType === 'talent' && potentialManagers.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="reports_to">Reports To</Label>
               <Select 
@@ -277,6 +315,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               </Select>
             </div>
           )}
+          
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || createRelationshipMutation.isPending}>
               {isSubmitting || createRelationshipMutation.isPending ? "Submitting..." : "Save changes"}

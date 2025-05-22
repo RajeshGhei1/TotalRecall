@@ -15,14 +15,19 @@ const ManagerSelector: React.FC<ManagerSelectorProps> = ({
   potentialManagers,
   onManagerChange
 }) => {
+  console.log("ManagerSelector rendering with:", {
+    reportsTo,
+    managers: potentialManagers.length
+  });
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full">
       <Label htmlFor="reports_to">Reports To</Label>
       <Select 
         value={reportsTo || ''} 
         onValueChange={onManagerChange}
       >
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a manager (optional)" />
         </SelectTrigger>
         <SelectContent>

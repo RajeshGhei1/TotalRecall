@@ -80,6 +80,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         const validManagers = data?.filter(item => item && item.person) || [];
         
         setPotentialManagers(validManagers);
+        console.log("Potential managers fetched:", validManagers.length, validManagers);
       } catch (error) {
         console.error('Error fetching potential managers:', error);
         toast({
@@ -109,6 +110,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         end_date: formData.end_date === '' ? null : formData.end_date,
         reports_to: formData.reports_to === '' ? null : formData.reports_to
       };
+      
+      console.log("Submitting data:", dataToSubmit);
       
       const { data, error } = await supabase
         .from('company_relationships')
@@ -145,6 +148,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 
   const handleCompanyChange = (value: string) => {
     setFormData({ ...formData, company_id: value, reports_to: '' });
+    // Reset potential managers when company changes
+    setPotentialManagers([]);
   };
 
   const handleRoleChange = (value: string) => {
@@ -162,8 +167,21 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   };
 
   const handleManagerChange = (value: string) => {
+    console.log("Manager selected:", value);
     setFormData({ ...formData, reports_to: value });
   };
+
+  // Log whenever the dialog opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      console.log("CompanyLinkForm opened");
+    }
+  }, [isOpen]);
+
+  // Log potentialManagers when they change
+  useEffect(() => {
+    console.log("Potential managers state updated:", potentialManagers.length, potentialManagers);
+  }, [potentialManagers]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -194,15 +212,17 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
             formStartDate={formData.start_date}
           />
           
-          {potentialManagers && potentialManagers.length > 0 && (
-            <ManagerSelector 
-              reportsTo={formData.reports_to}
-              potentialManagers={potentialManagers}
-              onManagerChange={handleManagerChange}
-            />
+          {potentialManagers.length > 0 && (
+            <div className="mt-2">
+              <ManagerSelector 
+                reportsTo={formData.reports_to}
+                potentialManagers={potentialManagers}
+                onManagerChange={handleManagerChange}
+              />
+            </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="mt-4 pt-2 border-t">
             <Button type="submit" disabled={isSubmitting || createRelationshipMutation.isPending}>
               {isSubmitting || createRelationshipMutation.isPending ? "Submitting..." : "Save changes"}
             </Button>

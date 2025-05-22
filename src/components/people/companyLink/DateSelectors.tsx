@@ -24,7 +24,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   formStartDate
 }) => {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="space-y-2">
         <Label>Start Date</Label>
         <Popover>
@@ -32,7 +32,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal",
                 !startDate && "text-muted-foreground"
               )}
             >
@@ -40,7 +40,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0" align="center">
             <Calendar
               mode="single"
               selected={startDate}
@@ -59,7 +59,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal",
                 endDate ? "" : "text-muted-foreground"
               )}
             >
@@ -67,7 +67,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0" align="center">
             <Calendar
               mode="single"
               selected={endDate}
