@@ -1,26 +1,24 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import PersonDetailBreadcrumb from './PersonDetailBreadcrumb';
+import { AlertCircle } from 'lucide-react';
 
-const PersonNotFound: React.FC = () => {
-  const navigate = useNavigate();
-  
+interface PersonNotFoundProps {
+  onBack: () => void;
+}
+
+const PersonNotFound: React.FC<PersonNotFoundProps> = ({ onBack }) => {
   return (
-    <>
-      <PersonDetailBreadcrumb />
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-10">
-          <p className="mb-4 text-muted-foreground">Person not found</p>
-          <Button onClick={() => navigate('/superadmin/people')}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to People
-          </Button>
-        </CardContent>
-      </Card>
-    </>
+    <div className="flex flex-col items-center justify-center h-[50vh] text-center">
+      <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+      <h1 className="text-2xl font-bold mb-2">Person Not Found</h1>
+      <p className="text-muted-foreground mb-6 max-w-md">
+        The person you're looking for could not be found. They may have been removed or you might have an incorrect URL.
+      </p>
+      <Button onClick={onBack}>
+        Go Back
+      </Button>
+    </div>
   );
 };
 

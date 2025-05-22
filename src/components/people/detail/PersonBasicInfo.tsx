@@ -3,8 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Person } from '@/types/person';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import JobHistoryList from '@/components/people/JobHistoryList';
-import { JobHistoryItem } from '@/components/people/JobHistoryList';
+import JobHistoryList, { JobHistoryItem } from '@/components/people/JobHistoryList';
 
 interface PersonBasicInfoProps {
   person: Person;
@@ -53,7 +52,7 @@ const PersonBasicInfo: React.FC<PersonBasicInfoProps> = ({ person, employmentHis
         </CardHeader>
         <CardContent className="px-0">
           {employmentHistory.length > 0 ? (
-            <JobHistoryList jobHistory={employmentHistory} />
+            <JobHistoryList history={employmentHistory} />
           ) : (
             <p className="text-sm text-muted-foreground px-6">No employment history found.</p>
           )}

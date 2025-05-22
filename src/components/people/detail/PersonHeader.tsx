@@ -7,10 +7,19 @@ import { Person } from '@/types/person';
 
 interface PersonHeaderProps {
   person: Person;
-  onEdit: () => void;
+  currentCompany?: {
+    id: string;
+    name: string;
+    role: string;
+  } | null;
+  onEdit?: () => void;
 }
 
-const PersonHeader: React.FC<PersonHeaderProps> = ({ person, onEdit }) => {
+const PersonHeader: React.FC<PersonHeaderProps> = ({ 
+  person, 
+  currentCompany,
+  onEdit = () => {} 
+}) => {
   const navigate = useNavigate();
   
   return (

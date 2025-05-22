@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
 import { LinkCompanyRelationshipData } from '@/types/company-relationship-types';
+import { parseFormDate } from '@/utils/dateUtils';
+import { ReportingPerson } from '@/types/company-relationship-types';
 
 interface UseCompanyLinkFormProps {
   personId?: string;
@@ -15,7 +15,7 @@ interface UseCompanyLinkFormProps {
 
 export const useCompanyLinkForm = ({
   personId,
-  personType,
+  personType = 'talent',
   onSubmit,
   onClose,
   isOpen
@@ -27,164 +27,150 @@ export const useCompanyLinkForm = ({
     start_date: '',
     end_date: null,
     is_current: true,
-    relationship_type: personType as 'employment' | 'business_contact' || 'employment'
+    relationship_type: personType === 'talent' ? 'employment' : 'business_contact',
   });
   
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
-  const [endDate, setEndDate] = useState<Date | undefined>();
-  const [potentialManagers, setPotentialManagers] = useState<Array<{ person: {
-    id: string;
-    full_name: string;
-    email?: string | null;
-    type?: string;
-    role?: string;
-  } | null }>>([]);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [potentialManagers, setPotentialManagers] = useState<Array<{ person: ReportingPerson | null }>>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { toast } = useToast();
-
-  // Reset form data when the modal opens
+  // Reset form when opened
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && personId) {
       setFormData({
-        person_id: personId || '',
+        person_id: personId,
         company_id: '',
         role: '',
         start_date: '',
         end_date: null,
         is_current: true,
-        relationship_type: personType as 'employment' | 'business_contact' || 'employment'
+        relationship_type: personType === 'talent' ? 'employment' : 'business_contact',
       });
-      setStartDate(new Date());
+      setStartDate(undefined);
       setEndDate(undefined);
     }
   }, [isOpen, personId, personType]);
   
-  // Fetch potential managers for talent type
+  // Fetch potential managers when company is selected
   useEffect(() => {
     const fetchPotentialManagers = async () => {
-      if (!personId || personType !== 'talent' || !formData.company_id) return;
+      if (!formData.company_id || !personId) return;
       
       try {
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
-            person:people(id, full_name, email, type)
+            person:people(
+              id,
+              full_name,
+              email,
+              type,
+              role:company_relationships(role)
+            )
           `)
           .eq('company_id', formData.company_id)
           .eq('is_current', true)
           .neq('person_id', personId);
-          
-        if (error) throw error;
         
-        // Filter out invalid entries
-        const validManagers = data?.filter(item => item && item.person) || [];
+        if (error) {
+          console.error('Error fetching potential managers:', error);
+          return;
+        }
         
-        setPotentialManagers(validManagers);
+        setPotentialManagers(data || []);
       } catch (error) {
-        console.error('Error fetching potential managers:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load potential managers",
-          variant: "destructive"
-        });
+        console.error('Error in fetchPotentialManagers:', error);
       }
     };
     
     fetchPotentialManagers();
-  }, [formData.company_id, personId, personType, toast]);
+  }, [formData.company_id, personId]);
   
-  const createRelationshipMutation = useMutation({
-    mutationFn: async () => {
-      if (!personId) {
-        throw new Error("Person ID is missing.");
-      }
-      
-      if (!formData.company_id || !formData.role || !formData.start_date) {
-        throw new Error("Missing required fields.");
-      }
-      
-      const dataToSubmit = {
-        ...formData,
-        person_id: personId,
-        end_date: formData.end_date,
-        reports_to: formData.reports_to === '' ? null : formData.reports_to
-      };
-      
-      const { data, error } = await supabase
-        .from('company_relationships')
-        .insert([dataToSubmit])
-        .select();
-      
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Company relationship created successfully.",
-      });
-      onSubmit();
-      onClose();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create company relationship.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    createRelationshipMutation.mutate();
-  };
-
   const handleCompanyChange = (value: string) => {
-    setFormData({ ...formData, company_id: value, reports_to: '' });
+    setFormData(prev => ({ ...prev, company_id: value }));
   };
-
+  
   const handleRoleChange = (value: string) => {
-    setFormData({ ...formData, role: value });
+    setFormData(prev => ({ ...prev, role: value }));
   };
-
+  
   const handleStartDateChange = (date: Date | undefined) => {
     setStartDate(date);
-    if (date) {
-      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      setFormData({ ...formData, start_date: formattedDate });
-
-      // If end date exists and is now before start date, reset it
-      if (endDate && endDate < date) {
-        setEndDate(undefined);
-        setFormData(prev => ({ ...prev, end_date: null, is_current: true }));
-      }
-    }
+    const formattedDate = date ? parseFormDate(date) : '';
+    setFormData(prev => ({ 
+      ...prev, 
+      start_date: formattedDate || '' 
+    }));
   };
-
+  
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
-    if (date) {
-      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      setFormData({ ...formData, end_date: formattedDate, is_current: false });
-    } else {
-      setFormData({ ...formData, end_date: null, is_current: true });
+    const formattedDate = date ? parseFormDate(date) : null;
+    setFormData(prev => ({ 
+      ...prev, 
+      end_date: formattedDate,
+      is_current: !formattedDate
+    }));
+  };
+  
+  const handleManagerChange = (value: string) => {
+    setFormData(prev => ({ ...prev, reports_to: value || undefined }));
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.company_id || !formData.role || !formData.start_date || !personId) {
+      console.error('Missing required fields');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // If is_current is true, set other relationships for this company to not current
+      if (formData.is_current) {
+        await supabase
+          .from('company_relationships')
+          .update({ is_current: false })
+          .eq('person_id', personId)
+          .eq('company_id', formData.company_id);
+      }
+      
+      // Insert the new relationship
+      const { error } = await supabase
+        .from('company_relationships')
+        .insert({
+          person_id: personId,
+          company_id: formData.company_id,
+          role: formData.role,
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          is_current: formData.is_current,
+          relationship_type: formData.relationship_type,
+          reports_to: formData.reports_to
+        });
+      
+      if (error) {
+        console.error('Error creating company relationship:', error);
+        return;
+      }
+      
+      onSubmit();
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const handleManagerChange = (value: string) => {
-    setFormData({ ...formData, reports_to: value });
-  };
-
+  
   return {
     formData,
     startDate,
     endDate,
     potentialManagers,
-    isSubmitting: createRelationshipMutation.isPending,
+    isSubmitting,
     handleSubmit,
     handleCompanyChange,
     handleRoleChange,

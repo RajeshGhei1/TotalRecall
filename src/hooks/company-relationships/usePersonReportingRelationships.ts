@@ -3,32 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, ReportingRelationshipsResult } from '@/types/company-relationship-types';
 
-// Helper function to safely extract person data
-const extractPersonData = (personData: any): ReportingPerson | null => {
-  if (!personData) return null;
-  
-  return {
-    id: personData.id || '',
-    full_name: personData.full_name || '',
-    email: personData.email || null,
-    type: personData.type || '',
-    role: personData.role ? (
-      Array.isArray(personData.role) && personData.role[0] ? 
-      personData.role[0].role : 
-      typeof personData.role === 'string' ? personData.role : undefined
-    ) : undefined
-  };
-};
-
 export const usePersonReportingRelationships = (
   personId?: string,
   companyId?: string
 ) => {
   const { data: reportingRelationships = { manager: null, directReports: [] }, isLoading, isError, error } = useQuery({
     queryKey: ['person-reporting-relationships', personId, companyId],
-    queryFn: async () => {
+    queryFn: async (): Promise<ReportingRelationshipsResult> => {
       if (!personId || !companyId) {
-        return { manager: null, directReports: [] } as ReportingRelationshipsResult;
+        return { manager: null, directReports: [] };
       }
 
       try {
@@ -81,30 +64,39 @@ export const usePersonReportingRelationships = (
         
         if (personData && personData.reports_to && personData.manager) {
           const managerData = personData.manager;
-          const managerRole = managerData.manager_role && 
-                             Array.isArray(managerData.manager_role) && 
-                             managerData.manager_role.length > 0 ? 
-                             managerData.manager_role[0].role : 
-                             undefined;
+          let managerRole = undefined;
           
-          managerPerson = {
-            id: managerData.id || '',
-            full_name: managerData.full_name || '',
-            email: managerData.email || null,
-            type: managerData.type || '',
-            role: managerRole
-          };
+          if (managerData && 
+              managerData.manager_role && 
+              Array.isArray(managerData.manager_role) && 
+              managerData.manager_role.length > 0 && 
+              managerData.manager_role[0]) {
+            managerRole = managerData.manager_role[0].role;
+          }
+          
+          if (managerData && typeof managerData === 'object' && 'id' in managerData) {
+            managerPerson = {
+              id: managerData.id || '',
+              full_name: managerData.full_name || '',
+              email: managerData.email || null,
+              type: managerData.type || '',
+              role: managerRole
+            };
+          }
         }
 
         const directReports: ReportingPerson[] = [];
         
         if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
-            if (item && item.person) {
+            if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
               const personObj = item.person;
               let role = undefined;
               
-              if (personObj.role && Array.isArray(personObj.role) && personObj.role.length > 0) {
+              if (personObj.role && 
+                  Array.isArray(personObj.role) && 
+                  personObj.role.length > 0 && 
+                  personObj.role[0]) {
                 role = personObj.role[0]?.role;
               }
               
