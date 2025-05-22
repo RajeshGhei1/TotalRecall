@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -113,35 +114,24 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         if (error) throw error;
         
         if (data && Array.isArray(data)) {
-          // Define a proper type for valid items
-          type ValidPersonData = {
-            person_id: string;
-            person: {
-              id: string;
-              full_name: string;
-            };
-          };
-          
-          // Use a type guard to filter and ensure we have valid person objects
+          // Process people data safely
           const peopleList = data
-            .filter((item): item is ValidPersonData => {
-              // Filter out items with invalid person data and items where person is null
-              return (
-                item !== null &&
-                item.person !== null &&
-                typeof item.person === 'object' &&
-                'id' in item.person &&
-                'full_name' in item.person &&
-                typeof item.person.id === 'string' &&
-                typeof item.person.full_name === 'string' &&
-                item.person_id !== personId
-              );
-            })
+            .filter(item => 
+              item !== null && 
+              item.person !== null &&
+              typeof item.person === 'object' &&
+              'id' in item.person &&
+              'full_name' in item.person &&
+              typeof item.person.id === 'string' &&
+              typeof item.person.full_name === 'string' &&
+              item.person_id !== personId
+            )
             .map(item => {
-              // Now TypeScript knows item.person is valid and not null
+              // Since we've filtered properly, we can safely assert the type
+              const person = item.person as { id: string; full_name: string };
               return {
-                id: item.person.id,
-                name: item.person.full_name
+                id: person.id,
+                name: person.full_name
               };
             });
             
