@@ -68,8 +68,17 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData?.reports_to && personData?.manager) {
-          const managerRoleData = personData.manager.manager_role?.[0]?.role;
-          const managerRole = typeof managerRoleData === 'string' ? managerRoleData : '';
+          let managerRole = '';
+          if (
+            personData.manager.manager_role && 
+            Array.isArray(personData.manager.manager_role) && 
+            personData.manager.manager_role.length > 0 && 
+            typeof personData.manager.manager_role[0] === 'object' &&
+            personData.manager.manager_role[0] !== null &&
+            'role' in personData.manager.manager_role[0]
+          ) {
+            managerRole = String(personData.manager.manager_role[0].role || '');
+          }
           
           if (personData.manager.id) {
             managerPerson = {
@@ -87,19 +96,27 @@ export const usePersonReportingRelationships = (
         if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
             if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
-              // Safe type check for item.person.role
+              // Make sure item.person is not null before accessing properties
+              const person = item.person;
+              
+              // Safe type check for person.role
               let personRole = '';
-              if (Array.isArray(item.person.role) && item.person.role.length > 0 && 
-                  typeof item.person.role[0] === 'object' && item.person.role[0] && 
-                  'role' in item.person.role[0]) {
-                personRole = String(item.person.role[0].role || '');
+              if (
+                person.role && 
+                Array.isArray(person.role) && 
+                person.role.length > 0 && 
+                typeof person.role[0] === 'object' && 
+                person.role[0] && 
+                'role' in person.role[0]
+              ) {
+                personRole = String(person.role[0].role || '');
               }
               
               directReports.push({
-                id: String(item.person.id),
-                full_name: String(item.person.full_name || ''),
-                email: item.person.email || null,
-                type: String(item.person.type || ''),
+                id: String(person.id || ''),
+                full_name: String(person.full_name || ''),
+                email: person.email || null,
+                type: String(person.type || ''),
                 role: personRole
               });
             }

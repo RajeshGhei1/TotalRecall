@@ -23,17 +23,17 @@ export const usePeople = (
     ...mutationRest
   } = usePeopleMutations(personType);
 
-  // Extract filterPeopleBySearch and filterPeopleByCompany from queryRest if they exist
-  const filterPeopleBySearch = queryRest.filterPeopleBySearch;
-  const filterPeopleByCompany = queryRest.filterPeopleByCompany;
-
+  // We won't try to extract these properties anymore since they don't exist
+  // in the returned object from usePeopleQuery
+  
   return {
     people,
     isLoadingPeople,
     isPeopleError,
     peopleError,
-    filterPeopleBySearch,
-    filterPeopleByCompany,
+    // Remove these properties since they don't exist
+    // filterPeopleBySearch,
+    // filterPeopleByCompany,
     createPerson,
     deletePerson,
     usePersonDetails, // Exporting the hook directly 
