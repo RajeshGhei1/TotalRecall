@@ -1,406 +1,287 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
+import { useMutation } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CompanyLinkFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  companies: Array<{ id: string; name: string }>;
+  companies: { id: string; name: string }[];
+  personType?: 'talent' | 'contact';
   personId?: string;
-  personType?: string;
   isSubmitting: boolean;
 }
 
-// Define an interface for the people list items
-interface PersonListItem {
+interface Person {
   id: string;
-  name: string;
+  full_name: string;
 }
-
-const formSchema = z.object({
-  company_id: z.string().min(1, 'Company is required'),
-  role: z.string().min(1, 'Role is required'),
-  start_date: z.date(),
-  end_date: z.date().optional().nullable(),
-  is_current: z.boolean().default(true),
-  relationship_type: z.enum(['employment', 'business_contact']).default('employment'),
-  reports_to: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   isOpen,
   onClose,
   onSubmit,
   companies,
-  personId,
   personType,
-  isSubmitting,
+  personId,
+  isSubmitting
 }) => {
-  const { createRelationship } = useCompanyPeopleRelationship();
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
-  const [people, setPeople] = useState<PersonListItem[]>([]);
-
-  const defaultValues: FormValues = {
+  const [formData, setFormData] = useState({
     company_id: '',
     role: '',
-    start_date: new Date(),
-    end_date: null,
+    start_date: '',
+    end_date: '',
     is_current: true,
-    relationship_type: personType === 'talent' ? 'employment' : 'business_contact',
-    reports_to: '',
-  };
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues,
+    relationship_type: personType || 'employment',
+    reports_to: ''
   });
-
-  const { watch } = form;
-  const isCurrentPosition = watch('is_current');
-  const watchCompanyId = watch('company_id');
-
-  // Fetch people when company is selected
-  React.useEffect(() => {
-    const fetchPeopleFromCompany = async () => {
-      if (!watchCompanyId) {
-        setPeople([]);
-        return;
-      }
+  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [endDate, setEndDate] = React.useState<Date | undefined>(null);
+  const [potentialManagers, setPotentialManagers] = useState<any[]>([]);
+  const { toast } = useToast();
+  
+  // Fetch potential managers for talent type
+  useEffect(() => {
+    const fetchPotentialManagers = async () => {
+      if (!personId || personType !== 'talent') return;
       
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
-        
-        // Get current people in the company for manager selection
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
-            person_id,
             person:people(id, full_name)
           `)
-          .eq('company_id', watchCompanyId)
-          .eq('is_current', true);
+          .eq('company_id', formData.company_id)
+          .eq('is_current', true)
+          .neq('person_id', personId);
           
         if (error) throw error;
         
-        if (data && Array.isArray(data)) {
-          // Process people data safely
-          const peopleList = data
-            .filter(item => 
-              item !== null && 
-              item.person !== null &&
-              typeof item.person === 'object'
-            )
-            .map(item => {
-              if (!item.person) return null;
-              
-              // Safely access person properties
-              const person = item.person;
-              
-              // Make sure person has the required properties and is not the current person
-              if (
-                typeof person.id !== 'string' || 
-                typeof person.full_name !== 'string' ||
-                item.person_id === personId
-              ) {
-                return null;
-              }
-              
-              return {
-                id: person.id,
-                name: person.full_name
-              };
-            })
-            .filter((item): item is PersonListItem => item !== null);
-            
-          setPeople(peopleList);
-        }
+        // Filter out invalid entries
+        const validManagers = data?.filter(item => item.person && typeof item.person === 'object' && 'id' in item.person) || [];
+        
+        setPotentialManagers(validManagers);
       } catch (error) {
-        console.error('Error fetching company people:', error);
+        console.error('Error fetching potential managers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load potential managers",
+          variant: "destructive"
+        });
       }
     };
     
-    fetchPeopleFromCompany();
-  }, [watchCompanyId, personId]);
+    fetchPotentialManagers();
+  }, [formData.company_id, personId, personType, toast]);
   
-  const handleFormSubmit = async (values: FormValues) => {
-    if (!personId) return;
-    
-    await createRelationship.mutateAsync({
-      person_id: personId,
-      company_id: values.company_id,
-      role: values.role,
-      start_date: format(values.start_date, 'yyyy-MM-dd'),
-      end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : null,
-      is_current: values.is_current,
-      relationship_type: values.relationship_type,
-      reports_to: values.reports_to,
-    });
-    
-    form.reset(defaultValues);
-    onSubmit();
+  const createRelationshipMutation = useMutation(
+    async () => {
+      if (!personId) {
+        throw new Error("Person ID is missing.");
+      }
+      
+      const { company_id, role, start_date, end_date, is_current, relationship_type, reports_to } = formData;
+      
+      if (!company_id || !role || !start_date) {
+        throw new Error("Missing required fields.");
+      }
+      
+      const { data, error } = await supabase
+        .from('company_relationships')
+        .insert([
+          {
+            person_id: personId,
+            company_id: company_id,
+            role: role,
+            start_date: start_date,
+            end_date: end_date === '' ? null : end_date,
+            is_current: is_current,
+            relationship_type: relationship_type,
+            reports_to: reports_to === '' ? null : reports_to
+          }
+        ])
+        .select()
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Company relationship created successfully.",
+        });
+        onSubmit();
+        onClose();
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create company relationship.",
+          variant: "destructive",
+        });
+      },
+    }
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createRelationshipMutation.mutate();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Link to Company</DialogTitle>
+          <DialogTitle>Link Person to Company</DialogTitle>
           <DialogDescription>
-            Create a relationship between this person and a company
+            Create a new company relationship for this person.
           </DialogDescription>
         </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="company_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company</FormLabel>
-                  <Select 
-                    onValueChange={(value) => {
-                      setSelectedCompanyId(value);
-                      field.onChange(value);
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="company_id">Company</Label>
+            <Select
+              id="company_id"
+              value={formData.company_id}
+              onValueChange={(value) => setFormData({ ...formData, company_id: value, reports_to: '' })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a company" />
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Input
+              id="role"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(date) => {
+                      setDate(date)
+                      setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] || '' })
                     }}
-                    defaultValue={field.value}
+                    disabled={(date) =>
+                      date > new Date()
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-2">
+              <Label>End Date (optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      endDate ? "" : "text-muted-foreground"
+                    )}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a company" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role/Position</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Software Engineer" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {people.length > 0 && (
-              <FormField
-                control={form.control}
-                name="reports_to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reports To</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a manager (optional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">No manager</SelectItem>
-                        {people.map((person) => (
-                          <SelectItem key={person.id} value={person.id}>
-                            {person.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            <FormField
-              control={form.control}
-              name="start_date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Start Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date()
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="is_current"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Current Position</FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
-            
-            {!isCurrentPosition && (
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>End Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value || undefined}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || (form.getValues('start_date') && date < form.getValues('start_date'))
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name="relationship_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Relationship Type</FormLabel>
-                  <Select 
-                    onValueChange={(value: 'employment' | 'business_contact') => field.onChange(value)}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select relationship type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="employment">Employment</SelectItem>
-                      <SelectItem value="business_contact">Business Contact</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(endDate) => {
+                      setEndDate(endDate)
+                      setFormData({ ...formData, end_date: endDate?.toISOString().split('T')[0] || '' })
+                    }}
+                    disabled={(date) =>
+                      date > new Date() || (date < date && date !== undefined)
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          {potentialManagers && potentialManagers.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="reports_to">Reports To</Label>
+              <Select value={formData.reports_to || ''} onValueChange={(value) => setFormData({ ...formData, reports_to: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a manager (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {potentialManagers.map(item => {
+                    // Skip invalid entries where person data might be null
+                    if (!item.person || typeof item.person !== 'object' || !('id' in item.person)) {
+                      return null;
+                    }
+                    
+                    return (
+                      <SelectItem key={item.person.id} value={item.person.id}>
+                        {item.person.full_name}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

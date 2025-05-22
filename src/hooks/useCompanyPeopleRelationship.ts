@@ -16,22 +16,17 @@ interface LinkCompanyRelationshipData {
   reports_to?: string;
 }
 
+interface ReportingPerson {
+  id: string;
+  full_name: string;
+  email?: string | null;
+  type?: string;
+  role?: string;
+}
+
 interface ReportingRelationshipsResult {
-  manager: {
-    id: string;
-    full_name: string;
-    email?: string;
-    type?: string;
-  } | null;
-  directReports: Array<{
-    person: {
-      id: string;
-      full_name: string;
-      email?: string;
-      type?: string;
-    };
-    role?: string;
-  }>;
+  manager: ReportingPerson | null;
+  directReports: ReportingPerson[];
 }
 
 export const useCompanyPeopleRelationship = (companyId?: string) => {
@@ -122,6 +117,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
         return [];
       }
       
+      // TypeScript safety: Ensure we're returning the correct type
       return (data || []) as JobHistoryItem[];
     } catch (error) {
       console.error('Error fetching person employment history:', error);
@@ -172,10 +168,10 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
           const { data: directReportsData, error: directReportsError } = await supabase
             .from('company_relationships')
             .select(`
+              role,
               person:people!company_relationships_person_id_fkey(
                 id, full_name, email, type
-              ),
-              role
+              )
             `)
             .eq('reports_to', personId)
             .eq('is_current', true);
@@ -183,14 +179,35 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
           if (directReportsError) {
             console.error('Error fetching direct reports:', directReportsError);
             return { 
-              manager: managerData?.manager ? managerData.manager : null, 
+              manager: managerData?.manager || null, 
               directReports: [] 
             };
           }
+
+          // Process and type-safe the direct reports
+          const reports: ReportingPerson[] = [];
+          if (directReportsData && Array.isArray(directReportsData)) {
+            directReportsData.forEach(item => {
+              if (item.person && typeof item.person === 'object' && 'id' in item.person) {
+                reports.push({
+                  id: item.person.id,
+                  full_name: item.person.full_name,
+                  email: item.person.email || null,
+                  type: item.person.type,
+                  role: item.role
+                });
+              }
+            });
+          }
           
           return {
-            manager: managerData?.manager || null,
-            directReports: directReportsData || []
+            manager: managerData?.manager ? {
+              id: managerData.manager.id,
+              full_name: managerData.manager.full_name,
+              email: managerData.manager.email || null,
+              type: managerData.manager.type
+            } : null,
+            directReports: reports
           };
         } catch (error) {
           console.error('Error in usePersonReportingRelationships:', error);
@@ -203,7 +220,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
 
   return {
     linkPersonToCompany,
-    createRelationship, // Explicitly expose the alias
+    createRelationship,
     relationships, 
     getPersonEmploymentHistory,
     usePersonEmploymentHistory,
