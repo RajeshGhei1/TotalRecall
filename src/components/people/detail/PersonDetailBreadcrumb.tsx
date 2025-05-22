@@ -8,12 +8,13 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
+import { Person } from '@/types/person';
 
 interface PersonDetailBreadcrumbProps {
-  personName?: string;
+  person: Person;
 }
 
-const PersonDetailBreadcrumb: React.FC<PersonDetailBreadcrumbProps> = ({ personName }) => {
+const PersonDetailBreadcrumb: React.FC<PersonDetailBreadcrumbProps> = ({ person }) => {
   return (
     <Breadcrumb className="mb-6">
       <BreadcrumbList>
@@ -26,7 +27,7 @@ const PersonDetailBreadcrumb: React.FC<PersonDetailBreadcrumbProps> = ({ personN
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>{personName || 'Details'}</BreadcrumbPage>
+          <BreadcrumbPage>{person.full_name || 'Details'}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

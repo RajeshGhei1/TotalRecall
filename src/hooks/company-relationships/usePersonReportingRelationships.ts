@@ -7,7 +7,12 @@ export const usePersonReportingRelationships = (
   personId?: string,
   companyId?: string
 ) => {
-  const { data: reportingRelationships = { manager: null, directReports: [] }, isLoading, isError, error } = useQuery({
+  const { 
+    data: reportingRelationships = { manager: null, directReports: [] }, 
+    isLoading, 
+    isError, 
+    error 
+  } = useQuery({
     queryKey: ['person-reporting-relationships', personId, companyId],
     queryFn: async () => {
       if (!personId || !companyId) {
@@ -63,12 +68,14 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData?.reports_to && personData?.manager) {
+          const managerRole = personData.manager.manager_role?.[0]?.role || '';
+          
           managerPerson = {
             id: personData.manager.id,
             full_name: personData.manager.full_name,
             email: personData.manager.email,
             type: personData.manager.type,
-            role: personData.manager.manager_role?.[0]?.role
+            role: managerRole
           };
         }
 
@@ -77,12 +84,14 @@ export const usePersonReportingRelationships = (
         if (reportsData) {
           for (const item of reportsData) {
             if (item && item.person) {
+              const personRole = item.person.role?.[0]?.role || '';
+              
               directReports.push({
                 id: item.person.id,
                 full_name: item.person.full_name,
                 email: item.person.email,
                 type: item.person.type,
-                role: item.person.role?.[0]?.role
+                role: personRole
               });
             }
           }

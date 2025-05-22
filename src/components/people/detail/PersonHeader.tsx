@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,11 +7,17 @@ import { Person } from '@/types/person';
 
 interface PersonHeaderProps {
   person: Person;
-  onEdit: () => void;
+  onEdit?: () => void;
 }
 
 const PersonHeader: React.FC<PersonHeaderProps> = ({ person, onEdit }) => {
   const navigate = useNavigate();
+  
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit();
+    }
+  };
   
   return (
     <div className="flex justify-between items-center mb-6">
@@ -23,7 +29,7 @@ const PersonHeader: React.FC<PersonHeaderProps> = ({ person, onEdit }) => {
       </div>
       
       <div className="flex gap-2">
-        <Button variant="outline" onClick={onEdit}>
+        <Button variant="outline" onClick={handleEdit}>
           <Pencil className="mr-2 h-4 w-4" /> Edit
         </Button>
         <Button variant="outline" onClick={() => navigate('/superadmin/people')}>
