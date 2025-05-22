@@ -43,7 +43,7 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
             <Users className="h-12 w-12 mb-4" />
             <p className="text-center">Not enough data to generate an organization chart.</p>
             <p className="text-center text-sm mt-2">
-              Add more people with defined roles to see the organizational structure.
+              Add more people with defined reporting relationships to see the organizational structure.
             </p>
           </div>
         </CardContent>

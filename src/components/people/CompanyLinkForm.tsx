@@ -46,6 +46,12 @@ interface CompanyLinkFormProps {
   isSubmitting: boolean;
 }
 
+// Define an interface for the people list items
+interface PersonListItem {
+  id: string;
+  name: string;
+}
+
 const formSchema = z.object({
   company_id: z.string().min(1, 'Company is required'),
   role: z.string().min(1, 'Role is required'),
@@ -69,7 +75,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 }) => {
   const { createRelationship } = useCompanyPeopleRelationship();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
-  const [people, setPeople] = useState<Array<{id: string; name: string}>>([]);
+  const [people, setPeople] = useState<PersonListItem[]>([]);
 
   const defaultValues: FormValues = {
     company_id: '',
@@ -121,19 +127,27 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               item.person !== null &&
               typeof item.person === 'object' &&
               'id' in item.person &&
-              'full_name' in item.person &&
-              typeof item.person.id === 'string' &&
-              typeof item.person.full_name === 'string' &&
-              item.person_id !== personId
+              'full_name' in item.person
             )
             .map(item => {
-              // Since we've filtered properly, we can safely assert the type
-              const person = item.person as { id: string; full_name: string };
+              // Using non-null assertion since we've filtered out null values
+              const person = item.person!;
+              
+              // Additional typechecking
+              if (
+                typeof person.id !== 'string' || 
+                typeof person.full_name !== 'string' ||
+                item.person_id === personId
+              ) {
+                return null;
+              }
+              
               return {
                 id: person.id,
                 name: person.full_name
               };
-            });
+            })
+            .filter((item): item is PersonListItem => item !== null);
             
           setPeople(peopleList);
         }
@@ -224,7 +238,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                 name="reports_to"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reports To (Optional)</FormLabel>
+                    <FormLabel>Reports To</FormLabel>
                     <Select 
                       onValueChange={field.onChange}
                       defaultValue={field.value}

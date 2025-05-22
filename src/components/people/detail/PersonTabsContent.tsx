@@ -9,6 +9,7 @@ import JobHistoryList from '../JobHistoryList';
 import { Person } from '@/types/person';
 import TalentSkillsManager from '../skills/TalentSkillsManager';
 import { CustomFieldsForm } from '@/components/customFields';
+import ReportingRelationships from './ReportingRelationships';
 
 interface PersonTabsContentProps {
   person: Person;
@@ -24,6 +25,10 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
   onAddCompany
 }) => {
   const [activeTab, setActiveTab] = useState('info');
+  
+  // Find current company relationship if it exists
+  const currentCompanyRelationship = employmentHistory?.find(job => job.is_current);
+  const currentCompanyId = currentCompanyRelationship?.company?.id;
 
   return (
     <Card className="md:col-span-2">
@@ -40,6 +45,12 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
             className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary"
           >
             Companies
+          </TabsTrigger>
+          <TabsTrigger
+            value="reporting"
+            className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary"
+          >
+            Reporting
           </TabsTrigger>
           {person?.type === 'talent' && (
             <TabsTrigger
@@ -95,6 +106,21 @@ const PersonTabsContent: React.FC<PersonTabsContentProps> = ({
               ) : (
                 <div className="rounded-md bg-muted p-4 text-center">
                   <p>No company associations found.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="reporting" className="mt-0">
+            <div className="space-y-4">
+              {person?.id ? (
+                <ReportingRelationships 
+                  personId={person.id}
+                  companyId={currentCompanyId}
+                />
+              ) : (
+                <div className="rounded-md bg-muted p-4 text-center">
+                  <p>Loading reporting relationships...</p>
                 </div>
               )}
             </div>

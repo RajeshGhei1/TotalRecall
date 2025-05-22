@@ -52,6 +52,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
       queryClient.invalidateQueries({ queryKey: ['company-relationships'] });
       queryClient.invalidateQueries({ queryKey: ['company-org-chart'] });
       queryClient.invalidateQueries({ queryKey: ['person-employment-history'] });
+      queryClient.invalidateQueries({ queryKey: ['person-reporting-relationships'] });
       toast.success('Company relationship added successfully');
     },
     onError: (error: any) => {
@@ -91,6 +92,7 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
           start_date, 
           end_date, 
           is_current,
+          reports_to,
           company:companies(id, name)
         `)
         .eq('person_id', personId)
@@ -118,11 +120,58 @@ export const useCompanyPeopleRelationship = (companyId?: string) => {
     });
   };
 
+  // Hook for fetching a person's reporting relationships
+  const usePersonReportingRelationships = (personId?: string) => {
+    return useQuery({
+      queryKey: ['person-reporting-relationships', personId],
+      queryFn: async () => {
+        if (!personId) return { manager: null, directReports: [] };
+        
+        // Fetch manager (who this person reports to)
+        const { data: managerData, error: managerError } = await supabase
+          .from('company_relationships')
+          .select(`
+            reports_to,
+            manager:people!company_relationships_reports_to_fkey(
+              id, full_name, email, type
+            )
+          `)
+          .eq('person_id', personId)
+          .eq('is_current', true)
+          .not('reports_to', 'is', null)
+          .maybeSingle();
+          
+        if (managerError) throw managerError;
+        
+        // Fetch direct reports (who reports to this person)
+        const { data: directReportsData, error: directReportsError } = await supabase
+          .from('company_relationships')
+          .select(`
+            person:people!company_relationships_person_id_fkey(
+              id, full_name, email, type
+            ),
+            role
+          `)
+          .eq('reports_to', personId)
+          .eq('is_current', true);
+          
+        if (directReportsError) throw directReportsError;
+        
+        return {
+          manager: managerData?.manager || null,
+          directReports: directReportsData || []
+        };
+      },
+      enabled: !!personId,
+    });
+  };
+
   return {
     linkPersonToCompany,
     createRelationship, // Explicitly expose the alias
     relationships, 
     getPersonEmploymentHistory,
-    usePersonEmploymentHistory
+    usePersonEmploymentHistory,
+    usePersonReportingRelationships
   };
 };

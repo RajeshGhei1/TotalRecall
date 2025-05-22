@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyRelationship } from '@/types/company-relationship';
@@ -27,6 +26,7 @@ export const useCompanyOrgChart = (companyId?: string) => {
           person_id,
           role,
           is_current,
+          reports_to,
           person:people(id, full_name, email, type)
         `)
         .eq('company_id', companyId)
@@ -38,11 +38,9 @@ export const useCompanyOrgChart = (companyId?: string) => {
         return null;
       }
       
-      // In a real implementation, we would have manager_id in the database
-      // For now, let's infer based on roles to create a demo chart
+      // Process relationships using reports_to field
       const allNodes: Record<string, OrgChartNode> = {};
       const rootNodes: OrgChartNode[] = [];
-      let ceoNode: OrgChartNode | null = null;
       
       // First pass - create all nodes
       relationships.forEach((rel: any) => {
@@ -60,18 +58,28 @@ export const useCompanyOrgChart = (companyId?: string) => {
         };
         
         allNodes[person.id] = node;
+      });
+      
+      // Second pass - build the hierarchy based on reports_to
+      relationships.forEach((rel: any) => {
+        const personId = rel.person?.id;
+        if (!personId || !allNodes[personId]) return;
         
-        // If this looks like a CEO/Head role, mark as potential root
-        if (isCEORole(rel.role)) {
-          ceoNode = node;
+        const node = allNodes[personId];
+        
+        if (rel.reports_to && allNodes[rel.reports_to]) {
+          // This person reports to someone, add as child
+          const managerNode = allNodes[rel.reports_to];
+          managerNode.children.push(node);
+        } else {
+          // This person doesn't report to anyone in the company, add to root
+          rootNodes.push(node);
         }
       });
       
-      // If we have a CEO, use that as root, otherwise create a virtual company node
-      if (ceoNode) {
-        rootNodes.push(ceoNode);
-      } else {
-        // Create nodes for each department/role type
+      // If no explicit hierarchy is defined, fall back to inferring based on roles
+      if (rootNodes.length === 0 && Object.keys(allNodes).length > 0) {
+        // Fall back to inferring hierarchy based on roles
         const departments = groupByDepartment(relationships);
         
         Object.entries(departments).forEach(([dept, people]) => {
