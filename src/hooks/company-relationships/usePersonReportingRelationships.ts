@@ -3,6 +3,23 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, ReportingRelationshipsResult } from '@/types/company-relationship-types';
 
+// Helper function to safely extract person data
+const extractPersonData = (personData: any): ReportingPerson | null => {
+  if (!personData) return null;
+  
+  return {
+    id: personData.id || '',
+    full_name: personData.full_name || '',
+    email: personData.email || null,
+    type: personData.type || '',
+    role: personData.role ? (
+      Array.isArray(personData.role) && personData.role[0] ? 
+      personData.role[0].role : 
+      typeof personData.role === 'string' ? personData.role : undefined
+    ) : undefined
+  };
+};
+
 export const usePersonReportingRelationships = (
   personId?: string,
   companyId?: string
@@ -63,30 +80,40 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData && personData.reports_to && personData.manager) {
+          const managerData = personData.manager;
+          const managerRole = managerData.manager_role && 
+                             Array.isArray(managerData.manager_role) && 
+                             managerData.manager_role.length > 0 ? 
+                             managerData.manager_role[0].role : 
+                             undefined;
+          
           managerPerson = {
-            id: personData.manager.id,
-            full_name: personData.manager.full_name,
-            email: personData.manager.email,
-            type: personData.manager.type,
-            role: personData.manager.manager_role && 
-                  personData.manager.manager_role[0] ? 
-                  personData.manager.manager_role[0].role : undefined
+            id: managerData.id || '',
+            full_name: managerData.full_name || '',
+            email: managerData.email || null,
+            type: managerData.type || '',
+            role: managerRole
           };
         }
 
         const directReports: ReportingPerson[] = [];
         
-        if (reportsData) {
+        if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
             if (item && item.person) {
+              const personObj = item.person;
+              let role = undefined;
+              
+              if (personObj.role && Array.isArray(personObj.role) && personObj.role.length > 0) {
+                role = personObj.role[0]?.role;
+              }
+              
               directReports.push({
-                id: item.person.id,
-                full_name: item.person.full_name,
-                email: item.person.email,
-                type: item.person.type,
-                role: item.person.role && 
-                      item.person.role[0] ? 
-                      item.person.role[0].role : undefined
+                id: personObj.id || '',
+                full_name: personObj.full_name || '',
+                email: personObj.email || null,
+                type: personObj.type || '',
+                role: role
               });
             }
           }

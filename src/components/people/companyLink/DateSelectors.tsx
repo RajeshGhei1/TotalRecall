@@ -7,7 +7,6 @@ import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { parseFormDate } from "@/utils/dateUtils";
 
 interface DateSelectorsProps {
   startDate: Date | undefined;
@@ -43,7 +42,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Calendar
               mode="single"
               selected={startDate}
-              onSelect={(date) => onStartDateChange(date)}
+              onSelect={onStartDateChange}
               disabled={(date) => date > new Date()}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
@@ -70,7 +69,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
             <Calendar
               mode="single"
               selected={endDate}
-              onSelect={(date) => onEndDateChange(date)}
+              onSelect={onEndDateChange}
               disabled={(date) =>
                 date > new Date() || (date && startDate && date < startDate)
               }

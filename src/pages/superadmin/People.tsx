@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -12,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import CompanyLinkForm from '@/components/people/CompanyLinkForm';
+import { CompanyLinkForm } from '@/components/people/companyLink';
 import PeopleActionBar from '@/components/people/PeopleActionBar';
 import PeopleTabsContent from '@/components/people/PeopleTabsContent';
 import BulkUploadDialog from '@/components/common/BulkUploadDialog';

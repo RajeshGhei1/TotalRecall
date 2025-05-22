@@ -50,3 +50,33 @@ export const parseFormDate = (dateValue: any): string | null => {
     return null;
   }
 };
+
+/**
+ * Converts a date string to a Date object
+ */
+export const stringToDate = (dateString: string | null | undefined): Date | undefined => {
+  if (!dateString) return undefined;
+  
+  try {
+    const date = new Date(dateString);
+    return isValid(date) ? date : undefined;
+  } catch (error) {
+    console.error("Error converting string to date:", error, dateString);
+    return undefined;
+  }
+};
+
+/**
+ * Formats a date for display in a consistent manner
+ */
+export const formatDisplayDate = (date: Date | string | null | undefined): string => {
+  if (!date) return '';
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return isValid(dateObj) ? format(dateObj, 'PP') : '';
+  } catch (error) {
+    console.error("Error formatting date for display:", error, date);
+    return '';
+  }
+};
