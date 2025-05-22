@@ -24,8 +24,7 @@ export const usePersonReportingRelationships = (
               id,
               full_name,
               email,
-              type,
-              manager_role:company_relationships!company_relationships_person_id_fkey(role)
+              type
             )
           `)
           .eq('person_id', personId)
@@ -46,9 +45,9 @@ export const usePersonReportingRelationships = (
               id, 
               full_name,
               email,
-              type,
-              role:company_relationships!company_relationships_person_id_fkey(role)
-            )
+              type
+            ),
+            role
           `)
           .eq('reports_to', personId)
           .eq('company_id', companyId)
@@ -64,15 +63,6 @@ export const usePersonReportingRelationships = (
         
         if (personData && personData.reports_to && personData.manager) {
           const managerData = personData.manager;
-          let managerRole = undefined;
-          
-          if (managerData && 
-              managerData.manager_role && 
-              Array.isArray(managerData.manager_role) && 
-              managerData.manager_role.length > 0 && 
-              managerData.manager_role[0]) {
-            managerRole = managerData.manager_role[0].role;
-          }
           
           if (managerData && typeof managerData === 'object' && 'id' in managerData) {
             managerPerson = {
@@ -80,7 +70,7 @@ export const usePersonReportingRelationships = (
               full_name: managerData.full_name || '',
               email: managerData.email || null,
               type: managerData.type || '',
-              role: managerRole
+              role: undefined // We don't have the role in this query
             };
           }
         }
@@ -91,14 +81,6 @@ export const usePersonReportingRelationships = (
           for (const item of reportsData) {
             if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
               const personObj = item.person;
-              let role = undefined;
-              
-              if (personObj && personObj.role && 
-                  Array.isArray(personObj.role) && 
-                  personObj.role.length > 0 && 
-                  personObj.role[0]) {
-                role = personObj.role[0]?.role;
-              }
               
               if (personObj) {
                 directReports.push({
@@ -106,7 +88,7 @@ export const usePersonReportingRelationships = (
                   full_name: personObj.full_name || '',
                   email: personObj.email || null,
                   type: personObj.type || '',
-                  role: role
+                  role: item.role
                 });
               }
             }

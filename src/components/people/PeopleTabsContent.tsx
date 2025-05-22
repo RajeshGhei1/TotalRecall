@@ -18,7 +18,7 @@ interface PeopleTabsContentProps {
   companyFilter?: string;
 }
 
-const PeopleTabsContent = ({ 
+const PeopleTabsContent: React.FC<PeopleTabsContentProps> = ({ 
   personType, 
   activeTab, 
   setActiveTab, 
@@ -31,7 +31,7 @@ const PeopleTabsContent = ({
   
   if (personType === 'talent') {
     return (
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <ScrollArea className="w-full">
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -150,7 +150,7 @@ const PeopleTabsContent = ({
     );
   } else {
     return (
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <ScrollArea className="w-full">
           <TabsList className="mb-4 w-full md:w-auto inline-flex">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
