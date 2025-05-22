@@ -15,7 +15,7 @@ const PersonNavigation: React.FC<PersonNavigationProps> = ({
   personType
 }) => {
   const navigate = useNavigate();
-  const { people, isLoading } = usePeople(personType);
+  const { people, isLoadingPeople } = usePeople();
   
   // Find the current index in the people array
   const currentIndex = people.findIndex(person => person.id === currentPersonId);
@@ -40,7 +40,7 @@ const PersonNavigation: React.FC<PersonNavigationProps> = ({
     }
   };
   
-  if (isLoading || people.length <= 1) {
+  if (isLoadingPeople || people.length <= 1) {
     return null;
   }
   

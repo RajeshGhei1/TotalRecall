@@ -84,17 +84,22 @@ export const usePersonReportingRelationships = (
 
         const directReports: ReportingPerson[] = [];
         
-        if (reportsData) {
+        if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
-            if (item && item.person && item.person.id) {
-              const personRoleData = item.person.role?.[0]?.role;
-              const personRole = typeof personRoleData === 'string' ? personRoleData : '';
+            if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
+              // Safe type check for item.person.role
+              let personRole = '';
+              if (Array.isArray(item.person.role) && item.person.role.length > 0 && 
+                  typeof item.person.role[0] === 'object' && item.person.role[0] && 
+                  'role' in item.person.role[0]) {
+                personRole = String(item.person.role[0].role || '');
+              }
               
               directReports.push({
-                id: item.person.id,
-                full_name: item.person.full_name || '',
+                id: String(item.person.id),
+                full_name: String(item.person.full_name || ''),
                 email: item.person.email || null,
-                type: item.person.type || '',
+                type: String(item.person.type || ''),
                 role: personRole
               });
             }
