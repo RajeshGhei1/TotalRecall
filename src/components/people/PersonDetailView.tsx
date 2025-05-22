@@ -1,130 +1,45 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import AdminLayout from '@/components/AdminLayout';
-import { toast } from 'sonner';
-import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
-import CompanyLinkForm from './CompanyLinkForm';
-import PersonEditDialog from './personForm/PersonEditDialog';
-import { usePersonQuery } from '@/hooks/people/usePersonQuery';
-import PersonNavigation from './PersonNavigation';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { usePersonDetails } from '@/hooks/people/usePersonDetails';
+import PersonHeader from './detail/PersonHeader';
 import PersonBasicInfo from './detail/PersonBasicInfo';
 import PersonTabsContent from './detail/PersonTabsContent';
-import PersonHeader from './detail/PersonHeader';
-import PersonDetailBreadcrumb from './detail/PersonDetailBreadcrumb';
 import PersonDetailSkeleton from './detail/PersonDetailSkeleton';
 import PersonNotFound from './detail/PersonNotFound';
+import PersonDetailBreadcrumb from './detail/PersonDetailBreadcrumb';
+import { usePersonEmploymentHistory } from '@/hooks/company-relationships/usePersonEmploymentHistory';
 
 const PersonDetailView = () => {
-  const { id } = useParams<{ id: string }>();
-  const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
-  
-  const { data: person, isLoading: loading } = usePersonQuery(id);
-  
-  const { usePersonEmploymentHistory } = useCompanyPeopleRelationship();
-  const { data: employmentHistory, isLoading: loadingHistory } = usePersonEmploymentHistory(id);
-  
-  // Fetch companies for the dropdown in the company link form
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('companies')
-          .select('id, name')
-          .order('name');
-          
-        if (error) throw error;
-        
-        setCompanies(data || []);
-      } catch (error) {
-        console.error('Error fetching companies:', error);
-        toast.error('Failed to load companies');
-      }
-    };
-    
-    fetchCompanies();
-  }, []);
+  const { personId } = useParams<{ personId: string }>();
+  const navigate = useNavigate();
+  const { person, isLoading: isLoadingPerson, error } = usePersonDetails(personId);
+  const { employmentHistory, isLoading: isLoadingHistory } = usePersonEmploymentHistory(personId);
 
-  const handleAddEmployment = () => {
-    setIsCompanyLinkFormOpen(true);
-  };
-
-  const handleCompanyLinkSuccess = () => {
-    setIsCompanyLinkFormOpen(false);
-    // The query is automatically invalidated in the useCompanyPeopleRelationship hook
-  };
-
-  const handleEditPerson = () => {
-    setIsEditDialogOpen(true);
-  };
-
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <PersonDetailSkeleton />
-        </div>
-      </AdminLayout>
-    );
+  if (isLoadingPerson || isLoadingHistory) {
+    return <PersonDetailSkeleton />;
   }
 
-  if (!person) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <PersonNotFound />
-        </div>
-      </AdminLayout>
-    );
+  if (error || !person) {
+    return <PersonNotFound onBack={() => navigate('/people')} />;
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6">
-        <PersonDetailBreadcrumb personName={person?.full_name} />
-        
-        {/* Person navigation */}
-        <div className="mb-6">
-          {id && <PersonNavigation currentPersonId={id} personType={person?.type} />}
+    <div className="container px-4 py-4 mx-auto max-w-7xl">
+      <PersonDetailBreadcrumb person={person} />
+      <PersonHeader 
+        person={person} 
+        currentCompany={person.current_company}
+      />
+      <div className="grid grid-cols-1 gap-6 mt-6 md:grid-cols-3">
+        <div className="md:col-span-1">
+          <PersonBasicInfo person={person} employmentHistory={employmentHistory} />
         </div>
-        
-        <PersonHeader person={person} onEdit={handleEditPerson} />
-        
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Left column - Basic Info */}
-          <PersonBasicInfo person={person} />
-          
-          {/* Right column - Tabs */}
-          <PersonTabsContent 
-            person={person}
-            employmentHistory={employmentHistory || []}
-            loadingHistory={loadingHistory}
-            onAddCompany={handleAddEmployment}
-          />
+        <div className="md:col-span-2">
+          <PersonTabsContent person={person} />
         </div>
-
-        {/* Company link form */}
-        <CompanyLinkForm 
-          isOpen={isCompanyLinkFormOpen}
-          onClose={() => setIsCompanyLinkFormOpen(false)}
-          onSubmit={handleCompanyLinkSuccess}
-          companies={companies}
-          personType={person?.type}
-          personId={id}
-          isSubmitting={false}
-        />
-
-        {/* Person edit dialog */}
-        <PersonEditDialog
-          isOpen={isEditDialogOpen}
-          onClose={() => setIsEditDialogOpen(false)}
-          person={person}
-        />
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 
