@@ -70,10 +70,10 @@ export const useCompanyReportingRelationships = (
                   .eq('is_current', true)
                   .maybeSingle();
                   
-                if (manager && manager.person && typeof manager.person === 'object') {
-                  const personData = manager.person;
+                if (manager && manager.person) {
+                  const personData = manager.person as any;
                   
-                  if (personData && 'id' in personData) {
+                  if (personData && personData.id) {
                     // Apply search filter if provided
                     const fullName = personData.full_name || '';
                     const email = personData.email || '';
@@ -120,10 +120,10 @@ export const useCompanyReportingRelationships = (
           
           if (reportData && Array.isArray(reportData)) {
             for (const item of reportData) {
-              if (item.person && typeof item.person === 'object') {
-                if (item.person && 'id' in item.person) {
-                  const personData = item.person;
-                  
+              if (item.person) {
+                const personData = item.person as any;
+                
+                if (personData && personData.id) {
                   // Apply search filter if provided
                   const fullName = personData.full_name || '';
                   const email = personData.email || '';

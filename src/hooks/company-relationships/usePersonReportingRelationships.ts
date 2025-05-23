@@ -62,9 +62,9 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData && personData.reports_to && personData.manager) {
-          const managerData = personData.manager;
+          const managerData = personData.manager as any;
           
-          if (managerData && typeof managerData === 'object' && 'id' in managerData) {
+          if (managerData && managerData.id) {
             managerPerson = {
               id: managerData.id || '',
               full_name: managerData.full_name || '',
@@ -79,10 +79,10 @@ export const usePersonReportingRelationships = (
         
         if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
-            if (item && item.person && typeof item.person === 'object' && 'id' in item.person) {
-              const personObj = item.person;
+            if (item && item.person) {
+              const personObj = item.person as any;
               
-              if (personObj) {
+              if (personObj && personObj.id) {
                 directReports.push({
                   id: personObj.id || '',
                   full_name: personObj.full_name || '',
