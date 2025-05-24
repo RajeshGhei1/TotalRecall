@@ -19,11 +19,11 @@ import DateFieldInput from './fields/DateFieldInput';
 import FormApplicabilitySelector from './fields/FormApplicabilitySelector';
 import { CustomField } from '@/hooks/customFields/types';
 
-// Schema for the form
+// Schema for the form - updated to include multiselect
 export const customFieldSchema = z.object({
   name: z.string().min(1, "Name is required"),
   label: z.string().min(1, "Label is required"),
-  fieldType: z.enum(['text', 'textarea', 'dropdown', 'number', 'boolean', 'date']),
+  fieldType: z.enum(['text', 'textarea', 'dropdown', 'multiselect', 'number', 'boolean', 'date']),
   required: z.boolean().default(false),
   placeholder: z.string().optional(),
   defaultValue: z.string().optional(),
@@ -131,7 +131,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             {/* Conditional Fields based on fieldType */}
             {fieldType === 'text' && <TextFieldInput field={dummyField} form={form} fieldName="placeholder" />}
             {fieldType === 'textarea' && <TextareaInput field={dummyField} form={form} fieldName="placeholder" />}
-            {fieldType === 'dropdown' && <DropdownFieldInput field={dummyField} form={form} fieldName="options" />}
+            {(fieldType === 'dropdown' || fieldType === 'multiselect') && <DropdownFieldInput field={dummyField} form={form} fieldName="options" />}
             {fieldType === 'number' && <NumberFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
             {fieldType === 'boolean' && <BooleanFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
             {fieldType === 'date' && <DateFieldInput field={dummyField} form={form} fieldName="defaultValue" />}
