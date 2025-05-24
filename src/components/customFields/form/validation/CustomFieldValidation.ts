@@ -64,7 +64,7 @@ export const numberFieldSchema = baseFieldSchema.extend({
   }
 );
 
-// Select field specific validation (includes both select and dropdown)
+// Select field specific validation (includes select, multiselect, and dropdown)
 export const selectFieldSchema = baseFieldSchema.extend({
   fieldType: z.union([z.literal('select'), z.literal('multiselect'), z.literal('dropdown')]),
   options: z.array(z.object({

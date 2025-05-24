@@ -54,6 +54,7 @@ const RenderCustomField: React.FC<RenderCustomFieldProps> = ({ field, form }) =>
       );
     
     case 'dropdown':
+    case 'multiselect':
       return (
         <DropdownFieldInput 
           field={field}

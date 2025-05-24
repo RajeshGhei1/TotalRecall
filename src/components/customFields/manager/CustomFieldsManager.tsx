@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -45,10 +46,11 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 
   const handleSubmit = async (values: FieldFormValues) => {
     try {
-      // Map fieldType from form to validation schema
+      // Map fieldType for validation - only convert dropdown to select for validation
       const validationValues = {
         ...values,
-        fieldType: values.fieldType === 'dropdown' ? 'select' : values.fieldType
+        fieldType: values.fieldType === 'dropdown' ? 'select' : 
+                  values.fieldType === 'multiselect' ? 'multiselect' : values.fieldType
       };
       
       // Validate the field data using our comprehensive validation
@@ -78,7 +80,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       const fieldData = {
         name: validatedData.name,
         label: validatedData.label,
-        fieldType: validatedData.fieldType === 'select' ? 'dropdown' : validatedData.fieldType,
+        fieldType: values.fieldType, // Use original fieldType from form (including multiselect)
         required: validatedData.required,
         placeholder: validatedData.placeholder,
         info: validatedData.info,

@@ -41,11 +41,11 @@ export interface UseCustomFieldsReturn {
   updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => Promise<any>;
 }
 
-// Export interface for form values
+// Export interface for form values - updated to include multiselect
 export interface FieldFormValues {
   name: string;            // Required field
   label: string;
-  fieldType: "text" | "textarea" | "dropdown" | "number" | "boolean" | "date";
+  fieldType: "text" | "textarea" | "dropdown" | "multiselect" | "number" | "boolean" | "date";
   required: boolean;
   placeholder?: string;
   defaultValue?: string;
