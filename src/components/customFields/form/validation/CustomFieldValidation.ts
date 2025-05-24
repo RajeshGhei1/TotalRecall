@@ -12,7 +12,7 @@ export const baseFieldSchema = z.object({
     .min(1, 'Field label is required')
     .max(200, 'Field label must be less than 200 characters'),
   
-  fieldType: z.enum(['text', 'textarea', 'number', 'date', 'boolean', 'select', 'multiselect']),
+  fieldType: z.enum(['text', 'textarea', 'number', 'date', 'boolean', 'select', 'multiselect', 'dropdown']),
   
   required: z.boolean().optional().default(false),
   
@@ -64,13 +64,13 @@ export const numberFieldSchema = baseFieldSchema.extend({
   }
 );
 
-// Select field specific validation
+// Select field specific validation (includes both select and dropdown)
 export const selectFieldSchema = baseFieldSchema.extend({
-  fieldType: z.union([z.literal('select'), z.literal('multiselect')]),
+  fieldType: z.union([z.literal('select'), z.literal('multiselect'), z.literal('dropdown')]),
   options: z.array(z.object({
     value: z.string().min(1, 'Option value is required'),
     label: z.string().min(1, 'Option label is required'),
-  })).min(1, 'At least one option is required for select fields'),
+  })).min(1, 'At least one option is required for select fields').optional(),
 });
 
 // Boolean field validation
@@ -121,6 +121,7 @@ export const validateCustomField = (data: any) => {
         return booleanFieldSchema.parse(data);
       case 'select':
       case 'multiselect':
+      case 'dropdown':
         return selectFieldSchema.parse(data);
       default:
         return baseFieldSchema.parse(data);

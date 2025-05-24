@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -46,16 +45,22 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 
   const handleSubmit = async (values: FieldFormValues) => {
     try {
+      // Map fieldType from form to validation schema
+      const validationValues = {
+        ...values,
+        fieldType: values.fieldType === 'dropdown' ? 'select' : values.fieldType
+      };
+      
       // Validate the field data using our comprehensive validation
-      const validatedData = validateCustomField(values);
+      const validatedData = validateCustomField(validationValues);
       
       // Generate a field_key from the name
       const fieldKey = validatedData.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
       
       // Process options to ensure they have valid structure for select/multiselect fields
       let processedOptions: { value: string; label: string }[] = [];
-      if ((validatedData.fieldType === 'select' || validatedData.fieldType === 'multiselect') && validatedData.options) {
-        processedOptions = validatedData.options.map(opt => ({
+      if ((validatedData.fieldType === 'select' || validatedData.fieldType === 'multiselect') && values.options) {
+        processedOptions = values.options.map(opt => ({
           value: opt.value.trim(),
           label: opt.label.trim()
         }));
@@ -69,11 +74,11 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         tenantId: tenantId === 'global' ? null : tenantId
       });
       
-      // Create the field with properly formatted data
+      // Create the field with properly formatted data - map back to database field type
       const fieldData = {
         name: validatedData.name,
         label: validatedData.label,
-        fieldType: validatedData.fieldType,
+        fieldType: validatedData.fieldType === 'select' ? 'dropdown' : validatedData.fieldType,
         required: validatedData.required,
         placeholder: validatedData.placeholder,
         info: validatedData.info,
