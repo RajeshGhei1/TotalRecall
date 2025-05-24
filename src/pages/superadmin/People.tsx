@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { QueryErrorDisplay } from '@/components/ui/error-display';
 import { CompanyLinkForm } from '@/components/people/companyLink';
 import PeopleActionBar from '@/components/people/PeopleActionBar';
 import PeopleTabsContent from '@/components/people/PeopleTabsContent';
@@ -37,11 +39,13 @@ const People = () => {
   const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+  const [companiesError, setCompaniesError] = useState<Error | null>(null);
 
   // Fetch companies for the dropdown
   useEffect(() => {
     const fetchCompanies = async () => {
       setIsLoadingCompanies(true);
+      setCompaniesError(null);
       try {
         const { data, error } = await supabase
           .from('companies')
@@ -53,6 +57,7 @@ const People = () => {
         setCompanies(data || []);
       } catch (error) {
         console.error('Error fetching companies:', error);
+        setCompaniesError(error as Error);
         toast.error('Failed to load companies');
       } finally {
         setIsLoadingCompanies(false);
@@ -83,95 +88,113 @@ const People = () => {
     setIsCreatePersonDialogOpen(false);
   };
 
+  const handleRetryCompanies = () => {
+    // Re-trigger the useEffect
+    setCompanies([]);
+    setCompanyFilter('all');
+  };
+
   return (
     <AdminLayout>
-      <QueryClientProvider client={queryClient}>
-        <div className="p-3 sm:p-6">
-          <Breadcrumb className="mb-4 md:mb-6">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/superadmin/dashboard">Superadmin</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>People</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <div className="p-3 sm:p-6">
+            <Breadcrumb className="mb-4 md:mb-6">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/superadmin/dashboard">Superadmin</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>People</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
 
-          <div className="mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">People Management</h1>
-            <p className="text-sm md:text-base text-muted-foreground">Manage talents and business contacts across the JobMojo platform.</p>
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">People Management</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Manage talents and business contacts across the JobMojo platform.</p>
+            </div>
+
+            {/* Person type selector */}
+            <div className="mb-4 md:mb-6">
+              <Tabs defaultValue={personType} onValueChange={(value) => setPersonType(value as 'talent' | 'contact')} className="w-full sm:w-[400px]">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="talent">Talent Pool</TabsTrigger>
+                  <TabsTrigger value="contact">Business Contacts</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Company loading error */}
+            {companiesError && (
+              <QueryErrorDisplay
+                error={companiesError}
+                onRetry={handleRetryCompanies}
+                entityName="companies"
+                className="mb-4"
+              />
+            )}
+
+            <PeopleActionBar 
+              personType={personType}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onAddPerson={handleAddPerson}
+              companyFilter={companyFilter}
+              setCompanyFilter={setCompanyFilter}
+              companyOptions={companies}
+              onBulkUpload={() => setIsBulkUploadOpen(true)}
+              onApiConnection={() => setIsApiConnectionOpen(true)}
+            />
+
+            <PeopleTabsContent
+              personType={personType}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              onLinkToCompany={handleLinkToCompany}
+              searchQuery={searchQuery}
+              companyFilter={companyFilter}
+            />
+
+            {/* Company link form */}
+            <CompanyLinkForm 
+              isOpen={isCompanyLinkFormOpen}
+              onClose={() => setIsCompanyLinkFormOpen(false)}
+              onSubmit={() => {
+                queryClient.invalidateQueries({ queryKey: ['people', personType] });
+                setIsCompanyLinkFormOpen(false);
+              }}
+              companies={companies}
+              personType={personType}
+              personId={selectedPersonId || undefined}
+              isSubmitting={false}
+            />
+
+            {/* Create person dialog */}
+            <CreatePersonDialog
+              isOpen={isCreatePersonDialogOpen}
+              onClose={() => setIsCreatePersonDialogOpen(false)}
+              onSuccess={handlePersonCreated}
+              personType={personType}
+            />
+
+            {/* Bulk upload dialog */}
+            <BulkUploadDialog 
+              isOpen={isBulkUploadOpen}
+              onClose={() => setIsBulkUploadOpen(false)}
+              entityType={personType}
+            />
+
+            {/* API connection dialog */}
+            <ApiConnectionDialog 
+              isOpen={isApiConnectionOpen}
+              onClose={() => setIsApiConnectionOpen(false)}
+              entityType={personType}
+            />
           </div>
-
-          {/* Person type selector */}
-          <div className="mb-4 md:mb-6">
-            <Tabs defaultValue={personType} onValueChange={(value) => setPersonType(value as 'talent' | 'contact')} className="w-full sm:w-[400px]">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="talent">Talent Pool</TabsTrigger>
-                <TabsTrigger value="contact">Business Contacts</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <PeopleActionBar 
-            personType={personType}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onAddPerson={handleAddPerson}
-            companyFilter={companyFilter}
-            setCompanyFilter={setCompanyFilter}
-            companyOptions={companies}
-            onBulkUpload={() => setIsBulkUploadOpen(true)}
-            onApiConnection={() => setIsApiConnectionOpen(true)}
-          />
-
-          <PeopleTabsContent
-            personType={personType}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            onLinkToCompany={handleLinkToCompany}
-            searchQuery={searchQuery}
-            companyFilter={companyFilter}
-          />
-
-          {/* Company link form */}
-          <CompanyLinkForm 
-            isOpen={isCompanyLinkFormOpen}
-            onClose={() => setIsCompanyLinkFormOpen(false)}
-            onSubmit={() => {
-              queryClient.invalidateQueries({ queryKey: ['people', personType] });
-              setIsCompanyLinkFormOpen(false);
-            }}
-            companies={companies}
-            personType={personType}
-            personId={selectedPersonId || undefined}
-            isSubmitting={false}
-          />
-
-          {/* Create person dialog */}
-          <CreatePersonDialog
-            isOpen={isCreatePersonDialogOpen}
-            onClose={() => setIsCreatePersonDialogOpen(false)}
-            onSuccess={handlePersonCreated}
-            personType={personType}
-          />
-
-          {/* Bulk upload dialog */}
-          <BulkUploadDialog 
-            isOpen={isBulkUploadOpen}
-            onClose={() => setIsBulkUploadOpen(false)}
-            entityType={personType}
-          />
-
-          {/* API connection dialog */}
-          <ApiConnectionDialog 
-            isOpen={isApiConnectionOpen}
-            onClose={() => setIsApiConnectionOpen(false)}
-            entityType={personType}
-          />
-        </div>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </AdminLayout>
   );
 };

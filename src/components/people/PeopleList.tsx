@@ -4,6 +4,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { usePeople } from '@/hooks/usePeople';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryErrorDisplay } from '@/components/ui/error-display';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import PersonEditDialog from './personForm/PersonEditDialog';
 import MobilePeopleCards from './list/MobilePeopleCards';
 import PeopleTable from './list/PeopleTable';
@@ -59,6 +61,11 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
     setEditPerson(null);
   };
 
+  const handleRetry = () => {
+    // This will trigger a refetch of the query
+    window.location.reload();
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -75,9 +82,12 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
 
   if (isError) {
     return (
-      <div className="text-center py-8 text-destructive">
-        <p>Error loading data: {(error as Error).message}</p>
-      </div>
+      <QueryErrorDisplay
+        error={error}
+        onRetry={handleRetry}
+        entityName={personType === 'talent' ? 'talents' : 'contacts'}
+        className="my-8"
+      />
     );
   }
 
@@ -90,7 +100,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
   }
 
   return (
-    <>
+    <ErrorBoundary>
       {isMobile ? (
         <MobilePeopleCards
           people={people}
@@ -123,7 +133,7 @@ const PeopleList = ({ personType, onLinkToCompany, searchQuery, companyFilter }:
         onClose={handleEditDialogClose}
         person={editPerson}
       />
-    </>
+    </ErrorBoundary>
   );
 };
 

@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 import { Person } from '@/types/person';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryErrorDisplay } from '@/components/ui/error-display';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import CompanyOrgChart from '../charts/CompanyOrgChart';
 
 interface PeopleSectionProps {
@@ -22,75 +24,111 @@ const PeopleSection: React.FC<PeopleSectionProps> = ({ form, showFullView = fals
   const companyId = formValues.id ?? 'new';
   
   const [activeTab, setActiveTab] = useState('current');
-  const { relationships } = useCompanyPeopleRelationship(companyId);
+  const { relationships, isLoading, error } = useCompanyPeopleRelationship(companyId);
   
   // Filter relationships by current and past
   const currentRelationships = relationships?.filter(rel => rel.is_current) || [];
   const pastRelationships = relationships?.filter(rel => !rel.is_current) || [];
+
+  const handleRetry = () => {
+    window.location.reload();
+  };
   
   if (showFullView) {
     return (
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>People Associated with Company</CardTitle>
-          <CardDescription>Manage and view all people associated with this company</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="current">Current People ({currentRelationships.length})</TabsTrigger>
-              <TabsTrigger value="past">Past Associations ({pastRelationships.length})</TabsTrigger>
-              <TabsTrigger value="org-chart">Organization Chart</TabsTrigger>
-              <TabsTrigger value="manage">Manage Associations</TabsTrigger>
-            </TabsList>
+      <ErrorBoundary>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>People Associated with Company</CardTitle>
+            <CardDescription>Manage and view all people associated with this company</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <QueryErrorDisplay
+                error={error}
+                onRetry={handleRetry}
+                entityName="company relationships"
+                className="mb-4"
+              />
+            )}
             
-            <TabsContent value="current">
-              <div className="space-y-4">
-                {currentRelationships.length > 0 ? (
-                  <PeopleRelationshipList relationships={currentRelationships} />
-                ) : (
-                  <div className="text-center p-4 text-muted-foreground rounded-md border">
-                    No current people associated with this company
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="past">
-              <div className="space-y-4">
-                {pastRelationships.length > 0 ? (
-                  <PeopleRelationshipList relationships={pastRelationships} />
-                ) : (
-                  <div className="text-center p-4 text-muted-foreground rounded-md border">
-                    No past associations found
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="org-chart">
-              {companyId !== 'new' && <CompanyOrgChart companyId={companyId} />}
-              {companyId === 'new' && (
-                <div className="text-center p-4 text-muted-foreground rounded-md border">
-                  Save the company first to view the organization chart
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="current">Current People ({currentRelationships.length})</TabsTrigger>
+                <TabsTrigger value="past">Past Associations ({pastRelationships.length})</TabsTrigger>
+                <TabsTrigger value="org-chart">Organization Chart</TabsTrigger>
+                <TabsTrigger value="manage">Manage Associations</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="current">
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <PeopleRelationshipSkeleton />
+                  ) : currentRelationships.length > 0 ? (
+                    <PeopleRelationshipList relationships={currentRelationships} />
+                  ) : (
+                    <div className="text-center p-4 text-muted-foreground rounded-md border">
+                      No current people associated with this company
+                    </div>
+                  )}
                 </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="manage">
-              <CompanyPeopleManager companyId={companyId} />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </TabsContent>
+              
+              <TabsContent value="past">
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <PeopleRelationshipSkeleton />
+                  ) : pastRelationships.length > 0 ? (
+                    <PeopleRelationshipList relationships={pastRelationships} />
+                  ) : (
+                    <div className="text-center p-4 text-muted-foreground rounded-md border">
+                      No past associations found
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="org-chart">
+                {companyId !== 'new' && <CompanyOrgChart companyId={companyId} />}
+                {companyId === 'new' && (
+                  <div className="text-center p-4 text-muted-foreground rounded-md border">
+                    Save the company first to view the organization chart
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="manage">
+                <CompanyPeopleManager companyId={companyId} />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
     );
   }
   
   // Simple view for the company form
   return (
-    <CompanyPeopleManager companyId={companyId} />
+    <ErrorBoundary>
+      <CompanyPeopleManager companyId={companyId} />
+    </ErrorBoundary>
   );
 };
+
+// Helper component for loading state
+const PeopleRelationshipSkeleton: React.FC = () => (
+  <div className="space-y-4">
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="flex items-center space-x-4">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[200px]" />
+          <Skeleton className="h-4 w-[150px]" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 // Helper component to display people relationship list
 interface PeopleRelationshipListProps {
@@ -100,18 +138,22 @@ interface PeopleRelationshipListProps {
 const PeopleRelationshipList: React.FC<PeopleRelationshipListProps> = ({ relationships }) => {
   const [peopleData, setPeopleData] = useState<Record<string, Person>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   
   // Fetch people data for the relationships
   React.useEffect(() => {
     const fetchPeopleData = async () => {
       try {
+        setError(null);
         const { supabase } = await import('@/integrations/supabase/client');
         const personIds = relationships.map(rel => rel.person_id);
         
-        const { data } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('people')
           .select('*')
           .in('id', personIds);
+          
+        if (fetchError) throw fetchError;
           
         if (data) {
           const peopleMap: Record<string, Person> = {};
@@ -124,6 +166,7 @@ const PeopleRelationshipList: React.FC<PeopleRelationshipListProps> = ({ relatio
         setLoading(false);
       } catch (error) {
         console.error('Error fetching people data:', error);
+        setError(error as Error);
         setLoading(false);
       }
     };
@@ -132,18 +175,16 @@ const PeopleRelationshipList: React.FC<PeopleRelationshipListProps> = ({ relatio
   }, [relationships]);
   
   if (loading) {
+    return <PeopleRelationshipSkeleton />;
+  }
+
+  if (error) {
     return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[150px]" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <QueryErrorDisplay
+        error={error}
+        entityName="people details"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
   

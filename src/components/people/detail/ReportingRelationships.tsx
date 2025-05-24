@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorDisplay } from '@/components/ui/error-display';
 import { usePersonReportingRelationships } from '@/hooks/company-relationships/usePersonReportingRelationships';
 import ManagerDisplay from './reporting/ManagerDisplay';
 import DirectReportsDisplay from './reporting/DirectReportsDisplay';
@@ -15,7 +16,7 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
   personId,
   companyId
 }) => {
-  const { reportingRelationships, isLoading } = usePersonReportingRelationships(personId, companyId);
+  const { reportingRelationships, isLoading, isError, error } = usePersonReportingRelationships(personId, companyId);
 
   if (isLoading) {
     return (
@@ -35,6 +36,23 @@ const ReportingRelationships: React.FC<ReportingRelationshipsProps> = ({
               <Skeleton className="h-12 w-full mt-2" />
             </div>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Reporting Relationships</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <QueryErrorDisplay
+            error={error}
+            entityName="reporting relationships"
+            onRetry={() => window.location.reload()}
+          />
         </CardContent>
       </Card>
     );
