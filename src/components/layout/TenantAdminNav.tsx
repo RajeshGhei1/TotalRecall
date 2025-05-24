@@ -1,7 +1,6 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import NavItem from "./NavItem";
 import { 
   Home, 
   Settings, 
@@ -12,59 +11,43 @@ import {
 } from "lucide-react";
 
 const TenantAdminNav = () => {
-  const navigate = useNavigate();
-  
   return (
     <nav className="p-4 space-y-2">
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/dashboard")}
-      >
-        <Home className="mr-2 h-4 w-4" /> Dashboard
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/users")}
-      >
-        <Users className="mr-2 h-4 w-4" /> Users
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/talent")}
-      >
-        <UserRound className="mr-2 h-4 w-4" /> Talent
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/contacts")}
-      >
-        <UserRound className="mr-2 h-4 w-4" /> Contacts
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/companies")}
-      >
-        <Building className="mr-2 h-4 w-4" /> Companies
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/jobs")}
-      >
-        <Briefcase className="mr-2 h-4 w-4" /> Jobs
-      </Button>
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start" 
-        onClick={() => navigate("/tenant-admin/settings")}
-      >
-        <Settings className="mr-2 h-4 w-4" /> Settings
-      </Button>
+      <NavItem
+        href="/tenant-admin/dashboard"
+        icon={Home}
+        label="Dashboard"
+      />
+      <NavItem
+        href="/tenant-admin/users"
+        icon={Users}
+        label="Users"
+      />
+      <NavItem
+        href="/tenant-admin/talent"
+        icon={UserRound}
+        label="Talent"
+      />
+      <NavItem
+        href="/tenant-admin/contacts"
+        icon={UserRound}
+        label="Contacts"
+      />
+      <NavItem
+        href="/tenant-admin/companies"
+        icon={Building}
+        label="Companies"
+      />
+      <NavItem
+        href="/tenant-admin/jobs"
+        icon={Briefcase}
+        label="Jobs"
+      />
+      <NavItem
+        href="/tenant-admin/settings"
+        icon={Settings}
+        label="Settings"
+      />
     </nav>
   );
 };

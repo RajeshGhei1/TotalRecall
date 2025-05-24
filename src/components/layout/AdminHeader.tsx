@@ -4,13 +4,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
+import { useAdminContext } from "@/hooks/useAdminContext";
 
-interface AdminHeaderProps {
-  isSuperAdmin: boolean;
-}
-
-const AdminHeader = ({ isSuperAdmin }: AdminHeaderProps) => {
+const AdminHeader = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { adminType, isLoading } = useAdminContext();
+
+  const isSuperAdmin = adminType === 'super_admin';
 
   return (
     <header className="bg-white border-b px-4 py-3 flex justify-between items-center md:hidden">
@@ -23,7 +23,7 @@ const AdminHeader = ({ isSuperAdmin }: AdminHeaderProps) => {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <AdminSidebar isSuperAdmin={isSuperAdmin} />
+            <AdminSidebar />
           </SheetContent>
         </Sheet>
         <h1 className="text-lg font-semibold text-jobmojo-primary">
@@ -31,7 +31,7 @@ const AdminHeader = ({ isSuperAdmin }: AdminHeaderProps) => {
         </h1>
       </div>
       <div className="text-xs text-gray-500">
-        {isSuperAdmin ? "Super Admin" : "Tenant Admin"}
+        {isLoading ? "Loading..." : (isSuperAdmin ? "Super Admin" : "Tenant Admin")}
       </div>
     </header>
   );

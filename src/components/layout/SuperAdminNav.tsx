@@ -20,7 +20,10 @@ const SuperAdminNav = () => {
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
-    return currentPath.includes(path);
+    if (path === '/superadmin/dashboard') {
+      return currentPath === path;
+    }
+    return currentPath.startsWith(path);
   };
 
   const navItems = [
@@ -28,49 +31,49 @@ const SuperAdminNav = () => {
       label: 'Dashboard', 
       icon: <LayoutDashboard size={20} />, 
       href: '/superadmin/dashboard',
-      isActive: isActive('/dashboard') 
+      isActive: isActive('/superadmin/dashboard') 
     },
     { 
       label: 'Tenants', 
       icon: <Store size={20} />, 
       href: '/superadmin/tenants',
-      isActive: isActive('/tenants') 
+      isActive: isActive('/superadmin/tenants') 
     },
     { 
       label: 'Users', 
       icon: <Users size={20} />, 
       href: '/superadmin/users',
-      isActive: isActive('/users') 
+      isActive: isActive('/superadmin/users') 
     },
     { 
       label: 'Companies', 
       icon: <Building2 size={20} />, 
       href: '/superadmin/companies',
-      isActive: isActive('/companies') 
+      isActive: isActive('/superadmin/companies') 
     },
     { 
       label: 'People', 
       icon: <Users2 size={20} />, 
       href: '/superadmin/people',
-      isActive: isActive('/people') 
+      isActive: isActive('/superadmin/people') 
     },
     { 
       label: 'Revenue', 
       icon: <CircleDollarSign size={20} />, 
       href: '/superadmin/revenue',
-      isActive: isActive('/revenue') 
+      isActive: isActive('/superadmin/revenue') 
     },
     {
       label: 'Analytics', 
       icon: <PieChart size={20} />, 
       href: '/superadmin/analytics',
-      isActive: isActive('/analytics')
+      isActive: isActive('/superadmin/analytics')
     },
     { 
       label: 'Settings', 
       icon: <Settings size={20} />, 
       href: '/superadmin/settings',
-      isActive: isActive('/settings') 
+      isActive: isActive('/superadmin/settings') 
     },
   ];
 
