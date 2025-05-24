@@ -5,7 +5,7 @@ import { CompanyFormValues } from '../schema';
 import CompanyPeopleManager from '@/components/people/CompanyPeopleManager';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
+import { useCompanyRelationships } from '@/hooks/company-relationships/useCompanyRelationships';
 import { Person } from '@/types/person';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QueryErrorDisplay } from '@/components/ui/error-display';
@@ -24,7 +24,7 @@ const PeopleSection: React.FC<PeopleSectionProps> = ({ form, showFullView = fals
   const companyId = formValues.id ?? 'new';
   
   const [activeTab, setActiveTab] = useState('current');
-  const { relationships, isLoading, error } = useCompanyPeopleRelationship(companyId);
+  const { data: relationships, isLoading, error } = useCompanyRelationships(companyId);
   
   // Filter relationships by current and past
   const currentRelationships = relationships?.filter(rel => rel.is_current) || [];
