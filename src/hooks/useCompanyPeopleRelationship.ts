@@ -6,7 +6,7 @@ import { usePersonReportingRelationships } from './company-relationships/usePers
 
 export const useCompanyPeopleRelationship = (companyId?: string) => {
   const { linkPersonToCompany, createRelationship } = useCompanyRelationshipMutations();
-  const { relationships } = useCompanyRelationships(companyId);
+  const { data: relationships } = useCompanyRelationships(companyId);
   const { getPersonEmploymentHistory } = usePersonEmploymentHistory();
 
   return {
