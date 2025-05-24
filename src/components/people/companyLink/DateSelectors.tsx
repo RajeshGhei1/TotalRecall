@@ -21,17 +21,19 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   onStartDateChange,
   onEndDateChange,
 }) => {
-  // Ensure dates are valid before formatting
-  const formatSafeDate = (date: Date | undefined) => {
-    if (!date) return undefined;
-    if (date instanceof Date && isValid(date)) {
-      return format(date, "PPP");
+  const formatDisplayDate = (date: Date | undefined): string => {
+    if (!date) return "Pick a date";
+    
+    try {
+      if (isValid(date)) {
+        return format(date, "PPP");
+      }
+    } catch (error) {
+      console.error("Error formatting date:", error);
     }
-    return undefined;
+    
+    return "Pick a date";
   };
-
-  const formattedStartDate = formatSafeDate(startDate);
-  const formattedEndDate = formatSafeDate(endDate);
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -40,53 +42,54 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !startDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {formattedStartDate || <span>Pick a date</span>}
+              {formatDisplayDate(startDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-[1050]" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={startDate}
               onSelect={onStartDateChange}
               disabled={(date) => date > new Date()}
               initialFocus
-              className={cn("p-3 pointer-events-auto")}
             />
           </PopoverContent>
         </Popover>
       </div>
+      
       <div className="space-y-2">
         <Label>End Date (optional)</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {formattedEndDate || <span>Pick a date</span>}
+              {formatDisplayDate(endDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-[1050]" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={endDate}
               onSelect={onEndDateChange}
-              disabled={(date) =>
-                date > new Date() || (date && startDate && date < startDate)
-              }
+              disabled={(date) => {
+                if (date > new Date()) return true;
+                if (startDate && date < startDate) return true;
+                return false;
+              }}
               initialFocus
-              className={cn("p-3 pointer-events-auto")}
             />
           </PopoverContent>
         </Popover>

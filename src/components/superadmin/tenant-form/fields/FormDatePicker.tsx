@@ -37,23 +37,24 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
       control={form.control}
       name={name}
       render={({ field }) => {
-        // Ensure we have a valid Date object for display
-        const getDisplayDate = () => {
-          if (!field.value) return undefined;
+        const getDisplayValue = () => {
+          if (!field.value) return placeholder;
           
-          if (field.value instanceof Date) {
-            return isValid(field.value) ? field.value : undefined;
+          const date = field.value instanceof Date ? field.value : new Date(field.value);
+          
+          if (isValid(date)) {
+            return format(date, "PPP");
           }
           
-          if (typeof field.value === 'string') {
-            const date = new Date(field.value);
-            return isValid(date) ? date : undefined;
-          }
-          
-          return undefined;
+          return placeholder;
         };
-        
-        const displayDate = getDisplayDate();
+
+        const handleDateSelect = (date: Date | undefined) => {
+          field.onChange(date);
+        };
+
+        const currentDate = field.value instanceof Date ? field.value : 
+                           (field.value ? new Date(field.value) : undefined);
         
         return (
           <FormItem className="flex flex-col">
@@ -65,31 +66,26 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
-                    variant={"outline"}
+                    variant="outline"
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !displayDate && "text-muted-foreground",
+                      !field.value && "text-muted-foreground",
                       disabled && "bg-gray-50 opacity-70 cursor-not-allowed"
                     )}
                     disabled={disabled}
                   >
-                    {displayDate ? (
-                      format(displayDate, "PPP")
-                    ) : (
-                      <span>{placeholder}</span>
-                    )}
+                    {getDisplayValue()}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[1050]" align="start">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={displayDate}
-                  onSelect={(date) => field.onChange(date)}
+                  selected={isValid(currentDate) ? currentDate : undefined}
+                  onSelect={handleDateSelect}
                   disabled={disabled}
                   initialFocus
-                  className={cn("p-3 pointer-events-auto")}
                 />
               </PopoverContent>
             </Popover>

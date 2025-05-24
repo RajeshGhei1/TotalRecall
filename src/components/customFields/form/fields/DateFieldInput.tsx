@@ -28,27 +28,24 @@ interface DateFieldInputProps {
 }
 
 const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName }) => {
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
   return (
     <FormField
       control={form.control}
       name={fieldName}
       render={({ field: formField }) => {
-        // Parse the current value to a Date object if possible
-        const getCurrentDate = () => {
+        const parseCurrentValue = (): Date | undefined => {
           if (!formField.value) return undefined;
           
-          if (formField.value instanceof Date) {
-            return isValid(formField.value) ? formField.value : undefined;
+          if (formField.value instanceof Date && isValid(formField.value)) {
+            return formField.value;
           }
           
           if (typeof formField.value === 'string') {
-            // Try parsing as ISO date first
-            const isoDate = new Date(formField.value);
-            if (isValid(isoDate)) return isoDate;
+            const date = new Date(formField.value);
+            if (isValid(date)) return date;
             
-            // Try parsing as DD/MM/YYYY format
             const parsedDate = parse(formField.value, 'dd/MM/yyyy', new Date());
             if (isValid(parsedDate)) return parsedDate;
           }
@@ -56,37 +53,29 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
           return undefined;
         };
         
-        const currentDate = getCurrentDate();
+        const currentDate = parseCurrentValue();
         const displayValue = currentDate ? format(currentDate, 'dd/MM/yyyy') : '';
         
-        const handleInputChange = (inputValue: string) => {
-          if (!inputValue) {
+        const handleInputChange = (value: string) => {
+          if (!value) {
             formField.onChange(undefined);
             return;
           }
           
-          // Allow partial input during typing
-          if (inputValue.length < 10) {
-            formField.onChange(inputValue);
-            return;
-          }
-          
-          // Try to parse complete date input
-          try {
-            const parsedDate = parse(inputValue, 'dd/MM/yyyy', new Date());
+          if (value.length === 10) {
+            const parsedDate = parse(value, 'dd/MM/yyyy', new Date());
             if (isValid(parsedDate)) {
               formField.onChange(parsedDate);
-            } else {
-              formField.onChange(inputValue); // Keep raw input if invalid
+              return;
             }
-          } catch (error) {
-            formField.onChange(inputValue); // Keep raw input on parse error
           }
+          
+          formField.onChange(value);
         };
         
         const handleCalendarSelect = (date: Date | undefined) => {
           formField.onChange(date);
-          setShowCalendar(false);
+          setIsCalendarOpen(false);
         };
         
         return (
@@ -104,24 +93,22 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                   className="rounded-r-none"
                 />
               </FormControl>
-              <Popover open={showCalendar} onOpenChange={setShowCalendar}>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className="rounded-l-none border-l-0"
-                    onClick={() => setShowCalendar(true)}
                     type="button"
                   >
                     <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[1050]" align="end">
+                <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="single"
                     selected={currentDate}
                     onSelect={handleCalendarSelect}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
