@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CustomField } from '@/hooks/customFields/types';
 import { 
@@ -17,7 +18,8 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { formatDate, parseFormDate } from '@/utils/dateUtils';
+import { format, isValid, parse } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface DateFieldInputProps {
   field: CustomField;
@@ -34,12 +36,58 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
       name={fieldName}
       render={({ field: formField }) => {
         // Parse the current value to a Date object if possible
-        const dateValue = formField.value ? 
-          (formField.value instanceof Date ? formField.value : new Date(formField.value)) : 
-          undefined;
+        const getCurrentDate = () => {
+          if (!formField.value) return undefined;
+          
+          if (formField.value instanceof Date) {
+            return isValid(formField.value) ? formField.value : undefined;
+          }
+          
+          if (typeof formField.value === 'string') {
+            // Try parsing as ISO date first
+            const isoDate = new Date(formField.value);
+            if (isValid(isoDate)) return isoDate;
+            
+            // Try parsing as DD/MM/YYYY format
+            const parsedDate = parse(formField.value, 'dd/MM/yyyy', new Date());
+            if (isValid(parsedDate)) return parsedDate;
+          }
+          
+          return undefined;
+        };
         
-        // Format the date as a string for display in the input
-        const formattedDate = formatDate(dateValue);
+        const currentDate = getCurrentDate();
+        const displayValue = currentDate ? format(currentDate, 'dd/MM/yyyy') : '';
+        
+        const handleInputChange = (inputValue: string) => {
+          if (!inputValue) {
+            formField.onChange(undefined);
+            return;
+          }
+          
+          // Allow partial input during typing
+          if (inputValue.length < 10) {
+            formField.onChange(inputValue);
+            return;
+          }
+          
+          // Try to parse complete date input
+          try {
+            const parsedDate = parse(inputValue, 'dd/MM/yyyy', new Date());
+            if (isValid(parsedDate)) {
+              formField.onChange(parsedDate);
+            } else {
+              formField.onChange(inputValue); // Keep raw input if invalid
+            }
+          } catch (error) {
+            formField.onChange(inputValue); // Keep raw input on parse error
+          }
+        };
+        
+        const handleCalendarSelect = (date: Date | undefined) => {
+          formField.onChange(date);
+          setShowCalendar(false);
+        };
         
         return (
           <FormItem>
@@ -51,34 +99,8 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
               <FormControl>
                 <Input
                   placeholder="DD/MM/YYYY"
-                  value={formattedDate}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    if (!inputValue) {
-                      formField.onChange(undefined);
-                      return;
-                    }
-                    
-                    // Only try to parse when we have enough characters
-                    if (inputValue.length >= 8) {
-                      try {
-                        // Attempt to create a date from the input string
-                        const dateObj = new Date(inputValue);
-                        if (isNaN(dateObj.getTime())) {
-                          // Keep the raw input if it's not a valid date yet
-                          formField.onChange(inputValue);
-                        } else {
-                          formField.onChange(dateObj);
-                        }
-                      } catch (error) {
-                        // Keep the raw text input if parsing fails
-                        formField.onChange(inputValue);
-                      }
-                    } else {
-                      // Keep the raw text input during typing
-                      formField.onChange(inputValue);
-                    }
-                  }}
+                  value={displayValue}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   className="rounded-r-none"
                 />
               </FormControl>
@@ -88,21 +110,18 @@ const DateFieldInput: React.FC<DateFieldInputProps> = ({ field, form, fieldName 
                     variant="outline"
                     className="rounded-l-none border-l-0"
                     onClick={() => setShowCalendar(true)}
-                    type="button" // Prevent form submission
+                    type="button"
                   >
                     <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[1000]" align="end">
+                <PopoverContent className="w-auto p-0 z-[1050]" align="end">
                   <Calendar
                     mode="single"
-                    selected={dateValue && !isNaN(dateValue.getTime()) ? dateValue : undefined}
-                    onSelect={(date) => {
-                      formField.onChange(date);
-                      setShowCalendar(false);
-                    }}
+                    selected={currentDate}
+                    onSelect={handleCalendarSelect}
                     initialFocus
-                    className="pointer-events-auto" // Ensure the calendar is interactive
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>

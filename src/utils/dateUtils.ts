@@ -10,8 +10,13 @@ export const formatDate = (
 ): string => {
   if (!date) return '';
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return isValid(dateObj) ? format(dateObj, formatString) : '';
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return isValid(dateObj) ? format(dateObj, formatString) : '';
+  } catch (error) {
+    console.error("Error formatting date:", error, date);
+    return '';
+  }
 };
 
 /**
@@ -29,12 +34,18 @@ export const parseFormDate = (dateValue: any): string | null => {
       return null;
     }
     
-    // If it's a string, try parsing it as DD/MM/YYYY
+    // If it's a string, try parsing it in multiple formats
     if (typeof dateValue === 'string') {
-      // Try to parse as DD/MM/YYYY
-      const parsedDate = parse(dateValue, 'dd/MM/yyyy', new Date());
-      if (isValid(parsedDate)) {
-        return parsedDate.toISOString().split('T')[0];
+      // Try to parse as DD/MM/YYYY first
+      const ddmmyyyyDate = parse(dateValue, 'dd/MM/yyyy', new Date());
+      if (isValid(ddmmyyyyDate)) {
+        return ddmmyyyyDate.toISOString().split('T')[0];
+      }
+      
+      // Try to parse as YYYY-MM-DD
+      const yyyymmddDate = parse(dateValue, 'yyyy-MM-dd', new Date());
+      if (isValid(yyyymmddDate)) {
+        return yyyymmddDate.toISOString().split('T')[0];
       }
       
       // Try as standard ISO date
@@ -52,12 +63,19 @@ export const parseFormDate = (dateValue: any): string | null => {
 };
 
 /**
- * Converts a date string to a Date object
+ * Converts a date string to a Date object safely
  */
 export const stringToDate = (dateString: string | null | undefined): Date | undefined => {
   if (!dateString) return undefined;
   
   try {
+    // Try parsing as DD/MM/YYYY first
+    const ddmmyyyyDate = parse(dateString, 'dd/MM/yyyy', new Date());
+    if (isValid(ddmmyyyyDate)) {
+      return ddmmyyyyDate;
+    }
+    
+    // Try as ISO date
     const date = new Date(dateString);
     return isValid(date) ? date : undefined;
   } catch (error) {
@@ -73,10 +91,31 @@ export const formatDisplayDate = (date: Date | string | null | undefined): strin
   if (!date) return '';
   
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return isValid(dateObj) ? format(dateObj, 'PP') : '';
+    const dateObj = typeof date === 'string' ? stringToDate(date) : date;
+    return dateObj && isValid(dateObj) ? format(dateObj, 'PPP') : '';
   } catch (error) {
     console.error("Error formatting date for display:", error, date);
     return '';
+  }
+};
+
+/**
+ * Safely formats a date for form input (DD/MM/YYYY)
+ */
+export const formatDateForInput = (date: Date | string | null | undefined): string => {
+  return formatDate(date, 'dd/MM/yyyy');
+};
+
+/**
+ * Validates if a string is a valid date in DD/MM/YYYY format
+ */
+export const isValidDateString = (dateString: string): boolean => {
+  if (!dateString || dateString.length !== 10) return false;
+  
+  try {
+    const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+    return isValid(parsedDate);
+  } catch {
+    return false;
   }
 };

@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 interface DateSelectorsProps {
   startDate: Date | undefined;
@@ -21,6 +21,18 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   onStartDateChange,
   onEndDateChange,
 }) => {
+  // Ensure dates are valid before formatting
+  const formatSafeDate = (date: Date | undefined) => {
+    if (!date) return undefined;
+    if (date instanceof Date && isValid(date)) {
+      return format(date, "PPP");
+    }
+    return undefined;
+  };
+
+  const formattedStartDate = formatSafeDate(startDate);
+  const formattedEndDate = formatSafeDate(endDate);
+
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -35,10 +47,10 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+              {formattedStartDate || <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0 z-[1050]" align="center" side="bottom">
             <Calendar
               mode="single"
               selected={startDate}
@@ -58,14 +70,14 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               variant={"outline"}
               className={cn(
                 "w-full justify-start text-left font-normal",
-                endDate ? "" : "text-muted-foreground"
+                !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+              {formattedEndDate || <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center" side="bottom">
+          <PopoverContent className="w-auto p-0 z-[1050]" align="center" side="bottom">
             <Calendar
               mode="single"
               selected={endDate}
