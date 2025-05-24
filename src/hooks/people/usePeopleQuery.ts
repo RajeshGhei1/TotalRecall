@@ -1,6 +1,18 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Person } from '@/types/person';
+import { PersonQueryResult, CompanyRelationshipQueryResult } from '@/types/supabase-query-types';
+
+interface CompanyRelationshipWithCompany {
+  id: string;
+  company: {
+    id: string;
+    name: string;
+  } | null;
+  role: string;
+  is_current: boolean;
+}
 
 export const usePeopleQuery = (
   personType?: 'talent' | 'contact',
@@ -42,7 +54,7 @@ export const usePeopleQuery = (
         throw error;
       }
       
-      const peopleData = data as Person[];
+      const peopleData = data as PersonQueryResult[];
       
       // If company filter is applied, fetch and filter by company association
       if (companyFilter && companyFilter !== 'all') {
@@ -61,13 +73,19 @@ export const usePeopleQuery = (
             .eq('is_current', true)
             .single();
             
-          if (relationships && relationships.company && relationships.company.id === companyFilter) {
-            person.current_company = {
-              id: relationships.company.id,
-              name: relationships.company.name,
-              role: relationships.role
+          const typedRelationship = relationships as CompanyRelationshipWithCompany | null;
+          
+          if (typedRelationship && typedRelationship.company && typedRelationship.company.id === companyFilter) {
+            const personWithCompany: Person = {
+              ...person,
+              type: person.type as 'talent' | 'contact',
+              current_company: {
+                id: typedRelationship.company.id,
+                name: typedRelationship.company.name,
+                role: typedRelationship.role
+              }
             };
-            filteredData.push(person);
+            filteredData.push(personWithCompany);
           }
         }
         
@@ -76,7 +94,7 @@ export const usePeopleQuery = (
       
       // Otherwise, fetch current company info for all people
       const enhancedData = await Promise.all(
-        peopleData.map(async (person) => {
+        peopleData.map(async (person): Promise<Person> => {
           const { data: relationship } = await supabase
             .from('company_relationships')
             .select(`
@@ -89,15 +107,22 @@ export const usePeopleQuery = (
             .eq('is_current', true)
             .maybeSingle();
             
-          if (relationship && relationship.company) {
-            person.current_company = {
-              id: relationship.company.id,
-              name: relationship.company.name,
-              role: relationship.role
+          const typedRelationship = relationship as CompanyRelationshipWithCompany | null;
+          
+          const personWithPossibleCompany: Person = {
+            ...person,
+            type: person.type as 'talent' | 'contact'
+          };
+          
+          if (typedRelationship && typedRelationship.company) {
+            personWithPossibleCompany.current_company = {
+              id: typedRelationship.company.id,
+              name: typedRelationship.company.name,
+              role: typedRelationship.role
             };
           }
           
-          return person;
+          return personWithPossibleCompany;
         })
       );
       

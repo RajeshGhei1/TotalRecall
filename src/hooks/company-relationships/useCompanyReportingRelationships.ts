@@ -2,6 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, CompanyReportingResult } from '@/types/company-relationship-types';
+import { 
+  CompanyRelationshipWithPersonQueryResult, 
+  CompanyRelationshipWithManagerQueryResult 
+} from '@/types/supabase-query-types';
 
 export const useCompanyReportingRelationships = (
   companyId: string,
@@ -44,8 +48,10 @@ export const useCompanyReportingRelationships = (
           
           // Find unique managers by looking at the reports_to field
           if (managerData && Array.isArray(managerData)) {
+            const typedManagerData = managerData as CompanyRelationshipWithPersonQueryResult[];
+            
             // Get unique manager IDs from reports_to field
-            const reportsToValues = managerData
+            const reportsToValues = typedManagerData
               .filter(item => item.reports_to !== null && item.reports_to !== undefined)
               .map(item => item.reports_to);
               
@@ -71,7 +77,8 @@ export const useCompanyReportingRelationships = (
                   .maybeSingle();
                   
                 if (manager && manager.person) {
-                  const personData = manager.person as any;
+                  const typedManager = manager as CompanyRelationshipWithManagerQueryResult;
+                  const personData = typedManager.person;
                   
                   if (personData && personData.id) {
                     // Apply search filter if provided
@@ -85,8 +92,8 @@ export const useCompanyReportingRelationships = (
                         id: personData.id,
                         full_name: fullName,
                         email: email,
-                        type: personData.type || '',
-                        role: manager.role
+                        type: personData.type,
+                        role: typedManager.role
                       });
                     }
                   }
@@ -119,9 +126,11 @@ export const useCompanyReportingRelationships = (
           }
           
           if (reportData && Array.isArray(reportData)) {
-            for (const item of reportData) {
+            const typedReportData = reportData as CompanyRelationshipWithPersonQueryResult[];
+            
+            for (const item of typedReportData) {
               if (item.person) {
-                const personData = item.person as any;
+                const personData = item.person;
                 
                 if (personData && personData.id) {
                   // Apply search filter if provided
@@ -135,7 +144,7 @@ export const useCompanyReportingRelationships = (
                       id: personData.id,
                       full_name: fullName,
                       email: email,
-                      type: personData.type || '',
+                      type: personData.type,
                       role: item.role
                     });
                   }

@@ -2,6 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, ReportingRelationshipsResult } from '@/types/company-relationship-types';
+import { 
+  ManagerRelationshipQueryResult, 
+  DirectReportQueryResult 
+} from '@/types/supabase-query-types';
 
 export const usePersonReportingRelationships = (
   personId?: string,
@@ -62,14 +66,14 @@ export const usePersonReportingRelationships = (
         let managerPerson: ReportingPerson | null = null;
         
         if (personData && personData.reports_to && personData.manager) {
-          const managerData = personData.manager as any;
+          const managerData = personData.manager as ManagerRelationshipQueryResult['manager'];
           
           if (managerData && managerData.id) {
             managerPerson = {
-              id: managerData.id || '',
-              full_name: managerData.full_name || '',
-              email: managerData.email || null,
-              type: managerData.type || '',
+              id: managerData.id,
+              full_name: managerData.full_name,
+              email: managerData.email,
+              type: managerData.type,
               role: undefined // We don't have the role in this query
             };
           }
@@ -80,14 +84,14 @@ export const usePersonReportingRelationships = (
         if (reportsData && Array.isArray(reportsData)) {
           for (const item of reportsData) {
             if (item && item.person) {
-              const personObj = item.person as any;
+              const personObj = item.person as DirectReportQueryResult['person'];
               
               if (personObj && personObj.id) {
                 directReports.push({
-                  id: personObj.id || '',
-                  full_name: personObj.full_name || '',
-                  email: personObj.email || null,
-                  type: personObj.type || '',
+                  id: personObj.id,
+                  full_name: personObj.full_name,
+                  email: personObj.email,
+                  type: personObj.type,
                   role: item.role
                 });
               }

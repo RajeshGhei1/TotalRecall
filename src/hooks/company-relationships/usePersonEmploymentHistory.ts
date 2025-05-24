@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { JobHistoryItem } from '@/components/people/JobHistoryList';
+import { EmploymentHistoryQueryResult } from '@/types/supabase-query-types';
 
 export const usePersonEmploymentHistory = (personId?: string) => {
   const getPersonEmploymentHistory = async (id: string): Promise<JobHistoryItem[]> => {
@@ -26,7 +27,18 @@ export const usePersonEmploymentHistory = (personId?: string) => {
         return [];
       }
       
-      return (data || []) as JobHistoryItem[];
+      // Type the data properly
+      const typedData = data as EmploymentHistoryQueryResult[];
+      
+      return typedData.map(item => ({
+        id: item.id,
+        role: item.role,
+        start_date: item.start_date,
+        end_date: item.end_date,
+        is_current: item.is_current,
+        reports_to: item.reports_to,
+        company: item.company
+      }));
     } catch (error) {
       console.error('Error fetching person employment history:', error);
       return [];

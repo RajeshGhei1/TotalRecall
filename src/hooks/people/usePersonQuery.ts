@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Person } from '@/types/person';
+import { PersonQueryResult } from '@/types/supabase-query-types';
 
 export const usePersonQuery = (id?: string) => {
   return useQuery({
@@ -29,15 +30,13 @@ export const usePersonQuery = (id?: string) => {
         throw error;
       }
       
-      // Ensure type is properly cast as 'talent' | 'contact'
-      if (data) {
-        return {
-          ...data,
-          type: data.type as 'talent' | 'contact'
-        };
-      }
+      // Type the response properly
+      const typedData = data as PersonQueryResult;
       
-      return null;
+      return {
+        ...typedData,
+        type: typedData.type as 'talent' | 'contact'
+      };
     },
     enabled: !!id
   });

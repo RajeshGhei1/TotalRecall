@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Person } from '@/types/person';
+import { PersonQueryResult } from '@/types/supabase-query-types';
 
 export const usePersonDetails = (personId?: string) => {
   const { data: person, isLoading, error } = useQuery({
@@ -30,7 +30,12 @@ export const usePersonDetails = (personId?: string) => {
         throw error;
       }
       
-      return data as Person;
+      const typedData = data as PersonQueryResult;
+      
+      return {
+        ...typedData,
+        type: typedData.type as 'talent' | 'contact'
+      };
     },
     enabled: !!personId
   });
@@ -56,7 +61,12 @@ export const usePersonDetails = (personId?: string) => {
       throw error;
     }
     
-    return data as Person;
+    const typedData = data as PersonQueryResult;
+    
+    return {
+      ...typedData,
+      type: typedData.type as 'talent' | 'contact'
+    };
   };
 
   return {
