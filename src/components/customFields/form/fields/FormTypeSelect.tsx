@@ -44,6 +44,7 @@ const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
               <SelectItem value="number">Number</SelectItem>
               <SelectItem value="date">Date</SelectItem>
               <SelectItem value="dropdown">Dropdown</SelectItem>
+              <SelectItem value="multiselect">Multi-Select</SelectItem>
               <SelectItem value="boolean">Yes/No</SelectItem>
             </SelectContent>
           </Select>
