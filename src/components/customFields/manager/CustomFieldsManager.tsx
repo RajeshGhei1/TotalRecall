@@ -49,18 +49,17 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       // Validate the field data using our comprehensive validation
       const validatedData = validateCustomField(values);
       
-      // Generate a field_key from the label if not provided
-      const fieldKey = validatedData.label ? 
-        validatedData.label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 
-        validatedData.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+      // Generate a field_key from the name
+      const fieldKey = validatedData.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
       
-      // Process options to ensure they have valid structure
-      const processedOptions = validatedData.options ? 
-        validatedData.options.map(opt => ({
+      // Process options to ensure they have valid structure for select/multiselect fields
+      let processedOptions: { value: string; label: string }[] = [];
+      if ((validatedData.fieldType === 'select' || validatedData.fieldType === 'multiselect') && validatedData.options) {
+        processedOptions = validatedData.options.map(opt => ({
           value: opt.value.trim(),
           label: opt.label.trim()
-        })) : 
-        [];
+        }));
+      }
       
       // Log submission data for debugging
       console.log('Submitting validated custom field:', {
@@ -72,7 +71,13 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       
       // Create the field with properly formatted data
       const fieldData = {
-        ...validatedData,
+        name: validatedData.name,
+        label: validatedData.label,
+        fieldType: validatedData.fieldType,
+        required: validatedData.required,
+        placeholder: validatedData.placeholder,
+        info: validatedData.info,
+        forms: validatedData.forms,
         fieldKey: fieldKey,
         options: processedOptions,
         tenantId: tenantId === 'global' ? null : tenantId
