@@ -6,11 +6,13 @@ import { Plus, Loader2 } from 'lucide-react';
 import { useCustomFieldsMutations } from '@/hooks/customFields/useCustomFieldsMutations';
 import { useCustomFieldsQuery } from '@/hooks/customFields/useCustomFieldsQuery';
 import { FieldFormValues } from '../form/CustomFieldForm';
+import { validateCustomField } from '../form/validation/CustomFieldValidation';
 import CustomFieldList from '../CustomFieldList';
 import CustomFieldForm from '../form/CustomFieldForm';
 import { toast } from 'sonner';
 import { CustomField } from '@/hooks/customFields/types';
 import CustomFieldsHeader from './CustomFieldsHeader';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface CustomFieldsManagerProps {
   tenantId?: string;
@@ -44,55 +46,35 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 
   const handleSubmit = async (values: FieldFormValues) => {
     try {
-      // Ensure name is provided
-      if (!values.name) {
-        toast.error('Validation Error', {
-          description: 'Field name is required',
-        });
-        return;
-      }
+      // Validate the field data using our comprehensive validation
+      const validatedData = validateCustomField(values);
       
       // Generate a field_key from the label if not provided
-      const fieldKey = values.label ? 
-        values.label.toLowerCase().replace(/\s+/g, '_') : 
-        values.name.toLowerCase().replace(/\s+/g, '_');
+      const fieldKey = validatedData.label ? 
+        validatedData.label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 
+        validatedData.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
       
       // Process options to ensure they have valid structure
-      const processedOptions = values.options ? 
-        values.options.map(opt => ({
-          value: opt.value || '',
-          label: opt.label || ''
+      const processedOptions = validatedData.options ? 
+        validatedData.options.map(opt => ({
+          value: opt.value.trim(),
+          label: opt.label.trim()
         })) : 
         [];
       
       // Log submission data for debugging
-      console.log('Submitting custom field:', {
-        name: values.name,
-        label: values.label || values.name,
-        fieldType: values.fieldType,
+      console.log('Submitting validated custom field:', {
+        ...validatedData,
         fieldKey,
         options: processedOptions,
         tenantId: tenantId === 'global' ? null : tenantId
       });
       
-      // Create the field with properly formatted data and pass tenantId
+      // Create the field with properly formatted data
       const fieldData = {
-        name: values.name,
-        label: values.label || values.name, // Use name as fallback for label
-        fieldType: values.fieldType,
+        ...validatedData,
         fieldKey: fieldKey,
-        required: values.required || false,
-        placeholder: values.placeholder,
-        defaultValue: values.defaultValue,
-        minLength: values.minLength,
-        maxLength: values.maxLength,
         options: processedOptions,
-        min: values.min,
-        max: values.max,
-        step: values.step,
-        forms: values.forms || [],
-        info: values.info,
-        validation: values.validation,
         tenantId: tenantId === 'global' ? null : tenantId
       };
       
@@ -102,12 +84,12 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       await refetch();
       
       toast.success('Custom field created', {
-        description: `Field "${values.name}" has been created successfully.`
+        description: `Field "${validatedData.name}" has been created successfully.`
       });
     } catch (error: any) {
       console.error('Error creating field:', error);
-      toast.error('Error', {
-        description: `Failed to create custom field: ${error.message || 'Unknown error'}`
+      toast.error('Validation Error', {
+        description: error.message || 'Failed to create custom field due to validation errors.'
       });
     }
   };
@@ -132,7 +114,6 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
   };
 
   const handleReorder = async (reorderedFields: CustomField[]) => {
-    // Map the fields to include the sort_order property
     const fieldsWithOrder = reorderedFields.map((field, index) => ({
       ...field,
       sort_order: index
@@ -150,47 +131,53 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
   };
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">{title}</h3>
-          <p className="text-muted-foreground text-sm">{description}</p>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium">{title}</h3>
+            <p className="text-muted-foreground text-sm">{description}</p>
+          </div>
+          <Button 
+            onClick={() => setIsDialogOpen(true)}
+            disabled={isLoading}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Custom Field
+          </Button>
         </div>
-        <Button 
-          onClick={() => setIsDialogOpen(true)}
-          disabled={isLoading}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Custom Field
-        </Button>
+
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <ErrorBoundary>
+            <CustomFieldList
+              fields={fields}
+              isLoading={isLoading}
+              onDelete={handleDelete}
+              isDeleting={isDeleting}
+              onReorder={handleReorder}
+              canReorder={true}
+            />
+          </ErrorBoundary>
+        )}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+            <ErrorBoundary>
+              <CustomFieldForm
+                onSubmit={handleSubmit}
+                onCancel={() => setIsDialogOpen(false)}
+                isSubmitting={isCreating || isUpdating}
+                tenantId={tenantId || 'global'}
+              />
+            </ErrorBoundary>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <CustomFieldList
-          fields={fields}
-          isLoading={isLoading}
-          onDelete={handleDelete}
-          isDeleting={isDeleting}
-          onReorder={handleReorder}
-          canReorder={true}
-        />
-      )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
-          <CustomFieldForm
-            onSubmit={handleSubmit}
-            onCancel={() => setIsDialogOpen(false)}
-            isSubmitting={isCreating || isUpdating}
-            tenantId={tenantId || 'global'}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+    </ErrorBoundary>
   );
 }
 
