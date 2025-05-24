@@ -2,10 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, ReportingRelationshipsResult } from '@/types/company-relationship-types';
-import { 
-  ManagerRelationshipQueryResult, 
-  DirectReportQueryResult 
-} from '@/types/supabase-query-types';
 
 export const usePersonReportingRelationships = (
   personId?: string,
@@ -23,13 +19,7 @@ export const usePersonReportingRelationships = (
         const { data: personData, error: personError } = await supabase
           .from('company_relationships')
           .select(`
-            reports_to,
-            manager:people!company_relationships_reports_to_fkey(
-              id,
-              full_name,
-              email,
-              type
-            )
+            reports_to
           `)
           .eq('person_id', personId)
           .eq('company_id', companyId)
@@ -37,38 +27,28 @@ export const usePersonReportingRelationships = (
           .maybeSingle();
 
         if (personError) {
-          console.error('Error fetching manager relationship:', personError);
+          console.error('Error fetching person relationship:', personError);
           throw personError;
         }
 
-        // Then get all people who report to this person
-        const { data: reportsData, error: reportsError } = await supabase
-          .from('company_relationships')
-          .select(`
-            person:people!company_relationships_person_id_fkey(
-              id, 
+        let managerPerson: ReportingPerson | null = null;
+        
+        // If person has a manager, fetch manager details
+        if (personData && personData.reports_to) {
+          const { data: managerData, error: managerError } = await supabase
+            .from('people')
+            .select(`
+              id,
               full_name,
               email,
               type
-            ),
-            role
-          `)
-          .eq('reports_to', personId)
-          .eq('company_id', companyId)
-          .eq('is_current', true);
+            `)
+            .eq('id', personData.reports_to)
+            .single();
 
-        if (reportsError) {
-          console.error('Error fetching direct reports:', reportsError);
-          throw reportsError;
-        }
-
-        // Format data for the response
-        let managerPerson: ReportingPerson | null = null;
-        
-        if (personData && personData.reports_to && personData.manager) {
-          const managerData = personData.manager as ManagerRelationshipQueryResult['manager'];
-          
-          if (managerData && managerData.id) {
+          if (managerError) {
+            console.error('Error fetching manager:', managerError);
+          } else if (managerData) {
             managerPerson = {
               id: managerData.id,
               full_name: managerData.full_name,
@@ -79,20 +59,46 @@ export const usePersonReportingRelationships = (
           }
         }
 
+        // Then get all people who report to this person
+        const { data: reportsData, error: reportsError } = await supabase
+          .from('company_relationships')
+          .select(`
+            role,
+            person_id
+          `)
+          .eq('reports_to', personId)
+          .eq('company_id', companyId)
+          .eq('is_current', true);
+
+        if (reportsError) {
+          console.error('Error fetching direct reports:', reportsError);
+          throw reportsError;
+        }
+
         const directReports: ReportingPerson[] = [];
         
         if (reportsData && Array.isArray(reportsData)) {
-          for (const item of reportsData) {
-            if (item && item.person) {
-              const personObj = item.person as DirectReportQueryResult['person'];
-              
-              if (personObj && personObj.id) {
+          // Fetch person details for each direct report
+          for (const report of reportsData) {
+            if (report.person_id) {
+              const { data: personData, error: personError } = await supabase
+                .from('people')
+                .select(`
+                  id,
+                  full_name,
+                  email,
+                  type
+                `)
+                .eq('id', report.person_id)
+                .single();
+
+              if (!personError && personData) {
                 directReports.push({
-                  id: personObj.id,
-                  full_name: personObj.full_name,
-                  email: personObj.email,
-                  type: personObj.type,
-                  role: item.role
+                  id: personData.id,
+                  full_name: personData.full_name,
+                  email: personData.email,
+                  type: personData.type,
+                  role: report.role
                 });
               }
             }

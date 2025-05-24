@@ -2,10 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ReportingPerson, CompanyReportingResult } from '@/types/company-relationship-types';
-import { 
-  CompanyRelationshipWithPersonQueryResult, 
-  CompanyRelationshipWithManagerQueryResult 
-} from '@/types/supabase-query-types';
 
 export const useCompanyReportingRelationships = (
   companyId: string,
@@ -30,72 +26,62 @@ export const useCompanyReportingRelationships = (
             .select(`
               person_id,
               role,
-              reports_to,
-              person:people!company_relationships_person_id_fkey(
-                id,
-                full_name,
-                email,
-                type
-              )
+              reports_to
             `)
             .eq('company_id', companyId)
             .eq('is_current', true);
             
           if (managerError) {
-            console.error('Error fetching managers:', managerError);
+            console.error('Error fetching company relationships:', managerError);
             throw managerError;
           }
           
           // Find unique managers by looking at the reports_to field
           if (managerData && Array.isArray(managerData)) {
-            const typedManagerData = managerData as CompanyRelationshipWithPersonQueryResult[];
-            
             // Get unique manager IDs from reports_to field
-            const reportsToValues = typedManagerData
+            const reportsToValues = managerData
               .filter(item => item.reports_to !== null && item.reports_to !== undefined)
               .map(item => item.reports_to);
               
             const managerIds = [...new Set(reportsToValues)];
             
-            // For each manager ID, get the person details
+            // For each manager ID, get the person details and role
             for (const managerId of managerIds) {
               if (managerId) {
-                const { data: manager } = await supabase
+                const { data: managerRelationship } = await supabase
                   .from('company_relationships')
-                  .select(`
-                    role,
-                    person:people!company_relationships_person_id_fkey(
-                      id,
-                      full_name,
-                      email,
-                      type
-                    )
-                  `)
+                  .select(`role`)
                   .eq('company_id', companyId)
                   .eq('person_id', managerId)
                   .eq('is_current', true)
-                  .maybeSingle();
+                  .single();
+
+                const { data: managerPerson } = await supabase
+                  .from('people')
+                  .select(`
+                    id,
+                    full_name,
+                    email,
+                    type
+                  `)
+                  .eq('id', managerId)
+                  .single();
                   
-                if (manager && manager.person) {
-                  const typedManager = manager as CompanyRelationshipWithManagerQueryResult;
-                  const personData = typedManager.person;
+                if (managerPerson && managerRelationship) {
+                  // Apply search filter if provided
+                  const fullName = managerPerson.full_name || '';
+                  const email = managerPerson.email || '';
                   
-                  if (personData && personData.id) {
-                    // Apply search filter if provided
-                    const fullName = personData.full_name || '';
-                    const email = personData.email || '';
-                    
-                    if (!searchQuery || 
-                        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        email.toLowerCase().includes(searchQuery.toLowerCase())) {
-                      managers.push({
-                        id: personData.id,
-                        full_name: fullName,
-                        email: email,
-                        type: personData.type,
-                        role: typedManager.role
-                      });
-                    }
+                  if (!searchQuery || 
+                      fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      email.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    managers.push({
+                      id: managerPerson.id,
+                      full_name: fullName,
+                      email: email,
+                      type: managerPerson.type,
+                      role: managerRelationship.role
+                    });
                   }
                 }
               }
@@ -106,14 +92,9 @@ export const useCompanyReportingRelationships = (
           const { data: reportData, error: reportError } = await supabase
             .from('company_relationships')
             .select(`
+              person_id,
               reports_to,
-              role,
-              person:people!company_relationships_person_id_fkey(
-                id,
-                full_name,
-                email,
-                type
-              )
+              role
             `)
             .eq('company_id', companyId)
             .eq('is_current', true)
@@ -126,13 +107,20 @@ export const useCompanyReportingRelationships = (
           }
           
           if (reportData && Array.isArray(reportData)) {
-            const typedReportData = reportData as CompanyRelationshipWithPersonQueryResult[];
-            
-            for (const item of typedReportData) {
-              if (item.person) {
-                const personData = item.person;
+            for (const item of reportData) {
+              if (item.person_id) {
+                const { data: personData } = await supabase
+                  .from('people')
+                  .select(`
+                    id,
+                    full_name,
+                    email,
+                    type
+                  `)
+                  .eq('id', item.person_id)
+                  .single();
                 
-                if (personData && personData.id) {
+                if (personData) {
                   // Apply search filter if provided
                   const fullName = personData.full_name || '';
                   const email = personData.email || '';
