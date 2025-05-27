@@ -73,7 +73,8 @@ export const useCompanyLinkForm = ({
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
-            person:people(id, full_name, email, type, role)
+            role,
+            person:people(id, full_name, email, type)
           `)
           .eq('company_id', formData.company_id)
           .eq('is_current', true)
@@ -81,7 +82,14 @@ export const useCompanyLinkForm = ({
           
         if (error) throw error;
         
-        const validManagers = data?.filter(item => item && item.person) || [];
+        // Transform the data to include role information from the relationship
+        const validManagers = data?.map(item => ({
+          person: item.person ? {
+            ...item.person,
+            role: item.role
+          } : null
+        })).filter(item => item && item.person) || [];
+        
         setPotentialManagers(validManagers);
       } catch (error) {
         console.error('Error fetching potential managers:', error);
