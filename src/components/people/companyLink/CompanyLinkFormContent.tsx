@@ -74,7 +74,7 @@ const CompanyLinkFormContent: React.FC<CompanyLinkFormContentProps> = ({
       <DialogFooter>
         <Button 
           type="submit" 
-          disabled={isSubmitting || !formData.company_id || !formData.role || !formData.start_date}
+          disabled={isSubmitting || !formData.company_id || !formData.role || !startDate}
         >
           {isSubmitting ? "Submitting..." : "Save changes"}
         </Button>

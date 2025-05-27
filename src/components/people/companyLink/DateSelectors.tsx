@@ -22,17 +22,8 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   onEndDateChange,
 }) => {
   const formatDisplayDate = (date: Date | undefined): string => {
-    if (!date) return "Pick a date";
-    
-    try {
-      if (isValid(date)) {
-        return format(date, "PPP");
-      }
-    } catch (error) {
-      console.error("Error formatting date:", error);
-    }
-    
-    return "Pick a date";
+    if (!date || !isValid(date)) return "Pick a date";
+    return format(date, "PPP");
   };
 
   return (
@@ -52,13 +43,14 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {formatDisplayDate(startDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-50" align="start">
             <Calendar
               mode="single"
               selected={startDate}
               onSelect={onStartDateChange}
               disabled={(date) => date > new Date()}
               initialFocus
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -79,7 +71,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {formatDisplayDate(endDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-50" align="start">
             <Calendar
               mode="single"
               selected={endDate}
@@ -90,6 +82,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
                 return false;
               }}
               initialFocus
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
