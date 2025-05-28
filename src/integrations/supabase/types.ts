@@ -401,6 +401,39 @@ export type Database = {
           },
         ]
       }
+      module_pricing: {
+        Row: {
+          base_price_annually: number
+          base_price_monthly: number
+          created_at: string
+          id: string
+          is_active: boolean
+          module_name: string
+          tier_pricing: Json | null
+          updated_at: string
+        }
+        Insert: {
+          base_price_annually?: number
+          base_price_monthly?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          module_name: string
+          tier_pricing?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          base_price_annually?: number
+          base_price_monthly?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          module_name?: string
+          tier_pricing?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       people: {
         Row: {
           created_at: string
@@ -523,6 +556,8 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          base_price_annually: number | null
+          base_price_monthly: number | null
           created_at: string
           description: string | null
           id: string
@@ -532,8 +567,11 @@ export type Database = {
           price_annually: number
           price_monthly: number
           updated_at: string
+          use_module_pricing: boolean | null
         }
         Insert: {
+          base_price_annually?: number | null
+          base_price_monthly?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -543,8 +581,11 @@ export type Database = {
           price_annually?: number
           price_monthly?: number
           updated_at?: string
+          use_module_pricing?: boolean | null
         }
         Update: {
+          base_price_annually?: number | null
+          base_price_monthly?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -554,6 +595,7 @@ export type Database = {
           price_annually?: number
           price_monthly?: number
           updated_at?: string
+          use_module_pricing?: boolean | null
         }
         Relationships: []
       }

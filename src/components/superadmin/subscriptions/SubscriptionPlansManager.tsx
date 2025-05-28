@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus } from 'lucide-react';
 import { useSubscriptionPlans } from '@/hooks/subscriptions/useSubscriptionPlans';
 import SubscriptionPlansList from './SubscriptionPlansList';
 import CreatePlanDialog from './CreatePlanDialog';
 import ModulePermissionsManager from './ModulePermissionsManager';
+import ModulePricingManager from './module-pricing/ModulePricingManager';
 
 const SubscriptionPlansManager = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -20,7 +22,7 @@ const SubscriptionPlansManager = () => {
           <div>
             <CardTitle>Subscription Plans Management</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Create and manage subscription plans with module access control
+              Create and manage subscription plans with module access control and dynamic pricing
             </p>
           </div>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -39,7 +41,20 @@ const SubscriptionPlansManager = () => {
       </Card>
 
       {selectedPlanId && (
-        <ModulePermissionsManager planId={selectedPlanId} />
+        <Tabs defaultValue="modules" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="modules">Module Permissions</TabsTrigger>
+            <TabsTrigger value="pricing">Module Pricing</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="modules">
+            <ModulePermissionsManager planId={selectedPlanId} />
+          </TabsContent>
+
+          <TabsContent value="pricing">
+            <ModulePricingManager />
+          </TabsContent>
+        </Tabs>
       )}
 
       <CreatePlanDialog

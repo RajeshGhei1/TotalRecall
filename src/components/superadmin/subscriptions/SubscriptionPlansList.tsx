@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Building, User, Settings, Info } from 'lucide-react';
+import { Crown, Building, User, Settings, Info, Calculator } from 'lucide-react';
 import { SubscriptionPlan } from '@/types/subscription-types';
 import { useModulePermissionsSummary } from '@/hooks/subscriptions/useModulePermissionsSummary';
 import { 
@@ -12,6 +12,7 @@ import {
   ModulePermissionsTooltip,
   CollapsiblePermissionsSection 
 } from './permissions-summary';
+import PricingDisplay from './pricing/PricingDisplay';
 
 interface SubscriptionPlansListProps {
   plans: SubscriptionPlan[];
@@ -21,7 +22,7 @@ interface SubscriptionPlansListProps {
 }
 
 const PlanCard: React.FC<{
-  plan: SubscriptionPlan;
+  plan: SubscriptionPlan & { use_module_pricing?: boolean };
   isSelected: boolean;
   onSelect: () => void;
 }> = ({ plan, isSelected, onSelect }) => {
@@ -47,6 +48,10 @@ const PlanCard: React.FC<{
     }).format(price);
   };
 
+  const enabledModules = permissionsSummary?.moduleDetails
+    .filter(m => m.isEnabled)
+    .map(m => m.name) || [];
+
   return (
     <Card 
       className={`cursor-pointer transition-all hover:shadow-md ${
@@ -59,6 +64,12 @@ const PlanCard: React.FC<{
           <div className="flex items-center gap-2">
             {getIcon(plan.plan_type)}
             <h3 className="font-semibold">{plan.name}</h3>
+            {plan.use_module_pricing && (
+              <Badge variant="outline" className="text-xs">
+                <Calculator className="h-3 w-3 mr-1" />
+                Dynamic
+              </Badge>
+            )}
           </div>
           <Badge variant={plan.is_active ? 'default' : 'secondary'}>
             {plan.is_active ? 'Active' : 'Inactive'}
@@ -66,14 +77,25 @@ const PlanCard: React.FC<{
         </div>
         
         <div className="space-y-2 mb-3">
-          <div className="flex justify-between text-sm">
-            <span>Monthly:</span>
-            <span className="font-medium">{formatPrice(plan.price_monthly)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>Annual:</span>
-            <span className="font-medium">{formatPrice(plan.price_annually)}</span>
-          </div>
+          {plan.use_module_pricing ? (
+            <PricingDisplay
+              planId={plan.id}
+              enabledModules={enabledModules}
+              billingCycle="monthly"
+              showBreakdown={false}
+            />
+          ) : (
+            <>
+              <div className="flex justify-between text-sm">
+                <span>Monthly:</span>
+                <span className="font-medium">{formatPrice(plan.price_monthly)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Annual:</span>
+                <span className="font-medium">{formatPrice(plan.price_annually)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {plan.description && (
@@ -125,7 +147,7 @@ const PlanCard: React.FC<{
             onSelect();
           }}
         >
-          {isSelected ? 'Selected' : 'Manage Modules'}
+          {isSelected ? 'Selected' : 'Manage Plan'}
         </Button>
       </CardContent>
     </Card>

@@ -5,6 +5,9 @@ export interface SubscriptionPlan {
   description: string | null;
   price_monthly: number;
   price_annually: number;
+  base_price_monthly?: number;
+  base_price_annually?: number;
+  use_module_pricing?: boolean;
   is_active: boolean;
   plan_type: 'recruitment' | 'employer' | 'talent';
   created_at: string;
@@ -18,6 +21,17 @@ export interface ModulePermission {
   is_enabled: boolean;
   limits: Record<string, any> | null;
   created_at: string;
+}
+
+export interface ModulePricing {
+  id: string;
+  module_name: string;
+  base_price_monthly: number;
+  base_price_annually: number;
+  tier_pricing: any[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface TenantSubscription {
