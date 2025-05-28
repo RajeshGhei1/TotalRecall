@@ -2,13 +2,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface TenantModuleAssignment {
   id: string;
   tenant_id: string;
   module_id: string;
   is_enabled: boolean;
-  custom_limits?: Record<string, any>;
+  custom_limits?: Json;
   assigned_at: string;
   assigned_by: string;
   expires_at?: string;
@@ -54,7 +55,7 @@ export const useTenantModules = (tenantId?: string) => {
       tenant_id: string;
       module_id: string;
       is_enabled?: boolean;
-      custom_limits?: Record<string, any>;
+      custom_limits?: Json;
       expires_at?: string;
     }) => {
       const { data, error } = await supabase
