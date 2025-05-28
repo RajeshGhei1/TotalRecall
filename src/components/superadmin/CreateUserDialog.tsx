@@ -86,39 +86,24 @@ const CreateUserDialog = ({
     setError(null);
     
     try {
-      // Create a new user using the Supabase Auth Admin API
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: values.email,
-        password: Math.random().toString(36).slice(-8), // Generate temporary password
-        email_confirm: true,
-        user_metadata: { 
-          full_name: values.fullName
+      // Get the current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Call the edge function to create the user
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: values.email,
+          fullName: values.fullName,
+          role: values.role,
+          tenantId: values.tenantId
         }
       });
-      
-      if (authError) throw authError;
-      
-      // Update the role in profiles table if needed (the trigger should have created the profile)
-      if (values.role !== 'user' && authData.user) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ role: values.role })
-          .eq('id', authData.user.id);
-          
-        if (updateError) throw updateError;
-      }
 
-      // If tenant is selected, create association in user_tenants table
-      if (values.tenantId && values.tenantId !== 'none' && authData.user) {
-        const { error: tenantError } = await supabase
-          .from('user_tenants')
-          .insert({
-            user_id: authData.user.id,
-            tenant_id: values.tenantId,
-          });
-
-        if (tenantError) throw tenantError;
-      }
+      if (error) throw error;
       
       toast({
         title: "User created",
