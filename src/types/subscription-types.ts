@@ -40,11 +40,37 @@ export interface TenantSubscription {
   plan_id: string;
   status: 'active' | 'inactive' | 'cancelled' | 'expired';
   billing_cycle: 'monthly' | 'annually';
+  subscription_level?: 'tenant' | 'fallback';
   starts_at: string;
   ends_at: string | null;
   created_at: string;
   updated_at: string;
   subscription_plans?: SubscriptionPlan;
+}
+
+export interface UserSubscription {
+  id: string;
+  user_id: string;
+  tenant_id: string;
+  plan_id: string;
+  status: 'active' | 'inactive' | 'cancelled' | 'expired';
+  billing_cycle: 'monthly' | 'annually';
+  starts_at: string;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+  assigned_by?: string;
+  subscription_plans?: SubscriptionPlan;
+}
+
+export interface ResolvedSubscription {
+  subscription_id: string;
+  plan_id: string;
+  status: string;
+  billing_cycle: string;
+  subscription_type: 'user' | 'tenant';
+  starts_at: string;
+  ends_at: string | null;
 }
 
 export interface ModuleAccess {
@@ -57,5 +83,6 @@ export interface AccessCheckResult {
   hasAccess: boolean;
   module: ModuleAccess | null;
   plan: SubscriptionPlan | null;
-  subscription: TenantSubscription | null;
+  subscription: TenantSubscription | UserSubscription | null;
+  subscriptionType: 'user' | 'tenant' | null;
 }

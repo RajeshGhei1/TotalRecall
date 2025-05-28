@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, CreditCard } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Calendar, CreditCard, Building, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TenantSubscription } from '@/types/subscription-types';
 import AssignSubscriptionDialog from './AssignSubscriptionDialog';
+import UserSubscriptionManager from './UserSubscriptionManager';
 
 const TenantSubscriptionManager = () => {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['tenant-subscriptions'],
@@ -26,6 +29,20 @@ const TenantSubscriptionManager = () => {
 
       if (error) throw error;
       return data || [];
+    }
+  });
+
+  // Get unique tenants for user subscription management
+  const { data: tenants } = useQuery({
+    queryKey: ['tenants-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -55,7 +72,7 @@ const TenantSubscriptionManager = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Tenant Subscriptions</CardTitle>
+          <CardTitle>Subscription Management</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
@@ -70,79 +87,139 @@ const TenantSubscriptionManager = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Tenant Subscriptions</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Manage tenant subscription assignments and status
-            </p>
-          </div>
+      <Tabs defaultValue="tenant-subscriptions" className="space-y-6">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="tenant-subscriptions" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Tenant Subscriptions
+            </TabsTrigger>
+            <TabsTrigger value="user-subscriptions" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              User Subscriptions
+            </TabsTrigger>
+          </TabsList>
+          
           <Button onClick={() => setIsAssignDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Assign Subscription
           </Button>
-        </CardHeader>
-        <CardContent>
-          {subscriptions && subscriptions.length > 0 ? (
-            <div className="space-y-4">
-              {subscriptions.map((subscription) => (
-                <div 
-                  key={subscription.id} 
-                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-medium">
-                        {(subscription as any).tenants?.name || 'Unknown Tenant'}
-                      </h4>
-                      <Badge variant={getStatusColor(subscription.status)}>
-                        {subscription.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CreditCard className="h-4 w-4" />
-                      {subscription.subscription_plans && formatPrice(
-                        subscription.billing_cycle === 'monthly' 
-                          ? subscription.subscription_plans.price_monthly
-                          : subscription.subscription_plans.price_annually,
-                        subscription.billing_cycle
-                      )}
-                    </div>
-                  </div>
+        </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Plan:</span>
-                      <p className="font-medium">
-                        {subscription.subscription_plans?.name || 'Unknown Plan'}
-                      </p>
+        <TabsContent value="tenant-subscriptions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tenant-Level Subscriptions</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Subscriptions assigned to entire tenants (affects all users in the tenant)
+              </p>
+            </CardHeader>
+            <CardContent>
+              {subscriptions && subscriptions.length > 0 ? (
+                <div className="space-y-4">
+                  {subscriptions.map((subscription) => (
+                    <div 
+                      key={subscription.id} 
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Building className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">
+                              {(subscription as any).tenants?.name || 'Unknown Tenant'}
+                            </h4>
+                            <Badge variant={getStatusColor(subscription.status)} className="mt-1">
+                              {subscription.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CreditCard className="h-4 w-4" />
+                          {subscription.subscription_plans && formatPrice(
+                            subscription.billing_cycle === 'monthly' 
+                              ? subscription.subscription_plans.price_monthly
+                              : subscription.subscription_plans.price_annually,
+                            subscription.billing_cycle
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Plan:</span>
+                          <p className="font-medium">
+                            {subscription.subscription_plans?.name || 'Unknown Plan'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Started:</span>
+                          <span>{formatDate(subscription.starts_at)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            {subscription.ends_at ? 'Ends:' : 'No end date'}
+                          </span>
+                          {subscription.ends_at && (
+                            <span>{formatDate(subscription.ends_at)}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Started:</span>
-                      <span>{formatDate(subscription.starts_at)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {subscription.ends_at ? 'Ends:' : 'No end date'}
-                      </span>
-                      {subscription.ends_at && (
-                        <span>{formatDate(subscription.ends_at)}</span>
-                      )}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No tenant subscriptions found. Assign subscriptions to get started.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No tenant subscriptions found. Assign subscriptions to get started.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="user-subscriptions">
+          <div className="space-y-4">
+            {/* Tenant Selector for User Subscriptions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Tenant</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Choose a tenant to manage individual user subscriptions
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {tenants?.map((tenant) => (
+                    <Button
+                      key={tenant.id}
+                      variant={selectedTenantId === tenant.id ? "default" : "outline"}
+                      onClick={() => setSelectedTenantId(tenant.id)}
+                      className="justify-start h-auto p-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4" />
+                        <span>{tenant.name}</span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* User Subscription Manager */}
+            {selectedTenantId && (
+              <UserSubscriptionManager
+                tenantId={selectedTenantId}
+                tenantName={tenants?.find(t => t.id === selectedTenantId)?.name || 'Unknown Tenant'}
+              />
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <AssignSubscriptionDialog
         isOpen={isAssignDialogOpen}

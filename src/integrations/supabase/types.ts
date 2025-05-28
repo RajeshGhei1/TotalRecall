@@ -829,6 +829,7 @@ export type Database = {
           plan_id: string
           starts_at: string
           status: string
+          subscription_level: string | null
           tenant_id: string
           updated_at: string
         }
@@ -840,6 +841,7 @@ export type Database = {
           plan_id: string
           starts_at?: string
           status?: string
+          subscription_level?: string | null
           tenant_id: string
           updated_at?: string
         }
@@ -851,6 +853,7 @@ export type Database = {
           plan_id?: string
           starts_at?: string
           status?: string
+          subscription_level?: string | null
           tenant_id?: string
           updated_at?: string
         }
@@ -900,6 +903,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          assigned_by: string | null
+          billing_cycle: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          plan_id: string
+          starts_at: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          billing_cycle?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          plan_id: string
+          starts_at?: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          billing_cycle?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          plan_id?: string
+          starts_at?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_tenants: {
         Row: {
@@ -975,6 +1035,18 @@ export type Database = {
       is_super_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      resolve_user_subscription: {
+        Args: { p_user_id: string; p_tenant_id: string }
+        Returns: {
+          subscription_id: string
+          plan_id: string
+          status: string
+          billing_cycle: string
+          subscription_type: string
+          starts_at: string
+          ends_at: string
+        }[]
       }
     }
     Enums: {
