@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Building, User, Settings, Info, Calculator } from 'lucide-react';
+import { Crown, Building, User, Settings, Info, Calculator, Edit } from 'lucide-react';
 import { SubscriptionPlan } from '@/types/subscription-types';
 import { useModulePermissionsSummary } from '@/hooks/subscriptions/useModulePermissionsSummary';
 import { 
@@ -13,6 +13,7 @@ import {
   CollapsiblePermissionsSection 
 } from './permissions-summary';
 import PricingDisplay from './pricing/PricingDisplay';
+import EditPlanDialog from './EditPlanDialog';
 
 interface SubscriptionPlansListProps {
   plans: SubscriptionPlan[];
@@ -26,6 +27,7 @@ const PlanCard: React.FC<{
   isSelected: boolean;
   onSelect: () => void;
 }> = ({ plan, isSelected, onSelect }) => {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { data: permissionsSummary, isLoading: isLoadingPermissions } = useModulePermissionsSummary(plan.id);
 
   const getIcon = (planType: string) => {
@@ -53,104 +55,124 @@ const PlanCard: React.FC<{
     .map(m => m.name) || [];
 
   return (
-    <Card 
-      className={`cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary' : ''
-      }`}
-      onClick={onSelect}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {getIcon(plan.plan_type)}
-            <h3 className="font-semibold">{plan.name}</h3>
-            {plan.use_module_pricing && (
-              <Badge variant="outline" className="text-xs">
-                <Calculator className="h-3 w-3 mr-1" />
-                Dynamic
-              </Badge>
-            )}
-          </div>
-          <Badge variant={plan.is_active ? 'default' : 'secondary'}>
-            {plan.is_active ? 'Active' : 'Inactive'}
-          </Badge>
-        </div>
-        
-        <div className="space-y-2 mb-3">
-          {plan.use_module_pricing ? (
-            <PricingDisplay
-              planId={plan.id}
-              enabledModules={enabledModules}
-              billingCycle="monthly"
-              showBreakdown={false}
-            />
-          ) : (
-            <>
-              <div className="flex justify-between text-sm">
-                <span>Monthly:</span>
-                <span className="font-medium">{formatPrice(plan.price_monthly)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Annual:</span>
-                <span className="font-medium">{formatPrice(plan.price_annually)}</span>
-              </div>
-            </>
-          )}
-        </div>
-
-        {plan.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {plan.description}
-          </p>
-        )}
-
-        {/* Module Permissions Summary */}
-        {!isLoadingPermissions && permissionsSummary && (
-          <div className="space-y-3 mb-3 pt-3 border-t">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Module Access</span>
-              <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
-                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
-              </ModulePermissionsTooltip>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <ModulePermissionBadge
-                enabledModules={permissionsSummary.enabledModules}
-                totalModules={permissionsSummary.totalModules}
-                enabledPercentage={permissionsSummary.enabledPercentage}
-              />
-              {permissionsSummary.keyLimitations.length > 0 && (
-                <LimitationsBadge limitations={permissionsSummary.keyLimitations} />
+    <>
+      <Card 
+        className={`cursor-pointer transition-all hover:shadow-md ${
+          isSelected ? 'ring-2 ring-primary' : ''
+        }`}
+        onClick={onSelect}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {getIcon(plan.plan_type)}
+              <h3 className="font-semibold">{plan.name}</h3>
+              {plan.use_module_pricing && (
+                <Badge variant="outline" className="text-xs">
+                  <Calculator className="h-3 w-3 mr-1" />
+                  Dynamic
+                </Badge>
               )}
             </div>
-
-            <CollapsiblePermissionsSection moduleDetails={permissionsSummary.moduleDetails} />
-          </div>
-        )}
-
-        {isLoadingPermissions && (
-          <div className="pt-3 border-t">
-            <div className="animate-pulse space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditDialogOpen(true);
+                }}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Badge variant={plan.is_active ? 'default' : 'secondary'}>
+                {plan.is_active ? 'Active' : 'Inactive'}
+              </Badge>
             </div>
           </div>
-        )}
+          
+          <div className="space-y-2 mb-3">
+            {plan.use_module_pricing ? (
+              <PricingDisplay
+                planId={plan.id}
+                enabledModules={enabledModules}
+                billingCycle="monthly"
+                showBreakdown={false}
+              />
+            ) : (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span>Monthly:</span>
+                  <span className="font-medium">{formatPrice(plan.price_monthly)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Annual:</span>
+                  <span className="font-medium">{formatPrice(plan.price_annually)}</span>
+                </div>
+              </>
+            )}
+          </div>
 
-        <Button 
-          variant={isSelected ? 'default' : 'outline'}
-          size="sm" 
-          className="w-full"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-        >
-          {isSelected ? 'Selected' : 'Manage Plan'}
-        </Button>
-      </CardContent>
-    </Card>
+          {plan.description && (
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              {plan.description}
+            </p>
+          )}
+
+          {/* Module Permissions Summary */}
+          {!isLoadingPermissions && permissionsSummary && (
+            <div className="space-y-3 mb-3 pt-3 border-t">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Module Access</span>
+                <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                </ModulePermissionsTooltip>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <ModulePermissionBadge
+                  enabledModules={permissionsSummary.enabledModules}
+                  totalModules={permissionsSummary.totalModules}
+                  enabledPercentage={permissionsSummary.enabledPercentage}
+                />
+                {permissionsSummary.keyLimitations.length > 0 && (
+                  <LimitationsBadge limitations={permissionsSummary.keyLimitations} />
+                )}
+              </div>
+
+              <CollapsiblePermissionsSection moduleDetails={permissionsSummary.moduleDetails} />
+            </div>
+          )}
+
+          {isLoadingPermissions && (
+            <div className="pt-3 border-t">
+              <div className="animate-pulse space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          )}
+
+          <Button 
+            variant={isSelected ? 'default' : 'outline'}
+            size="sm" 
+            className="w-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect();
+            }}
+          >
+            {isSelected ? 'Selected' : 'Manage Plan'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <EditPlanDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        plan={plan}
+      />
+    </>
   );
 };
 

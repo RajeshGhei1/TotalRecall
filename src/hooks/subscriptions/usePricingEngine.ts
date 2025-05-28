@@ -46,16 +46,30 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
   const { data: modulePricing } = useModulePricing();
   
   return useQuery({
-    queryKey: ['pricing-calculation', planId, enabledModules],
+    queryKey: ['pricing-calculation', planId, enabledModules, modulePricing?.length],
     queryFn: async (): Promise<PricingCalculation> => {
       // Get plan base pricing
       const { data: plan, error: planError } = await (supabase as any)
         .from('subscription_plans')
-        .select('base_price_monthly, base_price_annually, use_module_pricing')
+        .select('base_price_monthly, base_price_annually, use_module_pricing, price_monthly, price_annually')
         .eq('id', planId)
         .single();
 
       if (planError) throw planError;
+
+      // If not using module pricing, return the fixed prices
+      if (!plan?.use_module_pricing) {
+        return {
+          basePriceMonthly: plan?.price_monthly || 0,
+          basePriceAnnually: plan?.price_annually || 0,
+          modulesPriceMonthly: 0,
+          modulesPriceAnnually: 0,
+          totalPriceMonthly: plan?.price_monthly || 0,
+          totalPriceAnnually: plan?.price_annually || 0,
+          enabledModules: [],
+          pricingBreakdown: []
+        };
+      }
 
       const basePriceMonthly = plan?.base_price_monthly || 0;
       const basePriceAnnually = plan?.base_price_annually || 0;
@@ -69,7 +83,7 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
         priceAnnually: number;
       }> = [];
 
-      if (plan?.use_module_pricing && modulePricing) {
+      if (modulePricing) {
         enabledModules.forEach(moduleName => {
           const modulePrice = modulePricing.find(mp => mp.module_name === moduleName);
           if (modulePrice) {
