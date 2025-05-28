@@ -33,6 +33,8 @@ const TenantList = ({
   onOpenUserManager,
   onOpenCustomFields 
 }: TenantListProps) => {
+  console.log("TenantList - tenants data:", tenants);
+  
   return (
     <Card>
       <CardHeader>
@@ -57,31 +59,36 @@ const TenantList = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tenants.map((tenant) => (
-                  <TableRow key={tenant.id}>
-                    <TableCell className="font-medium">{tenant.name}</TableCell>
-                    <TableCell>{tenant.domain}</TableCell>
-                    <TableCell>
-                      {new Date(tenant.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onOpenCustomFields(tenant)}
-                      >
-                        <Settings className="mr-2 h-4 w-4" /> Custom Fields
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onOpenUserManager(tenant)}
-                      >
-                        <UserPlus className="mr-2 h-4 w-4" /> Manage Users
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {tenants.map((tenant) => {
+                  console.log("Rendering tenant:", tenant);
+                  return (
+                    <TableRow key={tenant.id}>
+                      <TableCell className="font-medium">
+                        {tenant.name || 'No name provided'}
+                      </TableCell>
+                      <TableCell>{tenant.domain || '-'}</TableCell>
+                      <TableCell>
+                        {new Date(tenant.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onOpenCustomFields(tenant)}
+                        >
+                          <Settings className="mr-2 h-4 w-4" /> Custom Fields
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onOpenUserManager(tenant)}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" /> Manage Users
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
