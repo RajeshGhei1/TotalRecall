@@ -1,19 +1,22 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar, CreditCard, Building, Users } from 'lucide-react';
+import { Plus, Calendar, CreditCard, Building, Users, Edit, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TenantSubscription } from '@/types/subscription-types';
 import AssignSubscriptionDialog from './AssignSubscriptionDialog';
 import UserSubscriptionManager from './UserSubscriptionManager';
+import EditTenantSubscriptionDialog from './EditTenantSubscriptionDialog';
+import EndTenantSubscriptionDialog from './EndTenantSubscriptionDialog';
 
 const TenantSubscriptionManager = () => {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [editingSubscription, setEditingSubscription] = useState<TenantSubscription | null>(null);
+  const [endingSubscription, setEndingSubscription] = useState<TenantSubscription | null>(null);
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['tenant-subscriptions'],
@@ -136,14 +139,31 @@ const TenantSubscriptionManager = () => {
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CreditCard className="h-4 w-4" />
-                          {subscription.subscription_plans && formatPrice(
-                            subscription.billing_cycle === 'monthly' 
-                              ? subscription.subscription_plans.price_monthly
-                              : subscription.subscription_plans.price_annually,
-                            subscription.billing_cycle
-                          )}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CreditCard className="h-4 w-4" />
+                            {subscription.subscription_plans && formatPrice(
+                              subscription.billing_cycle === 'monthly' 
+                                ? subscription.subscription_plans.price_monthly
+                                : subscription.subscription_plans.price_annually,
+                              subscription.billing_cycle
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingSubscription(subscription)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEndingSubscription(subscription)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
 
@@ -224,6 +244,18 @@ const TenantSubscriptionManager = () => {
       <AssignSubscriptionDialog
         isOpen={isAssignDialogOpen}
         onClose={() => setIsAssignDialogOpen(false)}
+      />
+
+      <EditTenantSubscriptionDialog
+        isOpen={!!editingSubscription}
+        onClose={() => setEditingSubscription(null)}
+        subscription={editingSubscription}
+      />
+
+      <EndTenantSubscriptionDialog
+        isOpen={!!endingSubscription}
+        onClose={() => setEndingSubscription(null)}
+        subscription={endingSubscription}
       />
     </div>
   );

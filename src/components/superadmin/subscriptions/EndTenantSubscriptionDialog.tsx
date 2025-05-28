@@ -1,0 +1,104 @@
+
+import React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { TenantSubscription } from '@/types/subscription-types';
+
+interface EndTenantSubscriptionDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  subscription: TenantSubscription | null;
+}
+
+const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = ({
+  isOpen,
+  onClose,
+  subscription
+}) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const endTenantSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      if (!subscription) throw new Error('No subscription to end');
+
+      const { error } = await (supabase as any)
+        .from('tenant_subscriptions')
+        .update({
+          status: 'cancelled',
+          ends_at: new Date().toISOString()
+        })
+        .eq('id', subscription.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-subscriptions'] });
+      toast({
+        title: "Success",
+        description: "Tenant subscription ended successfully"
+      });
+      onClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to end tenant subscription",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleEnd = () => {
+    endTenantSubscriptionMutation.mutate();
+  };
+
+  if (!subscription) return null;
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>End Tenant Subscription</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to end the subscription for{' '}
+            <strong>{(subscription as any).tenants?.name || 'this tenant'}</strong>?
+            <br />
+            <br />
+            This will:
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Set the subscription status to "cancelled"</li>
+              <li>Set the end date to today</li>
+              <li>Affect all users in this tenant who don't have individual subscriptions</li>
+            </ul>
+            <br />
+            This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleEnd}
+            disabled={endTenantSubscriptionMutation.isPending}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {endTenantSubscriptionMutation.isPending ? 'Ending...' : 'End Subscription'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+export default EndTenantSubscriptionDialog;
