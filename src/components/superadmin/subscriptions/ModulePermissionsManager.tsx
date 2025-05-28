@@ -1,69 +1,18 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Save } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  ModulePermissionCard, 
+  ModulePermissionsHeader, 
+  AVAILABLE_MODULES 
+} from './module-permissions';
 
 interface ModulePermissionsManagerProps {
   planId: string;
 }
-
-const AVAILABLE_MODULES = [
-  {
-    name: 'job_posting',
-    label: 'Job Posting',
-    description: 'Create and manage job postings',
-    defaultLimits: { max_active_jobs: 10 }
-  },
-  {
-    name: 'application_management',
-    label: 'Application Management',
-    description: 'Track and manage job applications',
-    defaultLimits: { max_applications_per_job: 100 }
-  },
-  {
-    name: 'advanced_analytics',
-    label: 'Advanced Analytics',
-    description: 'Detailed reporting and insights',
-    defaultLimits: {}
-  },
-  {
-    name: 'custom_fields',
-    label: 'Custom Fields',
-    description: 'Create custom data fields',
-    defaultLimits: { max_custom_fields: 20 }
-  },
-  {
-    name: 'api_access',
-    label: 'API Access',
-    description: 'Access to REST APIs',
-    defaultLimits: { requests_per_hour: 1000 }
-  },
-  {
-    name: 'integration_marketplace',
-    label: 'Integration Marketplace',
-    description: 'Third-party integrations',
-    defaultLimits: { max_integrations: 5 }
-  },
-  {
-    name: 'interview_scheduling',
-    label: 'Interview Scheduling',
-    description: 'Schedule and manage interviews',
-    defaultLimits: {}
-  },
-  {
-    name: 'candidate_sourcing',
-    label: 'Candidate Sourcing',
-    description: 'AI-powered candidate sourcing',
-    defaultLimits: { sourcing_credits: 100 }
-  }
-];
 
 const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ planId }) => {
   const [permissions, setPermissions] = useState<Record<string, any>>({});
@@ -159,9 +108,10 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Module Permissions</CardTitle>
-        </CardHeader>
+        <ModulePermissionsHeader 
+          onSave={() => {}} 
+          isSaving={false} 
+        />
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[...Array(6)].map((_, i) => (
@@ -175,21 +125,10 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Module Permissions</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Configure which modules are available for this plan
-          </p>
-        </div>
-        <Button 
-          onClick={() => savePermissionsMutation.mutate()}
-          disabled={savePermissionsMutation.isPending}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {savePermissionsMutation.isPending ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </CardHeader>
+      <ModulePermissionsHeader 
+        onSave={() => savePermissionsMutation.mutate()}
+        isSaving={savePermissionsMutation.isPending}
+      />
       <CardContent className="space-y-6">
         {AVAILABLE_MODULES.map((module) => {
           const moduleConfig = permissions[module.name] || {};
@@ -197,40 +136,18 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
           const limits = moduleConfig.limits || {};
 
           return (
-            <div key={module.name} className="border rounded-lg p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">{module.label}</h4>
-                  <p className="text-sm text-muted-foreground">{module.description}</p>
-                </div>
-                <Switch
-                  checked={isEnabled}
-                  onCheckedChange={(checked) => 
-                    updateModulePermission(module.name, 'is_enabled', checked)
-                  }
-                />
-              </div>
-
-              {isEnabled && Object.keys(module.defaultLimits).length > 0 && (
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                  {Object.entries(module.defaultLimits).map(([limitKey, defaultValue]) => (
-                    <div key={limitKey} className="space-y-2">
-                      <Label className="text-xs capitalize">
-                        {limitKey.replace(/_/g, ' ')}
-                      </Label>
-                      <Input
-                        type="number"
-                        value={limits[limitKey] || defaultValue}
-                        onChange={(e) => 
-                          updateModuleLimit(module.name, limitKey, parseInt(e.target.value) || 0)
-                        }
-                        className="h-8"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ModulePermissionCard
+              key={module.name}
+              module={module}
+              isEnabled={isEnabled}
+              limits={limits}
+              onToggleEnabled={(checked) => 
+                updateModulePermission(module.name, 'is_enabled', checked)
+              }
+              onUpdateLimit={(limitKey, value) =>
+                updateModuleLimit(module.name, limitKey, value)
+              }
+            />
           );
         })}
       </CardContent>
