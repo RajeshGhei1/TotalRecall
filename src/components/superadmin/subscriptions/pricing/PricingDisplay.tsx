@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { DollarSign, Calculator } from 'lucide-react';
+import { DollarSign, Calculator, Loader2 } from 'lucide-react';
 import { usePricingCalculation } from '@/hooks/subscriptions/usePricingEngine';
 
 interface PricingDisplayProps {
@@ -19,7 +19,7 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
   billingCycle = 'monthly',
   showBreakdown = false
 }) => {
-  const { data: pricing, isLoading } = usePricingCalculation(planId, enabledModules);
+  const { data: pricing, isLoading, error } = usePricingCalculation(planId, enabledModules);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -45,9 +45,17 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
 
   if (isLoading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-24 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      <div className="flex items-center gap-2 animate-pulse">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <div className="h-8 bg-gray-200 rounded w-24"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-sm">
+        Error calculating pricing
       </div>
     );
   }

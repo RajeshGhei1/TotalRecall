@@ -21,11 +21,16 @@ const SubscriptionPlansManager = () => {
   const { data: modulesSummary } = useModulePermissionsSummary(selectedPlanId || '');
   
   // Get enabled modules list for pricing calculation
-  const enabledModules = modulesSummary?.moduleDetails
-    .filter(module => module.isEnabled)
-    .map(module => module.name) || [];
+  const enabledModules = React.useMemo(() => {
+    return modulesSummary?.moduleDetails
+      .filter(module => module.isEnabled)
+      .map(module => module.name) || [];
+  }, [modulesSummary]);
 
   const selectedPlan = plans?.find(plan => plan.id === selectedPlanId);
+
+  console.log('Selected plan:', selectedPlan);
+  console.log('Enabled modules for pricing:', enabledModules);
 
   return (
     <div className="space-y-6">
@@ -57,9 +62,9 @@ const SubscriptionPlansManager = () => {
           {/* Show current pricing for the selected plan */}
           <Card>
             <CardHeader>
-              <CardTitle>Current Plan Pricing</CardTitle>
+              <CardTitle>Current Plan Pricing - {selectedPlan.name}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Live pricing calculation based on enabled modules
+                Live pricing calculation based on enabled modules ({enabledModules.length} modules enabled)
               </p>
             </CardHeader>
             <CardContent>
@@ -67,6 +72,7 @@ const SubscriptionPlansManager = () => {
                 <div>
                   <h4 className="font-medium mb-2">Monthly Pricing</h4>
                   <PricingDisplay
+                    key={`monthly-${selectedPlanId}-${enabledModules.join(',')}`}
                     planId={selectedPlanId}
                     enabledModules={enabledModules}
                     billingCycle="monthly"
@@ -76,6 +82,7 @@ const SubscriptionPlansManager = () => {
                 <div>
                   <h4 className="font-medium mb-2">Annual Pricing</h4>
                   <PricingDisplay
+                    key={`annual-${selectedPlanId}-${enabledModules.join(',')}`}
                     planId={selectedPlanId}
                     enabledModules={enabledModules}
                     billingCycle="annually"

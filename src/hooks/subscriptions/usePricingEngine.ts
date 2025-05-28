@@ -46,7 +46,7 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
   const { data: modulePricing } = useModulePricing();
   
   return useQuery({
-    queryKey: ['pricing-calculation', planId, enabledModules.sort().join(','), modulePricing?.length],
+    queryKey: ['pricing-calculation', planId, enabledModules.sort().join(',')],
     queryFn: async (): Promise<PricingCalculation> => {
       console.log('Calculating pricing for plan:', planId, 'with modules:', enabledModules);
       
@@ -92,16 +92,19 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
 
       if (modulePricing && enabledModules.length > 0) {
         enabledModules.forEach(moduleName => {
-          const modulePrice = modulePricing.find(mp => mp.module_name === moduleName);
+          const modulePrice = modulePricing.find(mp => mp.module_name === moduleName && mp.is_active);
           console.log(`Looking for module: ${moduleName}, found:`, modulePrice);
           
           if (modulePrice) {
-            modulesPriceMonthly += modulePrice.base_price_monthly;
-            modulesPriceAnnually += modulePrice.base_price_annually;
+            const monthlyPrice = Number(modulePrice.base_price_monthly) || 0;
+            const annualPrice = Number(modulePrice.base_price_annually) || 0;
+            
+            modulesPriceMonthly += monthlyPrice;
+            modulesPriceAnnually += annualPrice;
             pricingBreakdown.push({
               name: moduleName,
-              priceMonthly: modulePrice.base_price_monthly,
-              priceAnnually: modulePrice.base_price_annually
+              priceMonthly: monthlyPrice,
+              priceAnnually: annualPrice
             });
           }
         });
@@ -121,6 +124,8 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
       console.log('Final pricing calculation:', result);
       return result;
     },
-    enabled: !!planId && !!modulePricing
+    enabled: !!planId && !!modulePricing,
+    refetchOnWindowFocus: false,
+    staleTime: 0 // Always refetch to ensure latest pricing
   });
 };
