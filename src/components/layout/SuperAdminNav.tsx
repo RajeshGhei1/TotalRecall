@@ -12,7 +12,8 @@ import {
   Store, 
   Users,
   Users2,
-  PieChart
+  PieChart,
+  Package
 } from 'lucide-react';
 
 const SuperAdminNav = () => {
@@ -56,6 +57,12 @@ const SuperAdminNav = () => {
       icon: <Users2 size={20} />, 
       href: '/superadmin/people',
       isActive: isActive('/superadmin/people') 
+    },
+    { 
+      label: 'Subscription Plans', 
+      icon: <Package size={20} />, 
+      href: '/superadmin/subscription-plans',
+      isActive: isActive('/superadmin/subscription-plans') 
     },
     { 
       label: 'Revenue', 

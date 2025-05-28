@@ -1,4 +1,3 @@
-
 import { Route } from "react-router-dom";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
 import SuperAdminAnalytics from "@/pages/superadmin/Analytics";
@@ -10,6 +9,7 @@ import SuperAdminCompanies from "@/pages/superadmin/Companies";
 import SuperAdminPeople from "@/pages/superadmin/People";
 import SuperAdminContacts from "@/pages/superadmin/Contacts";
 import SuperAdminRevenue from "@/pages/superadmin/Revenue";
+import SuperAdminSubscriptionPlans from "@/pages/superadmin/SubscriptionPlans";
 import AuthGuard from "@/components/AuthGuard";
 import CompanyDetailView from "@/components/superadmin/companies/CompanyDetailView";
 import { PersonDetailView } from "@/components/people";
@@ -113,6 +113,15 @@ const SuperAdminRoutes = () => [
       </AuthGuard>
     }
     key="superadmin-contacts"
+  />,
+  <Route
+    path="/superadmin/subscription-plans"
+    element={
+      <AuthGuard>
+        <SuperAdminSubscriptionPlans />
+      </AuthGuard>
+    }
+    key="superadmin-subscription-plans"
   />,
   <Route
     path="/superadmin/revenue"
