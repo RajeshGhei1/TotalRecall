@@ -64,12 +64,12 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1">
-        <span className="text-lg font-bold text-green-600">
+      <div className="flex items-baseline gap-1">
+        <span className="text-xl font-bold text-green-600">
           {formatPrice(getCurrentPrice())}
         </span>
         <span className="text-xs text-muted-foreground">
-          /{billingCycle === 'monthly' ? 'month' : 'year'}
+          /{billingCycle === 'monthly' ? 'mo' : 'yr'}
         </span>
       </div>
     );
