@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ const TenantSubscriptionManager = () => {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [editingSubscription, setEditingSubscription] = useState<TenantSubscription | null>(null);
-  const [endingSubscription, setEndingSubscription] = useState<TenantSubscription | null>(null);
+  const [endingSubscriptionId, setEndingSubscriptionId] = useState<string | null>(null);
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['tenant-subscriptions'],
@@ -70,6 +71,21 @@ const TenantSubscriptionManager = () => {
     }).format(price);
     return `${formattedPrice}/${cycle === 'monthly' ? 'mo' : 'yr'}`;
   };
+
+  const handleEditSubscription = (subscription: TenantSubscription) => {
+    console.log('Editing subscription:', subscription);
+    setEditingSubscription(subscription);
+  };
+
+  const handleEndSubscription = (subscription: TenantSubscription) => {
+    console.log('Ending subscription with ID:', subscription.id);
+    setEndingSubscriptionId(subscription.id);
+  };
+
+  // Find the subscription being ended for the dialog
+  const endingSubscription = endingSubscriptionId 
+    ? subscriptions?.find(sub => sub.id === endingSubscriptionId) || null
+    : null;
 
   if (isLoading) {
     return (
@@ -152,14 +168,14 @@ const TenantSubscriptionManager = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setEditingSubscription(subscription)}
+                            onClick={() => handleEditSubscription(subscription)}
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setEndingSubscription(subscription)}
+                            onClick={() => handleEndSubscription(subscription)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -253,8 +269,8 @@ const TenantSubscriptionManager = () => {
       />
 
       <EndTenantSubscriptionDialog
-        isOpen={!!endingSubscription}
-        onClose={() => setEndingSubscription(null)}
+        isOpen={!!endingSubscriptionId}
+        onClose={() => setEndingSubscriptionId(null)}
         subscription={endingSubscription}
       />
     </div>

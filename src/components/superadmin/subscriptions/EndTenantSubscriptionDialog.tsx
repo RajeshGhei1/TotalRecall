@@ -31,7 +31,19 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
 
   const endTenantSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      if (!subscription) throw new Error('No subscription to end');
+      console.log('Starting mutation with subscription:', subscription);
+      
+      if (!subscription) {
+        console.error('No subscription provided to mutation');
+        throw new Error('No subscription selected to end');
+      }
+
+      if (!subscription.id) {
+        console.error('Subscription missing ID:', subscription);
+        throw new Error('Subscription ID is missing');
+      }
+
+      console.log('Ending subscription with ID:', subscription.id);
 
       const { error } = await (supabase as any)
         .from('tenant_subscriptions')
@@ -41,7 +53,12 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
         })
         .eq('id', subscription.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Successfully ended subscription');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenant-subscriptions'] });
@@ -52,6 +69,7 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
       onClose();
     },
     onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to end tenant subscription",
@@ -61,10 +79,23 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
   });
 
   const handleEnd = () => {
+    console.log('Handle end called with subscription:', subscription);
+    if (!subscription) {
+      console.error('No subscription available when trying to end');
+      toast({
+        title: "Error",
+        description: "No subscription selected",
+        variant: "destructive"
+      });
+      return;
+    }
     endTenantSubscriptionMutation.mutate();
   };
 
-  if (!subscription) return null;
+  if (!subscription) {
+    console.log('No subscription provided, not rendering dialog');
+    return null;
+  }
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
