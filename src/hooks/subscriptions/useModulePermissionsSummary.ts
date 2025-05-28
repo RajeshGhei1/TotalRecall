@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AVAILABLE_MODULES } from '@/components/superadmin/subscriptions/module-permissions';
+import { useSystemModules } from '@/hooks/modules/useSystemModules';
 
 export interface ModulePermissionSummary {
   totalModules: number;
@@ -26,6 +26,8 @@ interface ModulePermissionRecord {
 }
 
 export const useModulePermissionsSummary = (planId: string) => {
+  const { data: systemModules } = useSystemModules();
+
   return useQuery({
     queryKey: ['module-permissions-summary', planId],
     queryFn: async (): Promise<ModulePermissionSummary> => {
@@ -36,11 +38,21 @@ export const useModulePermissionsSummary = (planId: string) => {
 
       if (error) throw error;
 
+      // Use dynamic modules from database instead of static list
+      const availableModules = (systemModules || [])
+        .filter(module => module.is_active)
+        .map(module => ({
+          name: module.name,
+          label: module.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          description: module.description || `${module.category} module`,
+          defaultLimits: module.default_limits || {}
+        }));
+
       const permissionsMap = new Map(
         (permissions as ModulePermissionRecord[])?.map((perm) => [perm.module_name, perm]) || []
       );
 
-      const moduleDetails = AVAILABLE_MODULES.map((module) => {
+      const moduleDetails = availableModules.map((module) => {
         const permission = permissionsMap.get(module.name);
         return {
           name: module.name,
@@ -51,8 +63,8 @@ export const useModulePermissionsSummary = (planId: string) => {
       });
 
       const enabledModules = moduleDetails.filter(m => m.isEnabled).length;
-      const totalModules = AVAILABLE_MODULES.length;
-      const enabledPercentage = Math.round((enabledModules / totalModules) * 100);
+      const totalModules = availableModules.length;
+      const enabledPercentage = totalModules > 0 ? Math.round((enabledModules / totalModules) * 100) : 0;
 
       // Extract key limitations
       const keyLimitations: string[] = [];
@@ -75,6 +87,6 @@ export const useModulePermissionsSummary = (planId: string) => {
         moduleDetails
       };
     },
-    enabled: !!planId
+    enabled: !!planId && !!systemModules
   });
 };

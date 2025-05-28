@@ -4,10 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSystemModules } from '@/hooks/modules/useSystemModules';
 import { 
   ModulePermissionCard, 
-  ModulePermissionsHeader, 
-  AVAILABLE_MODULES 
+  ModulePermissionsHeader
 } from './module-permissions';
 
 interface ModulePermissionsManagerProps {
@@ -19,7 +19,10 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: existingPermissions, isLoading } = useQuery({
+  // Get dynamic modules from database
+  const { data: systemModules, isLoading: modulesLoading } = useSystemModules();
+
+  const { data: existingPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['module-permissions', planId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -105,6 +108,22 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
     }));
   };
 
+  // Transform system modules to match the expected interface
+  const availableModules = React.useMemo(() => {
+    if (!systemModules) return [];
+    
+    return systemModules
+      .filter(module => module.is_active) // Only show active modules
+      .map(module => ({
+        name: module.name,
+        label: module.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Convert snake_case to Title Case
+        description: module.description || `${module.category} module`,
+        defaultLimits: module.default_limits || {}
+      }));
+  }, [systemModules]);
+
+  const isLoading = modulesLoading || permissionsLoading;
+
   if (isLoading) {
     return (
       <Card>
@@ -130,7 +149,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
         isSaving={savePermissionsMutation.isPending}
       />
       <CardContent className="space-y-6">
-        {AVAILABLE_MODULES.map((module) => {
+        {availableModules.map((module) => {
           const moduleConfig = permissions[module.name] || {};
           const isEnabled = moduleConfig.is_enabled || false;
           const limits = moduleConfig.limits || {};
@@ -150,6 +169,11 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
             />
           );
         })}
+        {availableModules.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No active modules found. Create modules in the Module Registry to assign them to plans.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

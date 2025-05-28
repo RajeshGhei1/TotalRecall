@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Save, DollarSign } from 'lucide-react';
 import { useModulePricing } from '@/hooks/subscriptions/usePricingEngine';
+import { useSystemModules } from '@/hooks/modules/useSystemModules';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { AVAILABLE_MODULES } from '../module-permissions';
 
 const ModulePricingManager: React.FC = () => {
-  const { data: modulePricing, isLoading } = useModulePricing();
+  const { data: modulePricing, isLoading: pricingLoading } = useModulePricing();
+  const { data: systemModules, isLoading: modulesLoading } = useSystemModules();
   const [pricing, setPricing] = useState<Record<string, any>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -82,6 +83,21 @@ const ModulePricingManager: React.FC = () => {
     }).format(price);
   };
 
+  // Transform system modules for display
+  const availableModules = React.useMemo(() => {
+    if (!systemModules) return [];
+    
+    return systemModules
+      .filter(module => module.is_active)
+      .map(module => ({
+        name: module.name,
+        label: module.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        description: module.description || `${module.category} module`
+      }));
+  }, [systemModules]);
+
+  const isLoading = pricingLoading || modulesLoading;
+
   if (isLoading) {
     return (
       <Card>
@@ -123,7 +139,7 @@ const ModulePricingManager: React.FC = () => {
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
-        {AVAILABLE_MODULES.map((module) => {
+        {availableModules.map((module) => {
           const moduleConfig = pricing[module.name] || {};
           const monthlyPrice = moduleConfig.base_price_monthly || 0;
           const annualPrice = moduleConfig.base_price_annually || 0;
@@ -190,6 +206,11 @@ const ModulePricingManager: React.FC = () => {
             </div>
           );
         })}
+        {availableModules.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No active modules found. Create modules in the Module Registry to configure pricing.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
