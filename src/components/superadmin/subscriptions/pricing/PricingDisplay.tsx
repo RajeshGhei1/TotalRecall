@@ -11,13 +11,15 @@ interface PricingDisplayProps {
   enabledModules: string[];
   billingCycle?: 'monthly' | 'annually';
   showBreakdown?: boolean;
+  compact?: boolean;
 }
 
 const PricingDisplay: React.FC<PricingDisplayProps> = ({
   planId,
   enabledModules,
   billingCycle = 'monthly',
-  showBreakdown = false
+  showBreakdown = false,
+  compact = false
 }) => {
   const { data: pricing, isLoading, error } = usePricingCalculation(planId, enabledModules);
 
@@ -47,7 +49,7 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
     return (
       <div className="flex items-center gap-2 animate-pulse">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <div className="h-8 bg-gray-200 rounded w-24"></div>
+        <div className={`h-6 bg-gray-200 rounded ${compact ? 'w-16' : 'w-24'}`}></div>
       </div>
     );
   }
@@ -56,6 +58,19 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
     return (
       <div className="text-red-500 text-sm">
         Error calculating pricing
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1">
+        <span className="text-lg font-bold text-green-600">
+          {formatPrice(getCurrentPrice())}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          /{billingCycle === 'monthly' ? 'month' : 'year'}
+        </span>
       </div>
     );
   }

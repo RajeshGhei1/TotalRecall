@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -91,25 +90,49 @@ const PlanCard: React.FC<{
             </div>
           </div>
           
-          <div className="space-y-2 mb-3">
+          <div className="space-y-3 mb-3">
             {plan.use_module_pricing ? (
-              <PricingDisplay
-                planId={plan.id}
-                enabledModules={enabledModules}
-                billingCycle="monthly"
-                showBreakdown={false}
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Monthly</p>
+                  <PricingDisplay
+                    planId={plan.id}
+                    enabledModules={enabledModules}
+                    billingCycle="monthly"
+                    showBreakdown={false}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Annual</p>
+                  <PricingDisplay
+                    planId={plan.id}
+                    enabledModules={enabledModules}
+                    billingCycle="annually"
+                    showBreakdown={false}
+                  />
+                </div>
+              </div>
             ) : (
-              <>
-                <div className="flex justify-between text-sm">
-                  <span>Monthly:</span>
-                  <span className="font-medium">{formatPrice(plan.price_monthly)}</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Monthly</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-green-600">
+                      {formatPrice(plan.price_monthly)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/month</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Annual:</span>
-                  <span className="font-medium">{formatPrice(plan.price_annually)}</span>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Annual</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-green-600">
+                      {formatPrice(plan.price_annually)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/year</span>
+                  </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
 
