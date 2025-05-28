@@ -599,6 +599,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_modules: {
+        Row: {
+          category: string
+          created_at: string
+          default_limits: Json | null
+          dependencies: string[] | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          default_limits?: Json | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_limits?: Json | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       talent_skills: {
         Row: {
           created_at: string

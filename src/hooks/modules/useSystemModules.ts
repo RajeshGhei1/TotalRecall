@@ -8,7 +8,7 @@ export interface SystemModule {
   name: string;
   description?: string;
   category: string;
-  version?: string;
+  version: string;
   is_active: boolean;
   default_limits?: Record<string, any>;
   dependencies?: string[];
@@ -23,7 +23,7 @@ export const useSystemModules = () => {
   const modulesQuery = useQuery({
     queryKey: ['system-modules'],
     queryFn: async (): Promise<SystemModule[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('system_modules')
         .select('*')
         .order('category', { ascending: true })
@@ -36,7 +36,7 @@ export const useSystemModules = () => {
 
   const createModuleMutation = useMutation({
     mutationFn: async (moduleData: Omit<SystemModule, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('system_modules')
         .insert([moduleData])
         .select()
@@ -63,7 +63,7 @@ export const useSystemModules = () => {
 
   const updateModuleMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<SystemModule> }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('system_modules')
         .update(updates)
         .eq('id', id)
@@ -91,7 +91,7 @@ export const useSystemModules = () => {
 
   const deleteModuleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('system_modules')
         .delete()
         .eq('id', id);

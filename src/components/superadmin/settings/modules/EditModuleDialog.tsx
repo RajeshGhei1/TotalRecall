@@ -16,7 +16,7 @@ const editModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
   description: z.string().optional(),
   category: z.string().min(1, "Category is required"),
-  version: z.string().optional(),
+  version: z.string().min(1, "Version is required"),
   is_active: z.boolean(),
   default_limits: z.record(z.any()).optional(),
   dependencies: z.array(z.string()).optional()
@@ -73,7 +73,17 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
     if (!module) return;
     
     try {
-      await updateModule.mutateAsync({ id: module.id, updates: data });
+      const updates = {
+        name: data.name,
+        description: data.description || '',
+        category: data.category,
+        version: data.version || '1.0.0',
+        is_active: data.is_active,
+        default_limits: data.default_limits || {},
+        dependencies: data.dependencies || []
+      };
+      
+      await updateModule.mutateAsync({ id: module.id, updates });
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating module:', error);
@@ -129,6 +139,9 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.category && (
+                <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -138,6 +151,9 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
                 {...form.register('version')}
                 placeholder="1.0.0"
               />
+              {form.formState.errors.version && (
+                <p className="text-sm text-red-500">{form.formState.errors.version.message}</p>
+              )}
             </div>
           </div>
 
