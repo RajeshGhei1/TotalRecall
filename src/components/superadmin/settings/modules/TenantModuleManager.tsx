@@ -25,7 +25,7 @@ const TenantModuleManager: React.FC = () => {
 
   const { data: assignments, isLoading: assignmentsLoading } = useTenantModules();
   const { data: modules } = useSystemModules();
-  const { data: tenants } = useTenants();
+  const { tenants } = useTenants();
 
   const filteredAssignments = assignments?.filter(assignment => {
     const matchesSearch = 
