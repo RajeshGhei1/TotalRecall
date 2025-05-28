@@ -12,7 +12,8 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
           hasAccess: false,
           module: null,
           plan: null,
-          subscription: null
+          subscription: null,
+          subscriptionType: null
         };
       }
 
@@ -32,7 +33,8 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
           hasAccess: false,
           module: null,
           plan: null,
-          subscription: null
+          subscription: null,
+          subscriptionType: null
         };
       }
 
@@ -49,7 +51,8 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
           hasAccess: false,
           module: null,
           plan: subscription.subscription_plans,
-          subscription
+          subscription,
+          subscriptionType: 'tenant'
         };
       }
 
@@ -61,7 +64,8 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
           limits: permission.limits
         },
         plan: subscription.subscription_plans,
-        subscription
+        subscription,
+        subscriptionType: 'tenant'
       };
     },
     enabled: !!tenantId && !!moduleName
