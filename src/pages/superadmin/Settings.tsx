@@ -25,6 +25,7 @@ import CommunicationSettings from '@/components/superadmin/settings/Communicatio
 import OutreachSettings from '@/components/superadmin/settings/OutreachSettings';
 import ApiSettings from '@/components/superadmin/settings/ApiSettings';
 import SetupWizard from '@/components/superadmin/settings/SetupWizard';
+import ModuleRegistry from '@/components/superadmin/settings/ModuleRegistry';
 
 const Settings = () => {
   console.log("Rendering SuperAdmin Settings Page");
@@ -65,6 +66,10 @@ const Settings = () => {
                   <Database className="h-4 w-4" />
                   <span>Custom Fields</span>
                 </TabsTrigger>
+                <TabsTrigger value="modules" className="flex items-center gap-2 h-12">
+                  <Blocks className="h-4 w-4" />
+                  <span>Modules</span>
+                </TabsTrigger>
                 <TabsTrigger value="ai-models" className="flex items-center gap-2 h-12">
                   <Bot className="h-4 w-4" />
                   <span>AI Models</span>
@@ -101,6 +106,12 @@ const Settings = () => {
             <ErrorBoundary>
               <TabsContent value="custom-fields" className="mt-6">
                 <GlobalCustomFieldsManager />
+              </TabsContent>
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <TabsContent value="modules" className="mt-6">
+                <ModuleRegistry />
               </TabsContent>
             </ErrorBoundary>
             
