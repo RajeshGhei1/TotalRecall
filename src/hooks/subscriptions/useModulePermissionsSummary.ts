@@ -16,6 +16,15 @@ export interface ModulePermissionSummary {
   }>;
 }
 
+interface ModulePermissionRecord {
+  id: string;
+  plan_id: string;
+  module_name: string;
+  is_enabled: boolean;
+  limits: Record<string, any> | null;
+  created_at: string;
+}
+
 export const useModulePermissionsSummary = (planId: string) => {
   return useQuery({
     queryKey: ['module-permissions-summary', planId],
@@ -28,7 +37,7 @@ export const useModulePermissionsSummary = (planId: string) => {
       if (error) throw error;
 
       const permissionsMap = new Map(
-        permissions?.map((perm: any) => [perm.module_name, perm]) || []
+        (permissions as ModulePermissionRecord[])?.map((perm) => [perm.module_name, perm]) || []
       );
 
       const moduleDetails = AVAILABLE_MODULES.map((module) => {
