@@ -57,18 +57,18 @@ const PlanCard: React.FC<{
   return (
     <>
       <Card 
-        className={`group cursor-pointer transition-all duration-200 hover:shadow-md border ${
+        className={`group cursor-pointer transition-all duration-200 hover:shadow-lg border ${
           isSelected 
-            ? 'border-blue-200 bg-blue-50/50 shadow-sm' 
-            : 'border-gray-200 hover:border-blue-300'
-        } h-full flex flex-col`}
+            ? 'border-blue-300 bg-blue-50/30 shadow-md' 
+            : 'border-gray-200 hover:border-blue-200'
+        } h-full flex flex-col overflow-hidden`}
         onClick={onSelect}
       >
-        <CardContent className="p-5 flex flex-col h-full">
-          {/* Header Section - Fixed Height */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className={`p-2 rounded-md flex-shrink-0 transition-colors ${
+        <CardContent className="p-6 flex flex-col h-full">
+          {/* Header Section */}
+          <div className="flex items-start justify-between mb-5">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              <div className={`p-2.5 rounded-lg flex-shrink-0 transition-colors ${
                 isSelected 
                   ? 'bg-blue-100 text-blue-600' 
                   : 'bg-gray-100 text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600'
@@ -76,17 +76,19 @@ const PlanCard: React.FC<{
                 {getIcon(plan.plan_type)}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-base text-gray-900 truncate mb-1">{plan.name}</h3>
+                <h3 className="font-semibold text-lg text-gray-900 mb-2 text-left leading-tight">
+                  {plan.name}
+                </h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge 
                     variant="outline" 
-                    className="text-xs px-2 py-0.5 capitalize bg-white border-gray-300"
+                    className="text-xs px-2.5 py-1 capitalize bg-white border-gray-300 text-gray-600"
                   >
                     {plan.plan_type}
                   </Badge>
                   <Badge 
                     variant={plan.is_active ? 'default' : 'secondary'} 
-                    className={`text-xs px-2 py-0.5 ${
+                    className={`text-xs px-2.5 py-1 ${
                       plan.is_active 
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                         : 'bg-gray-100 text-gray-600 border-gray-200'
@@ -111,7 +113,7 @@ const PlanCard: React.FC<{
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-7 w-7 p-0 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                  className="h-8 w-8 p-0 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -127,60 +129,64 @@ const PlanCard: React.FC<{
 
           {/* Description */}
           {plan.description && (
-            <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-2">
+            <p className="text-sm text-gray-600 leading-relaxed mb-5 text-left">
               {plan.description}
             </p>
           )}
 
-          {/* Pricing Section - Improved Layout */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          {/* Pricing Section */}
+          <div className="bg-gray-50/80 rounded-xl p-5 mb-5">
             {plan.use_module_pricing && (
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4">
                 <Calculator className="h-4 w-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-700">Dynamic Pricing</span>
               </div>
             )}
             
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Monthly</span>
-                {plan.use_module_pricing ? (
-                  <PricingDisplay
-                    planId={plan.id}
-                    enabledModules={enabledModules}
-                    billingCycle="monthly"
-                    showBreakdown={false}
-                    compact={true}
-                  />
-                ) : (
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900">
-                      {formatPrice(plan.price_monthly)}
-                    </div>
-                    <div className="text-xs text-gray-500">/month</div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="border-t border-gray-200 pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annual</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly</span>
+                <div className="text-right">
                   {plan.use_module_pricing ? (
                     <PricingDisplay
                       planId={plan.id}
                       enabledModules={enabledModules}
-                      billingCycle="annually"
+                      billingCycle="monthly"
                       showBreakdown={false}
                       compact={true}
                     />
                   ) : (
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-gray-900">
-                        {formatPrice(plan.price_annually)}
+                    <>
+                      <div className="text-xl font-bold text-gray-900">
+                        {formatPrice(plan.price_monthly)}
                       </div>
-                      <div className="text-xs text-gray-500">/year</div>
-                    </div>
+                      <div className="text-xs text-gray-500">/month</div>
+                    </>
                   )}
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex justify-between items-start">
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Annual</span>
+                  <div className="text-right">
+                    {plan.use_module_pricing ? (
+                      <PricingDisplay
+                        planId={plan.id}
+                        enabledModules={enabledModules}
+                        billingCycle="annually"
+                        showBreakdown={false}
+                        compact={true}
+                      />
+                    ) : (
+                      <>
+                        <div className="text-xl font-bold text-gray-900">
+                          {formatPrice(plan.price_annually)}
+                        </div>
+                        <div className="text-xs text-gray-500">/year</div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -189,7 +195,7 @@ const PlanCard: React.FC<{
           {/* Module Permissions Summary - Flex Grow */}
           <div className="flex-1">
             {!isLoadingPermissions && permissionsSummary && (
-              <div className="space-y-3 pt-3 border-t border-gray-100">
+              <div className="space-y-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium text-gray-700">Module Access</h4>
                   <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
@@ -215,8 +221,8 @@ const PlanCard: React.FC<{
             )}
 
             {isLoadingPermissions && (
-              <div className="pt-3 border-t border-gray-100">
-                <div className="animate-pulse space-y-2">
+              <div className="pt-4 border-t border-gray-100">
+                <div className="animate-pulse space-y-3">
                   <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                 </div>
@@ -225,11 +231,11 @@ const PlanCard: React.FC<{
           </div>
 
           {/* Action Button - Fixed at Bottom */}
-          <div className="mt-4 pt-3 border-t border-gray-100">
+          <div className="mt-5 pt-4 border-t border-gray-100">
             <Button 
               variant={isSelected ? 'default' : 'outline'}
               size="sm" 
-              className={`w-full h-9 text-sm font-medium transition-all ${
+              className={`w-full h-10 text-sm font-medium transition-all ${
                 isSelected 
                   ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' 
                   : 'border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700'
