@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,7 +50,7 @@ const Settings = () => {
       <AdminLayout>
         <TenantProvider>
           <div className="p-6">
-            <SettingsHeader onShowSetupWizard={() => setShowSetupWizard(true)} />
+            <SettingsHeader />
             
             <ErrorBoundary>
               <SetupWizard 
