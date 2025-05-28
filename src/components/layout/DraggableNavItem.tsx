@@ -8,7 +8,7 @@ import { Move } from 'lucide-react';
 interface DraggableNavItemProps {
   id: string;
   href: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: string | number }>;
   label: string;
 }
 
