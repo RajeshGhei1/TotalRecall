@@ -1,24 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import AIModelList from './ai-models/AIModelList';
-import TenantSelector from './ai-models/TenantSelector';
 import ModelAssignmentForm from './ai-models/ModelAssignmentForm';
-import { useAvailableModels, useTenants } from './ai-models/AIModelData';
+import { useAvailableModels } from './ai-models/AIModelData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot } from 'lucide-react';
+import { Bot, AlertCircle } from 'lucide-react';
+import { useTenantContext } from '@/contexts/TenantContext';
+import TenantContextIndicator from './settings/shared/TenantContextIndicator';
 
 const AIModelIntegration = () => {
-  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const { selectedTenantId } = useTenantContext();
   
   // Get available AI models
   const availableModels = useAvailableModels();
-  
-  // Get tenants
-  const { data: tenants = [], isLoading: isLoadingTenants } = useTenants();
-
-  const handleSelectTenant = (tenantId: string) => {
-    setSelectedTenantId(tenantId);
-  };
 
   return (
     <div className="space-y-6">
@@ -39,24 +33,32 @@ const AIModelIntegration = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Assign Models to Tenants</CardTitle>
-          <CardDescription>
-            Select a tenant and assign an AI model that will be used for all AI features within that tenant.
-          </CardDescription>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <CardTitle>Assign Models to Selected Tenant</CardTitle>
+              <CardDescription>
+                Assign an AI model that will be used for all AI features within the selected tenant.
+              </CardDescription>
+            </div>
+            <TenantContextIndicator />
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <TenantSelector 
-            tenants={tenants}
-            selectedTenantId={selectedTenantId}
-            onSelectTenant={handleSelectTenant}
-            isLoading={isLoadingTenants}
-          />
-          
-          {selectedTenantId && (
+        <CardContent>
+          {selectedTenantId ? (
             <ModelAssignmentForm
               selectedTenantId={selectedTenantId}
               availableModels={availableModels}
             />
+          ) : (
+            <div className="flex items-center gap-3 p-6 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              <div>
+                <p className="font-medium text-gray-900">No Tenant Selected</p>
+                <p className="text-sm text-gray-600">
+                  Please select a tenant from the global context above to assign AI models.
+                </p>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
