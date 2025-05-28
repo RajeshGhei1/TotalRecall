@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface SystemModule {
   id: string;
@@ -10,7 +11,7 @@ export interface SystemModule {
   category: string;
   version: string;
   is_active: boolean;
-  default_limits?: Record<string, any>;
+  default_limits?: Json;
   dependencies?: string[];
   created_at: string;
   updated_at: string;

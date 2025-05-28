@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -66,7 +65,10 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
     { value: 'communication', label: 'Communication' },
     { value: 'integrations', label: 'Integrations' },
     { value: 'recruitment', label: 'Recruitment' },
-    { value: 'talent', label: 'Talent Management' }
+    { value: 'talent', label: 'Talent Management' },
+    { value: 'configuration', label: 'Configuration' },
+    { value: 'system-admin', label: 'System Admin' },
+    { value: 'tenant-admin', label: 'Tenant Admin' }
   ];
 
   const onSubmit = async (data: EditModuleFormData) => {

@@ -51,7 +51,10 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
     { value: 'communication', label: 'Communication' },
     { value: 'integrations', label: 'Integrations' },
     { value: 'recruitment', label: 'Recruitment' },
-    { value: 'talent', label: 'Talent Management' }
+    { value: 'talent', label: 'Talent Management' },
+    { value: 'configuration', label: 'Configuration' },
+    { value: 'system-admin', label: 'System Admin' },
+    { value: 'tenant-admin', label: 'Tenant Admin' }
   ];
 
   const onSubmit = async (data: CreateModuleFormData) => {
