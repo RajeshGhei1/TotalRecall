@@ -20,6 +20,7 @@ import DraggableNavItem from './DraggableNavItem';
 interface NavItem {
   id: string;
   label: string;
+  customLabel?: string;
   icon: React.ComponentType<{ size?: string | number }>;
   href: string;
 }
@@ -27,11 +28,15 @@ interface NavItem {
 interface SortableNavigationProps {
   items: NavItem[];
   onReorder: (newItems: NavItem[]) => void;
+  onRename: (id: string, newLabel: string) => void;
+  onResetLabel: (id: string) => void;
 }
 
 const SortableNavigation: React.FC<SortableNavigationProps> = ({ 
   items, 
-  onReorder 
+  onReorder,
+  onRename,
+  onResetLabel
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -59,6 +64,9 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
               href={item.href}
               icon={item.icon}
               label={item.label}
+              customLabel={item.customLabel}
+              onRename={(newLabel) => onRename(item.id, newLabel)}
+              onResetLabel={() => onResetLabel(item.id)}
             />
           ))}
         </nav>
