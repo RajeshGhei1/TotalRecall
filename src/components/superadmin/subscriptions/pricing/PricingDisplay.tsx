@@ -47,39 +47,39 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 animate-pulse">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        <div className={`h-4 bg-gray-200 rounded ${compact ? 'w-12' : 'w-20'}`}></div>
+      <div className="flex items-center justify-center gap-2 animate-pulse">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <div className={`h-4 bg-gray-200 rounded ${compact ? 'w-16' : 'w-24'}`}></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-red-500 text-xs">
-        Error calculating pricing
+      <div className="text-amber-600 text-xs bg-amber-50 px-2 py-1 rounded border border-amber-200">
+        Pricing calculation error
       </div>
     );
   }
 
   if (compact) {
     return (
-      <div className="flex items-baseline gap-1">
-        <span className="text-base font-semibold text-green-600">
+      <div>
+        <div className="text-xl font-bold text-green-600">
           {formatPrice(getCurrentPrice())}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          /{billingCycle === 'monthly' ? 'mo' : 'yr'}
-        </span>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          /{billingCycle === 'monthly' ? 'month' : 'year'}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <DollarSign className="h-4 w-4 text-green-600" />
-        <span className="text-2xl font-bold text-green-600">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <DollarSign className="h-5 w-5 text-green-600" />
+        <span className="text-3xl font-bold text-green-600">
           {formatPrice(getCurrentPrice())}
         </span>
         <span className="text-sm text-muted-foreground">
@@ -88,17 +88,17 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
       </div>
 
       {showBreakdown && pricing && (
-        <Card className="border-dashed">
-          <CardContent className="p-3 space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Calculator className="h-3 w-3" />
+        <Card className="border-dashed border-primary/20 bg-primary/5">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+              <Calculator className="h-4 w-4" />
               Pricing Breakdown
             </div>
             
-            <div className="space-y-1 text-sm">
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Base plan:</span>
-                <span>{formatPrice(getBasePrice())}</span>
+                <span className="font-medium">{formatPrice(getBasePrice())}</span>
               </div>
               
               {pricing.pricingBreakdown.map((module) => (
@@ -106,7 +106,7 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
                   <span className="text-muted-foreground capitalize">
                     {module.name.replace(/_/g, ' ')}:
                   </span>
-                  <span>
+                  <span className="font-medium">
                     {formatPrice(
                       billingCycle === 'monthly' ? module.priceMonthly : module.priceAnnually
                     )}
@@ -119,13 +119,13 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
                   <Separator className="my-2" />
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Modules total:</span>
-                    <span>{formatPrice(getModulesPrice())}</span>
+                    <span className="font-medium">{formatPrice(getModulesPrice())}</span>
                   </div>
                 </>
               )}
               
               <Separator className="my-2" />
-              <div className="flex justify-between font-medium">
+              <div className="flex justify-between font-semibold text-base">
                 <span>Total:</span>
                 <span className="text-green-600">{formatPrice(getCurrentPrice())}</span>
               </div>
@@ -135,16 +135,18 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
       )}
 
       {enabledModules.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Includes {enabledModules.length} modules:</p>
-          <div className="flex flex-wrap gap-1">
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            Includes {enabledModules.length} modules:
+          </p>
+          <div className="flex flex-wrap gap-1.5">
             {enabledModules.slice(0, 3).map((module) => (
-              <Badge key={module} variant="secondary" className="text-xs">
+              <Badge key={module} variant="secondary" className="text-xs px-2 py-1">
                 {module.replace(/_/g, ' ')}
               </Badge>
             ))}
             {enabledModules.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs px-2 py-1">
                 +{enabledModules.length - 3} more
               </Badge>
             )}

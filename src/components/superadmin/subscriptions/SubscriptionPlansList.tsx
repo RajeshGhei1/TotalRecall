@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Building, User, Settings, Info, Calculator, Edit, MoreHorizontal } from 'lucide-react';
+import { Crown, Building, User, Settings, Info, Calculator, Edit, MoreHorizontal, CheckCircle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SubscriptionPlan } from '@/types/subscription-types';
 import { useModulePermissionsSummary } from '@/hooks/subscriptions/useModulePermissionsSummary';
@@ -34,13 +34,13 @@ const PlanCard: React.FC<{
   const getIcon = (planType: string) => {
     switch (planType) {
       case 'recruitment':
-        return <Building className="h-4 w-4" />;
+        return <Building className="h-5 w-5" />;
       case 'employer':
-        return <Crown className="h-4 w-4" />;
+        return <Crown className="h-5 w-5" />;
       case 'talent':
-        return <User className="h-4 w-4" />;
+        return <User className="h-5 w-5" />;
       default:
-        return <Settings className="h-4 w-4" />;
+        return <Settings className="h-5 w-5" />;
     }
   };
 
@@ -58,26 +58,49 @@ const PlanCard: React.FC<{
   return (
     <>
       <Card 
-        className={`cursor-pointer transition-all duration-200 hover:shadow-md border ${
-          isSelected ? 'ring-1 ring-primary border-primary bg-primary/5' : 'border-border hover:border-primary/30'
+        className={`group cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
+          isSelected 
+            ? 'ring-2 ring-primary/20 border-primary bg-gradient-to-br from-primary/5 to-primary/10 shadow-lg' 
+            : 'border-border hover:border-primary/40 hover:shadow-md'
         }`}
         onClick={onSelect}
       >
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-6 space-y-5">
           {/* Header Section */}
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="p-1.5 rounded-md bg-primary/10 text-primary flex-shrink-0">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className={`p-2.5 rounded-lg flex-shrink-0 transition-colors ${
+                isSelected 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-primary/10 text-primary group-hover:bg-primary/15'
+              }`}>
                 {getIcon(plan.plan_type)}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-medium text-sm truncate">{plan.name}</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <Badge variant="outline" className="text-xs px-1.5 py-0 capitalize">
+                <h3 className="font-semibold text-lg text-foreground truncate mb-1">{plan.name}</h3>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="outline" 
+                    className="text-xs px-2 py-1 capitalize border-primary/30 text-primary bg-primary/5"
+                  >
                     {plan.plan_type}
                   </Badge>
-                  <Badge variant={plan.is_active ? 'default' : 'secondary'} className="text-xs px-1.5 py-0">
-                    {plan.is_active ? 'Active' : 'Inactive'}
+                  <Badge 
+                    variant={plan.is_active ? 'default' : 'secondary'} 
+                    className={`text-xs px-2 py-1 ${
+                      plan.is_active 
+                        ? 'bg-green-100 text-green-700 border-green-200' 
+                        : 'bg-gray-100 text-gray-600 border-gray-200'
+                    }`}
+                  >
+                    {plan.is_active ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active
+                      </>
+                    ) : (
+                      'Inactive'
+                    )}
                   </Badge>
                 </div>
               </div>
@@ -86,14 +109,18 @@ const PlanCard: React.FC<{
             {/* Actions Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
-                  <MoreHorizontal className="h-3 w-3" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuContent align="end" className="w-36">
                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                  <Edit className="h-3 w-3 mr-2" />
-                  Edit
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Plan
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -101,23 +128,23 @@ const PlanCard: React.FC<{
 
           {/* Description */}
           {plan.description && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
               {plan.description}
             </p>
           )}
 
           {/* Pricing Section */}
-          <div className="space-y-2">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
             {plan.use_module_pricing && (
-              <div className="flex items-center gap-1 mb-1">
-                <Calculator className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Dynamic Pricing</span>
+              <div className="flex items-center gap-2 mb-2">
+                <Calculator className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">Dynamic Pricing Enabled</span>
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Monthly</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Monthly</p>
                 {plan.use_module_pricing ? (
                   <PricingDisplay
                     planId={plan.id}
@@ -127,17 +154,17 @@ const PlanCard: React.FC<{
                     compact={true}
                   />
                 ) : (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-green-600">
+                  <div>
+                    <div className="text-xl font-bold text-green-600">
                       {formatPrice(plan.price_monthly)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/mo</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">/month</div>
                   </div>
                 )}
               </div>
               
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Annual</p>
+              <div className="text-center">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Annual</p>
                 {plan.use_module_pricing ? (
                   <PricingDisplay
                     planId={plan.id}
@@ -147,11 +174,11 @@ const PlanCard: React.FC<{
                     compact={true}
                   />
                 ) : (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-green-600">
+                  <div>
+                    <div className="text-xl font-bold text-green-600">
                       {formatPrice(plan.price_annually)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/yr</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">/year</div>
                   </div>
                 )}
               </div>
@@ -160,15 +187,15 @@ const PlanCard: React.FC<{
 
           {/* Module Permissions Summary */}
           {!isLoadingPermissions && permissionsSummary && (
-            <div className="space-y-2 pt-3 border-t border-border">
+            <div className="space-y-3 pt-2 border-t border-gray-100">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-medium text-foreground">Module Access</h4>
+                <h4 className="text-sm font-medium text-foreground">Module Access</h4>
                 <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
-                  <Info className="h-3 w-3 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
                 </ModulePermissionsTooltip>
               </div>
               
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-2">
                 <ModulePermissionBadge
                   enabledModules={permissionsSummary.enabledModules}
                   totalModules={permissionsSummary.totalModules}
@@ -184,7 +211,7 @@ const PlanCard: React.FC<{
           )}
 
           {isLoadingPermissions && (
-            <div className="pt-3 border-t border-border">
+            <div className="pt-2 border-t border-gray-100">
               <div className="animate-pulse space-y-2">
                 <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -196,13 +223,24 @@ const PlanCard: React.FC<{
           <Button 
             variant={isSelected ? 'default' : 'outline'}
             size="sm" 
-            className="w-full h-8 text-xs"
+            className={`w-full h-9 text-sm font-medium transition-all ${
+              isSelected 
+                ? 'bg-primary hover:bg-primary/90 shadow-md' 
+                : 'border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
+            }`}
             onClick={(e) => {
               e.stopPropagation();
               onSelect();
             }}
           >
-            {isSelected ? 'Selected' : 'Select Plan'}
+            {isSelected ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Selected Plan
+              </>
+            ) : (
+              'Select Plan'
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -224,13 +262,14 @@ const SubscriptionPlansList: React.FC<SubscriptionPlansListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="animate-pulse">
-            <CardContent className="p-4">
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-8 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
+            <CardContent className="p-6">
+              <div className="h-6 bg-gray-200 rounded mb-3"></div>
+              <div className="h-4 bg-gray-200 rounded mb-4"></div>
+              <div className="h-20 bg-gray-200 rounded mb-4"></div>
+              <div className="h-8 bg-gray-200 rounded"></div>
             </CardContent>
           </Card>
         ))}
@@ -240,14 +279,16 @@ const SubscriptionPlansList: React.FC<SubscriptionPlansListProps> = ({
 
   if (plans.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No subscription plans found. Create your first plan to get started.
+      <div className="text-center py-12 text-muted-foreground">
+        <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <h3 className="text-lg font-medium mb-2">No subscription plans found</h3>
+        <p className="text-sm">Create your first plan to get started with subscription management.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {plans.map((plan) => (
         <PlanCard
           key={plan.id}
