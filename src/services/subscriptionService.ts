@@ -25,7 +25,7 @@ export class SubscriptionService {
   }
 
   /**
-   * Get all user subscriptions for a tenant
+   * Get all user subscriptions for a tenant with user profile information
    */
   static async getUserSubscriptionsForTenant(tenantId: string): Promise<UserSubscription[]> {
     try {
@@ -33,7 +33,8 @@ export class SubscriptionService {
         .from('user_subscriptions')
         .select(`
           *,
-          subscription_plans(*)
+          subscription_plans(*),
+          profiles!user_subscriptions_user_id_fkey(id, email, full_name)
         `)
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
@@ -56,7 +57,8 @@ export class SubscriptionService {
         .insert([subscription])
         .select(`
           *,
-          subscription_plans(*)
+          subscription_plans(*),
+          profiles!user_subscriptions_user_id_fkey(id, email, full_name)
         `)
         .single();
 
@@ -79,7 +81,8 @@ export class SubscriptionService {
         .eq('id', id)
         .select(`
           *,
-          subscription_plans(*)
+          subscription_plans(*),
+          profiles!user_subscriptions_user_id_fkey(id, email, full_name)
         `)
         .single();
 

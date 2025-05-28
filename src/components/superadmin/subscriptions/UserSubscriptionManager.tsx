@@ -228,7 +228,7 @@ const UserSubscriptionManager: React.FC<UserSubscriptionManagerProps> = ({
                           {(userSub as any).profiles?.full_name || 'Unknown User'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          {(userSub as any).profiles?.email}
+                          {(userSub as any).profiles?.email || 'No email'}
                         </p>
                       </div>
                     </div>
