@@ -47,37 +47,53 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
     outreachSettings: {}
   });
 
-  const { data: tenants, isLoading: tenantsLoading } = useQuery({
-    queryKey: ['tenants'],
+  // Fetch tenants with proper error handling
+  const { data: tenants, isLoading: tenantsLoading, error: tenantsError } = useQuery({
+    queryKey: ['tenants-for-wizard'],
     queryFn: async () => {
+      console.log("Fetching tenants for wizard...");
       const { data, error } = await supabase
         .from('tenants')
-        .select('id, name')
+        .select('id, name, description, created_at')
         .order('name', { ascending: true });
         
-      if (error) throw error;
-      return data;
-    }
+      if (error) {
+        console.error("Error fetching tenants:", error);
+        throw error;
+      }
+      
+      console.log("Tenants fetched successfully:", data);
+      return data || [];
+    },
+    enabled: open // Only fetch when dialog is open
   });
 
+  // Fetch selected tenant details
   const { data: selectedTenantData, isLoading: tenantDataLoading } = useQuery({
     queryKey: ['tenantDetails', wizardData.selectedTenantId],
     queryFn: async () => {
       if (!wizardData.selectedTenantId) return null;
       
+      console.log("Fetching tenant details for:", wizardData.selectedTenantId);
       const { data, error } = await supabase
         .from('tenants')
-        .select('id, name, description')
+        .select('id, name, description, created_at')
         .eq('id', wizardData.selectedTenantId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching tenant details:", error);
+        throw error;
+      }
+      
+      console.log("Tenant details fetched:", data);
       return data;
     },
     enabled: !!wizardData.selectedTenantId,
     meta: {
       onSuccess: (data: any) => {
         if (data) {
+          console.log("Setting tenant data:", data);
           setWizardData(prev => ({ ...prev, tenantData: data }));
         }
       }
@@ -86,6 +102,14 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
 
   const updateWizardData = (updates: Partial<WizardData>) => {
     setWizardData(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleTenantSelection = (tenantId: string) => {
+    console.log("Tenant selected:", tenantId);
+    updateWizardData({ 
+      selectedTenantId: tenantId,
+      tenantData: null // Reset tenant data while loading
+    });
   };
 
   const handleNext = () => {
@@ -156,6 +180,11 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
     }
   };
 
+  // Show error state if tenants failed to load
+  if (tenantsError) {
+    console.error("Tenants loading error:", tenantsError);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
@@ -171,103 +200,130 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Select Tenant</Label>
-              <Select 
-                value={wizardData.selectedTenantId || undefined} 
-                onValueChange={(value) => updateWizardData({ selectedTenantId: value })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a tenant to configure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tenantsLoading ? (
-                    <SelectItem value="loading" disabled>Loading tenants...</SelectItem>
-                  ) : tenants && tenants.length > 0 ? (
-                    tenants.map((tenant) => (
+              {tenantsLoading ? (
+                <div className="border rounded p-3 text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                  Loading tenants...
+                </div>
+              ) : tenantsError ? (
+                <div className="border rounded p-3 text-center text-red-600">
+                  Error loading tenants. Please try again.
+                </div>
+              ) : !tenants || tenants.length === 0 ? (
+                <div className="border rounded p-3 text-center text-muted-foreground">
+                  No tenants found. Please create a tenant first.
+                </div>
+              ) : (
+                <Select 
+                  value={wizardData.selectedTenantId || undefined} 
+                  onValueChange={handleTenantSelection}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a tenant to configure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) => (
                       <SelectItem key={tenant.id} value={tenant.id}>
-                        {tenant.name}
+                        <div className="flex flex-col">
+                          <span className="font-medium">{tenant.name}</span>
+                          {tenant.description && (
+                            <span className="text-sm text-muted-foreground">{tenant.description}</span>
+                          )}
+                        </div>
                       </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="none" disabled>No tenants found</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
+            
+            {/* Show tenant count for debugging */}
+            {tenants && (
+              <div className="text-xs text-muted-foreground">
+                {tenants.length} tenant(s) available
+              </div>
+            )}
           </div>
         )}
         
         {/* Show wizard steps only after tenant is selected */}
-        {wizardData.selectedTenantId && wizardData.tenantData && (
+        {wizardData.selectedTenantId && (
           <>
-            <WizardStepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+            {/* Show loading state while fetching tenant details */}
+            {tenantDataLoading && (
+              <div className="py-8 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            )}
             
-            <div className="py-4 min-h-[400px]">
-              {currentStep === 1 && (
-                <BasicInfoStep 
-                  tenantData={wizardData.tenantData}
-                  onUpdate={(data) => updateWizardData({ tenantData: { ...wizardData.tenantData, ...data } })}
-                />
-              )}
-              {currentStep === 2 && (
-                <ModuleSelectionStep
-                  selectedModules={wizardData.selectedModules}
-                  moduleConfigs={wizardData.moduleConfigs}
-                  onUpdate={(modules, configs) => updateWizardData({ 
-                    selectedModules: modules, 
-                    moduleConfigs: configs 
-                  })}
-                />
-              )}
-              {currentStep === 3 && (
-                <IntegrationSetupStep
-                  settings={wizardData.integrationSettings}
-                  onUpdate={(settings) => updateWizardData({ integrationSettings: settings })}
-                />
-              )}
-              {currentStep === 4 && (
-                <CustomConfigurationStep
-                  config={wizardData.customConfig}
-                  onUpdate={(config) => updateWizardData({ customConfig: config })}
-                />
-              )}
-              {currentStep === 5 && (
-                <OutreachStep
-                  settings={wizardData.outreachSettings}
-                  onUpdate={(settings) => updateWizardData({ outreachSettings: settings })}
-                />
-              )}
-              {currentStep === 6 && (
-                <ReviewStep wizardData={wizardData} />
-              )}
-            </div>
-            
-            <DialogFooter className="flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={handleBack}
-                disabled={currentStep === 1}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-              <Button 
-                onClick={handleNext}
-                disabled={!canProceed()}
-              >
-                {currentStep === totalSteps ? "Complete Setup" : (
-                  <span className="flex items-center">
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                  </span>
-                )}
-              </Button>
-            </DialogFooter>
+            {/* Show wizard content when tenant data is loaded */}
+            {wizardData.tenantData && (
+              <>
+                <WizardStepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+                
+                <div className="py-4 min-h-[400px]">
+                  {currentStep === 1 && (
+                    <BasicInfoStep 
+                      tenantData={wizardData.tenantData}
+                      onUpdate={(data) => updateWizardData({ tenantData: { ...wizardData.tenantData, ...data } })}
+                    />
+                  )}
+                  {currentStep === 2 && (
+                    <ModuleSelectionStep
+                      selectedModules={wizardData.selectedModules}
+                      moduleConfigs={wizardData.moduleConfigs}
+                      onUpdate={(modules, configs) => updateWizardData({ 
+                        selectedModules: modules, 
+                        moduleConfigs: configs 
+                      })}
+                    />
+                  )}
+                  {currentStep === 3 && (
+                    <IntegrationSetupStep
+                      settings={wizardData.integrationSettings}
+                      onUpdate={(settings) => updateWizardData({ integrationSettings: settings })}
+                    />
+                  )}
+                  {currentStep === 4 && (
+                    <CustomConfigurationStep
+                      config={wizardData.customConfig}
+                      onUpdate={(config) => updateWizardData({ customConfig: config })}
+                    />
+                  )}
+                  {currentStep === 5 && (
+                    <OutreachStep
+                      settings={wizardData.outreachSettings}
+                      onUpdate={(settings) => updateWizardData({ outreachSettings: settings })}
+                    />
+                  )}
+                  {currentStep === 6 && (
+                    <ReviewStep wizardData={wizardData} />
+                  )}
+                </div>
+                
+                <DialogFooter className="flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleBack}
+                    disabled={currentStep === 1}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button 
+                    onClick={handleNext}
+                    disabled={!canProceed()}
+                  >
+                    {currentStep === totalSteps ? "Complete Setup" : (
+                      <span className="flex items-center">
+                        Next <ArrowRight className="ml-2 h-4 w-4" />
+                      </span>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
           </>
-        )}
-        
-        {wizardData.selectedTenantId && tenantDataLoading && (
-          <div className="py-8 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-jobmojo-primary"></div>
-          </div>
         )}
       </DialogContent>
     </Dialog>
