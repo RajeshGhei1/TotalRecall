@@ -54,6 +54,7 @@ const TenantList = ({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Tenant ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Domain</TableHead>
                   <TableHead>Created</TableHead>
@@ -65,6 +66,9 @@ const TenantList = ({
                   console.log("Rendering tenant:", tenant);
                   return (
                     <TableRow key={tenant.id}>
+                      <TableCell className="font-mono text-sm text-muted-foreground">
+                        {tenant.id.slice(0, 8)}...
+                      </TableCell>
                       <TableCell className="font-medium">
                         {tenant.name || 'No name provided'}
                       </TableCell>
