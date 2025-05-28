@@ -86,22 +86,34 @@ const CreateUserDialog = ({
     setError(null);
     
     try {
-      // Create a new user by inserting into profiles table via RPC function
-      const { data: userId, error: userError } = await supabase
-        .rpc('create_user_profile', { 
-          user_email: values.email, 
-          user_full_name: values.fullName,
-          user_role: values.role
-        });
+      // Create a new user using the Supabase Auth Admin API
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: values.email,
+        password: Math.random().toString(36).slice(-8), // Generate temporary password
+        email_confirm: true,
+        user_metadata: { 
+          full_name: values.fullName
+        }
+      });
       
-      if (userError) throw userError;
+      if (authError) throw authError;
       
+      // Update the role in profiles table if needed (the trigger should have created the profile)
+      if (values.role !== 'user' && authData.user) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: values.role })
+          .eq('id', authData.user.id);
+          
+        if (updateError) throw updateError;
+      }
+
       // If tenant is selected, create association in user_tenants table
-      if (values.tenantId && values.tenantId !== 'none' && userId) {
+      if (values.tenantId && values.tenantId !== 'none' && authData.user) {
         const { error: tenantError } = await supabase
           .from('user_tenants')
           .insert({
-            user_id: userId,
+            user_id: authData.user.id,
             tenant_id: values.tenantId,
           });
 
