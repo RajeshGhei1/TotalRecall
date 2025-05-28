@@ -70,7 +70,11 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
       }
     },
     onSuccess: () => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['module-permissions', planId] });
+      queryClient.invalidateQueries({ queryKey: ['module-permissions-summary', planId] });
+      queryClient.invalidateQueries({ queryKey: ['pricing-calculation', planId] });
+      
       toast({
         title: "Success",
         description: "Module permissions saved successfully"

@@ -40,8 +40,8 @@ const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({ isOpen, onClose }) 
     defaultValues: {
       name: '',
       description: '',
-      price_monthly: 0,
-      price_annually: 0,
+      price_monthly: 29,
+      price_annually: 290,
       base_price_monthly: 29,
       base_price_annually: 290,
       plan_type: 'recruitment',
@@ -54,6 +54,8 @@ const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({ isOpen, onClose }) 
 
   const onSubmit = async (data: CreatePlanFormData) => {
     try {
+      console.log('Creating plan with data:', data);
+      
       const planData = {
         name: data.name,
         description: data.description || null,
@@ -74,11 +76,16 @@ const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({ isOpen, onClose }) 
     }
   };
 
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Subscription Plan</DialogTitle>
+          <DialogTitle>Create New Subscription Plan</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -187,7 +194,7 @@ const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({ isOpen, onClose }) 
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
             <Button 

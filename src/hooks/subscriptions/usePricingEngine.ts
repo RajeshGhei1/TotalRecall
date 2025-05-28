@@ -46,8 +46,10 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
   const { data: modulePricing } = useModulePricing();
   
   return useQuery({
-    queryKey: ['pricing-calculation', planId, enabledModules, modulePricing?.length],
+    queryKey: ['pricing-calculation', planId, enabledModules.sort().join(','), modulePricing?.length],
     queryFn: async (): Promise<PricingCalculation> => {
+      console.log('Calculating pricing for plan:', planId, 'with modules:', enabledModules);
+      
       // Get plan base pricing
       const { data: plan, error: planError } = await (supabase as any)
         .from('subscription_plans')
@@ -56,6 +58,8 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
         .single();
 
       if (planError) throw planError;
+
+      console.log('Plan data:', plan);
 
       // If not using module pricing, return the fixed prices
       if (!plan?.use_module_pricing) {
@@ -83,9 +87,14 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
         priceAnnually: number;
       }> = [];
 
-      if (modulePricing) {
+      console.log('Module pricing data:', modulePricing);
+      console.log('Enabled modules:', enabledModules);
+
+      if (modulePricing && enabledModules.length > 0) {
         enabledModules.forEach(moduleName => {
           const modulePrice = modulePricing.find(mp => mp.module_name === moduleName);
+          console.log(`Looking for module: ${moduleName}, found:`, modulePrice);
+          
           if (modulePrice) {
             modulesPriceMonthly += modulePrice.base_price_monthly;
             modulesPriceAnnually += modulePrice.base_price_annually;
@@ -98,7 +107,7 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
         });
       }
 
-      return {
+      const result = {
         basePriceMonthly,
         basePriceAnnually,
         modulesPriceMonthly,
@@ -108,6 +117,9 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
         enabledModules,
         pricingBreakdown
       };
+
+      console.log('Final pricing calculation:', result);
+      return result;
     },
     enabled: !!planId && !!modulePricing
   });
