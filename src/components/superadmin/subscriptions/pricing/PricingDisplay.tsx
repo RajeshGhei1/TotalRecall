@@ -48,15 +48,15 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 animate-pulse">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <div className={`h-6 bg-gray-200 rounded ${compact ? 'w-16' : 'w-24'}`}></div>
+        <Loader2 className="h-3 w-3 animate-spin" />
+        <div className={`h-4 bg-gray-200 rounded ${compact ? 'w-12' : 'w-20'}`}></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-red-500 text-sm">
+      <div className="text-red-500 text-xs">
         Error calculating pricing
       </div>
     );
@@ -65,7 +65,7 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({
   if (compact) {
     return (
       <div className="flex items-baseline gap-1">
-        <span className="text-xl font-bold text-green-600">
+        <span className="text-base font-semibold text-green-600">
           {formatPrice(getCurrentPrice())}
         </span>
         <span className="text-xs text-muted-foreground">

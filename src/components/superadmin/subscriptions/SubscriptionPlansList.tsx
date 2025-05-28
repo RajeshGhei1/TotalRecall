@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Building, User, Settings, Info, Calculator, Edit } from 'lucide-react';
+import { Crown, Building, User, Settings, Info, Calculator, Edit, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SubscriptionPlan } from '@/types/subscription-types';
 import { useModulePermissionsSummary } from '@/hooks/subscriptions/useModulePermissionsSummary';
 import { 
@@ -33,13 +34,13 @@ const PlanCard: React.FC<{
   const getIcon = (planType: string) => {
     switch (planType) {
       case 'recruitment':
-        return <Building className="h-5 w-5" />;
+        return <Building className="h-4 w-4" />;
       case 'employer':
-        return <Crown className="h-5 w-5" />;
+        return <Crown className="h-4 w-4" />;
       case 'talent':
-        return <User className="h-5 w-5" />;
+        return <User className="h-4 w-4" />;
       default:
-        return <Settings className="h-5 w-5" />;
+        return <Settings className="h-4 w-4" />;
     }
   };
 
@@ -57,65 +58,67 @@ const PlanCard: React.FC<{
   return (
     <>
       <Card 
-        className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
-          isSelected ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-primary/50'
+        className={`cursor-pointer transition-all duration-200 hover:shadow-md border ${
+          isSelected ? 'ring-1 ring-primary border-primary bg-primary/5' : 'border-border hover:border-primary/30'
         }`}
         onClick={onSelect}
       >
-        <CardContent className="p-6">
+        <CardContent className="p-4 space-y-4">
           {/* Header Section */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="p-1.5 rounded-md bg-primary/10 text-primary flex-shrink-0">
                 {getIcon(plan.plan_type)}
               </div>
-              <div>
-                <h3 className="font-semibold text-lg">{plan.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs capitalize">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium text-sm truncate">{plan.name}</h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0 capitalize">
                     {plan.plan_type}
                   </Badge>
-                  {plan.use_module_pricing && (
-                    <Badge variant="secondary" className="text-xs">
-                      <Calculator className="h-3 w-3 mr-1" />
-                      Dynamic Pricing
-                    </Badge>
-                  )}
+                  <Badge variant={plan.is_active ? 'default' : 'secondary'} className="text-xs px-1.5 py-0">
+                    {plan.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditDialogOpen(true);
-                }}
-                className="h-8 w-8 p-0"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Badge variant={plan.is_active ? 'default' : 'secondary'}>
-                {plan.is_active ? 'Active' : 'Inactive'}
-              </Badge>
-            </div>
+            
+            {/* Actions Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                  <Edit className="h-3 w-3 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Description */}
           {plan.description && (
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
               {plan.description}
             </p>
           )}
 
           {/* Pricing Section */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium mb-3 text-foreground">Pricing</h4>
-            {plan.use_module_pricing ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Monthly</p>
+          <div className="space-y-2">
+            {plan.use_module_pricing && (
+              <div className="flex items-center gap-1 mb-1">
+                <Calculator className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Dynamic Pricing</span>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">Monthly</p>
+                {plan.use_module_pricing ? (
                   <PricingDisplay
                     planId={plan.id}
                     enabledModules={enabledModules}
@@ -123,9 +126,19 @@ const PlanCard: React.FC<{
                     showBreakdown={false}
                     compact={true}
                   />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Annual</p>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base font-semibold text-green-600">
+                      {formatPrice(plan.price_monthly)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/mo</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">Annual</p>
+                {plan.use_module_pricing ? (
                   <PricingDisplay
                     planId={plan.id}
                     enabledModules={enabledModules}
@@ -133,43 +146,29 @@ const PlanCard: React.FC<{
                     showBreakdown={false}
                     compact={true}
                   />
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Monthly</p>
+                ) : (
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-green-600">
-                      {formatPrice(plan.price_monthly)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/mo</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Annual</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-green-600">
+                    <span className="text-base font-semibold text-green-600">
                       {formatPrice(plan.price_annually)}
                     </span>
                     <span className="text-xs text-muted-foreground">/yr</span>
                   </div>
-                </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Module Permissions Summary */}
           {!isLoadingPermissions && permissionsSummary && (
-            <div className="space-y-3 pt-4 border-t border-border">
+            <div className="space-y-2 pt-3 border-t border-border">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground">Module Access</h4>
+                <h4 className="text-xs font-medium text-foreground">Module Access</h4>
                 <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
-                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
+                  <Info className="h-3 w-3 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
                 </ModulePermissionsTooltip>
               </div>
               
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 <ModulePermissionBadge
                   enabledModules={permissionsSummary.enabledModules}
                   totalModules={permissionsSummary.totalModules}
@@ -185,10 +184,10 @@ const PlanCard: React.FC<{
           )}
 
           {isLoadingPermissions && (
-            <div className="pt-4 border-t border-border">
+            <div className="pt-3 border-t border-border">
               <div className="animate-pulse space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
               </div>
             </div>
           )}
@@ -197,13 +196,13 @@ const PlanCard: React.FC<{
           <Button 
             variant={isSelected ? 'default' : 'outline'}
             size="sm" 
-            className="w-full mt-4"
+            className="w-full h-8 text-xs"
             onClick={(e) => {
               e.stopPropagation();
               onSelect();
             }}
           >
-            {isSelected ? 'Selected Plan' : 'Select Plan'}
+            {isSelected ? 'Selected' : 'Select Plan'}
           </Button>
         </CardContent>
       </Card>
