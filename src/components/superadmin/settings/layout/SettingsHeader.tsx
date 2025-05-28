@@ -1,15 +1,10 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Building2, Blocks, Users } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import GlobalTenantSelector from '../shared/GlobalTenantSelector';
 
-interface SettingsHeaderProps {
-  onShowSetupWizard: () => void;
-}
-
-const SettingsHeader: React.FC<SettingsHeaderProps> = ({ onShowSetupWizard }) => {
+const SettingsHeader: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 mb-8">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
@@ -19,29 +14,6 @@ const SettingsHeader: React.FC<SettingsHeaderProps> = ({ onShowSetupWizard }) =>
             Manage platform modules, tenant configurations, and system-wide settings
           </p>
         </div>
-        
-        {/* Quick Actions Card */}
-        <Card className="lg:w-80">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              onClick={onShowSetupWizard}
-              className="w-full justify-start gap-2"
-              variant="outline"
-            >
-              <Blocks className="h-4 w-4" />
-              Launch Tenant Setup Wizard
-            </Button>
-            <p className="text-xs text-gray-500">
-              Configure new tenants step-by-step with modules and settings
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Global Tenant Context Selector */}
