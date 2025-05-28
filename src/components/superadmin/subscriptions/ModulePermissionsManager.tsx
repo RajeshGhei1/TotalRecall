@@ -114,12 +114,22 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
     
     return systemModules
       .filter(module => module.is_active) // Only show active modules
-      .map(module => ({
-        name: module.name,
-        label: module.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Convert snake_case to Title Case
-        description: module.description || `${module.category} module`,
-        defaultLimits: module.default_limits || {}
-      }));
+      .map(module => {
+        // Safely convert default_limits from Json to Record<string, any>
+        const defaultLimits: Record<string, any> = 
+          module.default_limits && 
+          typeof module.default_limits === 'object' && 
+          !Array.isArray(module.default_limits) 
+            ? module.default_limits as Record<string, any>
+            : {};
+
+        return {
+          name: module.name,
+          label: module.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Convert snake_case to Title Case
+          description: module.description || `${module.category} module`,
+          defaultLimits
+        };
+      });
   }, [systemModules]);
 
   const isLoading = modulesLoading || permissionsLoading;
