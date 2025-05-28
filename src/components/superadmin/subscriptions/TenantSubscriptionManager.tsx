@@ -15,7 +15,7 @@ const TenantSubscriptionManager = () => {
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['tenant-subscriptions'],
     queryFn: async (): Promise<TenantSubscription[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_subscriptions')
         .select(`
           *,

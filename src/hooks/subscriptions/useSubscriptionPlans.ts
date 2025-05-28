@@ -11,7 +11,7 @@ export const useSubscriptionPlans = () => {
   const plansQuery = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async (): Promise<SubscriptionPlan[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('subscription_plans')
         .select('*')
         .order('plan_type', { ascending: true })
@@ -24,7 +24,7 @@ export const useSubscriptionPlans = () => {
 
   const createPlanMutation = useMutation({
     mutationFn: async (planData: Omit<SubscriptionPlan, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('subscription_plans')
         .insert([planData])
         .select()
@@ -51,7 +51,7 @@ export const useSubscriptionPlans = () => {
 
   const updatePlanMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<SubscriptionPlan> }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('subscription_plans')
         .update(updates)
         .eq('id', id)

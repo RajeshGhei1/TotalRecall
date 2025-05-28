@@ -45,7 +45,17 @@ const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({ isOpen, onClose }) 
 
   const onSubmit = async (data: CreatePlanFormData) => {
     try {
-      await createPlan.mutateAsync(data);
+      // Ensure all required fields are present
+      const planData = {
+        name: data.name,
+        description: data.description || null,
+        price_monthly: data.price_monthly,
+        price_annually: data.price_annually,
+        plan_type: data.plan_type,
+        is_active: data.is_active
+      };
+      
+      await createPlan.mutateAsync(planData);
       form.reset();
       onClose();
     } catch (error) {

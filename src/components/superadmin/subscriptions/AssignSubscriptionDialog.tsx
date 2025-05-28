@@ -59,11 +59,11 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
     }
   });
 
-  // Fetch subscription plans
+  // Fetch subscription plans - using type assertion for now until Supabase types are updated
   const { data: plans } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -76,7 +76,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
 
   const assignSubscriptionMutation = useMutation({
     mutationFn: async (data: AssignSubscriptionFormData) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tenant_subscriptions')
         .insert([{
           tenant_id: data.tenant_id,
@@ -135,6 +135,9 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
                 </Select>
               )}
             />
+            {form.formState.errors.tenant_id && (
+              <p className="text-sm text-red-500">{form.formState.errors.tenant_id.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -148,7 +151,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
                     <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    {plans?.map((plan) => (
+                    {plans?.map((plan: any) => (
                       <SelectItem key={plan.id} value={plan.id}>
                         {plan.name} ({plan.plan_type})
                       </SelectItem>
@@ -157,6 +160,9 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
                 </Select>
               )}
             />
+            {form.formState.errors.plan_id && (
+              <p className="text-sm text-red-500">{form.formState.errors.plan_id.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
