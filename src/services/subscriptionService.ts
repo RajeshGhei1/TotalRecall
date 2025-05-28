@@ -130,12 +130,12 @@ export class SubscriptionService {
       // Get all user subscriptions for the tenant
       const userSubscriptions = await this.getUserSubscriptionsForTenant(tenantId);
 
-      // Get all users in the tenant
+      // Get all users in the tenant - fix the ambiguous relationship
       const { data: tenantUsers, error: usersError } = await (supabase as any)
         .from('user_tenants')
         .select(`
           user_id,
-          profiles(id, email, full_name)
+          profiles!user_tenants_user_id_fkey(id, email, full_name)
         `)
         .eq('tenant_id', tenantId);
 

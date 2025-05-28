@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -82,7 +81,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
     }
   });
 
-  // Fetch users for selected tenant (when individual assignment is selected)
+  // Fetch users for selected tenant (when individual assignment is selected) - fix the relationship
   const { data: tenantUsers } = useQuery({
     queryKey: ['tenant-users', selectedTenant?.id],
     queryFn: async () => {
@@ -92,7 +91,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
         .from('user_tenants')
         .select(`
           user_id,
-          profiles(id, email, full_name)
+          profiles!user_tenants_user_id_fkey(id, email, full_name)
         `)
         .eq('tenant_id', selectedTenant.id);
 
