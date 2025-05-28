@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,13 +33,13 @@ const PlanCard: React.FC<{
   const getIcon = (planType: string) => {
     switch (planType) {
       case 'recruitment':
-        return <Building className="h-5 w-5" />;
+        return <Building className="h-4 w-4" />;
       case 'employer':
-        return <Crown className="h-5 w-5" />;
+        return <Crown className="h-4 w-4" />;
       case 'talent':
-        return <User className="h-5 w-5" />;
+        return <User className="h-4 w-4" />;
       default:
-        return <Settings className="h-5 w-5" />;
+        return <Settings className="h-4 w-4" />;
     }
   };
 
@@ -58,38 +57,38 @@ const PlanCard: React.FC<{
   return (
     <>
       <Card 
-        className={`group cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
+        className={`group cursor-pointer transition-all duration-200 hover:shadow-md border ${
           isSelected 
-            ? 'ring-2 ring-primary/20 border-primary bg-gradient-to-br from-primary/5 to-primary/10 shadow-lg' 
-            : 'border-border hover:border-primary/40 hover:shadow-md'
-        }`}
+            ? 'border-blue-200 bg-blue-50/50 shadow-sm' 
+            : 'border-gray-200 hover:border-blue-300'
+        } h-full flex flex-col`}
         onClick={onSelect}
       >
-        <CardContent className="p-6 space-y-5">
-          {/* Header Section */}
-          <div className="flex items-start justify-between">
+        <CardContent className="p-5 flex flex-col h-full">
+          {/* Header Section - Fixed Height */}
+          <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className={`p-2.5 rounded-lg flex-shrink-0 transition-colors ${
+              <div className={`p-2 rounded-md flex-shrink-0 transition-colors ${
                 isSelected 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-primary/10 text-primary group-hover:bg-primary/15'
+                  ? 'bg-blue-100 text-blue-600' 
+                  : 'bg-gray-100 text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600'
               }`}>
                 {getIcon(plan.plan_type)}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-lg text-foreground truncate mb-1">{plan.name}</h3>
-                <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-base text-gray-900 truncate mb-1">{plan.name}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge 
                     variant="outline" 
-                    className="text-xs px-2 py-1 capitalize border-primary/30 text-primary bg-primary/5"
+                    className="text-xs px-2 py-0.5 capitalize bg-white border-gray-300"
                   >
                     {plan.plan_type}
                   </Badge>
                   <Badge 
                     variant={plan.is_active ? 'default' : 'secondary'} 
-                    className={`text-xs px-2 py-1 ${
+                    className={`text-xs px-2 py-0.5 ${
                       plan.is_active 
-                        ? 'bg-green-100 text-green-700 border-green-200' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                         : 'bg-gray-100 text-gray-600 border-gray-200'
                     }`}
                   >
@@ -112,12 +111,12 @@ const PlanCard: React.FC<{
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-8 w-8 p-0 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                  className="h-7 w-7 p-0 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuContent align="end" className="w-32">
                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Plan
@@ -128,23 +127,23 @@ const PlanCard: React.FC<{
 
           {/* Description */}
           {plan.description && (
-            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+            <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-2">
               {plan.description}
             </p>
           )}
 
-          {/* Pricing Section */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          {/* Pricing Section - Improved Layout */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
             {plan.use_module_pricing && (
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Calculator className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Dynamic Pricing Enabled</span>
+                <span className="text-sm font-medium text-blue-700">Dynamic Pricing</span>
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Monthly</p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Monthly</span>
                 {plan.use_module_pricing ? (
                   <PricingDisplay
                     planId={plan.id}
@@ -154,94 +153,102 @@ const PlanCard: React.FC<{
                     compact={true}
                   />
                 ) : (
-                  <div>
-                    <div className="text-xl font-bold text-green-600">
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900">
                       {formatPrice(plan.price_monthly)}
                     </div>
-                    <div className="text-xs text-muted-foreground">/month</div>
+                    <div className="text-xs text-gray-500">/month</div>
                   </div>
                 )}
               </div>
               
-              <div className="text-center">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Annual</p>
-                {plan.use_module_pricing ? (
-                  <PricingDisplay
-                    planId={plan.id}
-                    enabledModules={enabledModules}
-                    billingCycle="annually"
-                    showBreakdown={false}
-                    compact={true}
-                  />
-                ) : (
-                  <div>
-                    <div className="text-xl font-bold text-green-600">
-                      {formatPrice(plan.price_annually)}
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annual</span>
+                  {plan.use_module_pricing ? (
+                    <PricingDisplay
+                      planId={plan.id}
+                      enabledModules={enabledModules}
+                      billingCycle="annually"
+                      showBreakdown={false}
+                      compact={true}
+                    />
+                  ) : (
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">
+                        {formatPrice(plan.price_annually)}
+                      </div>
+                      <div className="text-xs text-gray-500">/year</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">/year</div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Module Permissions Summary */}
-          {!isLoadingPermissions && permissionsSummary && (
-            <div className="space-y-3 pt-2 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground">Module Access</h4>
-                <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
-                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
-                </ModulePermissionsTooltip>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <ModulePermissionBadge
-                  enabledModules={permissionsSummary.enabledModules}
-                  totalModules={permissionsSummary.totalModules}
-                  enabledPercentage={permissionsSummary.enabledPercentage}
-                />
-                {permissionsSummary.keyLimitations.length > 0 && (
-                  <LimitationsBadge limitations={permissionsSummary.keyLimitations} />
-                )}
-              </div>
+          {/* Module Permissions Summary - Flex Grow */}
+          <div className="flex-1">
+            {!isLoadingPermissions && permissionsSummary && (
+              <div className="space-y-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-700">Module Access</h4>
+                  <ModulePermissionsTooltip moduleDetails={permissionsSummary.moduleDetails}>
+                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help transition-colors" />
+                  </ModulePermissionsTooltip>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <ModulePermissionBadge
+                    enabledModules={permissionsSummary.enabledModules}
+                    totalModules={permissionsSummary.totalModules}
+                    enabledPercentage={permissionsSummary.enabledPercentage}
+                  />
+                  {permissionsSummary.keyLimitations.length > 0 && (
+                    <LimitationsBadge limitations={permissionsSummary.keyLimitations} />
+                  )}
+                </div>
 
-              <CollapsiblePermissionsSection moduleDetails={permissionsSummary.moduleDetails} />
-            </div>
-          )}
-
-          {isLoadingPermissions && (
-            <div className="pt-2 border-t border-gray-100">
-              <div className="animate-pulse space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="max-w-full overflow-hidden">
+                  <CollapsiblePermissionsSection moduleDetails={permissionsSummary.moduleDetails} />
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Action Button */}
-          <Button 
-            variant={isSelected ? 'default' : 'outline'}
-            size="sm" 
-            className={`w-full h-9 text-sm font-medium transition-all ${
-              isSelected 
-                ? 'bg-primary hover:bg-primary/90 shadow-md' 
-                : 'border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect();
-            }}
-          >
-            {isSelected ? (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Selected Plan
-              </>
-            ) : (
-              'Select Plan'
             )}
-          </Button>
+
+            {isLoadingPermissions && (
+              <div className="pt-3 border-t border-gray-100">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Button - Fixed at Bottom */}
+          <div className="mt-4 pt-3 border-t border-gray-100">
+            <Button 
+              variant={isSelected ? 'default' : 'outline'}
+              size="sm" 
+              className={`w-full h-9 text-sm font-medium transition-all ${
+                isSelected 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' 
+                  : 'border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+              }}
+            >
+              {isSelected ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Selected Plan
+                </>
+              ) : (
+                'Select Plan'
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -264,7 +271,7 @@ const SubscriptionPlansList: React.FC<SubscriptionPlansListProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse h-96">
             <CardContent className="p-6">
               <div className="h-6 bg-gray-200 rounded mb-3"></div>
               <div className="h-4 bg-gray-200 rounded mb-4"></div>
@@ -279,7 +286,7 @@ const SubscriptionPlansList: React.FC<SubscriptionPlansListProps> = ({
 
   if (plans.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className="text-center py-12 text-gray-500">
         <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <h3 className="text-lg font-medium mb-2">No subscription plans found</h3>
         <p className="text-sm">Create your first plan to get started with subscription management.</p>
