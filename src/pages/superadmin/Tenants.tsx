@@ -5,21 +5,31 @@ import TenantUserManager from '@/components/TenantUserManager';
 import TenantsHeader from '@/components/superadmin/TenantsHeader';
 import TenantList from '@/components/superadmin/TenantList';
 import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
+import EditTenantDialog from '@/components/superadmin/EditTenantDialog';
 import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
 import { TenantFormValues } from '@/components/superadmin/tenant-form';
 import { useTenants, Tenant } from '@/hooks/useTenants';
 
 const Tenants = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isUserManagerOpen, setIsUserManagerOpen] = useState(false);
   const [isCustomFieldsOpen, setIsCustomFieldsOpen] = useState(false);
 
-  const { tenants, isLoading, createTenant } = useTenants();
+  const { tenants, isLoading, createTenant, updateTenant } = useTenants();
 
   const handleCreateTenant = (data: TenantFormValues) => {
     createTenant.mutate(data);
     setIsCreateDialogOpen(false);
+  };
+
+  const handleEditTenant = (data: TenantFormValues) => {
+    if (selectedTenant) {
+      updateTenant.mutate({ id: selectedTenant.id, tenantData: data });
+      setIsEditDialogOpen(false);
+      setSelectedTenant(null);
+    }
   };
 
   const handleOpenUserManager = (tenant: Tenant) => {
@@ -32,6 +42,11 @@ const Tenants = () => {
     setIsCustomFieldsOpen(true);
   };
 
+  const handleOpenEditDialog = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsEditDialogOpen(true);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -41,7 +56,8 @@ const Tenants = () => {
           tenants={tenants} 
           isLoading={isLoading} 
           onOpenUserManager={handleOpenUserManager} 
-          onOpenCustomFields={handleOpenCustomFields} 
+          onOpenCustomFields={handleOpenCustomFields}
+          onEditTenant={handleOpenEditDialog}
         />
 
         <CreateTenantDialog
@@ -49,6 +65,17 @@ const Tenants = () => {
           onClose={() => setIsCreateDialogOpen(false)}
           onSubmit={handleCreateTenant}
           isSubmitting={createTenant.isPending}
+        />
+
+        <EditTenantDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setSelectedTenant(null);
+          }}
+          onSubmit={handleEditTenant}
+          isSubmitting={updateTenant.isPending}
+          tenant={selectedTenant}
         />
 
         {selectedTenant && (

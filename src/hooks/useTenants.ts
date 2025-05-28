@@ -104,10 +104,64 @@ export const useTenants = () => {
     },
   });
 
+  // Mutation for updating an existing tenant
+  const updateTenant = useMutation({
+    mutationFn: async ({ id, tenantData }: { id: string; tenantData: TenantFormValues }) => {
+      // Parse the registration date for database storage
+      const formattedDate = parseFormDate(tenantData.registrationDate);
+      
+      if (tenantData.registrationDate && !formattedDate) {
+        throw new Error("Invalid registration date format");
+      }
+      
+      // Extract the basic tenant data that the database expects
+      const basicTenantData = {
+        name: tenantData.name,
+        domain: tenantData.domain || tenantData.webSite, // Use website as domain if domain not provided
+        description: tenantData.companyProfile, // Use company profile as description
+        registration_date: formattedDate, // Add registration date
+      };
+
+      const { data, error } = await supabase
+        .from('tenants')
+        .update(basicTenantData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Handle custom fields if any exist
+      const customFieldValues = extractCustomFieldValues(tenantData);
+      
+      if (Object.keys(customFieldValues).length > 0) {
+        await saveCustomFieldValues('tenant', id, customFieldValues);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      toast({
+        title: 'Tenant updated',
+        description: 'The tenant has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error updating tenant:", error);
+      toast({
+        title: 'Error',
+        description: `Failed to update tenant: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     tenants,
     isLoading,
     error,
     createTenant,
+    updateTenant,
   };
 };

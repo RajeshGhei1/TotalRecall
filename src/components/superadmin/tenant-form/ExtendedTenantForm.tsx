@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,54 +20,65 @@ interface ExtendedTenantFormProps {
   onSubmit: (data: TenantFormValues) => void;
   isSubmitting: boolean;
   onCancel: () => void;
+  initialData?: Partial<TenantFormValues>;
 }
 
 const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({ 
   onSubmit, 
   isSubmitting, 
-  onCancel 
+  onCancel,
+  initialData 
 }) => {
   const { customFields, isLoading: customFieldsLoading } = useCustomFieldsHook('global', {
     formContext: 'tenant_creation'
   });
   
+  const defaultValues = {
+    name: '',
+    domain: '',
+    cin: '',
+    companyStatus: '',
+    registeredOfficeAddress: '',
+    registrationDate: undefined,
+    registeredEmailAddress: '',
+    noOfDirectives: '',
+    globalRegion: '',
+    country: '',
+    region: '',
+    hoLocation: '',
+    industry1: '',
+    industry2: '',
+    industry3: '',
+    companySector: '',
+    companyType: '',
+    entityType: '',
+    noOfEmployee: '',
+    segmentAsPerNumberOfEmployees: '',
+    turnOver: '',
+    segmentAsPerTurnover: '',
+    turnoverYear: '',
+    yearOfEstablishment: '',
+    paidupCapital: '',
+    segmentAsPerPaidUpCapital: '',
+    areaOfSpecialize: '',
+    serviceLine: '',
+    verticles: '',
+    webSite: '',
+    companyProfile: '',
+    endUserChannel: '',
+    ...initialData,
+  };
+  
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchema),
-    defaultValues: {
-      name: '',
-      domain: '',
-      cin: '',
-      companyStatus: '',
-      registeredOfficeAddress: '',
-      registrationDate: undefined,
-      registeredEmailAddress: '',
-      noOfDirectives: '',
-      globalRegion: '',
-      country: '',
-      region: '',
-      hoLocation: '',
-      industry1: '',
-      industry2: '',
-      industry3: '',
-      companySector: '',
-      companyType: '',
-      entityType: '',
-      noOfEmployee: '',
-      segmentAsPerNumberOfEmployees: '',
-      turnOver: '',
-      segmentAsPerTurnover: '',
-      turnoverYear: '',
-      yearOfEstablishment: '',
-      paidupCapital: '',
-      segmentAsPerPaidUpCapital: '',
-      areaOfSpecialize: '',
-      serviceLine: '',
-      verticles: '',
-      webSite: '',
-      companyProfile: '',
-      endUserChannel: '',
-    }
+    defaultValues
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset(defaultValues);
+    }
+  }, [initialData, form]);
 
   useEffect(() => {
     if (customFields && customFields.length > 0) {
@@ -81,6 +91,8 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
     console.log("Form submission with custom fields:", data);
     onSubmit(data);
   };
+
+  const isEditing = !!initialData?.name;
 
   return (
     <ErrorBoundary>
@@ -172,10 +184,10 @@ const ExtendedTenantForm: React.FC<ExtendedTenantFormProps> = ({
               {isSubmitting ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  {isEditing ? 'Updating...' : 'Submitting...'}
                 </>
               ) : (
-                'Create Tenant'
+                isEditing ? 'Update Tenant' : 'Create Tenant'
               )}
             </Button>
           </div>
