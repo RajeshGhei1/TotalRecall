@@ -6,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Blocks, 
   Users,
-  Settings
+  Settings,
+  Plus,
+  Zap
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/modules/useSystemModules';
 import CreateModuleDialog from './modules/CreateModuleDialog';
@@ -47,52 +49,70 @@ const ModuleRegistry: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Blocks className="h-5 w-5" />
-            Module Registry
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="animate-pulse space-y-4">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-20 bg-gray-200 rounded"></div>
+        ))}
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
+      {/* Quick Stats Overview */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border">
+          <Blocks className="h-8 w-8 text-blue-600" />
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Blocks className="h-5 w-5" />
-              Module Registry
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Manage system modules and tenant assignments
-            </p>
+            <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
+            <p className="text-sm text-blue-700">Total Modules</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="modules" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="modules" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Module Management
-              </TabsTrigger>
-              <TabsTrigger value="assignments" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Tenant Assignments
-              </TabsTrigger>
-            </TabsList>
+        </div>
+        <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border">
+          <Zap className="h-8 w-8 text-green-600" />
+          <div>
+            <p className="text-2xl font-bold text-green-900">{stats.active}</p>
+            <p className="text-sm text-green-700">Active Modules</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border">
+          <Settings className="h-8 w-8 text-orange-600" />
+          <div>
+            <p className="text-2xl font-bold text-orange-900">{stats.inactive}</p>
+            <p className="text-sm text-orange-700">Inactive Modules</p>
+          </div>
+        </div>
+      </div>
 
-            <TabsContent value="modules" className="mt-6">
+      {/* Main Module Management */}
+      <Tabs defaultValue="modules" className="w-full">
+        <div className="flex justify-between items-center mb-4">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="modules" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Module Library
+            </TabsTrigger>
+            <TabsTrigger value="assignments" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Tenant Assignments
+            </TabsTrigger>
+          </TabsList>
+
+          <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Module
+          </Button>
+        </div>
+
+        <TabsContent value="modules" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Module Library</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Create and manage modules that can be assigned to tenants
+              </p>
+            </CardHeader>
+            <CardContent>
               <ModulesManagement
                 modules={modules || []}
                 stats={stats}
@@ -100,14 +120,24 @@ const ModuleRegistry: React.FC = () => {
                 onEditModule={handleEditModule}
                 onDeleteModule={handleDeleteModule}
               />
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="assignments" className="mt-6">
+        <TabsContent value="assignments" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tenant Module Assignments</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Assign modules to tenants and manage their access
+              </p>
+            </CardHeader>
+            <CardContent>
               <TenantModuleManager />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Dialogs */}
       <CreateModuleDialog
