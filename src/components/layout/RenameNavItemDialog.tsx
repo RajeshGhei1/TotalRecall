@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -29,18 +29,30 @@ const RenameNavItemDialog: React.FC<RenameNavItemDialogProps> = ({
   onRename,
   onReset,
 }) => {
-  const [newLabel, setNewLabel] = useState(customLabel || itemLabel);
+  const [newLabel, setNewLabel] = useState('');
+
+  // Reset state when dialog opens with different item or when props change
+  useEffect(() => {
+    if (isOpen) {
+      setNewLabel(customLabel || itemLabel);
+      console.log('Dialog opened for item:', itemLabel, 'custom:', customLabel);
+    }
+  }, [isOpen, itemLabel, customLabel]);
 
   const handleSubmit = () => {
-    if (newLabel.trim() && newLabel.trim() !== itemLabel) {
-      onRename(newLabel.trim());
-    } else if (newLabel.trim() === itemLabel) {
+    const trimmedLabel = newLabel.trim();
+    console.log('Submitting rename:', { original: itemLabel, custom: customLabel, new: trimmedLabel });
+    
+    if (trimmedLabel && trimmedLabel !== itemLabel) {
+      onRename(trimmedLabel);
+    } else if (trimmedLabel === itemLabel) {
       onReset();
     }
     onClose();
   };
 
   const handleReset = () => {
+    console.log('Resetting label for:', itemLabel);
     onReset();
     onClose();
   };
@@ -49,11 +61,19 @@ const RenameNavItemDialog: React.FC<RenameNavItemDialogProps> = ({
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSubmit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
     }
   };
 
+  const handleClose = () => {
+    console.log('Dialog closing');
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Rename Navigation Item</DialogTitle>
@@ -70,19 +90,25 @@ const RenameNavItemDialog: React.FC<RenameNavItemDialogProps> = ({
               id="label"
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               className="col-span-3"
               placeholder={itemLabel}
               autoFocus
             />
           </div>
           <div className="text-sm text-muted-foreground">
-            Original name: {itemLabel}
+            Original name: <span className="font-medium">{itemLabel}</span>
+            {customLabel && (
+              <span className="block">Current custom name: <span className="font-medium">{customLabel}</span></span>
+            )}
           </div>
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleReset}>
             Reset to Default
+          </Button>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
           </Button>
           <Button onClick={handleSubmit}>
             Save Changes

@@ -39,15 +39,26 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
   onResetLabel
 }) => {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
   const handleDragEndEvent = (event: DragEndEvent) => {
-    handleDragEnd(items, event, onReorder);
+    console.log('Drag end event:', event);
+    const result = handleDragEnd(items, event, onReorder);
+    if (result !== items) {
+      console.log('Items reordered:', result);
+    }
   };
+
+  // Extract only IDs for SortableContext
+  const itemIds = items.map(item => item.id);
 
   return (
     <DndContext
@@ -55,8 +66,8 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEndEvent}
     >
-      <SortableContext items={items} strategy={verticalListSortingStrategy}>
-        <nav className="space-y-2 px-2">
+      <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+        <nav className="space-y-1 px-2">
           {items.map((item) => (
             <DraggableNavItem
               key={item.id}
@@ -65,8 +76,14 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
               icon={item.icon}
               label={item.label}
               customLabel={item.customLabel}
-              onRename={(newLabel) => onRename(item.id, newLabel)}
-              onResetLabel={() => onResetLabel(item.id)}
+              onRename={(newLabel) => {
+                console.log('Renaming item:', item.id, 'to:', newLabel);
+                onRename(item.id, newLabel);
+              }}
+              onResetLabel={() => {
+                console.log('Resetting label for item:', item.id);
+                onResetLabel(item.id);
+              }}
             />
           ))}
         </nav>

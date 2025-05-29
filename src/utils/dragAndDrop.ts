@@ -17,23 +17,42 @@ export function handleDragEnd<T extends { id: string }>(
 ): T[] {
   const { active, over } = event;
   
+  console.log('handleDragEnd called:', { activeId: active.id, overId: over?.id });
+  
   if (over && active.id !== over.id) {
     // Find the indices of the items
     const oldIndex = items.findIndex(item => item.id === active.id);
     const newIndex = items.findIndex(item => item.id === over.id);
     
+    console.log('Moving item:', { oldIndex, newIndex, activeId: active.id, overId: over.id });
+    
+    if (oldIndex === -1 || newIndex === -1) {
+      console.warn('Could not find item indices:', { oldIndex, newIndex });
+      return items;
+    }
+    
     // Reorder the array
     const newItems = arrayMove(items, oldIndex, newIndex);
     
+    console.log('Items reordered:', { 
+      before: items.map(i => i.id), 
+      after: newItems.map(i => i.id) 
+    });
+    
     // Call the callback if provided
     if (onReorder) {
-      onReorder(newItems);
+      try {
+        onReorder(newItems);
+      } catch (error) {
+        console.error('Error in onReorder callback:', error);
+      }
     }
     
     // Return the new array
     return newItems;
   }
   
+  console.log('No reordering needed');
   // Return the original array if no reordering occurred
   return items;
 }
