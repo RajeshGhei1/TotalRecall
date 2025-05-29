@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
@@ -9,7 +8,7 @@ import RenameNavItemDialog from './RenameNavItemDialog';
 interface DraggableNavItemProps {
   id: string;
   href: string;
-  icon: React.ComponentType<{ size?: string | number }>;
+  icon: React.ComponentType<{ size?: string | number; className?: string }>;
   label: string;
   customLabel?: string;
   onRename: (newLabel: string) => void;
