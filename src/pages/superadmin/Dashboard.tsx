@@ -16,6 +16,7 @@ import { Building, Users, Briefcase, Users as UsersIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useIsMobile } from '@/hooks/use-mobile';
+import DynamicFormWidget from '@/components/forms/integration/DynamicFormWidget';
 
 const Dashboard = () => {
   const isMobile = useIsMobile();
@@ -212,7 +213,7 @@ const Dashboard = () => {
         </div>
 
         {/* Additional cards in responsive layout */}
-        <div className="mt-6 md:mt-8 grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+        <div className="mt-6 md:mt-8 grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           <Card className="shadow-sm">
             <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6">
               <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
@@ -222,6 +223,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">Activity data will be displayed here.</p>
             </CardContent>
           </Card>
+          
           <Card className="shadow-sm">
             <CardHeader className="px-4 pt-4 pb-2 md:px-6 md:pt-6">
               <CardTitle className="text-base md:text-lg">System Status</CardTitle>
@@ -231,6 +233,14 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">System status information will be displayed here.</p>
             </CardContent>
           </Card>
+
+          {/* Dynamic Form Widget */}
+          <div className="xl:col-span-1">
+            <DynamicFormWidget 
+              context={{ page: 'dashboard', userType: 'super_admin' }}
+              maxForms={3}
+            />
+          </div>
         </div>
       </div>
     </AdminLayout>

@@ -3,6 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormDeploymentPoint, FormPlacement, FormTrigger, FormDeploymentPointInsert, FormPlacementInsert, FormTriggerInsert } from '@/types/form-builder';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+// Type for deployment locations from the database enum
+type DeploymentLocation = Database['public']['Enums']['deployment_location'];
 
 // Form Deployment Points
 export const useFormDeploymentPoints = () => {
@@ -61,7 +65,7 @@ export const useFormPlacements = (tenantId?: string) => {
   });
 };
 
-export const useFormPlacementsByLocation = (location: string, tenantId?: string) => {
+export const useFormPlacementsByLocation = (location: DeploymentLocation, tenantId?: string) => {
   return useQuery({
     queryKey: ['form-placements-by-location', location, tenantId],
     queryFn: async () => {

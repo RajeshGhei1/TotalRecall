@@ -1,6 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { FormPlacement, FormTrigger, FormDefinition } from '@/types/form-builder';
+import { Database } from '@/integrations/supabase/types';
+
+type DeploymentLocation = Database['public']['Enums']['deployment_location'];
 
 export class FormIntegrationService {
   private static instance: FormIntegrationService;
@@ -15,7 +18,7 @@ export class FormIntegrationService {
   }
 
   async getFormsForLocation(
-    location: string, 
+    location: DeploymentLocation, 
     tenantId?: string, 
     context?: Record<string, any>
   ): Promise<FormPlacement[]> {
