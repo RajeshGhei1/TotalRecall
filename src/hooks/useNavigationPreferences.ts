@@ -61,8 +61,8 @@ export const useNavigationPreferences = (
           // Fallback to localStorage
           loadFromLocalStorage();
         } else if (data) {
-          // Successfully loaded from database
-          const preferences = data.preferences as NavigationPreferences;
+          // Successfully loaded from database - safely convert the Json type
+          const preferences = data.preferences as unknown as NavigationPreferences;
           applyPreferences(preferences);
         } else {
           // No preferences found, try to migrate from localStorage
