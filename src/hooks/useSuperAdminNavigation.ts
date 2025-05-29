@@ -29,7 +29,7 @@ const defaultNavItems: NavItem[] = [
   },
   { 
     id: 'users',
-    label: 'Users', 
+    label: 'Tenant Users', 
     icon: Users, 
     href: '/superadmin/users'
   },
