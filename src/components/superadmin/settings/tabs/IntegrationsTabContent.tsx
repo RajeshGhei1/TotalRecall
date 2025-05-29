@@ -6,10 +6,16 @@ import SocialMediaSettings from '../SocialMediaSettings';
 import CommunicationSettings from '../CommunicationSettings';
 import OutreachSettings from '../OutreachSettings';
 import ApiSettings from '../ApiSettings';
+import GlobalTenantSelector from '../shared/GlobalTenantSelector';
 
 const IntegrationsTabContent: React.FC = () => {
   return (
     <div className="space-y-6">
+      {/* Global Tenant Selector */}
+      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+        <GlobalTenantSelector />
+      </div>
+      
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
