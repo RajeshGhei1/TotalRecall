@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { FormField } from '@/types/form-builder';
+import { FormField, FormFieldInsert } from '@/types/form-builder';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFormFields = (formId?: string, sectionId?: string) => {
@@ -28,7 +28,13 @@ export const useFormFields = (formId?: string, sectionId?: string) => {
         throw error;
       }
 
-      return data as FormField[];
+      // Transform the data to match our FormField interface
+      return data.map(field => ({
+        ...field,
+        options: typeof field.options === 'string' ? JSON.parse(field.options) : field.options,
+        applicable_forms: Array.isArray(field.applicable_forms) ? field.applicable_forms : 
+          typeof field.applicable_forms === 'string' ? JSON.parse(field.applicable_forms) : []
+      })) as FormField[];
     },
     enabled: !!(formId || sectionId),
   });
@@ -39,10 +45,14 @@ export const useCreateFormField = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (fieldData: Partial<FormField>) => {
+    mutationFn: async (fieldData: Omit<FormFieldInsert, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('custom_fields')
-        .insert(fieldData)
+        .insert({
+          ...fieldData,
+          options: fieldData.options || null,
+          applicable_forms: fieldData.applicable_forms || []
+        })
         .select()
         .single();
 
@@ -51,7 +61,13 @@ export const useCreateFormField = () => {
         throw error;
       }
 
-      return data;
+      // Transform the response to match our FormField interface
+      return {
+        ...data,
+        options: typeof data.options === 'string' ? JSON.parse(data.options) : data.options,
+        applicable_forms: Array.isArray(data.applicable_forms) ? data.applicable_forms : 
+          typeof data.applicable_forms === 'string' ? JSON.parse(data.applicable_forms) : []
+      } as FormField;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['form-fields'] });
@@ -69,7 +85,7 @@ export const useUpdateFormField = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormField> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormFieldInsert> }) => {
       const { data, error } = await supabase
         .from('custom_fields')
         .update(updates)
@@ -82,7 +98,13 @@ export const useUpdateFormField = () => {
         throw error;
       }
 
-      return data;
+      // Transform the response to match our FormField interface
+      return {
+        ...data,
+        options: typeof data.options === 'string' ? JSON.parse(data.options) : data.options,
+        applicable_forms: Array.isArray(data.applicable_forms) ? data.applicable_forms : 
+          typeof data.applicable_forms === 'string' ? JSON.parse(data.applicable_forms) : []
+      } as FormField;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-fields'] });

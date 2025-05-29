@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { FormSection } from '@/types/form-builder';
+import { FormSection, FormSectionInsert } from '@/types/form-builder';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFormSections = (formId: string) => {
@@ -30,7 +30,7 @@ export const useCreateFormSection = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (sectionData: Partial<FormSection>) => {
+    mutationFn: async (sectionData: Omit<FormSectionInsert, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('form_sections')
         .insert(sectionData)
@@ -42,7 +42,7 @@ export const useCreateFormSection = () => {
         throw error;
       }
 
-      return data;
+      return data as FormSection;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['form-sections', data.form_id] });
@@ -59,7 +59,7 @@ export const useUpdateFormSection = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormSection> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormSectionInsert> }) => {
       const { data, error } = await supabase
         .from('form_sections')
         .update(updates)
@@ -72,7 +72,7 @@ export const useUpdateFormSection = () => {
         throw error;
       }
 
-      return data;
+      return data as FormSection;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['form-sections', data.form_id] });

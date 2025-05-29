@@ -114,7 +114,6 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({ formId, selectedSection }) 
         required: false,
         form_id: formId,
         section_id: selectedSection || undefined,
-        tenant_id: null, // Will be set by RLS
         sort_order: 0,
       };
 

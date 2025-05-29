@@ -1,50 +1,25 @@
 
-export interface FormDefinition {
-  id: string;
-  tenant_id?: string;
-  name: string;
-  slug: string;
-  description?: string;
-  is_active: boolean;
+import { Database } from '@/integrations/supabase/types';
+
+// Use Supabase generated types as the base
+type DbFormDefinition = Database['public']['Tables']['form_definitions']['Row'];
+type DbFormSection = Database['public']['Tables']['form_sections']['Row'];
+type DbFormSubmission = Database['public']['Tables']['form_submissions']['Row'];
+type DbCustomField = Database['public']['Tables']['custom_fields']['Row'];
+
+// Extend with our custom interfaces for better type safety
+export interface FormDefinition extends Omit<DbFormDefinition, 'settings'> {
   settings: Record<string, any>;
-  created_by?: string;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface FormSection {
-  id: string;
-  form_id: string;
-  name: string;
-  description?: string;
-  sort_order: number;
-  is_collapsible: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export interface FormSection extends DbFormSection {}
 
-export interface FormSubmission {
-  id: string;
-  form_id: string;
-  submitted_by?: string;
+export interface FormSubmission extends Omit<DbFormSubmission, 'submission_data'> {
   submission_data: Record<string, any>;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
-  submitted_at?: string;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface FormField {
-  id: string;
-  name: string;
-  field_key: string;
-  field_type: string;
-  required?: boolean;
+export interface FormField extends Omit<DbCustomField, 'options' | 'applicable_forms'> {
   options?: any;
-  form_id?: string;
-  section_id?: string;
-  sort_order?: number;
-  description?: string;
   applicable_forms?: string[];
 }
 
@@ -80,3 +55,9 @@ export interface FieldDefinition {
   description: string;
   defaultOptions?: any;
 }
+
+// Insert types for database operations
+export type FormDefinitionInsert = Database['public']['Tables']['form_definitions']['Insert'];
+export type FormSectionInsert = Database['public']['Tables']['form_sections']['Insert'];
+export type FormFieldInsert = Database['public']['Tables']['custom_fields']['Insert'];
+export type FormSubmissionInsert = Database['public']['Tables']['form_submissions']['Insert'];

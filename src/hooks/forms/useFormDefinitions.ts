@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { FormDefinition } from '@/types/form-builder';
+import { FormDefinition, FormDefinitionInsert } from '@/types/form-builder';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFormDefinitions = (tenantId?: string) => {
@@ -26,7 +26,11 @@ export const useFormDefinitions = (tenantId?: string) => {
         throw error;
       }
       
-      return data as FormDefinition[];
+      // Transform the data to match our FormDefinition interface
+      return data.map(form => ({
+        ...form,
+        settings: typeof form.settings === 'string' ? JSON.parse(form.settings) : form.settings || {}
+      })) as FormDefinition[];
     },
   });
 };
@@ -36,10 +40,13 @@ export const useCreateFormDefinition = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (formData: Partial<FormDefinition>) => {
+    mutationFn: async (formData: Omit<FormDefinitionInsert, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('form_definitions')
-        .insert(formData)
+        .insert({
+          ...formData,
+          settings: formData.settings || {}
+        })
         .select()
         .single();
 
@@ -48,7 +55,11 @@ export const useCreateFormDefinition = () => {
         throw error;
       }
 
-      return data;
+      // Transform the response to match our FormDefinition interface
+      return {
+        ...data,
+        settings: typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings || {}
+      } as FormDefinition;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-definitions'] });
@@ -73,7 +84,7 @@ export const useUpdateFormDefinition = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormDefinition> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormDefinitionInsert> }) => {
       const { data, error } = await supabase
         .from('form_definitions')
         .update(updates)
@@ -86,7 +97,11 @@ export const useUpdateFormDefinition = () => {
         throw error;
       }
 
-      return data;
+      // Transform the response to match our FormDefinition interface
+      return {
+        ...data,
+        settings: typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings || {}
+      } as FormDefinition;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-definitions'] });
