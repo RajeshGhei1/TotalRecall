@@ -40,7 +40,14 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
         const getDisplayValue = () => {
           if (!field.value) return placeholder;
           
-          const date = field.value instanceof Date ? field.value : new Date(field.value);
+          let date: Date;
+          if (field.value instanceof Date) {
+            date = field.value;
+          } else if (typeof field.value === 'string') {
+            date = new Date(field.value);
+          } else {
+            return placeholder;
+          }
           
           if (isValid(date)) {
             return format(date, "PPP");
@@ -49,12 +56,28 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
           return placeholder;
         };
 
-        const handleDateSelect = (date: Date | undefined) => {
-          field.onChange(date);
+        const handleDateSelect = (selectedDate: Date | undefined) => {
+          if (selectedDate) {
+            field.onChange(selectedDate);
+          } else {
+            field.onChange(undefined);
+          }
         };
 
-        const currentDate = field.value instanceof Date ? field.value : 
-                           (field.value ? new Date(field.value) : undefined);
+        const getCurrentDate = (): Date | undefined => {
+          if (!field.value) return undefined;
+          
+          if (field.value instanceof Date) {
+            return isValid(field.value) ? field.value : undefined;
+          }
+          
+          if (typeof field.value === 'string') {
+            const date = new Date(field.value);
+            return isValid(date) ? date : undefined;
+          }
+          
+          return undefined;
+        };
         
         return (
           <FormItem className="flex flex-col">
@@ -66,26 +89,28 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
+                    type="button"
                     variant="outline"
                     className={cn(
-                      "w-full pl-3 text-left font-normal",
+                      "w-full pl-3 text-left font-normal justify-start",
                       !field.value && "text-muted-foreground",
                       disabled && "bg-gray-50 opacity-70 cursor-not-allowed"
                     )}
                     disabled={disabled}
                   >
+                    <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                     {getDisplayValue()}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 z-50" align="start">
                 <Calendar
                   mode="single"
-                  selected={isValid(currentDate) ? currentDate : undefined}
+                  selected={getCurrentDate()}
                   onSelect={handleDateSelect}
                   disabled={disabled}
                   initialFocus
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
