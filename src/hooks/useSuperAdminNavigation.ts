@@ -71,7 +71,7 @@ const defaultNavItems: NavItem[] = [
   },
   { 
     id: 'settings',
-    label: 'Settings', 
+    label: 'Tenant Settings', 
     icon: Settings, 
     href: '/superadmin/settings'
   },
