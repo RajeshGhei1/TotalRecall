@@ -87,8 +87,10 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
         if (moduleAccess.hasAccess) {
           return {
             ...moduleAccess,
+            plan: userSubscription.subscription_plans,
             subscription: userSubscription,
             subscriptionType: 'user',
+            accessSource: 'subscription',
             subscriptionDetails: {
               subscriptionType: 'user',
               planName: userSubscription.subscription_plans.name,
@@ -116,15 +118,18 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
         module: null,
         plan: null,
         subscription: null,
-        subscriptionType: null
+        subscriptionType: null,
+        accessSource: 'none'
       };
     }
 
     const moduleAccess = await checkModulePermission(tenantSubscription.plan_id, moduleName);
     return {
       ...moduleAccess,
+      plan: tenantSubscription.subscription_plans,
       subscription: tenantSubscription,
       subscriptionType: 'tenant',
+      accessSource: 'subscription',
       subscriptionDetails: {
         subscriptionType: 'tenant',
         planName: tenantSubscription.subscription_plans.name,
@@ -138,7 +143,8 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
       module: null,
       plan: null,
       subscription: null,
-      subscriptionType: null
+      subscriptionType: null,
+      accessSource: 'none'
     };
   }
 }
@@ -159,7 +165,8 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
         module: null,
         plan: null,
         subscription: null,
-        subscriptionType: null
+        subscriptionType: null,
+        accessSource: 'none'
       };
     }
 
@@ -181,7 +188,8 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
         module: null,
         plan: null,
         subscription: null,
-        subscriptionType: null
+        subscriptionType: null,
+        accessSource: 'none'
       };
     }
 
@@ -195,7 +203,8 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
         module: null,
         plan: null,
         subscription: null,
-        subscriptionType: null
+        subscriptionType: null,
+        accessSource: 'none'
       };
     }
 
@@ -209,6 +218,7 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
       plan: null,
       subscription: null,
       subscriptionType: null,
+      accessSource: 'tenant_override',
       overrideDetails: {
         assignedBy: assignment.profiles?.full_name || 'System',
         assignedAt: assignment.assigned_at,
@@ -222,7 +232,8 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
       module: null,
       plan: null,
       subscription: null,
-      subscriptionType: null
+      subscriptionType: null,
+      accessSource: 'none'
     };
   }
 }
