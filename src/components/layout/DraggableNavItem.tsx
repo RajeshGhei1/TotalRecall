@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
@@ -78,7 +79,7 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex items-center gap-2 rounded-lg transition-all ${
+        className={`group flex items-center w-full rounded-lg transition-all ${
           isDragging ? 'opacity-50 z-50' : ''
         }`}
         onContextMenu={handleRightClick}
@@ -86,34 +87,34 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted flex-shrink-0"
+          className="flex items-center justify-center w-6 h-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
           title="Drag to reorder"
         >
-          <Move size={16} />
+          <Move size={14} />
         </div>
         
         <Link
           to={href}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all flex-1 min-w-0 ${
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all flex-1 min-w-0 text-left ${
             isActive(href) 
               ? 'bg-primary text-primary-foreground' 
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
-          <Icon size={20} className="flex-shrink-0" />
-          <span className="flex-1 truncate">{displayLabel}</span>
+          <Icon size={18} className="flex-shrink-0" />
+          <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{displayLabel}</span>
           {customLabel && (
-            <span className="text-xs opacity-50 flex-shrink-0">•</span>
+            <span className="text-xs opacity-50 flex-shrink-0 ml-1">•</span>
           )}
         </Link>
 
         <button
           onClick={handleEditClick}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded hover:bg-muted flex-shrink-0 text-muted-foreground hover:text-foreground"
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-muted flex-shrink-0 text-muted-foreground hover:text-foreground"
           title="Rename navigation item"
         >
-          <Edit3 size={14} />
+          <Edit3 size={12} />
         </button>
       </div>
 
