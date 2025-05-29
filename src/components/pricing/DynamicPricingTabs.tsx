@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { useSubscriptionPlans } from '@/hooks/subscriptions/useSubscriptionPlans';
 import { useModulePermissionsSummary } from '@/hooks/subscriptions/useModulePermissionsSummary';
 import { usePricingCalculation } from '@/hooks/subscriptions/usePricingEngine';
-import PricingCard from './PricingCard';
+import DynamicPricingCard from './DynamicPricingCard';
 import { SubscriptionPlan } from '@/types/subscription-types';
 
 interface DynamicPricingTabsProps {
