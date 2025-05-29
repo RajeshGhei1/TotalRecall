@@ -1,7 +1,7 @@
 
 import React, { ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Blocks, Cog, Globe } from 'lucide-react';
+import { Blocks, Cog, Globe, FileText } from 'lucide-react';
 import TenantContextIndicator from '../shared/TenantContextIndicator';
 
 interface SettingsTabsProps {
@@ -16,7 +16,11 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({ children }) => {
           <TabsList className="w-full lg:w-auto justify-start overflow-x-auto bg-transparent px-0 py-0 h-14">
             <TabsTrigger value="modules" className="flex items-center gap-2 h-12 px-6">
               <Blocks className="h-4 w-4" />
-              <span>Modules & Configuration</span>
+              <span>Modules</span>
+            </TabsTrigger>
+            <TabsTrigger value="forms" className="flex items-center gap-2 h-12 px-6">
+              <FileText className="h-4 w-4" />
+              <span>Forms & Templates</span>
             </TabsTrigger>
             <TabsTrigger value="system" className="flex items-center gap-2 h-12 px-6">
               <Cog className="h-4 w-4" />

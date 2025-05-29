@@ -32,7 +32,10 @@ const AppRoutes = () => {
           <Route path="/admin/contacts" element={<Navigate to="/superadmin/contacts" replace />} />
           <Route path="/admin/revenue" element={<Navigate to="/superadmin/revenue" replace />} />
           <Route path="/admin/subscription-plans" element={<Navigate to="/superadmin/subscription-plans" replace />} />
-          <Route path="/admin/form-builder" element={<Navigate to="/superadmin/form-builder" replace />} />
+          <Route path="/admin/form-builder" element={<Navigate to="/superadmin/settings" replace />} />
+          
+          {/* Redirect form-builder to settings */}
+          <Route path="/superadmin/form-builder" element={<Navigate to="/superadmin/settings" replace />} />
           
           {/* Redirect tenant-admin/tenants to dashboard since tenants shouldn't manage other tenants */}
           <Route path="/tenant-admin/tenants" element={<Navigate to="/tenant-admin/dashboard" replace />} />

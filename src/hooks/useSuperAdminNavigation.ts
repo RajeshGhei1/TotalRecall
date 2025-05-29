@@ -9,8 +9,7 @@ import {
   Users,
   Users2,
   PieChart,
-  Package,
-  FileText
+  Package
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -44,12 +43,6 @@ const defaultNavItems: NavItem[] = [
     label: 'People', 
     icon: Users2, 
     href: '/superadmin/people'
-  },
-  { 
-    id: 'form-builder',
-    label: 'Form Builder', 
-    icon: FileText, 
-    href: '/superadmin/form-builder'
   },
   { 
     id: 'subscription-plans',
