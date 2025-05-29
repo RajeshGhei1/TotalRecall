@@ -87,10 +87,11 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1"
+          className="flex items-center justify-center w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
+          title="Drag to reorder"
         >
-          <Move size={14} className="text-muted-foreground" />
+          <Move size={16} />
         </div>
         
         <Link
@@ -110,10 +111,10 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
 
         <button
           onClick={handleEditClick}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded hover:bg-muted flex-shrink-0"
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded hover:bg-muted flex-shrink-0 text-muted-foreground hover:text-foreground"
           title="Rename navigation item"
         >
-          <Edit3 size={14} className="text-muted-foreground" />
+          <Edit3 size={14} />
         </button>
       </div>
 
