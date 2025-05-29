@@ -27,6 +27,7 @@ export const useNavigationPreferences = (
   const { toast } = useToast();
   const [navItems, setNavItems] = useState<NavItem[]>(defaultItems);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Generate storage key for localStorage fallback
   const storageKey = `${adminType}-nav-order`;
@@ -34,6 +35,8 @@ export const useNavigationPreferences = (
   // Load preferences from database or localStorage
   useEffect(() => {
     const loadPreferences = async () => {
+      setError(null);
+      
       if (bypassAuth) {
         // In bypass mode, use localStorage
         loadFromLocalStorage();
@@ -53,15 +56,15 @@ export const useNavigationPreferences = (
           .select('preferences')
           .eq('user_id', user.id)
           .eq('admin_type', adminType)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          // PGRST116 is "not found" error, which is expected for new users
+        if (error) {
           console.error('Error loading navigation preferences:', error);
+          setError('Failed to load navigation preferences');
           // Fallback to localStorage
           loadFromLocalStorage();
         } else if (data) {
-          // Successfully loaded from database - safely convert the Json type
+          // Successfully loaded from database
           const preferences = data.preferences as unknown as NavigationPreferences;
           applyPreferences(preferences);
         } else {
@@ -70,6 +73,7 @@ export const useNavigationPreferences = (
         }
       } catch (error) {
         console.error('Unexpected error loading navigation preferences:', error);
+        setError('Failed to load navigation preferences');
         loadFromLocalStorage();
       }
 
@@ -80,9 +84,9 @@ export const useNavigationPreferences = (
   }, [user, adminType, bypassAuth]);
 
   const loadFromLocalStorage = () => {
-    const savedData = localStorage.getItem(storageKey);
-    if (savedData) {
-      try {
+    try {
+      const savedData = localStorage.getItem(storageKey);
+      if (savedData) {
         const parsedData = JSON.parse(savedData);
         
         // Handle both old format (just IDs) and new format (full items with custom labels)
@@ -110,26 +114,31 @@ export const useNavigationPreferences = (
           
           setNavItems([...orderedItems, ...missingItems]);
         }
-      } catch (error) {
-        console.error('Failed to parse saved navigation data:', error);
+      } else {
         setNavItems(defaultItems);
       }
-    } else {
+    } catch (error) {
+      console.error('Failed to parse saved navigation data:', error);
       setNavItems(defaultItems);
     }
   };
 
   const applyPreferences = (preferences: NavigationPreferences) => {
-    const orderedItems = preferences.items.map((savedItem) => {
-      const defaultItem = defaultItems.find(item => item.id === savedItem.id);
-      return defaultItem ? { ...defaultItem, customLabel: savedItem.customLabel } : null;
-    }).filter(Boolean);
-    
-    const missingItems = defaultItems.filter(
-      item => !preferences.items.find((saved) => saved.id === item.id)
-    );
-    
-    setNavItems([...orderedItems, ...missingItems]);
+    try {
+      const orderedItems = preferences.items.map((savedItem) => {
+        const defaultItem = defaultItems.find(item => item.id === savedItem.id);
+        return defaultItem ? { ...defaultItem, customLabel: savedItem.customLabel } : null;
+      }).filter(Boolean);
+      
+      const missingItems = defaultItems.filter(
+        item => !preferences.items.find((saved) => saved.id === item.id)
+      );
+      
+      setNavItems([...orderedItems, ...missingItems]);
+    } catch (error) {
+      console.error('Failed to apply preferences:', error);
+      setNavItems(defaultItems);
+    }
   };
 
   const migrateFromLocalStorage = async () => {
@@ -166,12 +175,17 @@ export const useNavigationPreferences = (
     if (!user || bypassAuth) return;
 
     try {
+      // Use proper upsert with on_conflict to handle duplicate keys
       const { error } = await supabase
         .from('user_navigation_preferences')
         .upsert({
           user_id: user.id,
           admin_type: adminType,
-          preferences: preferences as any
+          preferences: preferences as any,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,admin_type',
+          ignoreDuplicates: false
         });
 
       if (error) {
@@ -192,13 +206,20 @@ export const useNavigationPreferences = (
     };
 
     // Always save to localStorage as backup
-    localStorage.setItem(storageKey, JSON.stringify(preferences.items));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(preferences.items));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
 
     // Save to database if user is authenticated
     if (user && !bypassAuth) {
       try {
         await saveToDatabase(preferences);
+        setError(null);
       } catch (error) {
+        console.error('Database save failed:', error);
+        setError('Failed to sync navigation preferences');
         toast({
           title: "Warning",
           description: "Failed to sync navigation preferences. Changes saved locally only.",
@@ -233,7 +254,11 @@ export const useNavigationPreferences = (
     setNavItems(defaultItems);
     
     // Clear localStorage
-    localStorage.removeItem(storageKey);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (error) {
+      console.error('Failed to clear localStorage:', error);
+    }
     
     // Clear database
     if (user && !bypassAuth) {
@@ -243,8 +268,10 @@ export const useNavigationPreferences = (
           .delete()
           .eq('user_id', user.id)
           .eq('admin_type', adminType);
+        setError(null);
       } catch (error) {
         console.error('Error clearing navigation preferences from database:', error);
+        setError('Failed to reset navigation preferences');
       }
     }
   };
@@ -255,6 +282,7 @@ export const useNavigationPreferences = (
     updateNavLabel,
     resetNavLabel,
     resetToDefault,
-    isLoading
+    isLoading,
+    error
   };
 };

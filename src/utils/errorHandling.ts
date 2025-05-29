@@ -42,7 +42,7 @@ export const handleError = (error: unknown, context?: string): ErrorDetails => {
 
     if (error.message.includes('duplicate key value')) {
       return {
-        message: 'This record already exists',
+        message: 'This operation conflicts with existing data. Please try again.',
         code: 'DUPLICATE_RECORD',
         context,
       };
@@ -52,6 +52,22 @@ export const handleError = (error: unknown, context?: string): ErrorDetails => {
       return {
         message: 'Network connection error. Please check your internet connection.',
         code: 'NETWORK_ERROR',
+        context,
+      };
+    }
+
+    if (error.message.includes('JWT')) {
+      return {
+        message: 'Authentication expired. Please refresh the page and try again.',
+        code: 'AUTH_ERROR',
+        context,
+      };
+    }
+
+    if (error.message.includes('timeout')) {
+      return {
+        message: 'Request timed out. Please try again.',
+        code: 'TIMEOUT_ERROR',
         context,
       };
     }
@@ -103,8 +119,9 @@ export const withRetry = async <T>(
         break;
       }
 
-      // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, delay * attempt));
+      // Exponential backoff with jitter
+      const backoffDelay = delay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+      await new Promise(resolve => setTimeout(resolve, backoffDelay));
     }
   }
 
@@ -122,4 +139,18 @@ export const handleFormError = (error: unknown, context: string = 'form submissi
   
   showErrorToast(error, context);
   return 'An error occurred while processing your request';
+};
+
+// Utility for safe async operations with error boundaries
+export const safeAsync = async <T>(
+  operation: () => Promise<T>,
+  fallback?: T,
+  context?: string
+): Promise<T | undefined> => {
+  try {
+    return await operation();
+  } catch (error) {
+    console.error(`Safe async operation failed in ${context}:`, error);
+    return fallback;
+  }
 };

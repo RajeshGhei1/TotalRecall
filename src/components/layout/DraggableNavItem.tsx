@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
@@ -27,6 +26,7 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
 }) => {
   const location = useLocation();
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   
   const {
     attributes,
@@ -62,16 +62,32 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
     setIsRenameDialogOpen(true);
   };
 
-  const handleRename = (newLabel: string) => {
+  const handleRename = async (newLabel: string) => {
     console.log('Handling rename:', id, newLabel);
-    onRename(newLabel);
-    setIsRenameDialogOpen(false);
+    setIsRenaming(true);
+    try {
+      await onRename(newLabel);
+      setIsRenameDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to rename navigation item:', error);
+      // Keep dialog open on error so user can try again
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
-  const handleResetLabel = () => {
+  const handleResetLabel = async () => {
     console.log('Handling reset label:', id);
-    onResetLabel();
-    setIsRenameDialogOpen(false);
+    setIsRenaming(true);
+    try {
+      await onResetLabel();
+      setIsRenameDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to reset navigation item label:', error);
+      // Keep dialog open on error so user can try again
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
   return (
@@ -111,7 +127,8 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
 
         <button
           onClick={handleEditClick}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-muted flex-shrink-0 text-muted-foreground hover:text-foreground"
+          disabled={isRenaming}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-muted flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
           title="Rename navigation item"
         >
           <Edit3 size={12} />
@@ -125,6 +142,7 @@ const DraggableNavItem: React.FC<DraggableNavItemProps> = ({
         customLabel={customLabel}
         onRename={handleRename}
         onReset={handleResetLabel}
+        isLoading={isRenaming}
       />
     </>
   );
