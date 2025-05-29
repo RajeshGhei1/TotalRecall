@@ -1,4 +1,3 @@
-
 import { SparklesIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 
@@ -11,11 +10,11 @@ const Footer = () => {
             <div className="flex items-center space-x-2 mb-4">
               <SparklesIcon className="h-5 w-5 text-jobmojo-primary" />
               <span className="text-lg font-heading font-bold">
-                Job<span className="text-jobmojo-primary">Mojo</span>
+                TOTAL <span className="text-jobmojo-primary">RECALL</span>.ai
               </span>
             </div>
             <p className="text-gray-500 text-sm mb-4">
-              AI-powered job search platform connecting talented professionals with their dream careers.
+              AI-powered knowledge management and cognitive assistance platform revolutionizing business operations.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-jobmojo-primary transition">
@@ -73,7 +72,7 @@ const Footer = () => {
         <Separator className="my-6" />
         
         <div className="text-sm text-gray-500 text-center">
-          &copy; {new Date().getFullYear()} JobMojo. All rights reserved.
+          &copy; {new Date().getFullYear()} TOTAL RECALL. All rights reserved.
         </div>
       </div>
     </footer>

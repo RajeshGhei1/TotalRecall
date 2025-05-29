@@ -11,7 +11,7 @@ const AdminSidebar = () => {
     return (
       <div className="w-64 bg-white shadow-md flex flex-col">
         <div className="p-6 border-b">
-          <h2 className="text-2xl font-bold text-jobmojo-primary">JobMojo.ai</h2>
+          <h2 className="text-2xl font-bold text-jobmojo-primary">TOTAL RECALL.ai</h2>
           <p className="text-xs text-gray-600">Loading...</p>
         </div>
         <div className="p-4 flex-1">
@@ -30,7 +30,7 @@ const AdminSidebar = () => {
   return (
     <div className="w-64 bg-white shadow-md flex flex-col h-full">
       <div className="p-6 border-b flex-shrink-0">
-        <h2 className="text-2xl font-bold text-jobmojo-primary text-left">JobMojo.ai</h2>
+        <h2 className="text-2xl font-bold text-jobmojo-primary text-left">TOTAL RECALL.ai</h2>
         <p className="text-xs text-gray-600 text-left">
           {isSuperAdmin ? "Super Admin Dashboard" : "Tenant Admin Dashboard"}
         </p>

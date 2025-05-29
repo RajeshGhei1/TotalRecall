@@ -27,7 +27,7 @@ const AdminHeader = () => {
           </SheetContent>
         </Sheet>
         <h1 className="text-lg font-semibold text-jobmojo-primary">
-          JobMojo.ai
+          TOTAL RECALL.ai
         </h1>
       </div>
       <div className="text-xs text-gray-500">

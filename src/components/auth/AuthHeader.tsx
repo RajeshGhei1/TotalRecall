@@ -12,7 +12,7 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({ bypassAuth }) => {
     <>
       <div className="text-center">
         <h1 className="text-4xl font-extrabold text-jobmojo-primary tracking-tight">
-          JobMojo.ai
+          TOTAL RECALL.ai
         </h1>
         <p className="mt-2 text-sm text-gray-600">
           Sign in to access the dashboard

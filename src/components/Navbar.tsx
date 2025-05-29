@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -19,7 +18,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="text-xl font-bold text-jobmojo-primary mr-6">
-            JobMojo.ai
+            TOTAL RECALL.ai
           </Link>
           <NavigationMenu>
             <NavigationMenuList>
