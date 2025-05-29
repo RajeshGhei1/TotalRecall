@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -11,15 +10,26 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { User } from 'lucide-react';
+import { User, Brain, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="text-xl font-bold text-jobmojo-primary mr-6">
-            TOTAL RECALL.ai
+          <Link to="/" className="flex items-center space-x-2 mr-6">
+            <div className="relative">
+              <div className="w-8 h-8 bg-gradient-to-br from-jobmojo-primary to-jobmojo-secondary rounded-lg flex items-center justify-center">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
+              <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-jobmojo-accent" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-jobmojo-primary to-jobmojo-secondary bg-clip-text text-transparent">
+                TOTAL RECALL
+              </span>
+              <span className="text-xs text-jobmojo-accent font-semibold -mt-1">.ai</span>
+            </div>
           </Link>
           <NavigationMenu>
             <NavigationMenuList>

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Brain, Sparkles } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import { useAdminContext } from "@/hooks/useAdminContext";
 
@@ -26,9 +26,20 @@ const AdminHeader = () => {
             <AdminSidebar />
           </SheetContent>
         </Sheet>
-        <h1 className="text-lg font-semibold text-jobmojo-primary">
-          TOTAL RECALL.ai
-        </h1>
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <div className="w-8 h-8 bg-gradient-to-br from-jobmojo-primary to-jobmojo-secondary rounded-lg flex items-center justify-center">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-jobmojo-accent" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold bg-gradient-to-r from-jobmojo-primary to-jobmojo-secondary bg-clip-text text-transparent">
+              TOTAL RECALL
+            </span>
+            <span className="text-xs text-jobmojo-accent font-semibold -mt-0.5">.ai</span>
+          </div>
+        </div>
       </div>
       <div className="text-xs text-gray-500">
         {isLoading ? "Loading..." : (isSuperAdmin ? "Super Admin" : "Tenant Admin")}
