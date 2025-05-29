@@ -12,6 +12,7 @@ import SuperAdminContacts from "@/pages/superadmin/Contacts";
 import SuperAdminRevenue from "@/pages/superadmin/Revenue";
 import SuperAdminSubscriptionPlans from "@/pages/superadmin/SubscriptionPlans";
 import SuperAdminGlobalSettings from "@/pages/superadmin/GlobalSettings";
+import FormBuilder from "@/pages/superadmin/FormBuilder";
 import AuthGuard from "@/components/AuthGuard";
 import CompanyDetailView from "@/components/superadmin/companies/CompanyDetailView";
 import { PersonDetailView } from "@/components/people";
@@ -70,6 +71,15 @@ const SuperAdminRoutes = () => [
       </AuthGuard>
     }
     key="superadmin-global-settings"
+  />,
+  <Route
+    path="/superadmin/forms"
+    element={
+      <AuthGuard>
+        <FormBuilder />
+      </AuthGuard>
+    }
+    key="superadmin-forms"
   />,
   <Route
     path="/superadmin/talents"
