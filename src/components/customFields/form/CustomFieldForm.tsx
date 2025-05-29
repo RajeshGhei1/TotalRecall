@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +18,7 @@ import BooleanFieldInput from './fields/BooleanFieldInput';
 import DateFieldInput from './fields/DateFieldInput';
 import FormApplicabilitySelector from './fields/FormApplicabilitySelector';
 import { CustomField } from '@/hooks/customFields/types';
+import { useAvailableFormOptions } from '@/hooks/forms/useAvailableFormOptions';
 
 // Schema for the form - updated to include multiselect
 export const customFieldSchema = z.object({
@@ -44,14 +46,8 @@ export const customFieldSchema = z.object({
 export type FieldFormValues = z.infer<typeof customFieldSchema>;
 
 /**
- * Define available form contexts for the application
- * These should match exactly with the contexts used throughout the application
- * 
- * IMPORTANT: When adding or modifying form contexts, make sure to update all places
- * where these contexts are used, especially in the following files:
- * - src/components/people/personForm/CreatePersonDialog.tsx (for talent_form and contact_form)
- * - src/components/superadmin/companies/CompanyForm.tsx (for company_creation)
- * - src/pages/tenant-admin/settings/CustomFieldsSettings.tsx
+ * Legacy hardcoded forms list - kept for backward compatibility
+ * These represent the core application form contexts that are always available
  */
 export const availableForms = [
   { id: 'talent_form', label: 'Talent Profile' },
@@ -79,6 +75,9 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
 }) => {
   console.log("Rendering CustomFieldForm with initialValues:", initialValues);
   
+  // Fetch dynamic form options
+  const { data: dynamicFormOptions = [], isLoading: isLoadingForms } = useAvailableFormOptions();
+  
   const defaultValues: Partial<FieldFormValues> = {
     name: '',
     label: '',
@@ -101,6 +100,16 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     onSubmit(values);
   };
 
+  // Combine legacy hardcoded forms with dynamic forms
+  const allAvailableForms = [
+    ...availableForms,
+    ...dynamicFormOptions.map(form => ({
+      id: form.id,
+      label: form.label,
+      description: form.description
+    }))
+  ];
+
   // Define a complete dummy field for the field components to use during form creation
   // This ensures all required properties of CustomField are present
   const dummyField: CustomField = {
@@ -114,7 +123,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     options: {},
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    sort_order: 0 // Adding the required sort_order property with a default value
+    sort_order: 0
   };
 
   return (
@@ -138,7 +147,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             {/* Form Applicability Selector */}
             <FormApplicabilitySelector 
               form={form} 
-              availableForms={availableForms}
+              availableForms={allAvailableForms}
+              isLoadingForms={isLoadingForms}
             />
           </div>
           

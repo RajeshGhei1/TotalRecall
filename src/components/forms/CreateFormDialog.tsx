@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -21,6 +20,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
 import TenantSelector from './TenantSelector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateFormDialogProps {
   isOpen: boolean;
@@ -45,6 +45,7 @@ const CreateFormDialog: React.FC<CreateFormDialogProps> = ({
   const { selectedTenantId } = useTenantContext();
   const { data: modules = [] } = useSystemModules();
   const createFormMutation = useCreateFormDefinition();
+  const queryClient = useQueryClient();
 
   const isFormValid = () => {
     if (!formData.name.trim()) return false;
@@ -80,6 +81,9 @@ const CreateFormDialog: React.FC<CreateFormDialogProps> = ({
         settings: {},
       });
 
+      // Invalidate form options cache to include the new form
+      await queryClient.invalidateQueries({ queryKey: ['available-form-options'] });
+
       onSuccess(newForm);
       onClose();
       setFormData({
@@ -108,7 +112,6 @@ const CreateFormDialog: React.FC<CreateFormDialogProps> = ({
     setFormData(prev => ({
       ...prev,
       visibility_scope: value,
-      // Reset related fields when scope changes
       target_tenant_id: value === 'tenant_specific' ? prev.target_tenant_id : null,
       required_modules: value === 'module_specific' ? prev.required_modules : [],
     }));
