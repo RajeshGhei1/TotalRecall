@@ -2,9 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building, Briefcase, User } from 'lucide-react';
-import RecruitmentPlansTabs from './RecruitmentPlansTabs';
-import EmployerPlansTabs from './EmployerPlansTabs';
-import TalentPlansTabs from './TalentPlansTabs';
+import DynamicPricingTabs from './DynamicPricingTabs';
 
 interface UserTypeTabsProps {
   currency: 'USD' | 'INR';
@@ -40,19 +38,17 @@ const UserTypeTabs: React.FC<UserTypeTabsProps> = ({ currency, formatPrice }) =>
         </TabsList>
       </div>
       
-      {/* Recruitment Companies Plans */}
+      {/* Dynamic Pricing Tabs */}
       <TabsContent value="recruitment">
-        <RecruitmentPlansTabs currency={currency} formatPrice={formatPrice} />
+        <DynamicPricingTabs planType="recruitment" currency={currency} formatPrice={formatPrice} />
       </TabsContent>
       
-      {/* Employers Plans */}
       <TabsContent value="employers">
-        <EmployerPlansTabs currency={currency} formatPrice={formatPrice} />
+        <DynamicPricingTabs planType="employer" currency={currency} formatPrice={formatPrice} />
       </TabsContent>
       
-      {/* Talent Plans */}
       <TabsContent value="talent">
-        <TalentPlansTabs currency={currency} formatPrice={formatPrice} />
+        <DynamicPricingTabs planType="talent" currency={currency} formatPrice={formatPrice} />
       </TabsContent>
     </Tabs>
   );
