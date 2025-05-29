@@ -255,10 +255,12 @@ export type Database = {
           description: string | null
           field_key: string
           field_type: string
+          form_id: string | null
           id: string
           name: string
           options: Json | null
           required: boolean | null
+          section_id: string | null
           sort_order: number | null
           tenant_id: string | null
           updated_at: string
@@ -269,10 +271,12 @@ export type Database = {
           description?: string | null
           field_key: string
           field_type: string
+          form_id?: string | null
           id?: string
           name: string
           options?: Json | null
           required?: boolean | null
+          section_id?: string | null
           sort_order?: number | null
           tenant_id?: string | null
           updated_at?: string
@@ -283,15 +287,31 @@ export type Database = {
           description?: string | null
           field_key?: string
           field_type?: string
+          form_id?: string | null
           id?: string
           name?: string
           options?: Json | null
           required?: boolean | null
+          section_id?: string | null
           sort_order?: number | null
           tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "custom_fields_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_fields_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "form_sections"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "custom_fields_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -362,6 +382,149 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "dropdown_option_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_definitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          settings: Json | null
+          slug: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          settings?: Json | null
+          slug: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          settings?: Json | null
+          slug?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_definitions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_definitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          form_id: string
+          id: string
+          is_collapsible: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          form_id: string
+          id?: string
+          is_collapsible?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          form_id?: string
+          id?: string
+          is_collapsible?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_sections_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_submissions: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          status: string
+          submission_data: Json
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          status?: string
+          submission_data?: Json
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          status?: string
+          submission_data?: Json
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_submissions_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
