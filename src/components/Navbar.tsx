@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -23,7 +24,7 @@ const Navbar = () => {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     <li className="row-span-3">
@@ -33,10 +34,10 @@ const Navbar = () => {
                           href="/"
                         >
                           <div className="mb-2 mt-4 text-lg font-medium">
-                            JobMojo.ai
+                            TOTAL RECALL.ai
                           </div>
                           <p className="text-sm leading-tight text-muted-foreground">
-                            AI-powered job search platform to help you find your dream job
+                            The only enterprise application you'll ever need across all departments
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -44,16 +45,16 @@ const Navbar = () => {
                     <li>
                       <NavigationMenuLink asChild>
                         <a
-                          href="#job-search"
+                          href="#workflow-designer"
                           className={cn(
                             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           )}
                         >
                           <div className="text-sm font-medium leading-none">
-                            Job Search
+                            Workflow Designer
                           </div>
                           <p className="text-sm leading-snug text-muted-foreground">
-                            Find your perfect job match with AI-powered recommendations
+                            No-code automation for complex business processes
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -61,16 +62,16 @@ const Navbar = () => {
                     <li>
                       <NavigationMenuLink asChild>
                         <a
-                          href="#companies"
+                          href="#ai-analytics"
                           className={cn(
                             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           )}
                         >
                           <div className="text-sm font-medium leading-none">
-                            Companies
+                            AI Analytics
                           </div>
                           <p className="text-sm leading-snug text-muted-foreground">
-                            Explore top companies hiring in your industry
+                            Predictive insights and real-time dashboards
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -78,16 +79,16 @@ const Navbar = () => {
                     <li>
                       <NavigationMenuLink asChild>
                         <a
-                          href="#how-it-works"
+                          href="#integration-hub"
                           className={cn(
                             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           )}
                         >
                           <div className="text-sm font-medium leading-none">
-                            How It Works
+                            Integration Hub
                           </div>
                           <p className="text-sm leading-snug text-muted-foreground">
-                            Learn how JobMojo.ai helps you find better jobs faster
+                            Connect all your business systems seamlessly
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -96,20 +97,20 @@ const Navbar = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
+                <NavigationMenuTrigger>Industries</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 w-[200px]">
+                  <ul className="grid gap-3 p-4 w-[300px] md:grid-cols-2">
                     <li>
                       <NavigationMenuLink asChild>
                         <a
-                          href="#blog"
+                          href="#finance"
                           className={cn(
                             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           )}
                         >
-                          <div className="text-sm font-medium leading-none">Blog</div>
+                          <div className="text-sm font-medium leading-none">Finance</div>
                           <p className="text-sm leading-snug text-muted-foreground">
-                            Career advice and job search tips
+                            Automate financial workflows and reporting
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -117,14 +118,96 @@ const Navbar = () => {
                     <li>
                       <NavigationMenuLink asChild>
                         <a
-                          href="#guides"
+                          href="#hr"
                           className={cn(
                             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           )}
                         >
-                          <div className="text-sm font-medium leading-none">Guides</div>
+                          <div className="text-sm font-medium leading-none">Human Resources</div>
                           <p className="text-sm leading-snug text-muted-foreground">
-                            Industry-specific career guides
+                            Streamline HR operations and talent management
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <a
+                          href="#operations"
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="text-sm font-medium leading-none">Operations</div>
+                          <p className="text-sm leading-snug text-muted-foreground">
+                            Optimize operational efficiency across departments
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <a
+                          href="#sales-marketing"
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="text-sm font-medium leading-none">Sales & Marketing</div>
+                          <p className="text-sm leading-snug text-muted-foreground">
+                            Accelerate growth with intelligent automation
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Platform</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid gap-3 p-4 w-[280px]">
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <a
+                          href="#knowledge-management"
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="text-sm font-medium leading-none">Knowledge Management</div>
+                          <p className="text-sm leading-snug text-muted-foreground">
+                            Intelligent knowledge orchestration
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <a
+                          href="#cognitive-assistance"
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="text-sm font-medium leading-none">Cognitive Assistance</div>
+                          <p className="text-sm leading-snug text-muted-foreground">
+                            AI-driven decision support
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <a
+                          href="#automation"
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="text-sm font-medium leading-none">Automation</div>
+                          <p className="text-sm leading-snug text-muted-foreground">
+                            Adaptive workflow automation
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -153,7 +236,7 @@ const Navbar = () => {
             </Button>
           </Link>
           <Link to="/signup">
-            <Button>Get Started</Button>
+            <Button>Start Enterprise Trial</Button>
           </Link>
         </div>
       </div>

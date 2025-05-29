@@ -19,8 +19,8 @@ const SignupForm = () => {
     // Simulate API call
     setTimeout(() => {
       toast({
-        title: "You're on the list!",
-        description: "You'll receive job alerts straight to your inbox.",
+        title: "Enterprise trial initiated!",
+        description: "Our team will contact you within 24 hours to set up your personalized demo.",
       });
       setEmail('');
       setIsSubmitting(false);
@@ -32,16 +32,17 @@ const SignupForm = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-heading font-semibold mb-4">
-            Never Miss an Opportunity
+            Transform Your Enterprise Today
           </h2>
           <p className="text-gray-600 mb-8">
-            Sign up for personalized job alerts and get the latest opportunities delivered straight to your inbox
+            Join the AI revolution in enterprise operations. Start your free trial and experience 
+            unprecedented productivity gains with our cognitive assistance platform
           </p>
           
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <Input
               type="email"
-              placeholder="Enter your email address"
+              placeholder="Enter your business email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -52,22 +53,22 @@ const SignupForm = () => {
               disabled={isSubmitting}
               className="whitespace-nowrap"
             >
-              {isSubmitting ? "Signing up..." : "Get Job Alerts"}
+              {isSubmitting ? "Processing..." : "Start Enterprise Trial"}
             </Button>
           </form>
           
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 text-sm text-gray-600">
             <div className="flex items-center justify-center">
               <CheckCircle className="h-4 w-4 mr-2 text-jobmojo-primary" />
-              <span>Personalized job matches</span>
+              <span>AI-powered workflow automation</span>
             </div>
             <div className="flex items-center justify-center">
               <CheckCircle className="h-4 w-4 mr-2 text-jobmojo-primary" />
-              <span>Weekly career insights</span>
+              <span>Cross-department integration</span>
             </div>
             <div className="flex items-center justify-center">
               <CheckCircle className="h-4 w-4 mr-2 text-jobmojo-primary" />
-              <span>Unsubscribe anytime</span>
+              <span>Dedicated success manager</span>
             </div>
           </div>
         </div>

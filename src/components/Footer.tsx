@@ -1,3 +1,4 @@
+
 import { SparklesIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 
@@ -36,24 +37,24 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="font-heading font-medium text-base mb-4">For Job Seekers</h3>
+            <h3 className="font-heading font-medium text-base mb-4">Enterprise Solutions</h3>
             <div className="space-y-2.5 text-sm">
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Browse Jobs</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Companies</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Salary Calculator</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Career Resources</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Resume Builder</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Workflow Designer</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">AI Analytics</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Integration Hub</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Knowledge Management</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Cognitive Assistance</a></div>
             </div>
           </div>
           
           <div>
-            <h3 className="font-heading font-medium text-base mb-4">For Employers</h3>
+            <h3 className="font-heading font-medium text-base mb-4">Industries</h3>
             <div className="space-y-2.5 text-sm">
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Post a Job</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Pricing</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Recruitment Solutions</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">AI Resume Matching</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Success Stories</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Financial Services</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Healthcare</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Manufacturing</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Technology</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Professional Services</a></div>
             </div>
           </div>
           
@@ -62,7 +63,7 @@ const Footer = () => {
             <div className="space-y-2.5 text-sm">
               <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">About Us</a></div>
               <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Contact</a></div>
-              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Blog</a></div>
+              <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Success Stories</a></div>
               <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Privacy Policy</a></div>
               <div><a href="#" className="text-gray-600 hover:text-jobmojo-primary">Terms of Service</a></div>
             </div>
