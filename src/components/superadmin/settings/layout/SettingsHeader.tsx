@@ -1,5 +1,6 @@
 
 import React from 'react';
+import GlobalTenantSelector from '../shared/GlobalTenantSelector';
 
 const SettingsHeader: React.FC = () => {
   return (
@@ -10,6 +11,10 @@ const SettingsHeader: React.FC = () => {
           <p className="text-lg text-gray-600 mt-2">
             Manage platform modules, system configurations, and integrations
           </p>
+        </div>
+        
+        <div className="lg:w-80">
+          <GlobalTenantSelector />
         </div>
       </div>
     </div>
