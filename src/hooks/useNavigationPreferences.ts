@@ -171,7 +171,7 @@ export const useNavigationPreferences = (
         .upsert({
           user_id: user.id,
           admin_type: adminType,
-          preferences
+          preferences: preferences as any
         });
 
       if (error) {
