@@ -8,8 +8,11 @@ type DbFormSubmission = Database['public']['Tables']['form_submissions']['Row'];
 type DbCustomField = Database['public']['Tables']['custom_fields']['Row'];
 
 // Extend with our custom interfaces for better type safety
-export interface FormDefinition extends Omit<DbFormDefinition, 'settings'> {
+export interface FormDefinition extends Omit<DbFormDefinition, 'settings' | 'required_modules'> {
   settings: Record<string, any>;
+  required_modules: string[];
+  visibility_scope: 'global' | 'tenant_specific' | 'module_specific';
+  access_level: 'public' | 'authenticated' | 'role_based';
 }
 
 export interface FormSection extends DbFormSection {}
@@ -21,6 +24,15 @@ export interface FormSubmission extends Omit<DbFormSubmission, 'submission_data'
 export interface FormField extends Omit<DbCustomField, 'options' | 'applicable_forms'> {
   options?: any;
   applicable_forms?: string[];
+}
+
+// New interface for form-module assignments
+export interface FormModuleAssignment {
+  id: string;
+  form_id: string;
+  module_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface FormBuilderState {
@@ -56,8 +68,17 @@ export interface FieldDefinition {
   defaultOptions?: any;
 }
 
-// Insert types for database operations
-export type FormDefinitionInsert = Database['public']['Tables']['form_definitions']['Insert'];
+// Enhanced insert types for database operations
+export type FormDefinitionInsert = Database['public']['Tables']['form_definitions']['Insert'] & {
+  visibility_scope?: 'global' | 'tenant_specific' | 'module_specific';
+  required_modules?: string[];
+  access_level?: 'public' | 'authenticated' | 'role_based';
+};
+
 export type FormSectionInsert = Database['public']['Tables']['form_sections']['Insert'];
 export type FormFieldInsert = Database['public']['Tables']['custom_fields']['Insert'];
 export type FormSubmissionInsert = Database['public']['Tables']['form_submissions']['Insert'];
+export type FormModuleAssignmentInsert = {
+  form_id: string;
+  module_id: string;
+};

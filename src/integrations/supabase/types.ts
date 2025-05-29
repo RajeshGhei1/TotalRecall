@@ -388,40 +388,49 @@ export type Database = {
       }
       form_definitions: {
         Row: {
+          access_level: string | null
           created_at: string
           created_by: string | null
           description: string | null
           id: string
           is_active: boolean
           name: string
+          required_modules: Json | null
           settings: Json | null
           slug: string
           tenant_id: string | null
           updated_at: string
+          visibility_scope: string | null
         }
         Insert: {
+          access_level?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           name: string
+          required_modules?: Json | null
           settings?: Json | null
           slug: string
           tenant_id?: string | null
           updated_at?: string
+          visibility_scope?: string | null
         }
         Update: {
+          access_level?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          required_modules?: Json | null
           settings?: Json | null
           slug?: string
           tenant_id?: string | null
           updated_at?: string
+          visibility_scope?: string | null
         }
         Relationships: [
           {
@@ -436,6 +445,45 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_module_assignments: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          module_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          module_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          module_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_module_assignments_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_module_assignments_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "system_modules"
             referencedColumns: ["id"]
           },
         ]
