@@ -26,7 +26,12 @@ export const useFormWorkflows = (formId?: string) => {
         throw error;
       }
 
-      return data as FormWorkflow[];
+      // Transform the data to match our types
+      return (data || []).map(workflow => ({
+        ...workflow,
+        trigger_conditions: workflow.trigger_conditions as Record<string, any>,
+        workflow_steps: Array.isArray(workflow.workflow_steps) ? workflow.workflow_steps as any[] : []
+      })) as FormWorkflow[];
     },
   });
 };
@@ -39,7 +44,11 @@ export const useCreateFormWorkflow = () => {
     mutationFn: async (workflowData: FormWorkflowInsert) => {
       const { data, error } = await supabase
         .from('form_workflows')
-        .insert(workflowData)
+        .insert({
+          ...workflowData,
+          trigger_conditions: workflowData.trigger_conditions as any,
+          workflow_steps: workflowData.workflow_steps as any
+        })
         .select()
         .single();
 
@@ -48,7 +57,11 @@ export const useCreateFormWorkflow = () => {
         throw error;
       }
 
-      return data as FormWorkflow;
+      return {
+        ...data,
+        trigger_conditions: data.trigger_conditions as Record<string, any>,
+        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as any[] : []
+      } as FormWorkflow;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-workflows'] });
@@ -68,7 +81,11 @@ export const useUpdateFormWorkflow = () => {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormWorkflowInsert> }) => {
       const { data, error } = await supabase
         .from('form_workflows')
-        .update(updates)
+        .update({
+          ...updates,
+          trigger_conditions: updates.trigger_conditions as any,
+          workflow_steps: updates.workflow_steps as any
+        })
         .eq('id', id)
         .select()
         .single();
@@ -78,7 +95,11 @@ export const useUpdateFormWorkflow = () => {
         throw error;
       }
 
-      return data as FormWorkflow;
+      return {
+        ...data,
+        trigger_conditions: data.trigger_conditions as Record<string, any>,
+        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as any[] : []
+      } as FormWorkflow;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-workflows'] });
@@ -112,7 +133,11 @@ export const useFormNotifications = (workflowId?: string) => {
         throw error;
       }
 
-      return data as FormNotification[];
+      return (data || []).map(notification => ({
+        ...notification,
+        template_data: notification.template_data as Record<string, any>,
+        recipients: Array.isArray(notification.recipients) ? notification.recipients as string[] : []
+      })) as FormNotification[];
     },
   });
 };
@@ -125,7 +150,11 @@ export const useCreateFormNotification = () => {
     mutationFn: async (notificationData: FormNotificationInsert) => {
       const { data, error } = await supabase
         .from('form_notifications')
-        .insert(notificationData)
+        .insert({
+          ...notificationData,
+          template_data: notificationData.template_data as any,
+          recipients: notificationData.recipients as any
+        })
         .select()
         .single();
 
@@ -134,7 +163,11 @@ export const useCreateFormNotification = () => {
         throw error;
       }
 
-      return data as FormNotification;
+      return {
+        ...data,
+        template_data: data.template_data as Record<string, any>,
+        recipients: Array.isArray(data.recipients) ? data.recipients as string[] : []
+      } as FormNotification;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form-notifications'] });
@@ -171,7 +204,10 @@ export const useWorkflowExecutionLogs = (workflowId?: string, responseId?: strin
         throw error;
       }
 
-      return data as WorkflowExecutionLog[];
+      return (data || []).map(log => ({
+        ...log,
+        step_results: Array.isArray(log.step_results) ? log.step_results as Record<string, any>[] : []
+      })) as WorkflowExecutionLog[];
     },
   });
 };
