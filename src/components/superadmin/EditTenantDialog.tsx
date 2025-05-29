@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { ExtendedTenantForm, TenantFormValues } from '@/components/superadmin/tenant-form';
 import { Tenant } from '@/hooks/useTenants';
+import { stringToDate } from '@/utils/dateUtils';
 
 interface EditTenantDialogProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ const EditTenantDialog = ({
               name: tenant.name || '',
               domain: tenant.domain || '',
               companyProfile: tenant.description || '',
-              registrationDate: tenant.registration_date ? new Date(tenant.registration_date) : undefined,
+              registrationDate: tenant.registration_date ? stringToDate(tenant.registration_date) : undefined,
               // Initialize other fields with empty values
               cin: '',
               companyStatus: '',
