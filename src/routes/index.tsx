@@ -33,6 +33,7 @@ const AppRoutes = () => {
           <Route path="/admin/revenue" element={<Navigate to="/superadmin/revenue" replace />} />
           <Route path="/admin/subscription-plans" element={<Navigate to="/superadmin/subscription-plans" replace />} />
           <Route path="/admin/form-builder" element={<Navigate to="/superadmin/settings" replace />} />
+          <Route path="/admin/global-settings" element={<Navigate to="/superadmin/global-settings" replace />} />
           
           {/* Redirect form-builder to settings */}
           <Route path="/superadmin/form-builder" element={<Navigate to="/superadmin/settings" replace />} />

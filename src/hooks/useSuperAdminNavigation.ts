@@ -9,7 +9,8 @@ import {
   Users,
   Users2,
   PieChart,
-  Package
+  Package,
+  Cog
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -61,6 +62,12 @@ const defaultNavItems: NavItem[] = [
     label: 'Analytics', 
     icon: PieChart, 
     href: '/superadmin/analytics'
+  },
+  { 
+    id: 'global-settings',
+    label: 'Global Settings', 
+    icon: Cog, 
+    href: '/superadmin/global-settings'
   },
   { 
     id: 'settings',

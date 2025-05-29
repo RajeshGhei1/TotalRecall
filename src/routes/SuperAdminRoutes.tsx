@@ -11,6 +11,7 @@ import SuperAdminPeople from "@/pages/superadmin/People";
 import SuperAdminContacts from "@/pages/superadmin/Contacts";
 import SuperAdminRevenue from "@/pages/superadmin/Revenue";
 import SuperAdminSubscriptionPlans from "@/pages/superadmin/SubscriptionPlans";
+import SuperAdminGlobalSettings from "@/pages/superadmin/GlobalSettings";
 import AuthGuard from "@/components/AuthGuard";
 import CompanyDetailView from "@/components/superadmin/companies/CompanyDetailView";
 import { PersonDetailView } from "@/components/people";
@@ -60,6 +61,15 @@ const SuperAdminRoutes = () => [
       </AuthGuard>
     }
     key="superadmin-settings"
+  />,
+  <Route
+    path="/superadmin/global-settings"
+    element={
+      <AuthGuard>
+        <SuperAdminGlobalSettings />
+      </AuthGuard>
+    }
+    key="superadmin-global-settings"
   />,
   <Route
     path="/superadmin/talents"
