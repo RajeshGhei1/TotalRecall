@@ -26,6 +26,58 @@ export interface FormField extends Omit<DbCustomField, 'options' | 'applicable_f
   applicable_forms?: string[];
 }
 
+// New deployment and integration types
+export interface FormDeploymentPoint {
+  id: string;
+  name: string;
+  description?: string;
+  location: 'dashboard_widget' | 'modal_dialog' | 'dedicated_page' | 'navigation_item' | 'inline_embed' | 'sidebar_panel';
+  target_path?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormPlacement {
+  id: string;
+  form_id: string;
+  deployment_point_id: string;
+  tenant_id?: string;
+  module_id?: string;
+  status: 'active' | 'inactive' | 'scheduled' | 'expired';
+  priority: number;
+  configuration: Record<string, any>;
+  starts_at?: string;
+  ends_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormTrigger {
+  id: string;
+  placement_id: string;
+  trigger_type: 'user_action' | 'page_load' | 'scheduled' | 'conditional' | 'manual';
+  trigger_conditions: Record<string, any>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormResponse {
+  id: string;
+  form_id: string;
+  placement_id?: string;
+  tenant_id?: string;
+  submitted_by?: string;
+  response_data: Record<string, any>;
+  status: string;
+  submitted_at: string;
+  processed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // New interface for form-module assignments
 export interface FormModuleAssignment {
   id: string;
@@ -82,3 +134,9 @@ export type FormModuleAssignmentInsert = {
   form_id: string;
   module_id: string;
 };
+
+// New insert types for deployment system
+export type FormDeploymentPointInsert = Omit<FormDeploymentPoint, 'id' | 'created_at' | 'updated_at'>;
+export type FormPlacementInsert = Omit<FormPlacement, 'id' | 'created_at' | 'updated_at'>;
+export type FormTriggerInsert = Omit<FormTrigger, 'id' | 'created_at' | 'updated_at'>;
+export type FormResponseInsert = Omit<FormResponse, 'id' | 'created_at' | 'updated_at'>;

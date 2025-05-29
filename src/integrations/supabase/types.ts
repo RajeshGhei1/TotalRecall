@@ -449,6 +449,39 @@ export type Database = {
           },
         ]
       }
+      form_deployment_points: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          location: Database["public"]["Enums"]["deployment_location"]
+          name: string
+          target_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          location: Database["public"]["Enums"]["deployment_location"]
+          name: string
+          target_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          location?: Database["public"]["Enums"]["deployment_location"]
+          name?: string
+          target_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       form_module_assignments: {
         Row: {
           created_at: string
@@ -484,6 +517,147 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "system_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_placements: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          created_by: string | null
+          deployment_point_id: string
+          ends_at: string | null
+          form_id: string
+          id: string
+          module_id: string | null
+          priority: number
+          starts_at: string | null
+          status: Database["public"]["Enums"]["placement_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          created_by?: string | null
+          deployment_point_id: string
+          ends_at?: string | null
+          form_id: string
+          id?: string
+          module_id?: string | null
+          priority?: number
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["placement_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          created_by?: string | null
+          deployment_point_id?: string
+          ends_at?: string | null
+          form_id?: string
+          id?: string
+          module_id?: string | null
+          priority?: number
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["placement_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_placements_deployment_point_id_fkey"
+            columns: ["deployment_point_id"]
+            isOneToOne: false
+            referencedRelation: "form_deployment_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_placements_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_placements_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "system_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_placements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_responses: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          placement_id: string | null
+          processed_at: string | null
+          response_data: Json
+          status: string
+          submitted_at: string
+          submitted_by: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          placement_id?: string | null
+          processed_at?: string | null
+          response_data?: Json
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          placement_id?: string | null
+          processed_at?: string | null
+          response_data?: Json
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_responses_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "form_placements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -573,6 +747,44 @@ export type Database = {
             columns: ["submitted_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_triggers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          placement_id: string
+          trigger_conditions: Json
+          trigger_type: Database["public"]["Enums"]["trigger_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          placement_id: string
+          trigger_conditions?: Json
+          trigger_type: Database["public"]["Enums"]["trigger_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          placement_id?: string
+          trigger_conditions?: Json
+          trigger_type?: Database["public"]["Enums"]["trigger_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_triggers_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "form_placements"
             referencedColumns: ["id"]
           },
         ]
@@ -1288,6 +1500,20 @@ export type Database = {
       }
     }
     Enums: {
+      deployment_location:
+        | "dashboard_widget"
+        | "modal_dialog"
+        | "dedicated_page"
+        | "navigation_item"
+        | "inline_embed"
+        | "sidebar_panel"
+      placement_status: "active" | "inactive" | "scheduled" | "expired"
+      trigger_type:
+        | "user_action"
+        | "page_load"
+        | "scheduled"
+        | "conditional"
+        | "manual"
       user_role: "user" | "tenant_admin" | "super_admin"
     }
     CompositeTypes: {
@@ -1404,6 +1630,22 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      deployment_location: [
+        "dashboard_widget",
+        "modal_dialog",
+        "dedicated_page",
+        "navigation_item",
+        "inline_embed",
+        "sidebar_panel",
+      ],
+      placement_status: ["active", "inactive", "scheduled", "expired"],
+      trigger_type: [
+        "user_action",
+        "page_load",
+        "scheduled",
+        "conditional",
+        "manual",
+      ],
       user_role: ["user", "tenant_admin", "super_admin"],
     },
   },
