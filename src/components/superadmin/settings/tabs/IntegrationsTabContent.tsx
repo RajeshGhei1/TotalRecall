@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, MessageCircle, Send, Cog } from 'lucide-react';
+import { Globe, MessageCircle, Send, Cog, Bot } from 'lucide-react';
 import SocialMediaSettings from '../SocialMediaSettings';
 import CommunicationSettings from '../CommunicationSettings';
 import OutreachSettings from '../OutreachSettings';
 import ApiSettings from '../ApiSettings';
+import AIModelIntegration from '@/components/superadmin/AIModelIntegration';
 import GlobalTenantSelector from '../shared/GlobalTenantSelector';
 
 const IntegrationsTabContent: React.FC = () => {
@@ -15,6 +16,22 @@ const IntegrationsTabContent: React.FC = () => {
       <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
         <GlobalTenantSelector />
       </div>
+
+      {/* AI Model Integration - Full width */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="h-5 w-5" />
+            AI Model Integration
+          </CardTitle>
+          <CardDescription>
+            Configure AI models and assign them to tenants for platform features
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AIModelIntegration />
+        </CardContent>
+      </Card>
       
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
