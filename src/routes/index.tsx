@@ -21,11 +21,18 @@ const AppRoutes = () => {
           {/* Tenant Admin Routes */}
           {TenantAdminRoutes()}
           
-          {/* Redirect old admin routes to tenant-admin for backward compatibility */}
-          <Route path="/admin/dashboard" element={<Navigate to="/tenant-admin/dashboard" replace />} />
-          <Route path="/admin/tenants" element={<Navigate to="/tenant-admin/dashboard" replace />} />
-          <Route path="/admin/users" element={<Navigate to="/tenant-admin/users" replace />} />
-          <Route path="/admin/settings" element={<Navigate to="/tenant-admin/settings" replace />} />
+          {/* Redirect old admin routes to superadmin for backward compatibility */}
+          <Route path="/admin/dashboard" element={<Navigate to="/superadmin/dashboard" replace />} />
+          <Route path="/admin/tenants" element={<Navigate to="/superadmin/tenants" replace />} />
+          <Route path="/admin/users" element={<Navigate to="/superadmin/users" replace />} />
+          <Route path="/admin/settings" element={<Navigate to="/superadmin/settings" replace />} />
+          <Route path="/admin/analytics" element={<Navigate to="/superadmin/analytics" replace />} />
+          <Route path="/admin/companies" element={<Navigate to="/superadmin/companies" replace />} />
+          <Route path="/admin/people" element={<Navigate to="/superadmin/people" replace />} />
+          <Route path="/admin/contacts" element={<Navigate to="/superadmin/contacts" replace />} />
+          <Route path="/admin/revenue" element={<Navigate to="/superadmin/revenue" replace />} />
+          <Route path="/admin/subscription-plans" element={<Navigate to="/superadmin/subscription-plans" replace />} />
+          <Route path="/admin/form-builder" element={<Navigate to="/superadmin/form-builder" replace />} />
           
           {/* Redirect tenant-admin/tenants to dashboard since it's no longer needed */}
           <Route path="/tenant-admin/tenants" element={<Navigate to="/tenant-admin/dashboard" replace />} />
