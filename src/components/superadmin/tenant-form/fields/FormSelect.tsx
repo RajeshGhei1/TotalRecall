@@ -68,7 +68,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 <SelectValue placeholder={placeholder || "Select an option"} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent className="z-[10000]">
+            <SelectContent className="z-[10001] bg-white border shadow-lg">
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value || "default-option"}>
                   {option.label}

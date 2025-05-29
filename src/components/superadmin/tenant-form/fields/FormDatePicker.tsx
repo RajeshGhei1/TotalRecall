@@ -103,7 +103,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-50" align="start">
+              <PopoverContent className="w-auto p-0 z-[10001] bg-white border shadow-lg" align="start">
                 <Calendar
                   mode="single"
                   selected={getCurrentDate()}
