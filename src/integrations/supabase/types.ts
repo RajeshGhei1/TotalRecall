@@ -904,6 +904,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_navigation_preferences: {
+        Row: {
+          admin_type: string
+          created_at: string
+          id: string
+          preferences: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_type: string
+          created_at?: string
+          id?: string
+          preferences?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_type?: string
+          created_at?: string
+          id?: string
+          preferences?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           assigned_by: string | null
