@@ -43,7 +43,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {formatDisplayDate(startDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-50" align="start">
+          <PopoverContent className="w-auto p-0 z-[10001] bg-white border shadow-lg" align="start">
             <Calendar
               mode="single"
               selected={startDate}
@@ -71,7 +71,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
               {formatDisplayDate(endDate)}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-50" align="start">
+          <PopoverContent className="w-auto p-0 z-[10001] bg-white border shadow-lg" align="start">
             <Calendar
               mode="single"
               selected={endDate}
