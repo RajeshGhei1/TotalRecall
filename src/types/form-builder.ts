@@ -78,6 +78,65 @@ export interface FormResponse {
   updated_at: string;
 }
 
+// NEW: Workflow and Analytics types
+export interface FormWorkflow {
+  id: string;
+  form_id: string;
+  name: string;
+  description?: string;
+  trigger_conditions: Record<string, any>;
+  workflow_steps: WorkflowStep[];
+  is_active: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkflowStep {
+  type: 'notification' | 'data_processing' | 'assignment' | 'webhook' | 'condition';
+  action: string;
+  config: Record<string, any>;
+  order?: number;
+}
+
+export interface FormNotification {
+  id: string;
+  workflow_id: string;
+  notification_type: 'email' | 'sms' | 'in_app' | 'webhook';
+  template_data: Record<string, any>;
+  recipients: string[];
+  trigger_event: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormResponseAnalytics {
+  id: string;
+  form_id: string;
+  placement_id?: string;
+  response_id?: string;
+  event_type: 'form_view' | 'form_start' | 'form_submit' | 'form_abandon';
+  event_data: Record<string, any>;
+  user_agent?: string;
+  ip_address?: string;
+  session_id?: string;
+  tenant_id?: string;
+  created_at: string;
+}
+
+export interface WorkflowExecutionLog {
+  id: string;
+  workflow_id: string;
+  response_id: string;
+  execution_status: 'pending' | 'running' | 'completed' | 'failed';
+  step_results: Record<string, any>[];
+  error_message?: string;
+  started_at: string;
+  completed_at?: string;
+  created_at: string;
+}
+
 // New interface for form-module assignments
 export interface FormModuleAssignment {
   id: string;
@@ -140,3 +199,9 @@ export type FormDeploymentPointInsert = Omit<FormDeploymentPoint, 'id' | 'create
 export type FormPlacementInsert = Omit<FormPlacement, 'id' | 'created_at' | 'updated_at'>;
 export type FormTriggerInsert = Omit<FormTrigger, 'id' | 'created_at' | 'updated_at'>;
 export type FormResponseInsert = Omit<FormResponse, 'id' | 'created_at' | 'updated_at'>;
+
+// NEW: Insert types for workflow system
+export type FormWorkflowInsert = Omit<FormWorkflow, 'id' | 'created_at' | 'updated_at'>;
+export type FormNotificationInsert = Omit<FormNotification, 'id' | 'created_at' | 'updated_at'>;
+export type FormResponseAnalyticsInsert = Omit<FormResponseAnalytics, 'id' | 'created_at'>;
+export type WorkflowExecutionLogInsert = Omit<WorkflowExecutionLog, 'id' | 'created_at'>;

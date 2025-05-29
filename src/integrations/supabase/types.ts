@@ -521,6 +521,50 @@ export type Database = {
           },
         ]
       }
+      form_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          notification_type: string
+          recipients: Json
+          template_data: Json
+          trigger_event: string
+          updated_at: string
+          workflow_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notification_type: string
+          recipients?: Json
+          template_data?: Json
+          trigger_event: string
+          updated_at?: string
+          workflow_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notification_type?: string
+          recipients?: Json
+          template_data?: Json
+          trigger_event?: string
+          updated_at?: string
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_notifications_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "form_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_placements: {
         Row: {
           configuration: Json | null
@@ -591,6 +635,77 @@ export type Database = {
           },
           {
             foreignKeyName: "form_placements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_response_analytics: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          form_id: string
+          id: string
+          ip_address: unknown | null
+          placement_id: string | null
+          response_id: string | null
+          session_id: string | null
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          form_id: string
+          id?: string
+          ip_address?: unknown | null
+          placement_id?: string | null
+          response_id?: string | null
+          session_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          form_id?: string
+          id?: string
+          ip_address?: unknown | null
+          placement_id?: string | null
+          response_id?: string | null
+          session_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_response_analytics_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_response_analytics_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "form_placements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_response_analytics_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_response_analytics_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -785,6 +900,60 @@ export type Database = {
             columns: ["placement_id"]
             isOneToOne: false
             referencedRelation: "form_placements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_workflows: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          form_id: string
+          id: string
+          is_active: boolean
+          name: string
+          trigger_conditions: Json
+          updated_at: string
+          workflow_steps: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          form_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_conditions?: Json
+          updated_at?: string
+          workflow_steps?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          form_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_conditions?: Json
+          updated_at?: string
+          workflow_steps?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_workflows_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_workflows_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
             referencedColumns: ["id"]
           },
         ]
@@ -1459,6 +1628,57 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_execution_logs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          execution_status: string
+          id: string
+          response_id: string
+          started_at: string
+          step_results: Json
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          execution_status?: string
+          id?: string
+          response_id: string
+          started_at?: string
+          step_results?: Json
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          execution_status?: string
+          id?: string
+          response_id?: string
+          started_at?: string
+          step_results?: Json
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_execution_logs_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_execution_logs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "form_workflows"
             referencedColumns: ["id"]
           },
         ]

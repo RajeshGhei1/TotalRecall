@@ -146,6 +146,37 @@ export class FormIntegrationService {
     return true;
   }
 
+  // Track form analytics events
+  async trackFormEvent(
+    formId: string,
+    eventType: 'form_view' | 'form_start' | 'form_submit' | 'form_abandon',
+    placementId?: string,
+    responseId?: string,
+    eventData?: Record<string, any>,
+    tenantId?: string
+  ) {
+    try {
+      const { error } = await supabase
+        .from('form_response_analytics')
+        .insert({
+          form_id: formId,
+          placement_id: placementId,
+          response_id: responseId,
+          event_type: eventType,
+          event_data: eventData || {},
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+          session_id: this.getSessionId(),
+          tenant_id: tenantId
+        });
+
+      if (error) {
+        console.error('Error tracking form event:', error);
+      }
+    } catch (error) {
+      console.error('Failed to track form event:', error);
+    }
+  }
+
   async submitFormResponse(
     formId: string,
     placementId: string,
@@ -172,10 +203,132 @@ export class FormIntegrationService {
       throw error;
     }
 
+    // Track form submission event
+    await this.trackFormEvent(formId, 'form_submit', placementId, data.id, responseData, tenantId);
+
+    // Trigger workflows
+    await this.triggerWorkflows(formId, data.id, responseData);
+
     // Clear cache to ensure fresh data on next fetch
     this.clearCache();
 
     return data;
+  }
+
+  // Execute workflows for form responses
+  async triggerWorkflows(formId: string, responseId: string, responseData: Record<string, any>) {
+    try {
+      // Fetch active workflows for this form
+      const { data: workflows, error } = await supabase
+        .from('form_workflows')
+        .select('*')
+        .eq('form_id', formId)
+        .eq('is_active', true);
+
+      if (error || !workflows) {
+        console.error('Error fetching workflows:', error);
+        return;
+      }
+
+      // Execute each workflow
+      for (const workflow of workflows) {
+        await this.executeWorkflow(workflow, responseId, responseData);
+      }
+    } catch (error) {
+      console.error('Error triggering workflows:', error);
+    }
+  }
+
+  private async executeWorkflow(workflow: any, responseId: string, responseData: Record<string, any>) {
+    try {
+      // Create execution log
+      const { data: executionLog, error: logError } = await supabase
+        .from('workflow_execution_logs')
+        .insert({
+          workflow_id: workflow.id,
+          response_id: responseId,
+          execution_status: 'running',
+          step_results: []
+        })
+        .select()
+        .single();
+
+      if (logError) {
+        console.error('Error creating execution log:', logError);
+        return;
+      }
+
+      const stepResults: Record<string, any>[] = [];
+
+      // Execute workflow steps
+      for (const step of workflow.workflow_steps) {
+        try {
+          const result = await this.executeWorkflowStep(step, responseData);
+          stepResults.push({ step, result, status: 'completed' });
+        } catch (stepError) {
+          console.error('Error executing workflow step:', stepError);
+          stepResults.push({ step, error: stepError, status: 'failed' });
+        }
+      }
+
+      // Update execution log
+      await supabase
+        .from('workflow_execution_logs')
+        .update({
+          execution_status: 'completed',
+          step_results: stepResults,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', executionLog.id);
+
+    } catch (error) {
+      console.error('Error executing workflow:', error);
+    }
+  }
+
+  private async executeWorkflowStep(step: any, responseData: Record<string, any>) {
+    switch (step.type) {
+      case 'notification':
+        return await this.executeNotificationStep(step, responseData);
+      case 'data_processing':
+        return await this.executeDataProcessingStep(step, responseData);
+      case 'webhook':
+        return await this.executeWebhookStep(step, responseData);
+      default:
+        console.log('Unsupported workflow step type:', step.type);
+        return { message: 'Step type not implemented' };
+    }
+  }
+
+  private async executeNotificationStep(step: any, responseData: Record<string, any>) {
+    // This would integrate with email/SMS services
+    console.log('Executing notification step:', step, responseData);
+    return { message: 'Notification sent', action: step.action };
+  }
+
+  private async executeDataProcessingStep(step: any, responseData: Record<string, any>) {
+    // This would process the data according to the step configuration
+    console.log('Executing data processing step:', step, responseData);
+    return { message: 'Data processed', action: step.action };
+  }
+
+  private async executeWebhookStep(step: any, responseData: Record<string, any>) {
+    // This would call external webhooks
+    console.log('Executing webhook step:', step, responseData);
+    return { message: 'Webhook called', action: step.action };
+  }
+
+  private getSessionId(): string {
+    // Generate or get session ID for tracking
+    if (typeof window !== 'undefined') {
+      let sessionId = sessionStorage.getItem('form_session_id');
+      if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('form_session_id', sessionId);
+      }
+      return sessionId;
+    }
+    return 'server_session';
   }
 
   clearCache() {

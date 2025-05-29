@@ -41,17 +41,55 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
     setActiveForm(form);
     setFormData({});
     console.log('Opening form:', form.name, 'Placement:', placementId);
-  }, []);
+
+    // Track form view event
+    formIntegrationService.trackFormEvent(
+      form.id,
+      'form_view',
+      placementId,
+      undefined,
+      { form_name: form.name },
+      selectedTenantId
+    );
+  }, [selectedTenantId]);
 
   const closeForm = useCallback(() => {
+    if (activeForm) {
+      // Track form abandon if user had started filling it
+      if (Object.keys(formData).length > 0) {
+        formIntegrationService.trackFormEvent(
+          activeForm.id,
+          'form_abandon',
+          undefined,
+          undefined,
+          { abandoned_data: formData },
+          selectedTenantId
+        );
+      }
+    }
+    
     setActiveForm(null);
     setFormData({});
     console.log('Closing form');
-  }, []);
+  }, [activeForm, formData, selectedTenantId]);
 
   const updateFormData = useCallback((data: Record<string, any>) => {
+    const isFirstUpdate = Object.keys(formData).length === 0 && Object.keys(data).length > 0;
+    
     setFormData(prev => ({ ...prev, ...data }));
-  }, []);
+
+    // Track form start event on first interaction
+    if (isFirstUpdate && activeForm) {
+      formIntegrationService.trackFormEvent(
+        activeForm.id,
+        'form_start',
+        undefined,
+        undefined,
+        { first_field: Object.keys(data)[0] },
+        selectedTenantId
+      );
+    }
+  }, [formData, activeForm, selectedTenantId]);
 
   const submitForm = useCallback(async (placementId?: string) => {
     if (!activeForm) return;

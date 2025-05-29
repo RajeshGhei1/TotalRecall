@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, Search, Settings, Eye, Trash2, Edit, Filter, Building2, Globe, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,8 @@ import { FormDefinition } from '@/types/form-builder';
 import CreateFormDialog from './CreateFormDialog';
 import FormBuilderDialog from './FormBuilderDialog';
 import FormPlacementManager from './placement/FormPlacementManager';
+import FormAnalyticsDashboard from './analytics/FormAnalyticsDashboard';
+import FormWorkflowManager from './workflow/FormWorkflowManager';
 import { useToast } from '@/hooks/use-toast';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { useTenants } from '@/hooks/useTenants';
@@ -136,9 +139,11 @@ const FormsManager = () => {
       </div>
 
       <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="forms">Form Definitions</TabsTrigger>
           <TabsTrigger value="placements">Form Placements</TabsTrigger>
+          <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="forms" className="space-y-6">
@@ -274,6 +279,14 @@ const FormsManager = () => {
 
         <TabsContent value="placements" className="space-y-6">
           <FormPlacementManager />
+        </TabsContent>
+
+        <TabsContent value="workflows" className="space-y-6">
+          <FormWorkflowManager />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <FormAnalyticsDashboard />
         </TabsContent>
       </Tabs>
 
