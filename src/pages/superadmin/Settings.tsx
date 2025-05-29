@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Import our updated super admin settings components
-import GeneralSettings from '@/components/superadmin/settings/GeneralSettings';
 import SocialMediaSettings from '@/components/superadmin/settings/SocialMediaSettings';
 import CommunicationSettings from '@/components/superadmin/settings/CommunicationSettings';
 import OutreachSettings from '@/components/superadmin/settings/OutreachSettings';
