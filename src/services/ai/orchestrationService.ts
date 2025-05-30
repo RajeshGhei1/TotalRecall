@@ -21,8 +21,14 @@ export class AIOrchestrationService {
       if (error) throw error;
 
       this.agents.clear();
-      agents?.forEach(agent => {
-        this.agents.set(agent.id, agent);
+      (agents || []).forEach(agent => {
+        // Type assertion to handle Json type mismatch
+        const typedAgent: AIAgent = {
+          ...agent,
+          model_config: agent.model_config as Record<string, any>,
+          performance_metrics: agent.performance_metrics as Record<string, any>
+        };
+        this.agents.set(agent.id, typedAgent);
       });
 
       console.log(`Loaded ${this.agents.size} active AI agents`);

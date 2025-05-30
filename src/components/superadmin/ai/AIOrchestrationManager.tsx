@@ -11,6 +11,10 @@ import { AIAgent } from '@/types/ai';
 export const AIOrchestrationManager: React.FC = () => {
   const { agents, agentsLoading, refreshAgents } = useAIOrchestration();
 
+  const handleRefreshAgents = () => {
+    refreshAgents();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-500';
@@ -64,7 +68,7 @@ export const AIOrchestrationManager: React.FC = () => {
             Manage AI agents and monitor their performance across the platform
           </p>
         </div>
-        <Button onClick={refreshAgents} variant="outline">
+        <Button onClick={handleRefreshAgents} variant="outline">
           Refresh Agents
         </Button>
       </div>

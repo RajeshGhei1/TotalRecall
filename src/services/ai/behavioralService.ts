@@ -93,7 +93,12 @@ export class BehavioralAnalyticsService {
       const { data, error } = await query.order('frequency_score', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Type assertion to handle Json type mismatch
+      return (data || []).map(pattern => ({
+        ...pattern,
+        pattern_data: pattern.pattern_data as Record<string, any>
+      })) as BehavioralPattern[];
     } catch (error) {
       console.error('Error fetching user patterns:', error);
       return [];
@@ -118,8 +123,15 @@ export class BehavioralAnalyticsService {
 
       if (error) throw error;
 
+      // Type assertion to handle Json type mismatch
+      const typedInteractions = (interactions || []).map(interaction => ({
+        ...interaction,
+        context: interaction.context as Record<string, any>,
+        metadata: interaction.metadata as Record<string, any>
+      })) as UserInteraction[];
+
       // Simple behavior analysis
-      const analysis = this.performBehaviorAnalysis(interactions || []);
+      const analysis = this.performBehaviorAnalysis(typedInteractions);
       
       return analysis;
     } catch (error) {
