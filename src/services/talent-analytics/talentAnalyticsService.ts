@@ -65,62 +65,77 @@ class TalentAnalyticsService {
     return [];
   }
 
-  async getSkillsGapAnalysis(tenantId: string): Promise<any> {
-    // Fetch talent data from database
-    const { data: talents } = await supabase
-      .from('talents')
-      .select('*')
-      .eq('tenant_id', tenantId);
+  async getSkillsGapAnalysis(tenantId: string) {
+    try {
+      // Fetch talent data from database
+      const { data: talents } = await supabase
+        .from('talents')
+        .select('*')
+        .eq('tenant_id', tenantId);
 
-    const { data: people } = await supabase
-      .from('people')
-      .select('*');
+      const { data: people } = await supabase
+        .from('people')
+        .select('*');
 
-    // Analyze skills gaps using AI
-    return this.analyzeTalent({
-      tenantId,
-      analysisType: 'skills_gap',
-      parameters: {
-        talent_data: talents,
-        people_data: people,
-        market_trends: true
-      }
-    });
+      // Analyze skills gaps using AI
+      return this.analyzeTalent({
+        tenantId,
+        analysisType: 'skills_gap',
+        parameters: {
+          talent_data: talents,
+          people_data: people,
+          market_trends: true
+        }
+      });
+    } catch (error) {
+      console.error('Error in skills gap analysis:', error);
+      return { insights: [], predictions: [], recommendations: [], confidence: 0 };
+    }
   }
 
-  async getRetentionRiskAssessment(tenantId: string): Promise<any> {
-    // Fetch behavioral patterns and performance data
-    const { data: behavioralPatterns } = await supabase
-      .from('behavioral_patterns')
-      .select('*')
-      .eq('tenant_id', tenantId);
+  async getRetentionRiskAssessment(tenantId: string) {
+    try {
+      // Fetch behavioral patterns and performance data
+      const { data: behavioralPatterns } = await supabase
+        .from('behavioral_patterns')
+        .select('*')
+        .eq('tenant_id', tenantId);
 
-    return this.analyzeTalent({
-      tenantId,
-      analysisType: 'retention_risk',
-      parameters: {
-        behavioral_patterns: behavioralPatterns,
-        include_external_factors: true
-      }
-    });
+      return this.analyzeTalent({
+        tenantId,
+        analysisType: 'retention_risk',
+        parameters: {
+          behavioral_patterns: behavioralPatterns,
+          include_external_factors: true
+        }
+      });
+    } catch (error) {
+      console.error('Error in retention risk assessment:', error);
+      return { insights: [], predictions: [], recommendations: [], confidence: 0 };
+    }
   }
 
-  async getCareerPathRecommendations(tenantId: string, userId: string): Promise<any> {
-    // Fetch user's skills, performance, and goals
-    const { data: userSkills } = await supabase
-      .from('talent_skills')
-      .select('*')
-      .eq('talent_id', userId);
+  async getCareerPathRecommendations(tenantId: string, userId: string) {
+    try {
+      // Fetch user's skills, performance, and goals
+      const { data: userSkills } = await supabase
+        .from('talent_skills')
+        .select('*')
+        .eq('talent_id', userId);
 
-    return this.analyzeTalent({
-      tenantId,
-      analysisType: 'career_path',
-      parameters: {
-        user_id: userId,
-        current_skills: userSkills,
-        career_aspirations: true
-      }
-    });
+      return this.analyzeTalent({
+        tenantId,
+        analysisType: 'career_path',
+        parameters: {
+          user_id: userId,
+          current_skills: userSkills,
+          career_aspirations: true
+        }
+      });
+    } catch (error) {
+      console.error('Error in career path recommendations:', error);
+      return { insights: [], predictions: [], recommendations: [], confidence: 0 };
+    }
   }
 
   async generateTalentInsights(tenantId: string): Promise<any[]> {

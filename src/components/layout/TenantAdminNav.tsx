@@ -2,6 +2,7 @@
 import React from 'react';
 import { useTenantAdminNavigation } from '@/hooks/useTenantAdminNavigation';
 import SortableNavigation from './SortableNavigation';
+import { NavItem } from '@/types/navigation';
 
 const TenantAdminNav = () => {
   const navigationItems = useTenantAdminNavigation();
@@ -18,9 +19,17 @@ const TenantAdminNav = () => {
     );
   }
 
+  // Transform NavigationItem[] to NavItem[]
+  const navItems: NavItem[] = navigationItems.map(item => ({
+    id: item.id,
+    label: item.title,
+    icon: item.icon,
+    href: item.href
+  }));
+
   return (
     <SortableNavigation 
-      items={navigationItems} 
+      items={navItems} 
       onReorder={() => {}} // TODO: Implement reorder functionality
       onRename={() => {}} // TODO: Implement rename functionality
       onResetLabel={() => {}} // TODO: Implement reset functionality
