@@ -52,7 +52,11 @@ export const AIOrchestrationManager: React.FC = () => {
         // For now, we'll filter by capabilities that might contain module names
         // In a real implementation, you'd have a direct module association
         return agent.capabilities.some(capability => 
-          capability.toLowerCase().includes(selectedModule.toLowerCase())
+          capability.toLowerCase().includes(selectedModule.toLowerCase()) ||
+          (selectedModule === 'smart_talent_analytics' && 
+           (capability.toLowerCase().includes('talent') || 
+            capability.toLowerCase().includes('analytics') ||
+            capability.toLowerCase().includes('prediction')))
         );
       });
 
@@ -118,14 +122,18 @@ export const AIOrchestrationManager: React.FC = () => {
                 <SelectItem value="all">All Modules</SelectItem>
                 {modules?.map((module) => (
                   <SelectItem key={module.id} value={module.name}>
-                    {module.name}
+                    {module.name === 'smart_talent_analytics' ? 'Smart Talent Analytics' : module.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {selectedModule !== 'all' && (
               <Badge variant="outline">
-                Filtering by: {modules?.find(m => m.name === selectedModule)?.name || selectedModule}
+                Filtering by: {
+                  selectedModule === 'smart_talent_analytics' 
+                    ? 'Smart Talent Analytics' 
+                    : modules?.find(m => m.name === selectedModule)?.name || selectedModule
+                }
               </Badge>
             )}
           </div>

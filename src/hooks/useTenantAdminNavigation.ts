@@ -1,61 +1,73 @@
 
+import { NavigationItem } from '@/components/layout/TenantAdminNav';
 import { 
-  BarChart2,
-  Building2, 
-  Briefcase, 
-  Contact, 
   LayoutDashboard, 
-  Settings, 
-  Users,
-  Users2
+  Building2, 
+  Users, 
+  UserCheck, 
+  Briefcase, 
+  Settings,
+  Brain
 } from 'lucide-react';
-import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
-const defaultNavItems: NavItem[] = [
-  { 
-    id: 'dashboard',
-    label: 'Dashboard', 
-    icon: LayoutDashboard, 
-    href: '/tenant-admin/dashboard'
-  },
-  { 
-    id: 'users',
-    label: 'Users', 
-    icon: Users, 
-    href: '/tenant-admin/users'
-  },
-  { 
-    id: 'talent',
-    label: 'Talent', 
-    icon: Users2, 
-    href: '/tenant-admin/talent'
-  },
-  { 
-    id: 'companies',
-    label: 'Companies', 
-    icon: Building2, 
-    href: '/tenant-admin/companies'
-  },
-  { 
-    id: 'contacts',
-    label: 'Contacts', 
-    icon: Contact, 
-    href: '/tenant-admin/contacts'
-  },
-  { 
-    id: 'jobs',
-    label: 'Jobs', 
-    icon: Briefcase, 
-    href: '/tenant-admin/jobs'
-  },
-  { 
-    id: 'settings',
-    label: 'Settings', 
-    icon: Settings, 
-    href: '/tenant-admin/settings'
-  },
-];
-
-export const useTenantAdminNavigation = () => {
-  return useNavigationPreferences('tenant_admin', defaultNavItems);
+export const useTenantAdminNavigation = (): NavigationItem[] => {
+  return [
+    {
+      id: 'dashboard',
+      title: 'Dashboard',
+      icon: LayoutDashboard,
+      href: '/tenant-admin/dashboard',
+      badge: null
+    },
+    {
+      id: 'companies',
+      title: 'Companies',
+      icon: Building2,
+      href: '/tenant-admin/companies',
+      badge: null
+    },
+    {
+      id: 'contacts',
+      title: 'Contacts',
+      icon: Users,
+      href: '/tenant-admin/contacts',
+      badge: null
+    },
+    {
+      id: 'talent',
+      title: 'Talent',
+      icon: UserCheck,
+      href: '/tenant-admin/talent',
+      badge: null
+    },
+    {
+      id: 'smart-talent-analytics',
+      title: 'Smart Talent Analytics',
+      icon: Brain,
+      href: '/tenant-admin/smart-talent-analytics',
+      badge: 'AI',
+      moduleName: 'smart_talent_analytics'
+    },
+    {
+      id: 'jobs',
+      title: 'Jobs',
+      icon: Briefcase,
+      href: '/tenant-admin/jobs',
+      badge: null
+    },
+    {
+      id: 'users',
+      title: 'Users',
+      icon: Users,
+      href: '/tenant-admin/users',
+      badge: null
+    },
+    {
+      id: 'settings',
+      title: 'Settings',
+      icon: Settings,
+      href: '/tenant-admin/settings',
+      badge: null
+    }
+  ];
 };
