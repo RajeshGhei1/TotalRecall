@@ -64,12 +64,26 @@ class ATSService {
   }
 
   async createJob(job: Partial<Job>): Promise<Job> {
+    const jobData = {
+      title: job.title || '',
+      description: job.description,
+      requirements: JSON.stringify(job.requirements || []),
+      location: job.location,
+      department: job.department,
+      employment_type: job.employment_type || 'full-time',
+      salary_min: job.salary_min,
+      salary_max: job.salary_max,
+      status: job.status || 'draft',
+      priority: job.priority || 'medium',
+      hiring_manager_id: job.hiring_manager_id,
+      created_by: job.created_by,
+      closes_at: job.closes_at,
+      tenant_id: job.tenant_id
+    };
+
     const { data, error } = await supabase
       .from('jobs')
-      .insert([{
-        ...job,
-        requirements: JSON.stringify(job.requirements || [])
-      }])
+      .insert([jobData])
       .select()
       .single();
 
@@ -119,13 +133,31 @@ class ATSService {
   }
 
   async createCandidate(candidate: Partial<Candidate>): Promise<Candidate> {
+    const candidateData = {
+      first_name: candidate.first_name || '',
+      last_name: candidate.last_name || '',
+      email: candidate.email || '',
+      phone: candidate.phone,
+      location: candidate.location,
+      linkedin_url: candidate.linkedin_url,
+      portfolio_url: candidate.portfolio_url,
+      resume_url: candidate.resume_url,
+      resume_text: candidate.resume_text,
+      skills: JSON.stringify(candidate.skills || []),
+      experience_years: candidate.experience_years,
+      current_title: candidate.current_title,
+      current_company: candidate.current_company,
+      desired_salary: candidate.desired_salary,
+      availability_date: candidate.availability_date,
+      notes: candidate.notes,
+      tags: JSON.stringify(candidate.tags || []),
+      ai_summary: candidate.ai_summary,
+      tenant_id: candidate.tenant_id
+    };
+
     const { data, error } = await supabase
       .from('candidates')
-      .insert([{
-        ...candidate,
-        skills: JSON.stringify(candidate.skills || []),
-        tags: JSON.stringify(candidate.tags || [])
-      }])
+      .insert([candidateData])
       .select()
       .single();
 
@@ -178,13 +210,24 @@ class ATSService {
   }
 
   async createApplication(application: Partial<Application>): Promise<Application> {
+    const applicationData = {
+      job_id: application.job_id || '',
+      candidate_id: application.candidate_id || '',
+      status: application.status || 'applied',
+      applied_at: application.applied_at || new Date().toISOString(),
+      cover_letter: application.cover_letter,
+      ai_match_score: application.ai_match_score,
+      ai_match_reasons: JSON.stringify(application.ai_match_reasons || []),
+      recruiter_notes: application.recruiter_notes,
+      interview_feedback: JSON.stringify(application.interview_feedback || []),
+      next_action: application.next_action,
+      next_action_date: application.next_action_date,
+      tenant_id: application.tenant_id
+    };
+
     const { data, error } = await supabase
       .from('applications')
-      .insert([{
-        ...application,
-        ai_match_reasons: JSON.stringify(application.ai_match_reasons || []),
-        interview_feedback: JSON.stringify(application.interview_feedback || [])
-      }])
+      .insert([applicationData])
       .select(`
         *,
         job:jobs(*),
@@ -234,9 +277,23 @@ class ATSService {
   }
 
   async scheduleInterview(interview: Partial<Interview>): Promise<Interview> {
+    const interviewData = {
+      application_id: interview.application_id || '',
+      interviewer_id: interview.interviewer_id,
+      type: interview.type || 'phone',
+      scheduled_at: interview.scheduled_at || new Date().toISOString(),
+      duration_minutes: interview.duration_minutes || 60,
+      location: interview.location,
+      meeting_link: interview.meeting_link,
+      notes: interview.notes,
+      feedback: JSON.stringify(interview.feedback || {}),
+      score: interview.score,
+      status: interview.status || 'scheduled'
+    };
+
     const { data, error } = await supabase
       .from('interviews')
-      .insert([interview])
+      .insert([interviewData])
       .select()
       .single();
 

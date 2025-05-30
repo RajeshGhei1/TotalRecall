@@ -19,10 +19,10 @@ const TenantAdminNav = () => {
     );
   }
 
-  // Transform NavigationItem[] to NavItem[]
+  // Transform NavigationItem[] to NavItem[] - use label instead of title
   const transformedNavItems: NavItem[] = navItems.map(item => ({
     id: item.id,
-    label: item.title,
+    label: item.label,
     icon: item.icon,
     href: item.href
   }));
