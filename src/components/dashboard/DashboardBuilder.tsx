@@ -6,15 +6,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Settings, Save, Layout } from 'lucide-react';
-import { useDashboardWidgets } from '@/hooks/dashboard/useDashboardConfig';
+import { useDashboardWidgets, useCreateDashboardConfig } from '@/hooks/dashboard/useDashboardConfig';
 import { useWidgetDataSources } from '@/hooks/dashboard/useWidgetData';
+import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 const DashboardBuilder: React.FC = () => {
+  const { user } = useAuth();
   const [dashboardName, setDashboardName] = useState('My Dashboard');
   const [selectedWidgets, setSelectedWidgets] = useState<any[]>([]);
   const { data: availableWidgets, isLoading: widgetsLoading } = useDashboardWidgets();
   const { data: dataSources, isLoading: dataSourcesLoading } = useWidgetDataSources();
+  const { mutate: createDashboard, isPending: isSaving } = useCreateDashboardConfig();
 
   const addWidget = (widget: any) => {
     const newWidget = {
@@ -31,11 +35,41 @@ const DashboardBuilder: React.FC = () => {
   };
 
   const saveDashboard = () => {
-    console.log('Saving dashboard:', {
-      name: dashboardName,
-      widgets: selectedWidgets
+    if (!user?.id) {
+      toast.error('You must be logged in to save dashboards');
+      return;
+    }
+
+    if (!dashboardName.trim()) {
+      toast.error('Please enter a dashboard name');
+      return;
+    }
+
+    const dashboardConfig = {
+      user_id: user.id,
+      dashboard_name: dashboardName.trim(),
+      layout_config: {
+        columns: 4,
+        row_height: 150,
+        margin: [16, 16]
+      },
+      widget_configs: selectedWidgets,
+      filters: {},
+      is_default: false
+    };
+
+    createDashboard(dashboardConfig, {
+      onSuccess: () => {
+        toast.success('Dashboard saved successfully!');
+        // Reset form
+        setDashboardName('My Dashboard');
+        setSelectedWidgets([]);
+      },
+      onError: (error) => {
+        console.error('Failed to save dashboard:', error);
+        toast.error('Failed to save dashboard. Please try again.');
+      }
     });
-    // TODO: Implement save functionality
   };
 
   if (widgetsLoading || dataSourcesLoading) {
@@ -87,12 +121,24 @@ const DashboardBuilder: React.FC = () => {
               />
             </div>
             <div className="flex items-end">
-              <Button onClick={saveDashboard} className="w-full">
+              <Button 
+                onClick={saveDashboard} 
+                className="w-full"
+                disabled={isSaving || !dashboardName.trim() || !user?.id}
+              >
                 <Save className="mr-2 h-4 w-4" />
-                Save Dashboard
+                {isSaving ? 'Saving...' : 'Save Dashboard'}
               </Button>
             </div>
           </div>
+          
+          {!user?.id && (
+            <Alert>
+              <AlertDescription>
+                You must be logged in to save dashboards.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -192,7 +238,7 @@ const DashboardBuilder: React.FC = () => {
       {selectedWidgets.length > 0 && (
         <Alert>
           <AlertDescription>
-            Dashboard builder is in development. Widget configuration and advanced layout features will be available soon.
+            Once saved, your dashboard will appear in the "Dashboard Overview" tab and can be set as your default dashboard.
           </AlertDescription>
         </Alert>
       )}
