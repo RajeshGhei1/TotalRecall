@@ -21,10 +21,12 @@ class TalentAnalyticsService {
     try {
       // Create AI context for talent analysis
       const aiContext: AIContext = {
-        type: 'talent_analytics',
+        user_id: 'system', // Using system for analytics
         tenant_id: request.tenantId,
+        module: 'smart_talent_analytics',
+        action: `analyze_${request.analysisType}`,
         entity_type: 'talent',
-        context_data: {
+        session_data: {
           analysis_type: request.analysisType,
           parameters: request.parameters
         }
@@ -38,15 +40,29 @@ class TalentAnalyticsService {
 
       // Process and structure the results
       return {
-        insights: aiResult.insights || [],
-        predictions: aiResult.predictions || [],
-        recommendations: aiResult.recommendations || [],
-        confidence: aiResult.confidence || 0
+        insights: this.extractInsights(aiResult.result),
+        predictions: this.extractPredictions(aiResult.result),
+        recommendations: aiResult.suggestions || [],
+        confidence: aiResult.confidence_score || 0
       };
     } catch (error) {
       console.error('Error in talent analytics:', error);
       throw error;
     }
+  }
+
+  private extractInsights(result: any): any[] {
+    if (result && typeof result === 'object' && result.insights) {
+      return Array.isArray(result.insights) ? result.insights : [result.insights];
+    }
+    return [];
+  }
+
+  private extractPredictions(result: any): any[] {
+    if (result && typeof result === 'object' && result.predictions) {
+      return Array.isArray(result.predictions) ? result.predictions : [result.predictions];
+    }
+    return [];
   }
 
   async getSkillsGapAnalysis(tenantId: string): Promise<any> {

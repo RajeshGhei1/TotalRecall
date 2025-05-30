@@ -1,5 +1,5 @@
 
-import { NavigationItem } from '@/components/layout/TenantAdminNav';
+import { NavigationItem } from '@/types/navigation';
 import { 
   LayoutDashboard, 
   Building2, 

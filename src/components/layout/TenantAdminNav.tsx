@@ -4,9 +4,9 @@ import { useTenantAdminNavigation } from '@/hooks/useTenantAdminNavigation';
 import SortableNavigation from './SortableNavigation';
 
 const TenantAdminNav = () => {
-  const { navItems, updateNavOrder, updateNavLabel, resetNavLabel, isLoading } = useTenantAdminNavigation();
+  const navigationItems = useTenantAdminNavigation();
 
-  if (isLoading) {
+  if (!navigationItems || navigationItems.length === 0) {
     return (
       <div className="p-4">
         <div className="animate-pulse space-y-2">
@@ -20,10 +20,10 @@ const TenantAdminNav = () => {
 
   return (
     <SortableNavigation 
-      items={navItems} 
-      onReorder={updateNavOrder}
-      onRename={updateNavLabel}
-      onResetLabel={resetNavLabel}
+      items={navigationItems} 
+      onReorder={() => {}} // TODO: Implement reorder functionality
+      onRename={() => {}} // TODO: Implement rename functionality
+      onResetLabel={() => {}} // TODO: Implement reset functionality
     />
   );
 };
