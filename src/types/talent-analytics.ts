@@ -82,19 +82,19 @@ export interface TalentAnalyticsResult {
   confidence: number;
 }
 
-export interface AIOrchestrationResult {
-  result: {
-    insights?: TalentAnalyticsInsight | TalentAnalyticsInsight[];
-    predictions?: TalentAnalyticsPrediction | TalentAnalyticsPrediction[];
-  };
-  suggestions?: TalentAnalyticsRecommendation | TalentAnalyticsRecommendation[];
+// Simplified AI response interface to break circular dependencies
+export interface SimpleAIResponse {
+  insights?: unknown[];
+  predictions?: unknown[];
+  suggestions?: unknown[];
   confidence_score?: number;
 }
 
-export interface AIInsightRecord {
+// Database record interface for ai_insights table
+export interface DatabaseInsightRecord {
   tenant_id: string;
   insight_type: string;
-  insight_data: Record<string, unknown>;
+  insight_data: unknown; // Use unknown instead of Record to avoid conflicts
   confidence_score: number;
   applicable_modules: string[];
   is_active: boolean;

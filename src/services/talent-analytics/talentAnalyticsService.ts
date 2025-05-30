@@ -7,8 +7,8 @@ import type {
   TalentAnalyticsInsight,
   TalentAnalyticsPrediction,
   TalentAnalyticsRecommendation,
-  AIOrchestrationResult,
-  AIInsightRecord,
+  SimpleAIResponse,
+  DatabaseInsightRecord,
   TalentData,
   PersonData,
   BehavioralPatternData,
@@ -20,27 +20,27 @@ class TalentAnalyticsService {
     try {
       // Create AI context for talent analysis
       const aiContext = {
-        user_id: 'system',
+        user_id: 'system' as const,
         tenant_id: request.tenantId,
-        module: 'smart_talent_analytics',
-        action: `analyze_${request.analysisType}`,
-        entity_type: 'talent',
+        module: 'smart_talent_analytics' as const,
+        action: `analyze_${request.analysisType}` as const,
+        entity_type: 'talent' as const,
         session_data: {
           analysis_type: request.analysisType,
           parameters: request.parameters
         }
-      } as const;
+      };
 
-      // Use AI orchestration service for analysis
-      const aiResult: AIOrchestrationResult = await aiOrchestrationService.requestPrediction(aiContext, {
+      // Use AI orchestration service for analysis with simplified typing
+      const aiResult = await aiOrchestrationService.requestPrediction(aiContext, {
         model_type: 'analytics',
         analysis_depth: 'comprehensive'
-      });
+      }) as SimpleAIResponse;
 
       // Process and structure the results
       return {
-        insights: this.extractInsights(aiResult.result),
-        predictions: this.extractPredictions(aiResult.result),
+        insights: this.extractInsights(aiResult),
+        predictions: this.extractPredictions(aiResult),
         recommendations: this.extractRecommendations(aiResult),
         confidence: this.extractConfidence(aiResult)
       };
@@ -50,45 +50,84 @@ class TalentAnalyticsService {
     }
   }
 
-  private extractInsights(result: AIOrchestrationResult['result']): TalentAnalyticsInsight[] {
-    if (!result || typeof result !== 'object') {
+  private extractInsights(result: SimpleAIResponse): TalentAnalyticsInsight[] {
+    if (!result?.insights || !Array.isArray(result.insights)) {
       return [];
     }
 
-    const { insights } = result;
-    if (!insights) {
-      return [];
-    }
-
-    return Array.isArray(insights) ? insights : [insights];
+    return result.insights.map(item => {
+      if (typeof item === 'object' && item !== null) {
+        const insight = item as Record<string, unknown>;
+        return {
+          type: String(insight.type || 'general'),
+          title: String(insight.title || 'Insight'),
+          description: String(insight.description || ''),
+          confidence: Number(insight.confidence || 0.8),
+          metadata: insight.metadata as Record<string, unknown> || {}
+        };
+      }
+      return {
+        type: 'general',
+        title: 'Insight',
+        description: String(item),
+        confidence: 0.8,
+        metadata: {}
+      };
+    });
   }
 
-  private extractPredictions(result: AIOrchestrationResult['result']): TalentAnalyticsPrediction[] {
-    if (!result || typeof result !== 'object') {
+  private extractPredictions(result: SimpleAIResponse): TalentAnalyticsPrediction[] {
+    if (!result?.predictions || !Array.isArray(result.predictions)) {
       return [];
     }
 
-    const { predictions } = result;
-    if (!predictions) {
-      return [];
-    }
-
-    return Array.isArray(predictions) ? predictions : [predictions];
+    return result.predictions.map(item => {
+      if (typeof item === 'object' && item !== null) {
+        const prediction = item as Record<string, unknown>;
+        return {
+          type: String(prediction.type || 'general'),
+          outcome: String(prediction.outcome || ''),
+          probability: Number(prediction.probability || 0.5),
+          timeframe: prediction.timeframe ? String(prediction.timeframe) : undefined,
+          factors: Array.isArray(prediction.factors) ? prediction.factors.map(String) : undefined
+        };
+      }
+      return {
+        type: 'general',
+        outcome: String(item),
+        probability: 0.5
+      };
+    });
   }
 
-  private extractRecommendations(aiResult: AIOrchestrationResult): TalentAnalyticsRecommendation[] {
-    if (!aiResult || !aiResult.suggestions) {
+  private extractRecommendations(result: SimpleAIResponse): TalentAnalyticsRecommendation[] {
+    if (!result?.suggestions || !Array.isArray(result.suggestions)) {
       return [];
     }
 
-    return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
+    return result.suggestions.map(item => {
+      if (typeof item === 'object' && item !== null) {
+        const recommendation = item as Record<string, unknown>;
+        return {
+          action: String(recommendation.action || 'Review'),
+          priority: (recommendation.priority as 'high' | 'medium' | 'low') || 'medium',
+          description: String(recommendation.description || ''),
+          impact: recommendation.impact ? String(recommendation.impact) : undefined
+        };
+      }
+      return {
+        action: 'Review',
+        priority: 'medium' as const,
+        description: String(item)
+      };
+    });
   }
 
-  private extractConfidence(aiResult: AIOrchestrationResult): number {
-    if (aiResult && typeof aiResult.confidence_score === 'number') {
-      return aiResult.confidence_score;
+  private extractConfidence(result: SimpleAIResponse): number {
+    if (typeof result?.confidence_score === 'number') {
+      return Math.max(0, Math.min(1, result.confidence_score));
     }
-    return 0;
+    return 0.8;
   }
 
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
@@ -97,21 +136,39 @@ class TalentAnalyticsService {
       const { data: talents } = await supabase
         .from('talents')
         .select('*')
-        .eq('tenant_id', tenantId)
-        .returns<TalentData[]>();
+        .eq('tenant_id', tenantId);
 
       const { data: people } = await supabase
         .from('people')
-        .select('*')
-        .returns<PersonData[]>();
+        .select('*');
+
+      // Convert to typed data
+      const talentData: TalentData[] = (talents || []).map(talent => ({
+        id: talent.id,
+        full_name: talent.full_name,
+        email: talent.email,
+        phone: talent.phone || undefined,
+        location: talent.location || undefined,
+        availability_status: talent.availability_status || undefined,
+        tenant_id: tenantId
+      }));
+
+      const peopleData: PersonData[] = (people || []).map(person => ({
+        id: person.id,
+        full_name: person.full_name,
+        email: person.email,
+        phone: person.phone || undefined,
+        location: person.location || undefined,
+        type: person.type
+      }));
 
       // Analyze skills gaps using AI
       return this.analyzeTalent({
         tenantId,
         analysisType: 'skills_gap',
         parameters: {
-          talent_data: talents || [],
-          people_data: people || [],
+          talent_data: talentData,
+          people_data: peopleData,
           market_trends: true
         }
       });
@@ -127,14 +184,23 @@ class TalentAnalyticsService {
       const { data: behavioralPatterns } = await supabase
         .from('behavioral_patterns')
         .select('*')
-        .eq('tenant_id', tenantId)
-        .returns<BehavioralPatternData[]>();
+        .eq('tenant_id', tenantId);
+
+      const patternsData: BehavioralPatternData[] = (behavioralPatterns || []).map(pattern => ({
+        id: pattern.id,
+        user_id: pattern.user_id || undefined,
+        tenant_id: pattern.tenant_id || undefined,
+        pattern_type: pattern.pattern_type,
+        pattern_data: pattern.pattern_data as Record<string, unknown>,
+        frequency_score: pattern.frequency_score || undefined,
+        last_occurrence: pattern.last_occurrence || undefined
+      }));
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'retention_risk',
         parameters: {
-          behavioral_patterns: behavioralPatterns || [],
+          behavioral_patterns: patternsData,
           include_external_factors: true
         }
       });
@@ -150,15 +216,22 @@ class TalentAnalyticsService {
       const { data: userSkills } = await supabase
         .from('talent_skills')
         .select('*')
-        .eq('talent_id', userId)
-        .returns<TalentSkillData[]>();
+        .eq('talent_id', userId);
+
+      const skillsData: TalentSkillData[] = (userSkills || []).map(skill => ({
+        id: skill.id,
+        talent_id: skill.talent_id,
+        skill_id: skill.skill_id,
+        proficiency_level: skill.proficiency_level || undefined,
+        years_of_experience: skill.years_of_experience || undefined
+      }));
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'career_path',
         parameters: {
           user_id: userId,
-          current_skills: userSkills || [],
+          current_skills: skillsData,
           career_aspirations: true
         }
       });
@@ -193,10 +266,10 @@ class TalentAnalyticsService {
 
   private async storeInsights(tenantId: string, insights: TalentAnalyticsInsight[]): Promise<void> {
     try {
-      const insightsToStore: AIInsightRecord[] = insights.map(insight => ({
+      const insightsToStore: DatabaseInsightRecord[] = insights.map(insight => ({
         tenant_id: tenantId,
         insight_type: 'talent_analytics',
-        insight_data: insight as Record<string, unknown>,
+        insight_data: insight as unknown,
         confidence_score: insight.confidence || 0.8,
         applicable_modules: ['smart_talent_analytics'],
         is_active: true
