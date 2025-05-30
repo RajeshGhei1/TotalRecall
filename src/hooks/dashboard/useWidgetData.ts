@@ -56,9 +56,10 @@ const fetchTableData = async (config: Record<string, any>) => {
 
 const fetchCustomQuery = async (config: Record<string, any>) => {
   const { query } = config;
-  const { data, error } = await supabase.rpc('execute_sql', { sql_query: query });
-  if (error) throw error;
-  return data;
+  // For now, we'll simulate custom query execution
+  // In a real implementation, you'd need a backend function to execute raw SQL
+  console.log('Custom query execution not implemented yet:', query);
+  return [];
 };
 
 const fetchCalculatedData = async (config: Record<string, any>) => {

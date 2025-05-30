@@ -63,15 +63,44 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 
     switch (widget.widget_type) {
       case 'metric_card':
-        return <MetricCard data={data} config={mergedConfig} />;
+        const metricConfig = {
+          title: mergedConfig.title || 'Metric',
+          metric_type: mergedConfig.metric_type || 'count',
+          trend_comparison: mergedConfig.trend_comparison,
+          format: mergedConfig.format
+        };
+        return <MetricCard data={data} config={metricConfig} />;
+
       case 'line_chart':
       case 'bar_chart':
       case 'pie_chart':
-        return <ChartWidget type={widget.widget_type} data={data} config={mergedConfig} />;
+        const chartConfig = {
+          title: mergedConfig.title || 'Chart',
+          x_axis: mergedConfig.x_axis,
+          y_axis: mergedConfig.y_axis,
+          data_column: mergedConfig.data_column,
+          label_column: mergedConfig.label_column
+        };
+        const chartData = Array.isArray(data) ? data : [];
+        return <ChartWidget type={widget.widget_type} data={chartData} config={chartConfig} />;
+
       case 'revenue_metric':
-        return <RevenueMetric data={data} config={mergedConfig} />;
+        const revenueConfig = {
+          title: mergedConfig.title || 'Revenue',
+          metric_type: mergedConfig.metric_type || 'mrr',
+          currency: mergedConfig.currency
+        };
+        return <RevenueMetric data={data} config={revenueConfig} />;
+
       case 'data_table':
-        return <TableWidget data={data} config={mergedConfig} />;
+        const tableConfig = {
+          title: mergedConfig.title || 'Data Table',
+          columns: mergedConfig.columns,
+          page_size: mergedConfig.page_size
+        };
+        const tableData = Array.isArray(data) ? data : [];
+        return <TableWidget data={tableData} config={tableConfig} />;
+
       default:
         return (
           <Alert>

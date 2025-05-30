@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useDashboardConfig, useUserDashboardConfigs, useDashboardWidgets } from '@/hooks/dashboard/useDashboardConfig';
 import { useWidgetDataSources } from '@/hooks/dashboard/useWidgetData';
 import DashboardWidget from './DashboardWidget';
@@ -10,7 +10,7 @@ import { Plus, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const DynamicDashboard: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const { data: userConfigs, isLoading: configsLoading } = useUserDashboardConfigs(user?.id);
   const { data: widgets, isLoading: widgetsLoading } = useDashboardWidgets();
   const { data: dataSources, isLoading: dataSourcesLoading } = useWidgetDataSources();

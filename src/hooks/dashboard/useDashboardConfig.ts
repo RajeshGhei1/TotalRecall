@@ -85,7 +85,7 @@ export const useCreateDashboardConfig = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (config: Partial<DashboardConfig>) => {
+    mutationFn: async (config: Omit<DashboardConfig, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('user_dashboard_configs')
         .insert(config)
