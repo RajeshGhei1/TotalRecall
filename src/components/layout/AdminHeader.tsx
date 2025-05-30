@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, Brain, Sparkles } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
+import UserProfileMenu from "./UserProfileMenu";
 import { useAdminContext } from "@/hooks/useAdminContext";
 
 const AdminHeader = () => {
@@ -41,8 +42,9 @@ const AdminHeader = () => {
           </div>
         </div>
       </div>
-      <div className="text-xs text-gray-500">
-        {isLoading ? "Loading..." : (isSuperAdmin ? "Super Admin" : "Tenant Admin")}
+      
+      <div className="flex items-center">
+        <UserProfileMenu />
       </div>
     </header>
   );

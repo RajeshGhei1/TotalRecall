@@ -2,6 +2,7 @@
 import React from 'react';
 import AdminSidebar from './layout/AdminSidebar';
 import AdminHeader from './layout/AdminHeader';
+import TopHeader from './layout/TopHeader';
 import AdminFooter from './layout/AdminFooter';
 import { useAdminContext } from '@/hooks/useAdminContext';
 
@@ -26,18 +27,26 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const isSuperAdmin = adminType === 'super_admin';
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row w-full">
       {/* Sidebar for larger screens */}
       <div className="hidden md:block">
         <AdminSidebar />
       </div>
       
-      {/* Mobile header with navigation */}
+      {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Mobile header */}
         <AdminHeader />
+        
+        {/* Desktop top header */}
+        <TopHeader />
+        
+        {/* Main content */}
         <main className="flex-1 overflow-auto bg-background">
           {children}
         </main>
+        
+        {/* Footer */}
         <AdminFooter isSuperAdmin={isSuperAdmin} />
       </div>
     </div>
