@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bypassAuth, setBypassAuth] = useState(false); // Changed from true to false
+  const [bypassAuth, setBypassAuth] = useState(false); // Set to false by default
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,10 +61,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session) {
+          console.log('User signed in, determining redirect path...');
+          
+          // Check if user is super admin and redirect accordingly
+          if (session.user) {
+            // Check user role to determine redirect
+            setTimeout(async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                
+                console.log('User profile role:', profile?.role);
+                
+                if (profile?.role === 'super_admin') {
+                  console.log('Redirecting super admin to superadmin dashboard');
+                  navigate('/superadmin/dashboard');
+                } else {
+                  console.log('Redirecting regular user to tenant admin dashboard');
+                  navigate('/tenant-admin/dashboard');
+                }
+              } catch (error) {
+                console.error('Error checking user role:', error);
+                // Default to tenant admin dashboard
+                navigate('/tenant-admin/dashboard');
+              }
+            }, 100);
+          }
+          
           toast({
             title: "Signed in successfully",
             description: `Welcome, ${session.user.email}!`,
@@ -72,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           toast({
             title: "Signed out successfully",
           });
@@ -81,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -97,10 +130,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
+      console.log('Attempting to sign in user:', email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate('/superadmin/dashboard');
+      
+      // Don't navigate here - let the auth state change handler do it
+      console.log('Sign in successful, waiting for auth state change...');
     } catch (error: any) {
+      console.error('Sign in error:', error);
       toast({
         title: "Sign in failed",
         description: error.message || "An error occurred during sign in",

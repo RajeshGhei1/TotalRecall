@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,12 +21,18 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     const checkSuperAdmin = async () => {
       // In bypass mode, automatically grant super admin access
       if (bypassAuth) {
+        console.log('AuthGuard: Bypass mode enabled, granting super admin access');
         setIsSuperAdmin(true);
         setCheckingRole(false);
         return;
       }
 
-      if (!user || !requiresSuperAdmin) return;
+      if (!user || !requiresSuperAdmin) {
+        setCheckingRole(false);
+        return;
+      }
+      
+      console.log('AuthGuard: Checking super admin status for user:', user.id);
       
       try {
         const { data, error } = await supabase
@@ -36,11 +41,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
           .eq('id', user.id)
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('AuthGuard: Error checking admin status:', error);
+          throw error;
+        }
         
-        setIsSuperAdmin(data.role === 'super_admin');
+        const isAdmin = data.role === 'super_admin';
+        console.log('AuthGuard: User role check result:', { role: data.role, isAdmin });
+        setIsSuperAdmin(isAdmin);
       } catch (error: any) {
-        console.error('Error checking admin status:', error);
+        console.error('AuthGuard: Error checking admin status:', error);
         toast({
           title: "Error",
           description: "Failed to verify your admin privileges.",
@@ -55,23 +65,43 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     checkSuperAdmin();
   }, [user, requiresSuperAdmin, bypassAuth]);
 
-  // Show nothing while checking authentication or role
+  console.log('AuthGuard state:', { 
+    user: !!user, 
+    loading, 
+    bypassAuth, 
+    requiresSuperAdmin, 
+    isSuperAdmin, 
+    checkingRole,
+    pathname: location.pathname 
+  });
+
+  // Show loading while checking authentication or role
   if (loading || checkingRole) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // In bypass mode, allow access
   if (bypassAuth) {
+    console.log('AuthGuard: Allowing access in bypass mode');
     return <>{children}</>;
   }
 
   // If no user, redirect to login
   if (!user) {
+    console.log('AuthGuard: No user found, redirecting to auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // If super admin required but user is not super admin, redirect to home
   if (requiresSuperAdmin && !isSuperAdmin) {
+    console.log('AuthGuard: Super admin required but user is not super admin');
     toast({
       title: "Access Denied",
       description: "You need super admin privileges to access this area.",
@@ -80,6 +110,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     return <Navigate to="/" replace />;
   }
 
+  console.log('AuthGuard: Access granted, showing protected content');
   // Otherwise, show protected content
   return <>{children}</>;
 };
