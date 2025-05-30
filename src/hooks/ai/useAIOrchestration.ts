@@ -1,10 +1,11 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { aiOrchestrationService } from '@/services/ai/orchestrationService';
 import { AIContext } from '@/types/ai';
+import { useTenantContext } from '@/contexts/TenantContext';
 
 export const useAIOrchestration = () => {
   const queryClient = useQueryClient();
+  const { selectedTenantId } = useTenantContext();
 
   const { data: agents, isLoading: agentsLoading, error } = useQuery({
     queryKey: ['ai-agents'],
@@ -20,8 +21,14 @@ export const useAIOrchestration = () => {
   });
 
   const requestPrediction = useMutation({
-    mutationFn: ({ context, parameters }: { context: AIContext; parameters: any }) =>
-      aiOrchestrationService.requestPrediction(context, parameters),
+    mutationFn: ({ context, parameters }: { context: AIContext; parameters: any }) => {
+      // Ensure tenant context is included
+      const enhancedContext = {
+        ...context,
+        tenant_id: context.tenant_id || selectedTenantId || undefined
+      };
+      return aiOrchestrationService.requestPrediction(enhancedContext, parameters);
+    },
     onSuccess: () => {
       console.log('AI prediction request successful');
     },
@@ -63,6 +70,7 @@ export const useAIOrchestration = () => {
     provideFeedback: provideFeedback.mutateAsync,
     refreshAgents: refreshAgents.mutateAsync,
     isRequesting: requestPrediction.isPending,
-    isFeedbackPending: provideFeedback.isPending
+    isFeedbackPending: provideFeedback.isPending,
+    selectedTenantId
   };
 };

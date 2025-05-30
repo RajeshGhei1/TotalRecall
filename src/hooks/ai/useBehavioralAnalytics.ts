@@ -2,20 +2,21 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { behavioralAnalyticsService } from '@/services/ai/behavioralService';
 import { useAdminContext } from '@/hooks/useAdminContext';
+import { useTenantContext } from '@/contexts/TenantContext';
 
 export const useBehavioralAnalytics = () => {
   const { adminType } = useAdminContext();
+  const { selectedTenantId } = useTenantContext();
 
-  // For now, we'll use a mock user ID since we don't have auth context
-  // This will be replaced with actual auth when implemented
-  const mockUserId = 'mock-user-id';
-  const mockTenantId = 'mock-tenant-id';
+  // Use actual tenant context when available, fallback to mock for development
+  const tenantId = selectedTenantId || 'mock-tenant-id';
+  const userId = 'mock-user-id'; // This will be replaced with actual auth when implemented
 
   const { data: userPatterns, isLoading: patternsLoading } = useQuery({
-    queryKey: ['user-patterns', mockUserId, mockTenantId],
+    queryKey: ['user-patterns', userId, tenantId],
     queryFn: async () => {
       try {
-        return await behavioralAnalyticsService.getUserPatterns(mockUserId, mockTenantId);
+        return await behavioralAnalyticsService.getUserPatterns(userId, tenantId);
       } catch (error) {
         console.error('Error fetching user patterns:', error);
         return [];
@@ -25,13 +26,19 @@ export const useBehavioralAnalytics = () => {
   });
 
   const { data: behaviorAnalysis, isLoading: analysisLoading } = useQuery({
-    queryKey: ['behavior-analysis', mockUserId, mockTenantId],
+    queryKey: ['behavior-analysis', userId, tenantId],
     queryFn: async () => {
       try {
-        return await behavioralAnalyticsService.analyzeUserBehavior(mockUserId, mockTenantId);
+        return await behavioralAnalyticsService.analyzeUserBehavior(userId, tenantId);
       } catch (error) {
         console.error('Error analyzing behavior:', error);
-        return { patterns: {}, insights: [], recommendations: [] };
+        return { 
+          patterns: {}, 
+          insights: [], 
+          recommendations: [], 
+          isAIEnhanced: false,
+          totalInteractions: 0 
+        };
       }
     },
     staleTime: 15 * 60 * 1000, // 15 minutes
@@ -45,8 +52,8 @@ export const useBehavioralAnalytics = () => {
     }) => {
       try {
         return await behavioralAnalyticsService.trackInteraction(
-          mockUserId,
-          mockTenantId,
+          userId,
+          tenantId,
           interactionType,
           context,
           metadata
@@ -60,10 +67,18 @@ export const useBehavioralAnalytics = () => {
 
   return {
     userPatterns: userPatterns || [],
-    behaviorAnalysis: behaviorAnalysis || { patterns: {}, insights: [], recommendations: [] },
+    behaviorAnalysis: behaviorAnalysis || { 
+      patterns: {}, 
+      insights: [], 
+      recommendations: [], 
+      isAIEnhanced: false,
+      totalInteractions: 0 
+    },
     patternsLoading,
     analysisLoading,
     trackInteraction: trackInteraction.mutateAsync,
-    isTracking: trackInteraction.isPending
+    isTracking: trackInteraction.isPending,
+    selectedTenantId: tenantId,
+    isAIEnhanced: behaviorAnalysis?.isAIEnhanced || false
   };
 };

@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserInteraction, BehavioralPattern } from '@/types/ai';
+import { tenantAIModelService } from './tenantAIModelService';
 
 export class BehavioralAnalyticsService {
   private sessionId: string;
@@ -130,14 +130,126 @@ export class BehavioralAnalyticsService {
         metadata: interaction.metadata as Record<string, any>
       })) as UserInteraction[];
 
-      // Simple behavior analysis
-      const analysis = this.performBehaviorAnalysis(typedInteractions);
+      // Enhanced behavior analysis with AI if tenant has it configured
+      let analysis = this.performBehaviorAnalysis(typedInteractions);
+      
+      if (tenantId) {
+        try {
+          const hasValidConfig = await tenantAIModelService.validateTenantAIConfig(tenantId);
+          if (hasValidConfig) {
+            analysis = await this.performAIEnhancedAnalysis(typedInteractions, tenantId, analysis);
+          }
+        } catch (error) {
+          console.error('Error performing AI-enhanced analysis:', error);
+          // Continue with basic analysis if AI fails
+        }
+      }
       
       return analysis;
     } catch (error) {
       console.error('Error analyzing user behavior:', error);
       return { patterns: [], insights: [], recommendations: [] };
     }
+  }
+
+  private async performAIEnhancedAnalysis(
+    interactions: UserInteraction[], 
+    tenantId: string, 
+    basicAnalysis: any
+  ): Promise<any> {
+    try {
+      const prompt = this.createBehaviorAnalysisPrompt(interactions, basicAnalysis);
+      
+      const aiResponse = await tenantAIModelService.makeAIRequest(tenantId, {
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a behavioral analytics expert. Analyze user interaction patterns and provide actionable insights and recommendations in JSON format.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        maxTokens: 800
+      });
+
+      // Try to parse AI response as JSON, fallback to text analysis
+      let aiInsights;
+      try {
+        aiInsights = JSON.parse(aiResponse.content);
+      } catch {
+        aiInsights = this.parseTextualAnalysis(aiResponse.content);
+      }
+
+      return {
+        ...basicAnalysis,
+        aiInsights: aiInsights.insights || [],
+        aiRecommendations: aiInsights.recommendations || [],
+        aiAnalysis: aiResponse.content,
+        isAIEnhanced: true
+      };
+    } catch (error) {
+      console.error('Error in AI-enhanced analysis:', error);
+      return basicAnalysis;
+    }
+  }
+
+  private createBehaviorAnalysisPrompt(interactions: UserInteraction[], basicAnalysis: any): string {
+    const interactionSummary = interactions.slice(0, 10).map(i => ({
+      type: i.interaction_type,
+      module: i.context.module,
+      timestamp: i.created_at
+    }));
+
+    return `
+Analyze the following user behavior data:
+
+Recent Interactions (last 10):
+${JSON.stringify(interactionSummary, null, 2)}
+
+Basic Analysis Results:
+- Total interactions: ${basicAnalysis.totalInteractions}
+- Interaction types: ${JSON.stringify(basicAnalysis.patterns.interactionTypes)}
+- Module usage: ${JSON.stringify(basicAnalysis.patterns.moduleUsage)}
+
+Please provide:
+1. Advanced behavioral insights
+2. Specific recommendations for improving user experience
+3. Potential workflow optimizations
+4. Risk factors or concerns
+
+Format your response as JSON with "insights" and "recommendations" arrays.
+    `;
+  }
+
+  private parseTextualAnalysis(content: string): any {
+    const insights: string[] = [];
+    const recommendations: string[] = [];
+    
+    const lines = content.split('\n');
+    let currentSection = '';
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.toLowerCase().includes('insight')) {
+        currentSection = 'insights';
+      } else if (trimmedLine.toLowerCase().includes('recommend')) {
+        currentSection = 'recommendations';
+      } else if (trimmedLine.startsWith('-') || trimmedLine.match(/^\d+\./)) {
+        const item = trimmedLine.replace(/^[-\d\.\s]+/, '').trim();
+        if (item) {
+          if (currentSection === 'insights') {
+            insights.push(item);
+          } else if (currentSection === 'recommendations') {
+            recommendations.push(item);
+          }
+        }
+      }
+    }
+    
+    return { insights, recommendations };
   }
 
   private performBehaviorAnalysis(interactions: UserInteraction[]): any {
