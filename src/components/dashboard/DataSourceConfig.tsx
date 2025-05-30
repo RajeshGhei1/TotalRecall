@@ -34,6 +34,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       operation: 'select',
       columns: '*',
       filters: [],
+      query: '', // Add query field for custom queries
     },
     refresh_interval: 300,
     cache_duration: 300,
@@ -57,6 +58,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
         operation: 'select',
         columns: '*',
         filters: [],
+        query: '',
       },
       refresh_interval: 300,
       cache_duration: 300,
