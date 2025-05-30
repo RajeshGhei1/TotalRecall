@@ -81,11 +81,13 @@ class TalentAnalyticsService {
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
       // Simplified queries without deep type instantiation
+      // @ts-ignore - Suppressing TypeScript deep instantiation error
       const { data: talentsData } = await supabase
         .from('talents')
         .select('*')
         .eq('tenant_id', tenantId);
 
+      // @ts-ignore - Suppressing TypeScript deep instantiation error
       const { data: peopleData } = await supabase
         .from('people')
         .select('*');
@@ -107,6 +109,7 @@ class TalentAnalyticsService {
 
   async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
+      // @ts-ignore - Suppressing TypeScript deep instantiation error
       const { data: behavioralPatterns } = await supabase
         .from('behavioral_patterns')
         .select('*')
@@ -128,6 +131,7 @@ class TalentAnalyticsService {
 
   async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
+      // @ts-ignore - Suppressing TypeScript deep instantiation error
       const { data: userSkills } = await supabase
         .from('talent_skills')
         .select('*')
