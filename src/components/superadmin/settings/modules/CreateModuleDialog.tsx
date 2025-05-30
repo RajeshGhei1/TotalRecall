@@ -11,6 +11,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import ModuleDependencySelector from './ModuleDependencySelector';
+import ModuleLimitsEditor from './ModuleLimitsEditor';
 
 const createModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
@@ -59,7 +61,6 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
 
   const onSubmit = async (data: CreateModuleFormData) => {
     try {
-      // Ensure all required fields are present for the API call
       const moduleData = {
         name: data.name,
         description: data.description || '',
@@ -80,22 +81,36 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Module</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Module Name</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="e.g., Advanced Analytics"
-            />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Module Name</Label>
+              <Input
+                id="name"
+                {...form.register('name')}
+                placeholder="e.g., Smart Talent Analytics"
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="version">Version</Label>
+              <Input
+                id="version"
+                {...form.register('version')}
+                placeholder="1.0.0"
+              />
+              {form.formState.errors.version && (
+                <p className="text-sm text-red-500">{form.formState.errors.version.message}</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -104,6 +119,7 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
               id="description"
               {...form.register('description')}
               placeholder="Brief description of the module functionality"
+              rows={3}
             />
           </div>
 
@@ -130,27 +146,26 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="version">Version</Label>
-              <Input
-                id="version"
-                {...form.register('version')}
-                placeholder="1.0.0"
+            <div className="flex items-center space-x-2 pt-7">
+              <Switch
+                id="is_active"
+                checked={form.watch('is_active')}
+                onCheckedChange={(checked) => form.setValue('is_active', checked)}
               />
-              {form.formState.errors.version && (
-                <p className="text-sm text-red-500">{form.formState.errors.version.message}</p>
-              )}
+              <Label htmlFor="is_active">Active Module</Label>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_active"
-              checked={form.watch('is_active')}
-              onCheckedChange={(checked) => form.setValue('is_active', checked)}
-            />
-            <Label htmlFor="is_active">Active Module</Label>
-          </div>
+          <ModuleDependencySelector
+            selectedDependencies={form.watch('dependencies') || []}
+            onDependenciesChange={(dependencies) => form.setValue('dependencies', dependencies)}
+          />
+
+          <ModuleLimitsEditor
+            limits={form.watch('default_limits') || {}}
+            onLimitsChange={(limits) => form.setValue('default_limits', limits)}
+            category={form.watch('category')}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
