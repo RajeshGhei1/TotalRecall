@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from '@/pages/superadmin/Dashboard';
 import Tenants from '@/pages/superadmin/Tenants';

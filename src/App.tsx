@@ -17,7 +17,18 @@ import { TenantProvider } from "@/contexts/TenantContext";
 import { FormProvider } from "@/contexts/FormContext";
 import ConditionalFormModal from "@/components/forms/integration/ConditionalFormModal";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on certain errors
+        if (error?.message?.includes('JWT')) return false;
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,9 +43,16 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
-                  {PublicRoutes()}
-                  {SuperAdminRoutes()}
-                  {TenantAdminRoutes()}
+                  <Route path="/superadmin/*" element={
+                    <AuthGuard requiresSuperAdmin>
+                      <SuperAdminRoutes />
+                    </AuthGuard>
+                  } />
+                  <Route path="/tenant-admin/*" element={
+                    <AuthGuard>
+                      <TenantAdminRoutes />
+                    </AuthGuard>
+                  } />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <ConditionalFormModal />

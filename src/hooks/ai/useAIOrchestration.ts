@@ -6,9 +6,16 @@ import { AIContext } from '@/types/ai';
 export const useAIOrchestration = () => {
   const queryClient = useQueryClient();
 
-  const { data: agents, isLoading: agentsLoading } = useQuery({
+  const { data: agents, isLoading: agentsLoading, error } = useQuery({
     queryKey: ['ai-agents'],
-    queryFn: () => aiOrchestrationService.getActiveAgents(),
+    queryFn: () => {
+      try {
+        return aiOrchestrationService.getActiveAgents();
+      } catch (error) {
+        console.error('Error fetching AI agents:', error);
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -35,7 +42,14 @@ export const useAIOrchestration = () => {
   });
 
   const refreshAgents = useMutation({
-    mutationFn: () => aiOrchestrationService.refreshAgents(),
+    mutationFn: async () => {
+      try {
+        await aiOrchestrationService.refreshAgents();
+      } catch (error) {
+        console.error('Error refreshing agents:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
     }
@@ -44,6 +58,7 @@ export const useAIOrchestration = () => {
   return {
     agents: agents || [],
     agentsLoading,
+    error,
     requestPrediction: requestPrediction.mutateAsync,
     provideFeedback: provideFeedback.mutateAsync,
     refreshAgents: refreshAgents.mutateAsync,

@@ -13,29 +13,48 @@ export const useBehavioralAnalytics = () => {
 
   const { data: userPatterns, isLoading: patternsLoading } = useQuery({
     queryKey: ['user-patterns', mockUserId, mockTenantId],
-    queryFn: () => behavioralAnalyticsService.getUserPatterns(mockUserId, mockTenantId),
+    queryFn: async () => {
+      try {
+        return await behavioralAnalyticsService.getUserPatterns(mockUserId, mockTenantId);
+      } catch (error) {
+        console.error('Error fetching user patterns:', error);
+        return [];
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const { data: behaviorAnalysis, isLoading: analysisLoading } = useQuery({
     queryKey: ['behavior-analysis', mockUserId, mockTenantId],
-    queryFn: () => behavioralAnalyticsService.analyzeUserBehavior(mockUserId, mockTenantId),
+    queryFn: async () => {
+      try {
+        return await behavioralAnalyticsService.analyzeUserBehavior(mockUserId, mockTenantId);
+      } catch (error) {
+        console.error('Error analyzing behavior:', error);
+        return { patterns: {}, insights: [], recommendations: [] };
+      }
+    },
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
 
   const trackInteraction = useMutation({
-    mutationFn: ({ interactionType, context, metadata }: {
+    mutationFn: async ({ interactionType, context, metadata }: {
       interactionType: string;
       context: Record<string, any>;
       metadata?: Record<string, any>;
     }) => {
-      return behavioralAnalyticsService.trackInteraction(
-        mockUserId,
-        mockTenantId,
-        interactionType,
-        context,
-        metadata
-      );
+      try {
+        return await behavioralAnalyticsService.trackInteraction(
+          mockUserId,
+          mockTenantId,
+          interactionType,
+          context,
+          metadata
+        );
+      } catch (error) {
+        console.error('Error tracking interaction:', error);
+        throw error;
+      }
     }
   });
 
