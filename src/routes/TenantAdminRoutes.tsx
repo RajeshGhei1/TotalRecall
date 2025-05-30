@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
 import Companies from "@/pages/tenant-admin/Companies";
 import Contacts from "@/pages/tenant-admin/Contacts";
@@ -18,13 +18,23 @@ import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettin
 const TenantAdminRoutes = () => {
   return (
     <Routes>
+      {/* Default redirect to dashboard */}
+      <Route index element={<Navigate to="dashboard" replace />} />
+      
+      {/* Core Tenant Pages */}
       <Route path="dashboard" element={<Dashboard />} />
+      
+      {/* Talent Management */}
       <Route path="ats" element={<ATS />} />
       <Route path="jobs" element={<Jobs />} />
       <Route path="talent" element={<Talent />} />
+      <Route path="smart-talent-analytics" element={<SmartTalentAnalytics />} />
+      
+      {/* Business Management */}
       <Route path="companies" element={<Companies />} />
       <Route path="contacts" element={<Contacts />} />
-      <Route path="smart-talent-analytics" element={<SmartTalentAnalytics />} />
+      
+      {/* Settings */}
       <Route path="settings" element={<Settings />} />
       <Route path="settings/general" element={<GeneralSettings />} />
       <Route path="settings/custom-fields" element={<CustomFieldsSettings />} />
@@ -32,6 +42,9 @@ const TenantAdminRoutes = () => {
       <Route path="settings/communication" element={<CommunicationSettings />} />
       <Route path="settings/outreach" element={<OutreachSettings />} />
       <Route path="settings/social-media" element={<SocialMediaSettings />} />
+      
+      {/* Block access to tenant management for tenant admins */}
+      <Route path="tenants/*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
 };
