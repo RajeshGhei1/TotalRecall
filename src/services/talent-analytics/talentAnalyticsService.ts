@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { aiOrchestrationService } from '@/services/ai/orchestrationService';
-import { AIContext } from '@/types/ai';
 
 export interface TalentAnalyticsRequest {
   tenantId: string;
@@ -20,7 +19,7 @@ class TalentAnalyticsService {
   async analyzeTalent(request: TalentAnalyticsRequest): Promise<TalentAnalyticsResult> {
     try {
       // Create AI context for talent analysis
-      const aiContext: AIContext = {
+      const aiContext = {
         user_id: 'system', // Using system for analytics
         tenant_id: request.tenantId,
         module: 'smart_talent_analytics',
@@ -42,8 +41,8 @@ class TalentAnalyticsService {
       return {
         insights: this.extractInsights(aiResult.result),
         predictions: this.extractPredictions(aiResult.result),
-        recommendations: aiResult.suggestions || [],
-        confidence: aiResult.confidence_score || 0
+        recommendations: this.extractRecommendations(aiResult),
+        confidence: this.extractConfidence(aiResult)
       };
     } catch (error) {
       console.error('Error in talent analytics:', error);
@@ -65,7 +64,21 @@ class TalentAnalyticsService {
     return [];
   }
 
-  async getSkillsGapAnalysis(tenantId: string) {
+  private extractRecommendations(aiResult: any): any[] {
+    if (aiResult && aiResult.suggestions) {
+      return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
+    }
+    return [];
+  }
+
+  private extractConfidence(aiResult: any): number {
+    if (aiResult && typeof aiResult.confidence_score === 'number') {
+      return aiResult.confidence_score;
+    }
+    return 0;
+  }
+
+  async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
       // Fetch talent data from database
       const { data: talents } = await supabase
@@ -93,7 +106,7 @@ class TalentAnalyticsService {
     }
   }
 
-  async getRetentionRiskAssessment(tenantId: string) {
+  async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
       // Fetch behavioral patterns and performance data
       const { data: behavioralPatterns } = await supabase
@@ -115,7 +128,7 @@ class TalentAnalyticsService {
     }
   }
 
-  async getCareerPathRecommendations(tenantId: string, userId: string) {
+  async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
       // Fetch user's skills, performance, and goals
       const { data: userSkills } = await supabase
