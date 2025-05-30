@@ -11,7 +11,9 @@ import {
   PieChart,
   Package,
   Cog,
-  TrendingUp
+  TrendingUp,
+  Brain,
+  Zap
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -45,6 +47,18 @@ const defaultNavItems: NavItem[] = [
     label: 'People', 
     icon: Users2, 
     href: '/superadmin/people'
+  },
+  { 
+    id: 'ai-orchestration',
+    label: 'AI Orchestration', 
+    icon: Brain, 
+    href: '/superadmin/ai-orchestration'
+  },
+  { 
+    id: 'ai-analytics',
+    label: 'AI Analytics', 
+    icon: Zap, 
+    href: '/superadmin/ai-analytics'
   },
   { 
     id: 'subscription-plans',

@@ -9,6 +9,244 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_agents: {
+        Row: {
+          capabilities: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          model_config: Json | null
+          name: string
+          performance_metrics: Json | null
+          status: Database["public"]["Enums"]["ai_agent_status"] | null
+          tenant_id: string | null
+          type: Database["public"]["Enums"]["ai_agent_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          capabilities?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          model_config?: Json | null
+          name: string
+          performance_metrics?: Json | null
+          status?: Database["public"]["Enums"]["ai_agent_status"] | null
+          tenant_id?: string | null
+          type: Database["public"]["Enums"]["ai_agent_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          capabilities?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          model_config?: Json | null
+          name?: string
+          performance_metrics?: Json | null
+          status?: Database["public"]["Enums"]["ai_agent_status"] | null
+          tenant_id?: string | null
+          type?: Database["public"]["Enums"]["ai_agent_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_decisions: {
+        Row: {
+          agent_id: string | null
+          confidence_score: number | null
+          context: Json
+          created_at: string | null
+          decision: Json
+          id: string
+          outcome_feedback: Json | null
+          reasoning: string[] | null
+          tenant_id: string | null
+          user_id: string | null
+          was_accepted: boolean | null
+        }
+        Insert: {
+          agent_id?: string | null
+          confidence_score?: number | null
+          context: Json
+          created_at?: string | null
+          decision: Json
+          id?: string
+          outcome_feedback?: Json | null
+          reasoning?: string[] | null
+          tenant_id?: string | null
+          user_id?: string | null
+          was_accepted?: boolean | null
+        }
+        Update: {
+          agent_id?: string | null
+          confidence_score?: number | null
+          context?: Json
+          created_at?: string | null
+          decision?: Json
+          id?: string
+          outcome_feedback?: Json | null
+          reasoning?: string[] | null
+          tenant_id?: string | null
+          user_id?: string | null
+          was_accepted?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_decisions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_decisions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_decisions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_insights: {
+        Row: {
+          agent_id: string | null
+          applicable_modules: string[] | null
+          confidence_score: number | null
+          created_at: string | null
+          expiry_date: string | null
+          id: string
+          insight_data: Json
+          insight_type: string
+          is_active: boolean | null
+          source_entities: Json | null
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          applicable_modules?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          insight_data: Json
+          insight_type: string
+          is_active?: boolean | null
+          source_entities?: Json | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          applicable_modules?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          insight_data?: Json
+          insight_type?: string
+          is_active?: boolean | null
+          source_entities?: Json | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_insights_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      behavioral_patterns: {
+        Row: {
+          created_at: string | null
+          frequency_score: number | null
+          id: string
+          last_occurrence: string | null
+          pattern_data: Json
+          pattern_type: string
+          tenant_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          frequency_score?: number | null
+          id?: string
+          last_occurrence?: string | null
+          pattern_data: Json
+          pattern_type: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          frequency_score?: number | null
+          id?: string
+          last_occurrence?: string | null
+          pattern_data?: Json
+          pattern_type?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "behavioral_patterns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "behavioral_patterns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           areaofspecialize: string | null
@@ -1666,6 +1904,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_interactions: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          id: string
+          interaction_type: string
+          ip_address: unknown | null
+          metadata: Json | null
+          session_id: string | null
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          interaction_type: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          session_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          session_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_interactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_navigation_preferences: {
         Row: {
           admin_type: string
@@ -1926,6 +2218,8 @@ export type Database = {
       }
     }
     Enums: {
+      ai_agent_status: "active" | "inactive" | "training" | "error"
+      ai_agent_type: "cognitive" | "predictive" | "automation" | "analysis"
       deployment_location:
         | "dashboard_widget"
         | "modal_dialog"
@@ -2056,6 +2350,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_agent_status: ["active", "inactive", "training", "error"],
+      ai_agent_type: ["cognitive", "predictive", "automation", "analysis"],
       deployment_location: [
         "dashboard_widget",
         "modal_dialog",
