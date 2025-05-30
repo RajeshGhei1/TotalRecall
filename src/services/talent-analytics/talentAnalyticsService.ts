@@ -81,6 +81,7 @@ class TalentAnalyticsService {
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
       // Use explicit type casting to avoid deep instantiation issues
+      // @ts-ignore
       const talentsQuery = supabase
         .from('talents')
         .select('*')
