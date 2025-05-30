@@ -1,26 +1,26 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { aiOrchestrationService } from '@/services/ai/orchestrationService';
-
-export interface TalentAnalyticsRequest {
-  tenantId: string;
-  analysisType: 'skills_gap' | 'retention_risk' | 'performance_prediction' | 'career_path';
-  parameters: Record<string, any>;
-}
-
-export interface TalentAnalyticsResult {
-  insights: any[];
-  predictions: any[];
-  recommendations: any[];
-  confidence: number;
-}
+import type {
+  TalentAnalyticsRequest,
+  TalentAnalyticsResult,
+  TalentAnalyticsInsight,
+  TalentAnalyticsPrediction,
+  TalentAnalyticsRecommendation,
+  AIOrchestrationResult,
+  AIInsightRecord,
+  TalentData,
+  PersonData,
+  BehavioralPatternData,
+  TalentSkillData
+} from '@/types/talent-analytics';
 
 class TalentAnalyticsService {
   async analyzeTalent(request: TalentAnalyticsRequest): Promise<TalentAnalyticsResult> {
     try {
       // Create AI context for talent analysis
       const aiContext = {
-        user_id: 'system', // Using system for analytics
+        user_id: 'system',
         tenant_id: request.tenantId,
         module: 'smart_talent_analytics',
         action: `analyze_${request.analysisType}`,
@@ -29,10 +29,10 @@ class TalentAnalyticsService {
           analysis_type: request.analysisType,
           parameters: request.parameters
         }
-      };
+      } as const;
 
       // Use AI orchestration service for analysis
-      const aiResult = await aiOrchestrationService.requestPrediction(aiContext, {
+      const aiResult: AIOrchestrationResult = await aiOrchestrationService.requestPrediction(aiContext, {
         model_type: 'analytics',
         analysis_depth: 'comprehensive'
       });
@@ -50,28 +50,41 @@ class TalentAnalyticsService {
     }
   }
 
-  private extractInsights(result: any): any[] {
-    if (result && typeof result === 'object' && result.insights) {
-      return Array.isArray(result.insights) ? result.insights : [result.insights];
+  private extractInsights(result: AIOrchestrationResult['result']): TalentAnalyticsInsight[] {
+    if (!result || typeof result !== 'object') {
+      return [];
     }
-    return [];
+
+    const { insights } = result;
+    if (!insights) {
+      return [];
+    }
+
+    return Array.isArray(insights) ? insights : [insights];
   }
 
-  private extractPredictions(result: any): any[] {
-    if (result && typeof result === 'object' && result.predictions) {
-      return Array.isArray(result.predictions) ? result.predictions : [result.predictions];
+  private extractPredictions(result: AIOrchestrationResult['result']): TalentAnalyticsPrediction[] {
+    if (!result || typeof result !== 'object') {
+      return [];
     }
-    return [];
+
+    const { predictions } = result;
+    if (!predictions) {
+      return [];
+    }
+
+    return Array.isArray(predictions) ? predictions : [predictions];
   }
 
-  private extractRecommendations(aiResult: any): any[] {
-    if (aiResult && aiResult.suggestions) {
-      return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
+  private extractRecommendations(aiResult: AIOrchestrationResult): TalentAnalyticsRecommendation[] {
+    if (!aiResult || !aiResult.suggestions) {
+      return [];
     }
-    return [];
+
+    return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
   }
 
-  private extractConfidence(aiResult: any): number {
+  private extractConfidence(aiResult: AIOrchestrationResult): number {
     if (aiResult && typeof aiResult.confidence_score === 'number') {
       return aiResult.confidence_score;
     }
@@ -80,23 +93,25 @@ class TalentAnalyticsService {
 
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch talent data from database
+      // Fetch talent data from database with explicit typing
       const { data: talents } = await supabase
         .from('talents')
         .select('*')
-        .eq('tenant_id', tenantId);
+        .eq('tenant_id', tenantId)
+        .returns<TalentData[]>();
 
       const { data: people } = await supabase
         .from('people')
-        .select('*');
+        .select('*')
+        .returns<PersonData[]>();
 
       // Analyze skills gaps using AI
       return this.analyzeTalent({
         tenantId,
         analysisType: 'skills_gap',
         parameters: {
-          talent_data: talents,
-          people_data: people,
+          talent_data: talents || [],
+          people_data: people || [],
           market_trends: true
         }
       });
@@ -108,17 +123,18 @@ class TalentAnalyticsService {
 
   async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch behavioral patterns and performance data
+      // Fetch behavioral patterns and performance data with explicit typing
       const { data: behavioralPatterns } = await supabase
         .from('behavioral_patterns')
         .select('*')
-        .eq('tenant_id', tenantId);
+        .eq('tenant_id', tenantId)
+        .returns<BehavioralPatternData[]>();
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'retention_risk',
         parameters: {
-          behavioral_patterns: behavioralPatterns,
+          behavioral_patterns: behavioralPatterns || [],
           include_external_factors: true
         }
       });
@@ -130,18 +146,19 @@ class TalentAnalyticsService {
 
   async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch user's skills, performance, and goals
+      // Fetch user's skills, performance, and goals with explicit typing
       const { data: userSkills } = await supabase
         .from('talent_skills')
         .select('*')
-        .eq('talent_id', userId);
+        .eq('talent_id', userId)
+        .returns<TalentSkillData[]>();
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'career_path',
         parameters: {
           user_id: userId,
-          current_skills: userSkills,
+          current_skills: userSkills || [],
           career_aspirations: true
         }
       });
@@ -151,7 +168,7 @@ class TalentAnalyticsService {
     }
   }
 
-  async generateTalentInsights(tenantId: string): Promise<any[]> {
+  async generateTalentInsights(tenantId: string): Promise<TalentAnalyticsInsight[]> {
     try {
       // Combine multiple analysis types for comprehensive insights
       const [skillsGap, retentionRisk] = await Promise.all([
@@ -160,7 +177,7 @@ class TalentAnalyticsService {
       ]);
 
       // Store insights in database for future reference
-      const insights = [
+      const insights: TalentAnalyticsInsight[] = [
         ...skillsGap.insights,
         ...retentionRisk.insights
       ];
@@ -174,20 +191,22 @@ class TalentAnalyticsService {
     }
   }
 
-  private async storeInsights(tenantId: string, insights: any[]): Promise<void> {
+  private async storeInsights(tenantId: string, insights: TalentAnalyticsInsight[]): Promise<void> {
     try {
-      const insightsToStore = insights.map(insight => ({
+      const insightsToStore: AIInsightRecord[] = insights.map(insight => ({
         tenant_id: tenantId,
         insight_type: 'talent_analytics',
-        insight_data: insight,
+        insight_data: insight as Record<string, unknown>,
         confidence_score: insight.confidence || 0.8,
         applicable_modules: ['smart_talent_analytics'],
         is_active: true
       }));
 
-      await supabase
-        .from('ai_insights')
-        .insert(insightsToStore);
+      if (insightsToStore.length > 0) {
+        await supabase
+          .from('ai_insights')
+          .insert(insightsToStore);
+      }
     } catch (error) {
       console.error('Error storing insights:', error);
     }
