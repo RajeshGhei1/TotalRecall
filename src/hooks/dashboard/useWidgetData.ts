@@ -44,7 +44,9 @@ const fetchTableData = async (config: Record<string, any>) => {
   });
 
   if (operation === 'count') {
-    const { count, error } = await query.select('*', { count: 'exact', head: true });
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true });
     if (error) throw error;
     return { count };
   }
