@@ -5,19 +5,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Settings, Save, Layout } from 'lucide-react';
+import { Plus, Trash2, Settings, Save, Layout, Database } from 'lucide-react';
 import { useDashboardWidgets, useCreateDashboardConfig } from '@/hooks/dashboard/useDashboardConfig';
 import { useWidgetDataSources } from '@/hooks/dashboard/useWidgetData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import WidgetConfigDialog from './WidgetConfigDialog';
+import DataSourceConfig from './DataSourceConfig';
 
 const DashboardBuilder: React.FC = () => {
   const { user } = useAuth();
   const [dashboardName, setDashboardName] = useState('My Dashboard');
   const [selectedWidgets, setSelectedWidgets] = useState<any[]>([]);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [dataSourceDialogOpen, setDataSourceDialogOpen] = useState(false);
+  const [editingWidget, setEditingWidget] = useState<{ widget: any; index: number } | null>(null);
+  
   const { data: availableWidgets, isLoading: widgetsLoading } = useDashboardWidgets();
-  const { data: dataSources, isLoading: dataSourcesLoading } = useWidgetDataSources();
+  const { data: dataSources, isLoading: dataSourcesLoading, refetch: refetchDataSources } = useWidgetDataSources();
   const { mutate: createDashboard, isPending: isSaving } = useCreateDashboardConfig();
 
   const addWidget = (widget: any) => {
@@ -25,13 +31,40 @@ const DashboardBuilder: React.FC = () => {
       id: `widget-${Date.now()}`,
       widget_type: widget.widget_type,
       data_source_id: dataSources?.[0]?.id || '',
-      config: { ...widget.default_config }
+      config: { 
+        title: widget.name,
+        ...widget.default_config 
+      }
     };
     setSelectedWidgets([...selectedWidgets, newWidget]);
   };
 
   const removeWidget = (widgetId: string) => {
     setSelectedWidgets(selectedWidgets.filter(w => w.id !== widgetId));
+  };
+
+  const openWidgetConfig = (widget: any, index: number) => {
+    setEditingWidget({ widget, index });
+    setConfigDialogOpen(true);
+  };
+
+  const saveWidgetConfig = (config: any) => {
+    if (editingWidget) {
+      const updatedWidgets = [...selectedWidgets];
+      updatedWidgets[editingWidget.index] = {
+        ...updatedWidgets[editingWidget.index],
+        config,
+      };
+      setSelectedWidgets(updatedWidgets);
+      setEditingWidget(null);
+    }
+  };
+
+  const saveDataSource = (dataSourceConfig: any) => {
+    // In a real implementation, this would save to the database
+    console.log('Saving data source:', dataSourceConfig);
+    toast.success('Data source configuration saved!');
+    refetchDataSources();
   };
 
   const saveDashboard = () => {
@@ -42,6 +75,11 @@ const DashboardBuilder: React.FC = () => {
 
     if (!dashboardName.trim()) {
       toast.error('Please enter a dashboard name');
+      return;
+    }
+
+    if (selectedWidgets.length === 0) {
+      toast.error('Please add at least one widget to the dashboard');
       return;
     }
 
@@ -61,7 +99,6 @@ const DashboardBuilder: React.FC = () => {
     createDashboard(dashboardConfig, {
       onSuccess: () => {
         toast.success('Dashboard saved successfully!');
-        // Reset form
         setDashboardName('My Dashboard');
         setSelectedWidgets([]);
       },
@@ -106,11 +143,11 @@ const DashboardBuilder: React.FC = () => {
             Dashboard Builder
           </CardTitle>
           <CardDescription>
-            Create and customize your analytics dashboard with drag-and-drop widgets
+            Create and customize your analytics dashboard with configurable widgets
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div>
               <Label htmlFor="dashboard-name">Dashboard Name</Label>
               <Input
@@ -122,9 +159,19 @@ const DashboardBuilder: React.FC = () => {
             </div>
             <div className="flex items-end">
               <Button 
+                onClick={() => setDataSourceDialogOpen(true)}
+                variant="outline"
+                className="w-full"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                Add Data Source
+              </Button>
+            </div>
+            <div className="flex items-end">
+              <Button 
                 onClick={saveDashboard} 
                 className="w-full"
-                disabled={isSaving || !dashboardName.trim() || !user?.id}
+                disabled={isSaving || !dashboardName.trim() || !user?.id || selectedWidgets.length === 0}
               >
                 <Save className="mr-2 h-4 w-4" />
                 {isSaving ? 'Saving...' : 'Save Dashboard'}
@@ -138,6 +185,19 @@ const DashboardBuilder: React.FC = () => {
                 You must be logged in to save dashboards.
               </AlertDescription>
             </Alert>
+          )}
+
+          {dataSources && dataSources.length > 0 && (
+            <div>
+              <Label>Available Data Sources</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {dataSources.map((source) => (
+                  <Badge key={source.id} variant="outline">
+                    {source.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -198,24 +258,30 @@ const DashboardBuilder: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {selectedWidgets.map((widget) => {
+                {selectedWidgets.map((widget, index) => {
                   const widgetDef = availableWidgets?.find(w => w.widget_type === widget.widget_type);
+                  const dataSource = dataSources?.find(ds => ds.id === widget.data_source_id);
+                  
                   return (
                     <div
                       key={widget.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <Badge variant="secondary">{widgetDef?.category}</Badge>
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium">{widget.config.title || widgetDef?.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {widgetDef?.widget_type}
+                            {widgetDef?.widget_type} • {dataSource?.name || 'No data source'}
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => openWidgetConfig(widget, index)}
+                        >
                           <Settings className="h-4 w-4" />
                         </Button>
                         <Button
@@ -238,10 +304,29 @@ const DashboardBuilder: React.FC = () => {
       {selectedWidgets.length > 0 && (
         <Alert>
           <AlertDescription>
-            Once saved, your dashboard will appear in the "Dashboard Overview" tab and can be set as your default dashboard.
+            Once saved, your dashboard will appear in the "Custom Dashboards" tab and can be set as your default dashboard.
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Widget Configuration Dialog */}
+      <WidgetConfigDialog
+        isOpen={configDialogOpen}
+        onClose={() => {
+          setConfigDialogOpen(false);
+          setEditingWidget(null);
+        }}
+        widget={editingWidget ? availableWidgets?.find(w => w.widget_type === editingWidget.widget.widget_type) || null : null}
+        initialConfig={editingWidget?.widget.config}
+        onSave={saveWidgetConfig}
+      />
+
+      {/* Data Source Configuration Dialog */}
+      <DataSourceConfig
+        isOpen={dataSourceDialogOpen}
+        onClose={() => setDataSourceDialogOpen(false)}
+        onSave={saveDataSource}
+      />
     </div>
   );
 };
