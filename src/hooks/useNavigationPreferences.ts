@@ -1,288 +1,146 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   id: string;
   label: string;
-  customLabel?: string;
-  icon: React.ComponentType<{ size?: string | number }>;
+  icon: LucideIcon;
   href: string;
+  requiresModule?: string; // Add optional module requirement
 }
 
 interface NavigationPreferences {
-  items: Array<{
-    id: string;
-    customLabel?: string;
-  }>;
+  [key: string]: {
+    order: string[];
+    hiddenItems: string[];
+    customLabels: { [key: string]: string };
+  };
 }
 
-export const useNavigationPreferences = (
-  adminType: 'super_admin' | 'tenant_admin',
-  defaultItems: NavItem[]
-) => {
-  const { user, bypassAuth } = useAuth();
-  const { toast } = useToast();
-  const [navItems, setNavItems] = useState<NavItem[]>(defaultItems);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useNavigationPreferences = (context: string, defaultItems: NavItem[]) => {
+  const [preferences, setPreferences] = useState<NavigationPreferences>({});
+  const [orderedItems, setOrderedItems] = useState<NavItem[]>(defaultItems);
 
-  // Generate storage key for localStorage fallback
-  const storageKey = `${adminType}-nav-order`;
-
-  // Load preferences from database or localStorage
   useEffect(() => {
-    const loadPreferences = async () => {
-      setError(null);
-      
-      if (bypassAuth) {
-        // In bypass mode, use localStorage
-        loadFromLocalStorage();
-        setIsLoading(false);
-        return;
-      }
-
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
+    const savedPreferences = localStorage.getItem('navigationPreferences');
+    if (savedPreferences) {
       try {
-        // Try to load from database first
-        const { data, error } = await supabase
-          .from('user_navigation_preferences')
-          .select('preferences')
-          .eq('user_id', user.id)
-          .eq('admin_type', adminType)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error loading navigation preferences:', error);
-          setError('Failed to load navigation preferences');
-          // Fallback to localStorage
-          loadFromLocalStorage();
-        } else if (data) {
-          // Successfully loaded from database
-          const preferences = data.preferences as unknown as NavigationPreferences;
-          applyPreferences(preferences);
-        } else {
-          // No preferences found, try to migrate from localStorage
-          migrateFromLocalStorage();
-        }
+        setPreferences(JSON.parse(savedPreferences));
       } catch (error) {
-        console.error('Unexpected error loading navigation preferences:', error);
-        setError('Failed to load navigation preferences');
-        loadFromLocalStorage();
+        console.error('Error parsing navigation preferences:', error);
       }
+    }
+  }, []);
 
-      setIsLoading(false);
-    };
+  useEffect(() => {
+    const contextPrefs = preferences[context];
+    if (!contextPrefs) {
+      setOrderedItems(defaultItems);
+      return;
+    }
 
-    loadPreferences();
-  }, [user, adminType, bypassAuth]);
+    // Filter out hidden items
+    const visibleItems = defaultItems.filter(item => 
+      !contextPrefs.hiddenItems?.includes(item.id)
+    );
 
-  const loadFromLocalStorage = () => {
-    try {
-      const savedData = localStorage.getItem(storageKey);
-      if (savedData) {
-        const parsedData = JSON.parse(savedData);
+    // Apply custom order if available
+    if (contextPrefs.order && contextPrefs.order.length > 0) {
+      const ordered = [...visibleItems].sort((a, b) => {
+        const aIndex = contextPrefs.order.indexOf(a.id);
+        const bIndex = contextPrefs.order.indexOf(b.id);
         
-        // Handle both old format (just IDs) and new format (full items with custom labels)
-        if (Array.isArray(parsedData) && typeof parsedData[0] === 'string') {
-          // Old format - just order IDs
-          const orderedItems = parsedData
-            .map((id: string) => defaultItems.find(item => item.id === id))
-            .filter(Boolean);
-          
-          const missingItems = defaultItems.filter(
-            item => !parsedData.includes(item.id)
-          );
-          
-          setNavItems([...orderedItems, ...missingItems]);
-        } else if (Array.isArray(parsedData) && parsedData[0]?.id) {
-          // New format - items with custom labels
-          const orderedItems = parsedData.map((savedItem: any) => {
-            const defaultItem = defaultItems.find(item => item.id === savedItem.id);
-            return defaultItem ? { ...defaultItem, customLabel: savedItem.customLabel } : null;
-          }).filter(Boolean);
-          
-          const missingItems = defaultItems.filter(
-            item => !parsedData.find((saved: any) => saved.id === item.id)
-          );
-          
-          setNavItems([...orderedItems, ...missingItems]);
+        // If both items are in the order array, sort by their position
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
         }
-      } else {
-        setNavItems(defaultItems);
-      }
-    } catch (error) {
-      console.error('Failed to parse saved navigation data:', error);
-      setNavItems(defaultItems);
-    }
-  };
-
-  const applyPreferences = (preferences: NavigationPreferences) => {
-    try {
-      const orderedItems = preferences.items.map((savedItem) => {
-        const defaultItem = defaultItems.find(item => item.id === savedItem.id);
-        return defaultItem ? { ...defaultItem, customLabel: savedItem.customLabel } : null;
-      }).filter(Boolean);
-      
-      const missingItems = defaultItems.filter(
-        item => !preferences.items.find((saved) => saved.id === item.id)
-      );
-      
-      setNavItems([...orderedItems, ...missingItems]);
-    } catch (error) {
-      console.error('Failed to apply preferences:', error);
-      setNavItems(defaultItems);
-    }
-  };
-
-  const migrateFromLocalStorage = async () => {
-    const savedData = localStorage.getItem(storageKey);
-    if (savedData && user && !bypassAuth) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        const preferences: NavigationPreferences = {
-          items: Array.isArray(parsedData) && parsedData[0]?.id 
-            ? parsedData.map((item: any) => ({
-                id: item.id,
-                customLabel: item.customLabel
-              }))
-            : parsedData.map((id: string) => ({ id }))
-        };
-
-        // Save to database
-        await saveToDatabase(preferences);
         
-        // Apply the migrated preferences
-        applyPreferences(preferences);
+        // If only one item is in the order array, it comes first
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
         
-        console.log('Successfully migrated navigation preferences to database');
-      } catch (error) {
-        console.error('Failed to migrate navigation preferences:', error);
-        loadFromLocalStorage();
-      }
+        // If neither item is in the order array, maintain original order
+        return 0;
+      });
+      
+      setOrderedItems(ordered);
     } else {
-      setNavItems(defaultItems);
+      setOrderedItems(visibleItems);
     }
-  };
 
-  const saveToDatabase = async (preferences: NavigationPreferences) => {
-    if (!user || bypassAuth) return;
+    // Apply custom labels
+    if (contextPrefs.customLabels) {
+      setOrderedItems(prev => prev.map(item => ({
+        ...item,
+        label: contextPrefs.customLabels[item.id] || item.label
+      })));
+    }
+  }, [preferences, context, defaultItems]);
 
-    try {
-      // Use proper upsert with on_conflict to handle duplicate keys
-      const { error } = await supabase
-        .from('user_navigation_preferences')
-        .upsert({
-          user_id: user.id,
-          admin_type: adminType,
-          preferences: preferences as any,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,admin_type',
-          ignoreDuplicates: false
-        });
-
-      if (error) {
-        throw error;
+  const updateOrder = (newOrder: string[]) => {
+    const updated = {
+      ...preferences,
+      [context]: {
+        ...preferences[context],
+        order: newOrder
       }
-    } catch (error) {
-      console.error('Error saving navigation preferences to database:', error);
-      throw error;
-    }
-  };
-
-  const savePreferences = async (items: NavItem[]) => {
-    const preferences: NavigationPreferences = {
-      items: items.map(item => ({
-        id: item.id,
-        customLabel: item.customLabel
-      }))
     };
-
-    // Always save to localStorage as backup
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(preferences.items));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-    }
-
-    // Save to database if user is authenticated
-    if (user && !bypassAuth) {
-      try {
-        await saveToDatabase(preferences);
-        setError(null);
-      } catch (error) {
-        console.error('Database save failed:', error);
-        setError('Failed to sync navigation preferences');
-        toast({
-          title: "Warning",
-          description: "Failed to sync navigation preferences. Changes saved locally only.",
-          variant: "destructive"
-        });
-      }
-    }
+    setPreferences(updated);
+    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
   };
 
-  const updateNavOrder = async (newItems: NavItem[]) => {
-    setNavItems(newItems);
-    await savePreferences(newItems);
-  };
-
-  const updateNavLabel = async (id: string, newLabel: string) => {
-    const updatedItems = navItems.map(item => 
-      item.id === id ? { ...item, customLabel: newLabel } : item
-    );
-    setNavItems(updatedItems);
-    await savePreferences(updatedItems);
-  };
-
-  const resetNavLabel = async (id: string) => {
-    const updatedItems = navItems.map(item => 
-      item.id === id ? { ...item, customLabel: undefined } : item
-    );
-    setNavItems(updatedItems);
-    await savePreferences(updatedItems);
-  };
-
-  const resetToDefault = async () => {
-    setNavItems(defaultItems);
+  const toggleItemVisibility = (itemId: string) => {
+    const contextPrefs = preferences[context] || { order: [], hiddenItems: [], customLabels: {} };
+    const isHidden = contextPrefs.hiddenItems.includes(itemId);
     
-    // Clear localStorage
-    try {
-      localStorage.removeItem(storageKey);
-    } catch (error) {
-      console.error('Failed to clear localStorage:', error);
-    }
-    
-    // Clear database
-    if (user && !bypassAuth) {
-      try {
-        await supabase
-          .from('user_navigation_preferences')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('admin_type', adminType);
-        setError(null);
-      } catch (error) {
-        console.error('Error clearing navigation preferences from database:', error);
-        setError('Failed to reset navigation preferences');
+    const updatedHiddenItems = isHidden
+      ? contextPrefs.hiddenItems.filter(id => id !== itemId)
+      : [...contextPrefs.hiddenItems, itemId];
+
+    const updated = {
+      ...preferences,
+      [context]: {
+        ...contextPrefs,
+        hiddenItems: updatedHiddenItems
       }
-    }
+    };
+    
+    setPreferences(updated);
+    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
+  };
+
+  const updateItemLabel = (itemId: string, newLabel: string) => {
+    const contextPrefs = preferences[context] || { order: [], hiddenItems: [], customLabels: {} };
+    
+    const updated = {
+      ...preferences,
+      [context]: {
+        ...contextPrefs,
+        customLabels: {
+          ...contextPrefs.customLabels,
+          [itemId]: newLabel
+        }
+      }
+    };
+    
+    setPreferences(updated);
+    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
+  };
+
+  const resetToDefaults = () => {
+    const updated = { ...preferences };
+    delete updated[context];
+    setPreferences(updated);
+    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
   };
 
   return {
-    navItems,
-    updateNavOrder,
-    updateNavLabel,
-    resetNavLabel,
-    resetToDefault,
-    isLoading,
-    error
+    items: orderedItems,
+    updateOrder,
+    toggleItemVisibility,
+    updateItemLabel,
+    resetToDefaults,
+    hiddenItems: preferences[context]?.hiddenItems || []
   };
 };

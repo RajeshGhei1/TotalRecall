@@ -14,8 +14,38 @@ import ApiSettings from "@/pages/tenant-admin/settings/ApiSettings";
 import CommunicationSettings from "@/pages/tenant-admin/settings/CommunicationSettings";
 import OutreachSettings from "@/pages/tenant-admin/settings/OutreachSettings";
 import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettings";
+import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleAccessGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const TenantAdminRoutes = () => {
+  const { user, bypassAuth } = useAuth();
+
+  // Get current tenant ID for module access checks
+  const { data: tenantData } = useQuery({
+    queryKey: ['currentTenantData', user?.id],
+    queryFn: async () => {
+      if (bypassAuth) {
+        return { tenant_id: 'mock-tenant-id' };
+      }
+      
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_tenants')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user || bypassAuth,
+  });
+
+  const currentTenantId = tenantData?.tenant_id || null;
+
   return (
     <Routes>
       {/* Default redirect to dashboard */}
@@ -24,11 +54,45 @@ const TenantAdminRoutes = () => {
       {/* Core Tenant Pages */}
       <Route path="dashboard" element={<Dashboard />} />
       
-      {/* Talent Management */}
-      <Route path="ats" element={<ATS />} />
-      <Route path="jobs" element={<Jobs />} />
-      <Route path="talent" element={<Talent />} />
-      <Route path="smart-talent-analytics" element={<SmartTalentAnalytics />} />
+      {/* ATS Core Module Protected Routes */}
+      <Route path="ats" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="ats_core" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <ATS />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="jobs" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="ats_core" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Jobs />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="talent/*" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="ats_core" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Talent />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Smart Talent Analytics - separate module */}
+      <Route path="smart-talent-analytics" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="smart_talent_analytics" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <SmartTalentAnalytics />
+        </UnifiedModuleAccessGuard>
+      } />
       
       {/* Business Management */}
       <Route path="companies" element={<Companies />} />
