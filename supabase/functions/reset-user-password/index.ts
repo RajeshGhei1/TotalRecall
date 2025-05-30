@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface ResetPasswordRequest {
   userId: string;
-  tenantId: string;
+  tenantId: string | null;
   newPassword: string;
 }
 
@@ -33,9 +33,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { userId, tenantId, newPassword }: ResetPasswordRequest = await req.json();
 
-    console.log('Password reset request for user:', userId, 'in tenant:', tenantId);
+    console.log('Password reset request for user:', userId, 'in tenant:', tenantId || 'super admin context');
 
-    // Verify the requesting user has permission (tenant admin or super admin)
+    // Verify the requesting user has permission (tenant admin, super admin, or user in tenant)
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       throw new Error('No authorization header');
@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Unauthorized');
     }
 
-    // Check if the requesting user is a tenant admin for this tenant or super admin
+    // Check if the requesting user is a super admin or tenant admin
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role')
@@ -57,7 +57,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (profile?.role === 'super_admin') {
       // Super admin can reset any password
-    } else {
+      console.log('Super admin resetting password for user:', userId);
+    } else if (tenantId) {
       // Check if user is tenant admin for this specific tenant
       const { data: userTenant } = await supabaseAdmin
         .from('user_tenants')
@@ -69,18 +70,20 @@ const handler = async (req: Request): Promise<Response> => {
       if (!userTenant || userTenant.user_role !== 'tenant_admin') {
         throw new Error('Insufficient permissions');
       }
-    }
 
-    // Verify the target user exists and is in the specified tenant
-    const { data: targetUserTenant } = await supabaseAdmin
-      .from('user_tenants')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('tenant_id', tenantId)
-      .single();
+      // Verify the target user exists and is in the specified tenant
+      const { data: targetUserTenant } = await supabaseAdmin
+        .from('user_tenants')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
+        .single();
 
-    if (!targetUserTenant) {
-      throw new Error('User not found in tenant');
+      if (!targetUserTenant) {
+        throw new Error('User not found in tenant');
+      }
+    } else {
+      throw new Error('Insufficient permissions');
     }
 
     // Reset the user's password using admin API

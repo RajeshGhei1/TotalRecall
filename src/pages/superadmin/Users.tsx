@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,9 +27,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Key } from 'lucide-react';
 import CreateUserDialog from '@/components/superadmin/CreateUserDialog';
+import ResetPasswordDialog from '@/components/tenant-user-manager/ResetPasswordDialog';
 import { useToast } from '@/hooks/use-toast';
+import { useSuperAdminUsers } from '@/hooks/useSuperAdminUsers';
 
 interface User {
   id: string;
@@ -43,8 +44,18 @@ interface User {
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [resetPasswordDialog, setResetPasswordDialog] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userEmail: string;
+  }>({
+    isOpen: false,
+    userId: "",
+    userEmail: ""
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { resetPasswordPending, handleResetPassword } = useSuperAdminUsers();
   
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -83,6 +94,31 @@ const Users = () => {
     });
     queryClient.invalidateQueries({ queryKey: ['users'] });
     setIsCreateDialogOpen(false);
+  };
+
+  const handleResetPasswordClick = (userId: string, userEmail: string) => {
+    setResetPasswordDialog({
+      isOpen: true,
+      userId,
+      userEmail
+    });
+  };
+
+  const handleResetPasswordConfirm = (newPassword: string) => {
+    handleResetPassword(resetPasswordDialog.userId, newPassword);
+    setResetPasswordDialog({
+      isOpen: false,
+      userId: "",
+      userEmail: ""
+    });
+  };
+
+  const handleResetPasswordClose = () => {
+    setResetPasswordDialog({
+      isOpen: false,
+      userId: "",
+      userEmail: ""
+    });
   };
 
   return (
@@ -147,6 +183,7 @@ const Users = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -164,6 +201,16 @@ const Users = () => {
                         <TableCell>
                           {new Date(user.created_at).toLocaleDateString()}
                         </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleResetPasswordClick(user.id, user.email)}
+                            title="Reset Password"
+                          >
+                            <Key className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -178,6 +225,14 @@ const Users = () => {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onCreateSuccess={handleCreateSuccess}
+      />
+
+      <ResetPasswordDialog
+        isOpen={resetPasswordDialog.isOpen}
+        onClose={handleResetPasswordClose}
+        onConfirm={handleResetPasswordConfirm}
+        userEmail={resetPasswordDialog.userEmail}
+        isLoading={resetPasswordPending}
       />
     </AdminLayout>
   );
