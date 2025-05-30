@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import ModuleDependencySelector from './ModuleDependencySelector';
+import ModuleLimitsEditor from './ModuleLimitsEditor';
 
 const editModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
@@ -96,53 +99,22 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Module</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Module Name</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="e.g., Advanced Analytics"
-            />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              {...form.register('description')}
-              placeholder="Brief description of the module functionality"
-            />
-          </div>
-
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select 
-                value={form.watch('category')}
-                onValueChange={(value) => form.setValue('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.category && (
-                <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+              <Label htmlFor="name">Module Name</Label>
+              <Input
+                id="name"
+                {...form.register('name')}
+                placeholder="e.g., Smart Talent Analytics"
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
               )}
             </div>
 
@@ -159,14 +131,59 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_active"
-              checked={form.watch('is_active')}
-              onCheckedChange={(checked) => form.setValue('is_active', checked)}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              {...form.register('description')}
+              placeholder="Brief description of the module functionality"
+              rows={3}
             />
-            <Label htmlFor="is_active">Active Module</Label>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select 
+                value={form.watch('category')}
+                onValueChange={(value) => form.setValue('category', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.category && (
+                <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-2 pt-7">
+              <Switch
+                id="is_active"
+                checked={form.watch('is_active')}
+                onCheckedChange={(checked) => form.setValue('is_active', checked)}
+              />
+              <Label htmlFor="is_active">Active Module</Label>
+            </div>
+          </div>
+
+          <ModuleDependencySelector
+            selectedDependencies={form.watch('dependencies') || []}
+            onDependenciesChange={(dependencies) => form.setValue('dependencies', dependencies)}
+          />
+
+          <ModuleLimitsEditor
+            limits={form.watch('default_limits') || {}}
+            onLimitsChange={(limits) => form.setValue('default_limits', limits)}
+            category={form.watch('category')}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
