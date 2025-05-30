@@ -1,15 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, Activity, TrendingUp, Settings } from 'lucide-react';
 import { useAIOrchestration } from '@/hooks/ai/useAIOrchestration';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import { AIAgent } from '@/types/ai';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const AIOrchestrationManager: React.FC = () => {
   const { agents, agentsLoading, refreshAgents } = useAIOrchestration();
+  const { data: modules, isLoading: modulesLoading } = useSystemModules();
+  const [selectedModule, setSelectedModule] = useState<string>('all');
 
   const handleRefreshAgents = () => {
     refreshAgents();
@@ -35,7 +45,18 @@ export const AIOrchestrationManager: React.FC = () => {
     }
   };
 
-  if (agentsLoading) {
+  // Filter agents based on selected module
+  const filteredAgents = selectedModule === 'all' 
+    ? agents 
+    : agents.filter(agent => {
+        // For now, we'll filter by capabilities that might contain module names
+        // In a real implementation, you'd have a direct module association
+        return agent.capabilities.some(capability => 
+          capability.toLowerCase().includes(selectedModule.toLowerCase())
+        );
+      });
+
+  if (agentsLoading || modulesLoading) {
     return (
       <div className="space-y-6">
         <div className="h-8 bg-gray-200 rounded animate-pulse" />
@@ -73,6 +94,44 @@ export const AIOrchestrationManager: React.FC = () => {
         </Button>
       </div>
 
+      {/* Module Selector */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Filter by Module
+          </CardTitle>
+          <CardDescription>
+            Select a module to filter AI agents by their associated capabilities
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <label htmlFor="module-select" className="text-sm font-medium">
+              Module:
+            </label>
+            <Select value={selectedModule} onValueChange={setSelectedModule}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select a module" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Modules</SelectItem>
+                {modules?.map((module) => (
+                  <SelectItem key={module.id} value={module.name}>
+                    {module.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedModule !== 'all' && (
+              <Badge variant="outline">
+                Filtering by: {modules?.find(m => m.name === selectedModule)?.name || selectedModule}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -80,7 +139,10 @@ export const AIOrchestrationManager: React.FC = () => {
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{agents.length}</div>
+            <div className="text-2xl font-bold">{filteredAgents.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {selectedModule === 'all' ? 'All modules' : `In ${selectedModule}`}
+            </p>
           </CardContent>
         </Card>
         
@@ -91,8 +153,11 @@ export const AIOrchestrationManager: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {agents.filter(a => a.status === 'active').length}
+              {filteredAgents.filter(a => a.status === 'active').length}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Currently active
+            </p>
           </CardContent>
         </Card>
         
@@ -103,8 +168,11 @@ export const AIOrchestrationManager: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {agents.filter(a => a.type === 'cognitive').length}
+              {filteredAgents.filter(a => a.type === 'cognitive').length}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Cognitive type
+            </p>
           </CardContent>
         </Card>
         
@@ -115,8 +183,11 @@ export const AIOrchestrationManager: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {agents.filter(a => a.type === 'predictive').length}
+              {filteredAgents.filter(a => a.type === 'predictive').length}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Predictive type
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -130,7 +201,7 @@ export const AIOrchestrationManager: React.FC = () => {
 
         <TabsContent value="agents" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {agents.map((agent: AIAgent) => {
+            {filteredAgents.map((agent: AIAgent) => {
               const IconComponent = getTypeIcon(agent.type);
               return (
                 <Card key={agent.id}>
@@ -189,13 +260,18 @@ export const AIOrchestrationManager: React.FC = () => {
             })}
           </div>
           
-          {agents.length === 0 && (
+          {filteredAgents.length === 0 && (
             <Card>
               <CardContent className="text-center py-8">
                 <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No AI Agents Found</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {selectedModule === 'all' ? 'No AI Agents Found' : `No AI Agents for ${selectedModule}`}
+                </h3>
                 <p className="text-muted-foreground">
-                  AI agents will appear here once they are configured and activated.
+                  {selectedModule === 'all' 
+                    ? 'AI agents will appear here once they are configured and activated.'
+                    : `No AI agents are currently associated with the ${selectedModule} module.`
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -208,6 +284,7 @@ export const AIOrchestrationManager: React.FC = () => {
               <CardTitle>AI Performance Metrics</CardTitle>
               <CardDescription>
                 Monitor the performance and effectiveness of AI agents across the platform
+                {selectedModule !== 'all' && ` for ${selectedModule} module`}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -224,6 +301,7 @@ export const AIOrchestrationManager: React.FC = () => {
               <CardTitle>AI Configuration</CardTitle>
               <CardDescription>
                 Configure AI agents, models, and orchestration settings
+                {selectedModule !== 'all' && ` for ${selectedModule} module`}
               </CardDescription>
             </CardHeader>
             <CardContent>
