@@ -5,7 +5,7 @@ import SortableNavigation from './SortableNavigation';
 import { NavItem } from '@/types/navigation';
 
 const TenantAdminNav = () => {
-  const { items } = useTenantAdminNavigation();
+  const { items, updateOrder, updateItemLabel, resetToDefaults } = useTenantAdminNavigation();
 
   if (!items || items.length === 0) {
     return (
@@ -19,12 +19,18 @@ const TenantAdminNav = () => {
     );
   }
 
+  // Convert NavItem[] to string[] for the updateOrder function
+  const handleReorder = (newItems: typeof items) => {
+    const newOrder = newItems.map(item => item.id);
+    updateOrder(newOrder);
+  };
+
   return (
     <SortableNavigation 
       items={items} 
-      onReorder={() => {}} // TODO: Implement reorder functionality
-      onRename={() => {}} // TODO: Implement rename functionality
-      onResetLabel={() => {}} // TODO: Implement reset functionality
+      onReorder={handleReorder}
+      onRename={updateItemLabel}
+      onResetLabel={resetToDefaults}
     />
   );
 };

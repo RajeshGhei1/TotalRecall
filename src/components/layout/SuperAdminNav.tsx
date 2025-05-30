@@ -7,10 +7,16 @@ import { ErrorDisplay } from '@/components/ui/error-display';
 const SuperAdminNav = () => {
   const { items, updateOrder, updateItemLabel, resetToDefaults } = useSuperAdminNavigation();
 
+  // Convert NavItem[] to string[] for the updateOrder function
+  const handleReorder = (newItems: typeof items) => {
+    const newOrder = newItems.map(item => item.id);
+    updateOrder(newOrder);
+  };
+
   return (
     <SortableNavigation 
       items={items} 
-      onReorder={updateOrder}
+      onReorder={handleReorder}
       onRename={updateItemLabel}
       onResetLabel={resetToDefaults}
     />
