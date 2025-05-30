@@ -5,9 +5,9 @@ import SortableNavigation from './SortableNavigation';
 import { NavItem } from '@/types/navigation';
 
 const TenantAdminNav = () => {
-  const { navItems, isLoading } = useTenantAdminNavigation();
+  const { items } = useTenantAdminNavigation();
 
-  if (isLoading || !navItems || navItems.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="p-4">
         <div className="animate-pulse space-y-2">
@@ -19,17 +19,9 @@ const TenantAdminNav = () => {
     );
   }
 
-  // Transform NavigationItem[] to NavItem[] - use label instead of title
-  const transformedNavItems: NavItem[] = navItems.map(item => ({
-    id: item.id,
-    label: item.label,
-    icon: item.icon,
-    href: item.href
-  }));
-
   return (
     <SortableNavigation 
-      items={transformedNavItems} 
+      items={items} 
       onReorder={() => {}} // TODO: Implement reorder functionality
       onRename={() => {}} // TODO: Implement rename functionality
       onResetLabel={() => {}} // TODO: Implement reset functionality
