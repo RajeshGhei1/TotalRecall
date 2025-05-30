@@ -196,6 +196,75 @@ export type Database = {
           },
         ]
       }
+      applications: {
+        Row: {
+          ai_match_reasons: Json | null
+          ai_match_score: number | null
+          applied_at: string
+          candidate_id: string
+          cover_letter: string | null
+          created_at: string
+          id: string
+          interview_feedback: Json | null
+          job_id: string
+          next_action: string | null
+          next_action_date: string | null
+          recruiter_notes: string | null
+          status: Database["public"]["Enums"]["application_status"] | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_match_reasons?: Json | null
+          ai_match_score?: number | null
+          applied_at?: string
+          candidate_id: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          interview_feedback?: Json | null
+          job_id: string
+          next_action?: string | null
+          next_action_date?: string | null
+          recruiter_notes?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_match_reasons?: Json | null
+          ai_match_score?: number | null
+          applied_at?: string
+          candidate_id?: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          interview_feedback?: Json | null
+          job_id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          recruiter_notes?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavioral_patterns: {
         Row: {
           created_at: string | null
@@ -246,6 +315,105 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      candidate_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      candidates: {
+        Row: {
+          ai_summary: string | null
+          availability_date: string | null
+          created_at: string
+          current_company: string | null
+          current_title: string | null
+          desired_salary: number | null
+          email: string
+          experience_years: number | null
+          first_name: string
+          id: string
+          last_name: string
+          linkedin_url: string | null
+          location: string | null
+          notes: string | null
+          phone: string | null
+          portfolio_url: string | null
+          resume_text: string | null
+          resume_url: string | null
+          skills: Json | null
+          tags: Json | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          availability_date?: string | null
+          created_at?: string
+          current_company?: string | null
+          current_title?: string | null
+          desired_salary?: number | null
+          email: string
+          experience_years?: number | null
+          first_name: string
+          id?: string
+          last_name: string
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          resume_text?: string | null
+          resume_url?: string | null
+          skills?: Json | null
+          tags?: Json | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          availability_date?: string | null
+          created_at?: string
+          current_company?: string | null
+          current_title?: string | null
+          desired_salary?: number | null
+          email?: string
+          experience_years?: number | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          resume_text?: string | null
+          resume_url?: string | null
+          skills?: Json | null
+          tags?: Json | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       companies: {
         Row: {
@@ -1327,6 +1495,125 @@ export type Database = {
           },
         ]
       }
+      interviews: {
+        Row: {
+          application_id: string
+          created_at: string
+          duration_minutes: number | null
+          feedback: Json | null
+          id: string
+          interviewer_id: string | null
+          location: string | null
+          meeting_link: string | null
+          notes: string | null
+          scheduled_at: string
+          score: number | null
+          status: string | null
+          type: Database["public"]["Enums"]["interview_type"]
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          duration_minutes?: number | null
+          feedback?: Json | null
+          id?: string
+          interviewer_id?: string | null
+          location?: string | null
+          meeting_link?: string | null
+          notes?: string | null
+          scheduled_at: string
+          score?: number | null
+          status?: string | null
+          type: Database["public"]["Enums"]["interview_type"]
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          duration_minutes?: number | null
+          feedback?: Json | null
+          id?: string
+          interviewer_id?: string | null
+          location?: string | null
+          meeting_link?: string | null
+          notes?: string | null
+          scheduled_at?: string
+          score?: number | null
+          status?: string | null
+          type?: Database["public"]["Enums"]["interview_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          description: string | null
+          employment_type: string | null
+          hiring_manager_id: string | null
+          id: string
+          location: string | null
+          priority: Database["public"]["Enums"]["priority_level"] | null
+          requirements: Json | null
+          salary_max: number | null
+          salary_min: number | null
+          status: Database["public"]["Enums"]["job_status"] | null
+          tenant_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          hiring_manager_id?: string | null
+          id?: string
+          location?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"] | null
+          requirements?: Json | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          employment_type?: string | null
+          hiring_manager_id?: string | null
+          id?: string
+          location?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"] | null
+          requirements?: Json | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       module_permissions: {
         Row: {
           created_at: string
@@ -2220,6 +2507,13 @@ export type Database = {
     Enums: {
       ai_agent_status: "active" | "inactive" | "training" | "error"
       ai_agent_type: "cognitive" | "predictive" | "automation" | "analysis"
+      application_status:
+        | "applied"
+        | "screening"
+        | "interview"
+        | "offer"
+        | "hired"
+        | "rejected"
       deployment_location:
         | "dashboard_widget"
         | "modal_dialog"
@@ -2227,7 +2521,10 @@ export type Database = {
         | "navigation_item"
         | "inline_embed"
         | "sidebar_panel"
+      interview_type: "phone" | "video" | "onsite" | "technical"
+      job_status: "draft" | "active" | "paused" | "closed"
       placement_status: "active" | "inactive" | "scheduled" | "expired"
+      priority_level: "low" | "medium" | "high" | "urgent"
       trigger_type:
         | "user_action"
         | "page_load"
@@ -2352,6 +2649,14 @@ export const Constants = {
     Enums: {
       ai_agent_status: ["active", "inactive", "training", "error"],
       ai_agent_type: ["cognitive", "predictive", "automation", "analysis"],
+      application_status: [
+        "applied",
+        "screening",
+        "interview",
+        "offer",
+        "hired",
+        "rejected",
+      ],
       deployment_location: [
         "dashboard_widget",
         "modal_dialog",
@@ -2360,7 +2665,10 @@ export const Constants = {
         "inline_embed",
         "sidebar_panel",
       ],
+      interview_type: ["phone", "video", "onsite", "technical"],
+      job_status: ["draft", "active", "paused", "closed"],
       placement_status: ["active", "inactive", "scheduled", "expired"],
+      priority_level: ["low", "medium", "high", "urgent"],
       trigger_type: [
         "user_action",
         "page_load",

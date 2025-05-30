@@ -18,9 +18,9 @@ export interface TalentAnalyticsResult {
 class TalentAnalyticsService {
   async analyzeTalent(request: TalentAnalyticsRequest): Promise<TalentAnalyticsResult> {
     try {
-      // Create AI context for talent analysis - using any to avoid circular types
-      const aiContext: any = {
-        user_id: 'system', // Using system for analytics
+      // Create AI context for talent analysis
+      const aiContext = {
+        user_id: 'system',
         tenant_id: request.tenantId,
         module: 'smart_talent_analytics',
         action: `analyze_${request.analysisType}`,
@@ -31,8 +31,8 @@ class TalentAnalyticsService {
         }
       };
 
-      // Use AI orchestration service for analysis - using any for parameters
-      const aiResult: any = await aiOrchestrationService.requestPrediction(aiContext, {
+      // Use AI orchestration service for analysis
+      const aiResult = await aiOrchestrationService.requestPrediction(aiContext, {
         model_type: 'analytics',
         analysis_depth: 'comprehensive'
       });
@@ -80,7 +80,6 @@ class TalentAnalyticsService {
 
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch talent data from database
       const { data: talents } = await supabase
         .from('talents')
         .select('*')
@@ -90,7 +89,6 @@ class TalentAnalyticsService {
         .from('people')
         .select('*');
 
-      // Analyze skills gaps using AI
       return this.analyzeTalent({
         tenantId,
         analysisType: 'skills_gap',
@@ -108,7 +106,6 @@ class TalentAnalyticsService {
 
   async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch behavioral patterns and performance data
       const { data: behavioralPatterns } = await supabase
         .from('behavioral_patterns')
         .select('*')
@@ -130,8 +127,7 @@ class TalentAnalyticsService {
 
   async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Fetch user's skills, performance, and goals - using any to avoid type issues
-      const { data: userSkills }: { data: any } = await supabase
+      const { data: userSkills } = await supabase
         .from('talent_skills')
         .select('*')
         .eq('talent_id', userId);
@@ -153,20 +149,17 @@ class TalentAnalyticsService {
 
   async generateTalentInsights(tenantId: string): Promise<any[]> {
     try {
-      // Combine multiple analysis types for comprehensive insights
       const [skillsGap, retentionRisk] = await Promise.all([
         this.getSkillsGapAnalysis(tenantId),
         this.getRetentionRiskAssessment(tenantId)
       ]);
 
-      // Store insights in database for future reference
       const insights = [
         ...skillsGap.insights,
         ...retentionRisk.insights
       ];
 
       await this.storeInsights(tenantId, insights);
-
       return insights;
     } catch (error) {
       console.error('Error generating talent insights:', error);
@@ -176,11 +169,10 @@ class TalentAnalyticsService {
 
   private async storeInsights(tenantId: string, insights: any[]): Promise<void> {
     try {
-      // Using any to avoid Supabase type conflicts
-      const insightsToStore: any[] = insights.map(insight => ({
+      const insightsToStore = insights.map(insight => ({
         tenant_id: tenantId,
         insight_type: 'talent_analytics',
-        insight_data: insight as any, // Explicit cast to any
+        insight_data: insight,
         confidence_score: insight.confidence || 0.8,
         applicable_modules: ['smart_talent_analytics'],
         is_active: true
