@@ -14,7 +14,6 @@ import ApiSettings from "@/pages/tenant-admin/settings/ApiSettings";
 import CommunicationSettings from "@/pages/tenant-admin/settings/CommunicationSettings";
 import OutreachSettings from "@/pages/tenant-admin/settings/OutreachSettings";
 import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettings";
-import SetupWizard from "@/pages/tenant-admin/settings/SetupWizard";
 
 const TenantAdminRoutes = () => {
   return (
@@ -33,7 +32,6 @@ const TenantAdminRoutes = () => {
       <Route path="settings/communication" element={<CommunicationSettings />} />
       <Route path="settings/outreach" element={<OutreachSettings />} />
       <Route path="settings/social-media" element={<SocialMediaSettings />} />
-      <Route path="settings/setup-wizard" element={<SetupWizard />} />
     </Routes>
   );
 };

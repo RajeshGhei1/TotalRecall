@@ -3,6 +3,50 @@ import { supabase } from '@/integrations/supabase/client';
 import { Job, Candidate, Application, Interview, CandidateTag, ATSFilters } from '@/types/ats';
 
 class ATSService {
+  // Helper function to safely convert Json to string array
+  private jsonToStringArray(json: any): string[] {
+    if (Array.isArray(json)) {
+      return json.filter(item => typeof item === 'string');
+    }
+    if (typeof json === 'string') {
+      try {
+        const parsed = JSON.parse(json);
+        return Array.isArray(parsed) ? parsed.filter(item => typeof item === 'string') : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  // Helper function to convert database job to Job interface
+  private convertDbJobToJob(dbJob: any): Job {
+    return {
+      ...dbJob,
+      requirements: this.jsonToStringArray(dbJob.requirements)
+    };
+  }
+
+  // Helper function to convert database candidate to Candidate interface
+  private convertDbCandidateToCandidate(dbCandidate: any): Candidate {
+    return {
+      ...dbCandidate,
+      skills: this.jsonToStringArray(dbCandidate.skills),
+      tags: this.jsonToStringArray(dbCandidate.tags)
+    };
+  }
+
+  // Helper function to convert database application to Application interface
+  private convertDbApplicationToApplication(dbApplication: any): Application {
+    return {
+      ...dbApplication,
+      ai_match_reasons: this.jsonToStringArray(dbApplication.ai_match_reasons),
+      interview_feedback: Array.isArray(dbApplication.interview_feedback) ? dbApplication.interview_feedback : [],
+      job: dbApplication.job ? this.convertDbJobToJob(dbApplication.job) : undefined,
+      candidate: dbApplication.candidate ? this.convertDbCandidateToCandidate(dbApplication.candidate) : undefined
+    };
+  }
+
   // Jobs
   async getJobs(tenantId?: string): Promise<Job[]> {
     let query = supabase
@@ -16,30 +60,38 @@ class ATSService {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(job => this.convertDbJobToJob(job));
   }
 
   async createJob(job: Partial<Job>): Promise<Job> {
     const { data, error } = await supabase
       .from('jobs')
-      .insert([job])
+      .insert([{
+        ...job,
+        requirements: JSON.stringify(job.requirements || [])
+      }])
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbJobToJob(data);
   }
 
   async updateJob(id: string, updates: Partial<Job>): Promise<Job> {
+    const updateData = {
+      ...updates,
+      requirements: updates.requirements ? JSON.stringify(updates.requirements) : undefined
+    };
+
     const { data, error } = await supabase
       .from('jobs')
-      .update(updates)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbJobToJob(data);
   }
 
   // Candidates
@@ -63,30 +115,40 @@ class ATSService {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(candidate => this.convertDbCandidateToCandidate(candidate));
   }
 
   async createCandidate(candidate: Partial<Candidate>): Promise<Candidate> {
     const { data, error } = await supabase
       .from('candidates')
-      .insert([candidate])
+      .insert([{
+        ...candidate,
+        skills: JSON.stringify(candidate.skills || []),
+        tags: JSON.stringify(candidate.tags || [])
+      }])
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbCandidateToCandidate(data);
   }
 
   async updateCandidate(id: string, updates: Partial<Candidate>): Promise<Candidate> {
+    const updateData = {
+      ...updates,
+      skills: updates.skills ? JSON.stringify(updates.skills) : undefined,
+      tags: updates.tags ? JSON.stringify(updates.tags) : undefined
+    };
+
     const { data, error } = await supabase
       .from('candidates')
-      .update(updates)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbCandidateToCandidate(data);
   }
 
   // Applications
@@ -105,18 +167,24 @@ class ATSService {
     }
 
     if (filters?.status?.length) {
-      query = query.in('status', filters.status);
+      // Type cast to ensure compatibility
+      const statusFilters = filters.status as ("applied" | "screening" | "interview" | "offer" | "hired" | "rejected")[];
+      query = query.in('status', statusFilters);
     }
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(application => this.convertDbApplicationToApplication(application));
   }
 
   async createApplication(application: Partial<Application>): Promise<Application> {
     const { data, error } = await supabase
       .from('applications')
-      .insert([application])
+      .insert([{
+        ...application,
+        ai_match_reasons: JSON.stringify(application.ai_match_reasons || []),
+        interview_feedback: JSON.stringify(application.interview_feedback || [])
+      }])
       .select(`
         *,
         job:jobs(*),
@@ -125,7 +193,7 @@ class ATSService {
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbApplicationToApplication(data);
   }
 
   async updateApplicationStatus(id: string, status: Application['status'], notes?: string): Promise<Application> {
@@ -146,7 +214,7 @@ class ATSService {
       .single();
 
     if (error) throw error;
-    return data;
+    return this.convertDbApplicationToApplication(data);
   }
 
   // Interviews
@@ -211,12 +279,11 @@ class ATSService {
         throw new Error('Failed to fetch candidate or job data');
       }
 
-      // Simple matching algorithm (can be enhanced with AI)
-      const candidate = candidateData.data;
-      const job = jobData.data;
+      // Convert database objects to proper types
+      const candidate = this.convertDbCandidateToCandidate(candidateData.data);
+      const job = this.convertDbJobToJob(jobData.data);
       
       let score = 0;
-      const factors = [];
 
       // Skills matching
       const candidateSkills = candidate.skills || [];
@@ -228,27 +295,23 @@ class ATSService {
       );
       const skillScore = (skillMatches.length / Math.max(jobRequirements.length, 1)) * 40;
       score += skillScore;
-      factors.push(`Skills match: ${skillMatches.length}/${jobRequirements.length} (${skillScore.toFixed(1)} points)`);
 
       // Experience matching
       if (candidate.experience_years && candidate.experience_years >= 1) {
         const expScore = Math.min(candidate.experience_years * 3, 30);
         score += expScore;
-        factors.push(`Experience: ${candidate.experience_years} years (${expScore.toFixed(1)} points)`);
       }
 
       // Location matching
       if (candidate.location && job.location && 
           candidate.location.toLowerCase().includes(job.location.toLowerCase())) {
         score += 20;
-        factors.push('Location match (+20 points)');
       }
 
       // Title relevance
       if (candidate.current_title && job.title &&
           candidate.current_title.toLowerCase().includes(job.title.toLowerCase().split(' ')[0])) {
         score += 10;
-        factors.push('Title relevance (+10 points)');
       }
 
       return Math.min(Math.round(score), 100);
