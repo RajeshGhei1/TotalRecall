@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Job, Candidate, Application, Interview, CandidateTag, ATSFilters } from '@/types/ats';
 
@@ -313,9 +312,15 @@ class ATSService {
   }
 
   async createCandidateTag(tag: Partial<CandidateTag>): Promise<CandidateTag> {
+    const tagData = {
+      name: tag.name || '',
+      color: tag.color || '#3B82F6',
+      description: tag.description
+    };
+
     const { data, error } = await supabase
       .from('candidate_tags')
-      .insert([tag])
+      .insert([tagData])
       .select()
       .single();
 

@@ -80,21 +80,27 @@ class TalentAnalyticsService {
 
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      const { data: talents } = await supabase
+      // Use explicit type casting to avoid deep instantiation issues
+      const talentsQuery = supabase
         .from('talents')
         .select('*')
         .eq('tenant_id', tenantId);
 
-      const { data: people } = await supabase
+      const peopleQuery = supabase
         .from('people')
         .select('*');
+
+      const [talentsResult, peopleResult] = await Promise.all([
+        talentsQuery,
+        peopleQuery
+      ]);
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'skills_gap',
         parameters: {
-          talent_data: talents,
-          people_data: people,
+          talent_data: talentsResult.data || [],
+          people_data: peopleResult.data || [],
           market_trends: true
         }
       });
@@ -106,16 +112,18 @@ class TalentAnalyticsService {
 
   async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      const { data: behavioralPatterns } = await supabase
+      const behavioralQuery = supabase
         .from('behavioral_patterns')
         .select('*')
         .eq('tenant_id', tenantId);
+
+      const { data: behavioralPatterns } = await behavioralQuery;
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'retention_risk',
         parameters: {
-          behavioral_patterns: behavioralPatterns,
+          behavioral_patterns: behavioralPatterns || [],
           include_external_factors: true
         }
       });
@@ -127,17 +135,19 @@ class TalentAnalyticsService {
 
   async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
-      const { data: userSkills } = await supabase
+      const skillsQuery = supabase
         .from('talent_skills')
         .select('*')
         .eq('talent_id', userId);
+
+      const { data: userSkills } = await skillsQuery;
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'career_path',
         parameters: {
           user_id: userId,
-          current_skills: userSkills,
+          current_skills: userSkills || [],
           career_aspirations: true
         }
       });
