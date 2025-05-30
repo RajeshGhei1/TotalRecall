@@ -45,13 +45,14 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/pricing" element={<Pricing />} />
                   
-                  {/* Protected Admin Routes */}
+                  {/* Protected Super Admin Routes */}
                   <Route path="/superadmin/*" element={
                     <AuthGuard requiresSuperAdmin>
                       <SuperAdminRoutes />
                     </AuthGuard>
                   } />
                   
+                  {/* Protected Tenant Admin Routes */}
                   <Route path="/tenant-admin/*" element={
                     <AuthGuard>
                       <TenantAdminRoutes />

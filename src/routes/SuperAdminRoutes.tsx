@@ -34,11 +34,6 @@ const SuperAdminRoutes = () => {
       {/* Settings */}
       <Route path="settings" element={<Settings />} />
       <Route path="global-settings" element={<GlobalSettings />} />
-      
-      {/* Legacy redirects */}
-      <Route path="analytics" element={<Navigate to="dashboard" replace />} />
-      <Route path="revenue" element={<Navigate to="dashboard" replace />} />
-      <Route path="form-builder" element={<Navigate to="settings" replace />} />
     </Routes>
   );
 };

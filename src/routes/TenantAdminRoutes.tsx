@@ -42,9 +42,6 @@ const TenantAdminRoutes = () => {
       <Route path="settings/communication" element={<CommunicationSettings />} />
       <Route path="settings/outreach" element={<OutreachSettings />} />
       <Route path="settings/social-media" element={<SocialMediaSettings />} />
-      
-      {/* Block access to tenant management for tenant admins */}
-      <Route path="tenants/*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
 };
