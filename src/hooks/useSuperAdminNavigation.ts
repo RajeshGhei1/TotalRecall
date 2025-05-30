@@ -18,7 +18,7 @@ import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 const defaultNavItems: NavItem[] = [
   { 
     id: 'dashboard',
-    label: 'Dashboard', 
+    label: 'BI Dashboard', 
     icon: LayoutDashboard, 
     href: '/superadmin/dashboard'
   },
@@ -51,12 +51,6 @@ const defaultNavItems: NavItem[] = [
     label: 'Subscription Plans', 
     icon: Package, 
     href: '/superadmin/subscription-plans'
-  },
-  { 
-    id: 'analytics-business-intelligence',
-    label: 'Analytics & BI', 
-    icon: TrendingUp, 
-    href: '/superadmin/analytics-business-intelligence'
   },
   { 
     id: 'global-settings',

@@ -1,7 +1,6 @@
 
 import { Route } from "react-router-dom";
-import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
-import SuperAdminAnalyticsBusinessIntelligence from "@/pages/superadmin/AnalyticsBusinessIntelligence";
+import UnifiedDashboard from "@/pages/superadmin/UnifiedDashboard";
 import SuperAdminUsers from "@/pages/superadmin/Users";
 import SuperAdminTenants from "@/pages/superadmin/Tenants";
 import SuperAdminSettings from "@/pages/superadmin/Settings";
@@ -20,19 +19,10 @@ const SuperAdminRoutes = () => [
     path="/superadmin/dashboard"
     element={
       <AuthGuard>
-        <SuperAdminDashboard />
+        <UnifiedDashboard />
       </AuthGuard>
     }
     key="superadmin-dashboard"
-  />,
-  <Route
-    path="/superadmin/analytics-business-intelligence"
-    element={
-      <AuthGuard>
-        <SuperAdminAnalyticsBusinessIntelligence />
-      </AuthGuard>
-    }
-    key="superadmin-analytics-bi"
   />,
   <Route
     path="/superadmin/users"
