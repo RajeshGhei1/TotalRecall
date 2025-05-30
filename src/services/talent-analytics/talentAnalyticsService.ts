@@ -80,28 +80,22 @@ class TalentAnalyticsService {
 
   async getSkillsGapAnalysis(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      // Use explicit type casting to avoid deep instantiation issues
-      // @ts-ignore
-      const talentsQuery = supabase
+      // Simplified queries without deep type instantiation
+      const { data: talentsData } = await supabase
         .from('talents')
         .select('*')
         .eq('tenant_id', tenantId);
 
-      const peopleQuery = supabase
+      const { data: peopleData } = await supabase
         .from('people')
         .select('*');
-
-      const [talentsResult, peopleResult] = await Promise.all([
-        talentsQuery,
-        peopleQuery
-      ]);
 
       return this.analyzeTalent({
         tenantId,
         analysisType: 'skills_gap',
         parameters: {
-          talent_data: talentsResult.data || [],
-          people_data: peopleResult.data || [],
+          talent_data: talentsData || [],
+          people_data: peopleData || [],
           market_trends: true
         }
       });
@@ -113,12 +107,10 @@ class TalentAnalyticsService {
 
   async getRetentionRiskAssessment(tenantId: string): Promise<TalentAnalyticsResult> {
     try {
-      const behavioralQuery = supabase
+      const { data: behavioralPatterns } = await supabase
         .from('behavioral_patterns')
         .select('*')
         .eq('tenant_id', tenantId);
-
-      const { data: behavioralPatterns } = await behavioralQuery;
 
       return this.analyzeTalent({
         tenantId,
@@ -136,12 +128,10 @@ class TalentAnalyticsService {
 
   async getCareerPathRecommendations(tenantId: string, userId: string): Promise<TalentAnalyticsResult> {
     try {
-      const skillsQuery = supabase
+      const { data: userSkills } = await supabase
         .from('talent_skills')
         .select('*')
         .eq('talent_id', userId);
-
-      const { data: userSkills } = await skillsQuery;
 
       return this.analyzeTalent({
         tenantId,
