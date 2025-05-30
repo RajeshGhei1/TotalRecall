@@ -58,14 +58,14 @@ const PlanCard: React.FC<{
   return (
     <>
       <Card 
-        className={`group cursor-pointer transition-all duration-300 hover:shadow-xl border-2 ${
+        className={`group cursor-pointer transition-all duration-300 hover:shadow-xl ${
           isSelected 
-            ? 'border-blue-400 bg-blue-50/40 shadow-lg ring-2 ring-blue-100' 
+            ? 'border-blue-500 bg-blue-50/50 shadow-lg ring-2 ring-blue-200' 
             : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50/50'
         } h-full flex flex-col overflow-hidden`}
         onClick={onSelect}
       >
-        <CardContent className="p-8 flex flex-col h-full space-y-6">
+        <CardContent className="p-6 flex flex-col h-full space-y-6">
           {/* Header Section */}
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4 min-w-0 flex-1">
