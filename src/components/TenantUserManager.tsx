@@ -24,8 +24,10 @@ const TenantUserManager: React.FC<TenantUserManagerProps> = ({
     tenantUsers,
     isLoading,
     addUserPending,
+    resetPasswordPending,
     handleAddUser,
     handleRoleChange,
+    handleResetPassword,
     removeUserMutation
   } = useTenantUsers(tenantId);
 
@@ -59,6 +61,8 @@ const TenantUserManager: React.FC<TenantUserManagerProps> = ({
             isLoading={isLoading}
             onRoleChange={handleRoleChange}
             onRemoveUser={(id) => removeUserMutation.mutate(id)}
+            onResetPassword={handleResetPassword}
+            resetPasswordPending={resetPasswordPending}
           />
         </div>
 

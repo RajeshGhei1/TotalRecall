@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +156,36 @@ export const useTenantUsers = (tenantId: string) => {
     },
   });
 
+  // Reset user password
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string, newPassword: string }) => {
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: {
+          userId,
+          tenantId,
+          newPassword,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Password reset failed');
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password reset",
+        description: "User password has been reset successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to reset password: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter out users that are already in the tenant
   const filteredAvailableUsers = availableUsers.filter(
     (user) => !tenantUsers.some((tu) => tu.user.id === user.id)
@@ -179,6 +208,10 @@ export const useTenantUsers = (tenantId: string) => {
     }
   };
 
+  const handleResetPassword = (userId: string, newPassword: string) => {
+    resetPasswordMutation.mutate({ userId, newPassword });
+  };
+
   return {
     selectedUserId,
     setSelectedUserId,
@@ -190,8 +223,10 @@ export const useTenantUsers = (tenantId: string) => {
     tenantUsers,
     isLoading,
     addUserPending: addUserMutation.isPending,
+    resetPasswordPending: resetPasswordMutation.isPending,
     handleAddUser,
     handleRoleChange,
+    handleResetPassword,
     removeUserMutation
   };
 };
