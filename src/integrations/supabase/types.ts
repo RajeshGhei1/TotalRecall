@@ -321,6 +321,137 @@ export type Database = {
           },
         ]
       }
+      dashboard_layouts: {
+        Row: {
+          config_id: string
+          created_at: string
+          height: number
+          id: string
+          position_x: number
+          position_y: number
+          updated_at: string
+          widget_config: Json | null
+          widget_id: string
+          width: number
+        }
+        Insert: {
+          config_id: string
+          created_at?: string
+          height?: number
+          id?: string
+          position_x?: number
+          position_y?: number
+          updated_at?: string
+          widget_config?: Json | null
+          widget_id: string
+          width?: number
+        }
+        Update: {
+          config_id?: string
+          created_at?: string
+          height?: number
+          id?: string
+          position_x?: number
+          position_y?: number
+          updated_at?: string
+          widget_config?: Json | null
+          widget_id?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_layouts_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "user_dashboard_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          layout_config: Json
+          name: string
+          target_role: string | null
+          template_type: string
+          updated_at: string
+          widget_configs: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          layout_config?: Json
+          name: string
+          target_role?: string | null
+          template_type?: string
+          updated_at?: string
+          widget_configs?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          layout_config?: Json
+          name?: string
+          target_role?: string | null
+          template_type?: string
+          updated_at?: string
+          widget_configs?: Json
+        }
+        Relationships: []
+      }
+      dashboard_widgets: {
+        Row: {
+          category: string
+          config_schema: Json
+          created_at: string
+          data_source_config: Json
+          default_config: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          widget_type: string
+        }
+        Insert: {
+          category: string
+          config_schema?: Json
+          created_at?: string
+          data_source_config?: Json
+          default_config?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          widget_type: string
+        }
+        Update: {
+          category?: string
+          config_schema?: Json
+          created_at?: string
+          data_source_config?: Json
+          default_config?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          widget_type?: string
+        }
+        Relationships: []
+      }
       dropdown_option_categories: {
         Row: {
           created_at: string
@@ -1496,6 +1627,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_dashboard_configs: {
+        Row: {
+          created_at: string
+          dashboard_name: string
+          filters: Json | null
+          id: string
+          is_default: boolean | null
+          layout_config: Json
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+          widget_configs: Json
+        }
+        Insert: {
+          created_at?: string
+          dashboard_name: string
+          filters?: Json | null
+          id?: string
+          is_default?: boolean | null
+          layout_config?: Json
+          tenant_id?: string | null
+          updated_at?: string
+          user_id: string
+          widget_configs?: Json
+        }
+        Update: {
+          created_at?: string
+          dashboard_name?: string
+          filters?: Json | null
+          id?: string
+          is_default?: boolean | null
+          layout_config?: Json
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+          widget_configs?: Json
+        }
+        Relationships: []
+      }
       user_navigation_preferences: {
         Row: {
           admin_type: string
@@ -1631,6 +1801,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      widget_data_sources: {
+        Row: {
+          cache_duration: number | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          query_config: Json
+          refresh_interval: number | null
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          cache_duration?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          query_config?: Json
+          refresh_interval?: number | null
+          source_type: string
+          updated_at?: string
+        }
+        Update: {
+          cache_duration?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          query_config?: Json
+          refresh_interval?: number | null
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       workflow_execution_logs: {
         Row: {

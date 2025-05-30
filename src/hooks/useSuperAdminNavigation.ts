@@ -10,7 +10,8 @@ import {
   Users2,
   PieChart,
   Package,
-  Cog
+  Cog,
+  TrendingUp
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -52,16 +53,10 @@ const defaultNavItems: NavItem[] = [
     href: '/superadmin/subscription-plans'
   },
   { 
-    id: 'revenue',
-    label: 'Revenue', 
-    icon: CircleDollarSign, 
-    href: '/superadmin/revenue'
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics', 
-    icon: PieChart, 
-    href: '/superadmin/analytics'
+    id: 'analytics-business-intelligence',
+    label: 'Analytics & BI', 
+    icon: TrendingUp, 
+    href: '/superadmin/analytics-business-intelligence'
   },
   { 
     id: 'global-settings',

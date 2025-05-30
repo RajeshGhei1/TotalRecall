@@ -1,7 +1,7 @@
 
 import { Route } from "react-router-dom";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
-import SuperAdminAnalytics from "@/pages/superadmin/Analytics";
+import SuperAdminAnalyticsBusinessIntelligence from "@/pages/superadmin/AnalyticsBusinessIntelligence";
 import SuperAdminUsers from "@/pages/superadmin/Users";
 import SuperAdminTenants from "@/pages/superadmin/Tenants";
 import SuperAdminSettings from "@/pages/superadmin/Settings";
@@ -9,7 +9,6 @@ import SuperAdminTalents from "@/pages/superadmin/Talents";
 import SuperAdminCompanies from "@/pages/superadmin/Companies";
 import SuperAdminPeople from "@/pages/superadmin/People";
 import SuperAdminContacts from "@/pages/superadmin/Contacts";
-import SuperAdminRevenue from "@/pages/superadmin/Revenue";
 import SuperAdminSubscriptionPlans from "@/pages/superadmin/SubscriptionPlans";
 import SuperAdminGlobalSettings from "@/pages/superadmin/GlobalSettings";
 import AuthGuard from "@/components/AuthGuard";
@@ -27,13 +26,13 @@ const SuperAdminRoutes = () => [
     key="superadmin-dashboard"
   />,
   <Route
-    path="/superadmin/analytics"
+    path="/superadmin/analytics-business-intelligence"
     element={
       <AuthGuard>
-        <SuperAdminAnalytics />
+        <SuperAdminAnalyticsBusinessIntelligence />
       </AuthGuard>
     }
-    key="superadmin-analytics"
+    key="superadmin-analytics-bi"
   />,
   <Route
     path="/superadmin/users"
@@ -133,15 +132,6 @@ const SuperAdminRoutes = () => [
       </AuthGuard>
     }
     key="superadmin-subscription-plans"
-  />,
-  <Route
-    path="/superadmin/revenue"
-    element={
-      <AuthGuard>
-        <SuperAdminRevenue />
-      </AuthGuard>
-    }
-    key="superadmin-revenue"
   />
 ];
 
