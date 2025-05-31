@@ -23,7 +23,12 @@ export const useAIAgents = (tenantId?: string) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(agent => ({
+        ...agent,
+        model_config: (agent.model_config as Record<string, any>) || {},
+        performance_metrics: (agent.performance_metrics as Record<string, any>) || {}
+      }));
     }
   });
 
@@ -31,12 +36,20 @@ export const useAIAgents = (tenantId?: string) => {
     mutationFn: async (agentData: Omit<AIAgent, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('ai_agents')
-        .insert([agentData])
+        .insert([{
+          ...agentData,
+          model_config: agentData.model_config as any,
+          performance_metrics: agentData.performance_metrics as any
+        }])
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        model_config: (data.model_config as Record<string, any>) || {},
+        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
@@ -56,15 +69,25 @@ export const useAIAgents = (tenantId?: string) => {
 
   const updateAgentMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AIAgent> }) => {
+      const updateData = {
+        ...updates,
+        ...(updates.model_config && { model_config: updates.model_config as any }),
+        ...(updates.performance_metrics && { performance_metrics: updates.performance_metrics as any })
+      };
+      
       const { data, error } = await supabase
         .from('ai_agents')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        model_config: (data.model_config as Record<string, any>) || {},
+        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
@@ -117,7 +140,11 @@ export const useAIAgents = (tenantId?: string) => {
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        model_config: (data.model_config as Record<string, any>) || {},
+        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents'] });

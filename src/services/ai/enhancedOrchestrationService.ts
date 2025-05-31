@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { AIAgent, AIDecision, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
@@ -38,8 +39,8 @@ export class EnhancedAIOrchestrationService {
       (agents || []).forEach(agent => {
         const typedAgent: AIAgent = {
           ...agent,
-          model_config: agent.model_config as Record<string, any>,
-          performance_metrics: agent.performance_metrics as Record<string, any>
+          model_config: (agent.model_config as Record<string, any>) || {},
+          performance_metrics: (agent.performance_metrics as Record<string, any>) || {}
         };
         this.agents.set(agent.id, typedAgent);
       });
@@ -101,7 +102,7 @@ export class EnhancedAIOrchestrationService {
         })
         .eq('context_hash', contextHash);
 
-      return data.cached_response as AIResponse;
+      return data.cached_response as unknown as AIResponse;
     } catch (error) {
       console.error('Error checking cache:', error);
       return null;
@@ -121,7 +122,7 @@ export class EnhancedAIOrchestrationService {
           agent_id: request.agent_id,
           tenant_id: request.context.tenant_id,
           context_hash: contextHash,
-          cached_response: response,
+          cached_response: response as any,
           expires_at: expiresAt.toISOString(),
           hit_count: 0
         });
@@ -328,7 +329,7 @@ export class EnhancedAIOrchestrationService {
           status,
           response_time_ms: responseTime || 0,
           error_message: error?.message,
-          context: request.context
+          context: request.context as any
         });
     } catch (logError) {
       console.error('Error logging request:', logError);
@@ -488,8 +489,8 @@ export class EnhancedAIOrchestrationService {
         agent_id: request.agent_id,
         user_id: request.context.user_id,
         tenant_id: request.context.tenant_id,
-        context: request.context,
-        decision: response.result,
+        context: request.context as any,
+        decision: response.result as any,
         confidence_score: response.confidence_score,
         reasoning: response.reasoning,
         outcome_feedback: null,

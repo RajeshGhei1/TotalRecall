@@ -34,7 +34,11 @@ export const useAIModels = () => {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(model => ({
+        ...model,
+        configuration: (model.configuration as Record<string, any>) || {}
+      }));
     }
   });
 
@@ -42,12 +46,18 @@ export const useAIModels = () => {
     mutationFn: async (modelData: Omit<AIModel, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('ai_models')
-        .insert([modelData])
+        .insert([{
+          ...modelData,
+          configuration: modelData.configuration as any
+        }])
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        configuration: (data.configuration as Record<string, any>) || {}
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-models'] });
@@ -67,15 +77,23 @@ export const useAIModels = () => {
 
   const updateModelMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AIModel> }) => {
+      const updateData = {
+        ...updates,
+        ...(updates.configuration && { configuration: updates.configuration as any })
+      };
+      
       const { data, error } = await supabase
         .from('ai_models')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        configuration: (data.configuration as Record<string, any>) || {}
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-models'] });
