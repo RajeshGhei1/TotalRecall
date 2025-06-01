@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AIAgent, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
@@ -6,6 +5,8 @@ import { aiCacheService } from './aiCacheService';
 import { aiMetricsService } from './aiMetricsService';
 import { aiAgentSelector } from './aiAgentSelector';
 import { aiRequestProcessor } from './aiRequestProcessor';
+import { aiModelHealthService } from './aiModelHealthService';
+import { aiCostTrackingService } from './aiCostTrackingService';
 
 export class EnhancedAIOrchestrationService {
   private agents: Map<string, AIAgent> = new Map();
@@ -16,6 +17,13 @@ export class EnhancedAIOrchestrationService {
     console.log('Initializing Enhanced AI Orchestration Service...');
     await this.loadActiveAgents();
     this.startQueueProcessor();
+
+    // Initialize health monitoring if not already done
+    try {
+      await aiModelHealthService.initializeHealthMonitoring();
+    } catch (error) {
+      console.log('Health monitoring already initialized or failed:', error);
+    }
   }
 
   private async loadActiveAgents(): Promise<void> {
@@ -60,6 +68,17 @@ export class EnhancedAIOrchestrationService {
     }
 
     aiCacheService.incrementTotalRequests();
+
+    // Check model health before processing
+    if (context.tenant_id) {
+      const modelConfig = await tenantAIModelService.getTenantAIConfig(context.tenant_id);
+      if (modelConfig) {
+        const healthStatus = aiModelHealthService.getModelStatus(context.tenant_id, modelConfig.modelId);
+        if (healthStatus && !healthStatus.isHealthy) {
+          console.warn(`Model ${modelConfig.modelId} for tenant ${context.tenant_id} is unhealthy, using fallback`);
+        }
+      }
+    }
 
     // For high/urgent priority, process immediately
     if (priority === 'high' || priority === 'urgent') {
@@ -198,12 +217,29 @@ export class EnhancedAIOrchestrationService {
 
   getMetrics() {
     const cacheMetrics = aiCacheService.getCacheMetrics();
+    const healthMetrics = aiModelHealthService.getHealthMetrics();
+    
     return {
       totalRequests: cacheMetrics.totalRequests,
       cacheHits: cacheMetrics.cacheHits,
       cacheHitRate: cacheMetrics.cacheHitRate,
       queueSize: this.requestQueue.length,
-      activeAgents: this.agents.size
+      activeAgents: this.agents.size,
+      modelHealth: healthMetrics
+    };
+  }
+
+  async getSystemStatus() {
+    const healthMetrics = aiModelHealthService.getHealthMetrics();
+    const cacheMetrics = aiCacheService.getCacheMetrics();
+    
+    return {
+      orchestrationStatus: 'active',
+      agentCount: this.agents.size,
+      queueSize: this.requestQueue.length,
+      healthMetrics,
+      cacheMetrics,
+      uptime: healthMetrics.uptime
     };
   }
 }

@@ -1,6 +1,6 @@
-
 import { AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
+import { aiCostTrackingService } from './aiCostTrackingService';
 import { supabase } from '@/integrations/supabase/client';
 
 export class AIRequestProcessor {
@@ -28,6 +28,21 @@ export class AIRequestProcessor {
         },
         context
       );
+
+      // Track cost if usage data is available
+      if (aiResponse.usage) {
+        const modelConfig = await tenantAIModelService.getTenantAIConfig(context.tenant_id!);
+        if (modelConfig) {
+          await aiCostTrackingService.trackRequestCost(
+            request.request_id,
+            context.tenant_id!,
+            modelConfig.modelId,
+            aiResponse.usage.promptTokens,
+            aiResponse.usage.completionTokens,
+            request.agent_id
+          );
+        }
+      }
 
       const response: AIResponse = {
         request_id: request.request_id,

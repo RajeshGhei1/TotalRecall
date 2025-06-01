@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { AIAgentManagement } from './AIAgentManagement';
+import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
 
 export const AIOrchestrationManager = () => {
   const { agents, metrics, requestPrediction, refreshAgents, isRequesting } = useUnifiedAIOrchestration();
@@ -94,6 +95,7 @@ export const AIOrchestrationManager = () => {
         <TabsList>
           <TabsTrigger value="agents">Agent Management</TabsTrigger>
           <TabsTrigger value="testing">Testing</TabsTrigger>
+          <TabsTrigger value="metrics">Enhanced Metrics</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
@@ -126,6 +128,10 @@ export const AIOrchestrationManager = () => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="metrics">
+          <EnhancedAIMetrics />
         </TabsContent>
 
         <TabsContent value="performance">
