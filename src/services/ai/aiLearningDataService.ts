@@ -240,9 +240,12 @@ export class AILearningDataService {
 
     // Analyze specific feedback data for more targeted recommendations
     entries.forEach(entry => {
-      const feedbackData = entry.feedback_data;
-      if (feedbackData.improvement_suggestions) {
-        recommendations.push(...feedbackData.improvement_suggestions);
+      const feedbackData = entry.feedback_data as any;
+      if (feedbackData && typeof feedbackData === 'object' && feedbackData.improvement_suggestions) {
+        const suggestions = feedbackData.improvement_suggestions;
+        if (Array.isArray(suggestions)) {
+          recommendations.push(...suggestions);
+        }
       }
     });
 
@@ -299,12 +302,17 @@ export class AILearningDataService {
 
       const recentPatterns = await this.analyzeLearningPatterns(tenantId);
 
-      // Extract top issues and improvement areas
-      const issues = learningData
-        ?.filter(d => d.feedback_type === 'negative')
-        .map(d => d.feedback_data?.improvement_suggestions || [])
-        .flat()
-        .filter(Boolean) || [];
+      // Extract top issues and improvement areas with proper type checking
+      const issues: string[] = [];
+      learningData?.filter(d => d.feedback_type === 'negative').forEach(d => {
+        const feedbackData = d.feedback_data as any;
+        if (feedbackData && typeof feedbackData === 'object' && feedbackData.improvement_suggestions) {
+          const suggestions = feedbackData.improvement_suggestions;
+          if (Array.isArray(suggestions)) {
+            issues.push(...suggestions.filter(s => typeof s === 'string'));
+          }
+        }
+      });
 
       const topIssues = this.getTopItems(issues, 5);
       const improvementAreas = recentPatterns

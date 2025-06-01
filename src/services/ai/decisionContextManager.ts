@@ -334,26 +334,56 @@ export class DecisionContextManager {
         };
       }
 
-      const avgSuccessRate = patterns.reduce((sum, p) => 
-        sum + (p.insight_data.success_rate || 0), 0) / totalContexts;
+      // Safe access to success_rate with proper type checking
+      const avgSuccessRate = patterns.reduce((sum, p) => {
+        const insightData = p.insight_data as any;
+        const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
+          ? Number(insightData.success_rate) : 0;
+        return sum + successRate;
+      }, 0) / totalContexts;
 
       // Calculate risk distribution
       const riskDistribution = { low: 0, medium: 0, high: 0 };
       patterns.forEach(pattern => {
-        const successRate = pattern.insight_data.success_rate || 0;
+        const insightData = pattern.insight_data as any;
+        const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
+          ? Number(insightData.success_rate) : 0;
+        
         if (successRate > 0.8) riskDistribution.low++;
         else if (successRate > 0.6) riskDistribution.medium++;
         else riskDistribution.high++;
       });
 
       const topPerforming = patterns
-        .filter(p => p.insight_data.success_rate > 0.8)
-        .sort((a, b) => b.insight_data.success_rate - a.insight_data.success_rate)
+        .filter(p => {
+          const insightData = p.insight_data as any;
+          const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
+            ? Number(insightData.success_rate) : 0;
+          return successRate > 0.8;
+        })
+        .sort((a, b) => {
+          const aData = a.insight_data as any;
+          const bData = b.insight_data as any;
+          const aRate = (aData && typeof aData === 'object' && aData.success_rate) ? Number(aData.success_rate) : 0;
+          const bRate = (bData && typeof bData === 'object' && bData.success_rate) ? Number(bData.success_rate) : 0;
+          return bRate - aRate;
+        })
         .slice(0, 5);
 
       const problematic = patterns
-        .filter(p => p.insight_data.success_rate < 0.5)
-        .sort((a, b) => a.insight_data.success_rate - b.insight_data.success_rate)
+        .filter(p => {
+          const insightData = p.insight_data as any;
+          const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
+            ? Number(insightData.success_rate) : 0;
+          return successRate < 0.5;
+        })
+        .sort((a, b) => {
+          const aData = a.insight_data as any;
+          const bData = b.insight_data as any;
+          const aRate = (aData && typeof aData === 'object' && aData.success_rate) ? Number(aData.success_rate) : 0;
+          const bRate = (bData && typeof bData === 'object' && bData.success_rate) ? Number(bData.success_rate) : 0;
+          return aRate - bRate;
+        })
         .slice(0, 5);
 
       return {
