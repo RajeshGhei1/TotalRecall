@@ -1,20 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { AIAgent, AIRequest, AIResponse, AIContext, AIDecision } from '@/types/ai';
+import { AIAgent, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
 import { aiCacheService } from './aiCacheService';
 import { aiMetricsService } from './aiMetricsService';
 import { aiAgentSelector } from './aiAgentSelector';
 import { aiRequestProcessor } from './aiRequestProcessor';
-
-export interface AIRequestMetrics {
-  startTime: number;
-  endTime?: number;
-  inputTokens: number;
-  outputTokens: number;
-  cost: number;
-  cacheHit: boolean;
-}
 
 export class EnhancedAIOrchestrationService {
   private agents: Map<string, AIAgent> = new Map();

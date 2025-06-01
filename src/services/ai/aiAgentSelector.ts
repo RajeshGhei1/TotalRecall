@@ -2,7 +2,7 @@
 import { AIAgent, AIContext } from '@/types/ai';
 
 export class AIAgentSelector {
-  async selectBestAgent(context: AIContext, availableAgents: AIAgent[]): Promise<string> {
+  selectBestAgent(context: AIContext, availableAgents: AIAgent[]): string {
     if (availableAgents.length === 0) {
       throw new Error('No available agents for this context');
     }

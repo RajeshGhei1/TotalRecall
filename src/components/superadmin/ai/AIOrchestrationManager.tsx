@@ -32,6 +32,14 @@ export const AIOrchestrationManager = () => {
     }
   };
 
+  const handleRefreshAgents = async () => {
+    try {
+      await refreshAgents();
+    } catch (error) {
+      console.error('Failed to refresh agents:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -39,7 +47,7 @@ export const AIOrchestrationManager = () => {
           <h1 className="text-3xl font-bold">AI Orchestration</h1>
           <p className="text-gray-600">Manage and monitor your AI agents and orchestration</p>
         </div>
-        <Button onClick={refreshAgents}>
+        <Button onClick={handleRefreshAgents}>
           Refresh Agents
         </Button>
       </div>

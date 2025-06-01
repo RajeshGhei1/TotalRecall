@@ -1,5 +1,5 @@
 
-import { AIRequest, AIResponse, AIContext, AIDecision } from '@/types/ai';
+import { AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
 import { supabase } from '@/integrations/supabase/client';
 
