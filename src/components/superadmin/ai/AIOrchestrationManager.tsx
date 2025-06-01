@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { AIAgentManagement } from './AIAgentManagement';
 import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
+import { LearningInsightsDashboard, DecisionFeedbackInterface, ContextAnalysisVisualization } from './learning';
 import { Brain, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export const AIOrchestrationManager = () => {
@@ -49,7 +49,6 @@ export const AIOrchestrationManager = () => {
     if (!lastTestResponse) return;
 
     try {
-      // For testing, we'll create a mock decision ID
       const mockDecisionId = `test_${Date.now()}`;
       await provideFeedback({
         decisionId: mockDecisionId,
@@ -138,7 +137,9 @@ export const AIOrchestrationManager = () => {
         <TabsList>
           <TabsTrigger value="agents">Agent Management</TabsTrigger>
           <TabsTrigger value="testing">Testing & Feedback</TabsTrigger>
-          <TabsTrigger value="learning">Learning Insights</TabsTrigger>
+          <TabsTrigger value="learning-dashboard">Learning Dashboard</TabsTrigger>
+          <TabsTrigger value="feedback-interface">Feedback Interface</TabsTrigger>
+          <TabsTrigger value="context-analysis">Context Analysis</TabsTrigger>
           <TabsTrigger value="metrics">Enhanced Metrics</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
@@ -212,88 +213,16 @@ export const AIOrchestrationManager = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="learning">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Brain className="h-5 w-5 mr-2" />
-                  Learning Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm">Total Feedback:</span>
-                  <Badge variant="outline">{learningInsights.learning.totalFeedback}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Positive Rate:</span>
-                  <Badge variant="default">
-                    {(learningInsights.learning.positiveRatio * 100).toFixed(1)}%
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Patterns Found:</span>
-                  <Badge variant="outline">{learningInsights.learning.recentPatterns.length}</Badge>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="learning-dashboard">
+          <LearningInsightsDashboard />
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2" />
-                  Context Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm">Contexts Analyzed:</span>
-                  <Badge variant="outline">{learningInsights.context.totalContextsAnalyzed}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Success Rate:</span>
-                  <Badge variant="default">
-                    {(learningInsights.context.avgSuccessRate * 100).toFixed(1)}%
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Risk Distribution:</span>
-                  <div className="flex gap-1">
-                    <Badge variant="default" className="text-xs">
-                      L:{learningInsights.context.riskDistribution.low}
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      M:{learningInsights.context.riskDistribution.medium}
-                    </Badge>
-                    <Badge variant="destructive" className="text-xs">
-                      H:{learningInsights.context.riskDistribution.high}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="feedback-interface">
+          <DecisionFeedbackInterface />
+        </TabsContent>
 
-            {learningInsights.learning.topIssues.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <AlertTriangle className="h-5 w-5 mr-2" />
-                    Top Issues
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {learningInsights.learning.topIssues.slice(0, 3).map((issue, index) => (
-                      <li key={index} className="text-xs text-gray-600 border-l-2 border-red-200 pl-2">
-                        {issue}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+        <TabsContent value="context-analysis">
+          <ContextAnalysisVisualization />
         </TabsContent>
 
         <TabsContent value="metrics">
