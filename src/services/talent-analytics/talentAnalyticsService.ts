@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { aiOrchestrationService } from '@/services/ai/orchestrationService';
+import { enhancedAIOrchestrationService } from '@/services/ai/enhancedOrchestrationService';
 
 export interface TalentAnalyticsRequest {
   tenantId: string;
@@ -31,8 +31,8 @@ class TalentAnalyticsService {
         }
       };
 
-      // Use AI orchestration service for analysis
-      const aiResult = await aiOrchestrationService.requestPrediction(aiContext, {
+      // Use enhanced AI orchestration service for analysis
+      const aiResult = await enhancedAIOrchestrationService.requestPrediction(aiContext, {
         model_type: 'analytics',
         analysis_depth: 'comprehensive'
       });
