@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration'
 import { AIAgentManagement } from './AIAgentManagement';
 import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
 import { LearningInsightsDashboard, DecisionFeedbackInterface, ContextAnalysisVisualization } from './learning';
+import { PredictiveInsightsDashboard } from './insights';
 import { Brain, TrendingUp, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -142,6 +142,7 @@ export const AIOrchestrationManager = () => {
           <TabsList className="flex w-full lg:w-auto min-w-full lg:min-w-0">
             <TabsTrigger value="agents" className="flex-1 lg:flex-none text-xs sm:text-sm">Agents</TabsTrigger>
             <TabsTrigger value="testing" className="flex-1 lg:flex-none text-xs sm:text-sm">Testing</TabsTrigger>
+            <TabsTrigger value="predictive-insights" className="flex-1 lg:flex-none text-xs sm:text-sm">Insights</TabsTrigger>
             <TabsTrigger value="learning-dashboard" className="flex-1 lg:flex-none text-xs sm:text-sm">Learning</TabsTrigger>
             <TabsTrigger value="feedback-interface" className="flex-1 lg:flex-none text-xs sm:text-sm">Feedback</TabsTrigger>
             <TabsTrigger value="context-analysis" className="flex-1 lg:flex-none text-xs sm:text-sm">Context</TabsTrigger>
@@ -222,6 +223,10 @@ export const AIOrchestrationManager = () => {
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="predictive-insights">
+          <PredictiveInsightsDashboard />
         </TabsContent>
 
         <TabsContent value="learning-dashboard">
