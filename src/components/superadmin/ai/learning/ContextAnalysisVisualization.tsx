@@ -39,46 +39,46 @@ export const ContextAnalysisVisualization = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
+    <div className="space-y-4 md:space-y-6">
+      {/* Overview Cards - responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <Activity className="h-4 w-4 mr-2" />
-              Contexts Analyzed
+              <Activity className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Contexts Analyzed</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{learningInsights.context.totalContextsAnalyzed}</div>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="text-xl sm:text-2xl font-bold">{learningInsights.context.totalContextsAnalyzed}</div>
             <p className="text-xs text-gray-600 mt-1">Total contexts processed</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <Target className="h-4 w-4 mr-2" />
-              Average Success
+              <Target className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Average Success</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${getSuccessRateColor(learningInsights.context.avgSuccessRate * 100)}`}>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className={`text-xl sm:text-2xl font-bold ${getSuccessRateColor(learningInsights.context.avgSuccessRate * 100)}`}>
               {(learningInsights.context.avgSuccessRate * 100).toFixed(1)}%
             </div>
             <Progress value={learningInsights.context.avgSuccessRate * 100} className="mt-2" />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Top Performing
+              <TrendingUp className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Top Performing</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold">
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="text-sm sm:text-base font-bold break-words">
               {learningInsights.context.topPerformingContexts.length > 0 
                 ? learningInsights.context.topPerformingContexts[0] 
                 : 'N/A'}
@@ -87,15 +87,15 @@ export const ContextAnalysisVisualization = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="sm:col-span-2 lg:col-span-1 hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Needs Attention
+              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Needs Attention</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-red-600">
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">
               {learningInsights.context.problematicContexts.length}
             </div>
             <p className="text-xs text-gray-600 mt-1">Problematic contexts</p>
@@ -103,71 +103,82 @@ export const ContextAnalysisVisualization = () => {
         </Card>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Charts Section - responsive layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         {/* Context Performance Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle>Context Performance by Module</CardTitle>
-            <CardDescription>Success rates across different modules</CardDescription>
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="text-lg">Context Performance by Module</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Success rates across different modules</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={contextPerformanceData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    name === 'successRate' ? `${value}%` : value,
-                    name === 'successRate' ? 'Success Rate' : 'Total Decisions'
-                  ]}
-                />
-                <Bar dataKey="successRate" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="h-64 sm:h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={contextPerformanceData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis fontSize={12} />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      name === 'successRate' ? `${value}%` : value,
+                      name === 'successRate' ? 'Success Rate' : 'Total Decisions'
+                    ]}
+                  />
+                  <Bar dataKey="successRate" fill="#3B82F6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
         {/* Risk Distribution Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle>Risk Distribution</CardTitle>
-            <CardDescription>Distribution of decision risk levels</CardDescription>
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="text-lg">Risk Distribution</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Distribution of decision risk levels</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={riskDistributionData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {riskDistributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="h-64 sm:h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={riskDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="80%"
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                    fontSize={12}
+                  >
+                    {riskDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Context Complexity Analysis */}
+      {/* Context Complexity Analysis - responsive */}
       <Card>
-        <CardHeader>
-          <CardTitle>Context Complexity Analysis</CardTitle>
-          <CardDescription>How AI performs across different complexity levels</CardDescription>
+        <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+          <CardTitle className="text-lg">Context Complexity Analysis</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">How AI performs across different complexity levels</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+          <div className="space-y-3 sm:space-y-4">
             {contextComplexityData.map((complexity, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg gap-2 sm:gap-3">
                 <div className="flex items-center space-x-3">
                   <Badge variant={complexity.avgConfidence > 0.8 ? "default" : 
                                  complexity.avgConfidence > 0.6 ? "secondary" : "destructive"}>
@@ -183,7 +194,7 @@ export const ContextAnalysisVisualization = () => {
                   </span>
                   <Progress 
                     value={complexity.avgConfidence * 100} 
-                    className="w-24"
+                    className="w-20 sm:w-24"
                   />
                 </div>
               </div>
@@ -192,22 +203,22 @@ export const ContextAnalysisVisualization = () => {
         </CardContent>
       </Card>
 
-      {/* Top and Problematic Contexts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Top and Problematic Contexts - responsive layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
-              Top Performing Contexts
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="flex items-center text-lg">
+              <TrendingUp className="h-5 w-5 mr-2 text-green-600 flex-shrink-0" />
+              <span className="truncate">Top Performing Contexts</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             {learningInsights.context.topPerformingContexts.length > 0 ? (
               <div className="space-y-2">
                 {learningInsights.context.topPerformingContexts.slice(0, 5).map((context, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded">
-                    <span className="text-sm font-medium">{context}</span>
-                    <Badge variant="default" className="bg-green-500">
+                  <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded gap-2">
+                    <span className="text-sm font-medium break-words flex-1">{context}</span>
+                    <Badge variant="default" className="bg-green-500 text-xs flex-shrink-0">
                       High Performance
                     </Badge>
                   </div>
@@ -220,19 +231,19 @@ export const ContextAnalysisVisualization = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
-              Problematic Contexts
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="flex items-center text-lg">
+              <AlertTriangle className="h-5 w-5 mr-2 text-red-600 flex-shrink-0" />
+              <span className="truncate">Problematic Contexts</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             {learningInsights.context.problematicContexts.length > 0 ? (
               <div className="space-y-2">
                 {learningInsights.context.problematicContexts.slice(0, 5).map((context, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-red-50 rounded">
-                    <span className="text-sm font-medium">{context}</span>
-                    <Badge variant="destructive">
+                  <div key={index} className="flex items-center justify-between p-2 bg-red-50 rounded gap-2">
+                    <span className="text-sm font-medium break-words flex-1">{context}</span>
+                    <Badge variant="destructive" className="text-xs flex-shrink-0">
                       Needs Improvement
                     </Badge>
                   </div>

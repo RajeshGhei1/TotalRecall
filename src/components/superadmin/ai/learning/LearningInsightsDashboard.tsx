@@ -25,18 +25,19 @@ export const LearningInsightsDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Learning Overview */}
-        <Card>
-          <CardHeader className="pb-2">
+    <div className="space-y-4 md:space-y-6">
+      {/* Responsive overview cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Learning Score */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <Brain className="h-4 w-4 mr-2" />
-              Learning Score
+              <Brain className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Learning Score</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${getScoreColor(learningInsights.combinedScore)}`}>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className={`text-xl sm:text-2xl font-bold ${getScoreColor(learningInsights.combinedScore)}`}>
               {(learningInsights.combinedScore * 100).toFixed(1)}%
             </div>
             <Progress value={learningInsights.combinedScore * 100} className="mt-2" />
@@ -47,25 +48,27 @@ export const LearningInsightsDashboard = () => {
         </Card>
 
         {/* Feedback Quality */}
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Feedback Quality
+              <TrendingUp className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Feedback Quality</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-sm font-medium">
-                {(learningInsights.learning.positiveRatio * 100).toFixed(1)}% Positive
-              </span>
-            </div>
-            <div className="flex items-center space-x-2 mt-1">
-              <XCircle className="h-5 w-5 text-red-500" />
-              <span className="text-sm font-medium">
-                {((1 - learningInsights.learning.positiveRatio) * 100).toFixed(1)}% Negative
-              </span>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium truncate">
+                  {(learningInsights.learning.positiveRatio * 100).toFixed(1)}% Positive
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium truncate">
+                  {((1 - learningInsights.learning.positiveRatio) * 100).toFixed(1)}% Negative
+                </span>
+              </div>
             </div>
             <Progress 
               value={learningInsights.learning.positiveRatio * 100} 
@@ -74,16 +77,16 @@ export const LearningInsightsDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Context Analysis */}
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Context Success */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <Target className="h-4 w-4 mr-2" />
-              Context Success
+              <Target className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Context Success</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${getScoreColor(learningInsights.context.avgSuccessRate)}`}>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className={`text-xl sm:text-2xl font-bold ${getScoreColor(learningInsights.context.avgSuccessRate)}`}>
               {(learningInsights.context.avgSuccessRate * 100).toFixed(1)}%
             </div>
             <p className="text-xs text-gray-600 mt-1">
@@ -92,31 +95,31 @@ export const LearningInsightsDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Risk Distribution */}
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Risk Profile */}
+        <Card className="sm:col-span-2 lg:col-span-1 hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Risk Profile
+              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Risk Profile</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs">Low Risk</span>
-                <Badge variant="outline" className="bg-green-100">
+                <Badge variant="outline" className="bg-green-100 text-xs">
                   {learningInsights.context.riskDistribution.low}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs">Medium Risk</span>
-                <Badge variant="outline" className="bg-yellow-100">
+                <Badge variant="outline" className="bg-yellow-100 text-xs">
                   {learningInsights.context.riskDistribution.medium}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs">High Risk</span>
-                <Badge variant="outline" className="bg-red-100">
+                <Badge variant="outline" className="bg-red-100 text-xs">
                   {learningInsights.context.riskDistribution.high}
                 </Badge>
               </div>
@@ -125,31 +128,29 @@ export const LearningInsightsDashboard = () => {
         </Card>
       </div>
 
-      {/* Detailed Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Detailed Insights - responsive layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Pattern Insights */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Brain className="h-5 w-5 mr-2" />
-              Learning Patterns
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="flex items-center text-lg">
+              <Brain className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span className="truncate">Learning Patterns</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Recent patterns discovered from user interactions
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             {learningInsights.learning.recentPatterns.length > 0 ? (
               <div className="space-y-3">
                 {learningInsights.learning.recentPatterns.map((pattern, index) => (
                   <div key={index} className="border-l-4 border-blue-400 pl-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium text-sm">{pattern}</h4>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Confidence: High | Frequency: {Math.floor(Math.random() * 10) + 1}
-                        </p>
-                      </div>
+                    <div className="space-y-1">
+                      <h4 className="font-medium text-sm break-words">{pattern}</h4>
+                      <p className="text-xs text-gray-600">
+                        Confidence: High | Frequency: {Math.floor(Math.random() * 10) + 1}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -162,16 +163,16 @@ export const LearningInsightsDashboard = () => {
 
         {/* Top Issues */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Areas for Improvement
+          <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="flex items-center text-lg">
+              <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span className="truncate">Areas for Improvement</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Most frequently reported issues and improvement areas
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             <div className="space-y-4">
               {learningInsights.learning.topIssues.length > 0 && (
                 <div>
@@ -179,10 +180,10 @@ export const LearningInsightsDashboard = () => {
                   <div className="space-y-2">
                     {learningInsights.learning.topIssues.slice(0, 3).map((issue, index) => (
                       <div key={index} className="flex items-start space-x-2">
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="destructive" className="text-xs flex-shrink-0">
                           {index + 1}
                         </Badge>
-                        <span className="text-sm text-gray-700">{issue}</span>
+                        <span className="text-sm text-gray-700 break-words">{issue}</span>
                       </div>
                     ))}
                   </div>
@@ -195,10 +196,10 @@ export const LearningInsightsDashboard = () => {
                   <div className="space-y-2">
                     {learningInsights.learning.improvementAreas.slice(0, 3).map((area, index) => (
                       <div key={index} className="flex items-start space-x-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
                           {index + 1}
                         </Badge>
-                        <span className="text-sm text-gray-700">{area}</span>
+                        <span className="text-sm text-gray-700 break-words">{area}</span>
                       </div>
                     ))}
                   </div>
