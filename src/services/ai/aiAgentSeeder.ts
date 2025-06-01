@@ -11,6 +11,11 @@ interface DefaultAgentConfig {
   performance_metrics: Record<string, any>;
 }
 
+interface CapabilityUpdate {
+  type: AIAgentType;
+  newCapabilities: string[];
+}
+
 export class AIAgentSeeder {
   private defaultAgents: DefaultAgentConfig[] = [
     {
@@ -150,25 +155,25 @@ export class AIAgentSeeder {
   async updateAgentCapabilities(): Promise<void> {
     console.log('Updating agent capabilities...');
 
-    const capabilityUpdates = [
+    const capabilityUpdates: CapabilityUpdate[] = [
       {
-        type: 'cognitive',
+        type: 'cognitive' as AIAgentType,
         newCapabilities: ['natural_language_processing', 'contextual_understanding', 'multi_turn_conversation']
       },
       {
-        type: 'predictive',
+        type: 'predictive' as AIAgentType,
         newCapabilities: ['time_series_analysis', 'statistical_modeling', 'machine_learning']
       },
       {
-        type: 'automation',
+        type: 'automation' as AIAgentType,
         newCapabilities: ['rule_based_automation', 'intelligent_routing', 'process_mining']
       },
       {
-        type: 'analysis',
+        type: 'analysis' as AIAgentType,
         newCapabilities: ['statistical_analysis', 'visualization', 'correlation_analysis']
       },
       {
-        type: 'deep_research',
+        type: 'deep_research' as AIAgentType,
         newCapabilities: ['web_research', 'document_analysis', 'cross_reference_validation']
       }
     ];
