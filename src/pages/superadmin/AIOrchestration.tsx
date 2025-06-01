@@ -10,15 +10,14 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { AIOrchestrationManager } from '@/components/superadmin/ai/AIOrchestrationManager';
-import { aiOrchestrationService } from '@/services/ai/orchestrationService';
+import { enhancedAIOrchestrationService } from '@/services/ai/enhancedOrchestrationService';
 import AdminLayout from '@/components/AdminLayout';
 
 const AIOrchestration: React.FC = () => {
   useEffect(() => {
-    // Initialize the AI orchestration service when the page loads
     const initializeService = async () => {
       try {
-        await aiOrchestrationService.initialize();
+        await enhancedAIOrchestrationService.initialize();
       } catch (error) {
         console.error('Failed to initialize AI orchestration service:', error);
       }
@@ -31,7 +30,6 @@ const AIOrchestration: React.FC = () => {
     <AdminLayout>
       <ErrorBoundary>
         <div className="p-4 md:p-6">
-          {/* Breadcrumb Navigation */}
           <div className="mb-6">
             <Breadcrumb>
               <BreadcrumbList>

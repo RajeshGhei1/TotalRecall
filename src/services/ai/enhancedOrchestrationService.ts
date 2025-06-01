@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { AIAgent, AIRequest, AIResponse, AIContext } from '@/types/ai';
+import { AIAgent, AIRequest, AIResponse, AIContext, AIDecision } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
 import { aiCacheService } from './aiCacheService';
 import { aiMetricsService } from './aiMetricsService';
@@ -70,20 +70,17 @@ export class EnhancedAIOrchestrationService {
 
     aiCacheService.incrementTotalRequests();
 
-    // Add to queue based on priority
-    this.addToQueue(request);
-    
     // For high/urgent priority, process immediately
     if (priority === 'high' || priority === 'urgent') {
       return this.processRequest(request);
     }
 
-    // For normal/low priority, let queue processor handle it
+    // Add to queue for normal/low priority
+    this.addToQueue(request);
     return this.waitForQueueProcessing(request);
   }
 
   private addToQueue(request: AIRequest): void {
-    // Insert based on priority
     const priorityOrder = { urgent: 0, high: 1, normal: 2, low: 3 };
     const insertIndex = this.requestQueue.findIndex(
       r => priorityOrder[r.priority] > priorityOrder[request.priority]
@@ -110,16 +107,12 @@ export class EnhancedAIOrchestrationService {
         }
         this.isProcessingQueue = false;
       }
-    }, 100); // Process every 100ms
+    }, 100);
   }
 
   private async waitForQueueProcessing(request: AIRequest): Promise<AIResponse> {
-    // In a real implementation, this would use WebSockets or SSE
-    // For now, we'll simulate with a promise that resolves when processed
     return new Promise((resolve) => {
       const checkProcessed = setInterval(() => {
-        // This is a simplified implementation
-        // In practice, you'd track request status in the database
         if (!this.requestQueue.find(r => r.request_id === request.request_id)) {
           clearInterval(checkProcessed);
           resolve(aiRequestProcessor.generateMockResponse(request));
@@ -142,7 +135,6 @@ export class EnhancedAIOrchestrationService {
     try {
       let response: AIResponse;
 
-      // Log request start
       await aiMetricsService.logRequest(request, 'pending', startTime);
 
       if (request.context.tenant_id) {
@@ -160,26 +152,17 @@ export class EnhancedAIOrchestrationService {
       const endTime = Date.now();
       const responseTime = endTime - startTime;
 
-      // Log successful completion
       await aiMetricsService.logRequest(request, 'completed', startTime, endTime, responseTime);
-
-      // Cache the response
       await aiCacheService.cacheResponse(request, response);
-
-      // Update performance metrics
       await aiMetricsService.updatePerformanceMetrics(request.agent_id, request.context.tenant_id, responseTime, true);
 
       return response;
     } catch (error) {
       console.error('Error processing AI request:', error);
       
-      // Log error
       await aiMetricsService.logRequest(request, 'failed', startTime, Date.now(), 0, error as Error);
-      
-      // Update performance metrics
       await aiMetricsService.updatePerformanceMetrics(request.agent_id, request.context.tenant_id, 0, false);
       
-      // Return error response
       return {
         request_id: request.request_id,
         agent_id: request.agent_id,
@@ -189,6 +172,24 @@ export class EnhancedAIOrchestrationService {
         suggestions: ['Please try again or contact support'],
         error: (error as Error).message
       };
+    }
+  }
+
+  async provideFeedback(decisionId: string, feedback: 'positive' | 'negative', details?: any): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('ai_decisions')
+        .update({
+          was_accepted: feedback === 'positive',
+          outcome_feedback: { feedback, details, timestamp: new Date().toISOString() }
+        })
+        .eq('id', decisionId);
+
+      if (error) throw error;
+      
+      console.log(`Feedback recorded for decision ${decisionId}: ${feedback}`);
+    } catch (error) {
+      console.error('Error providing feedback:', error);
     }
   }
 
