@@ -32,6 +32,12 @@ export const useUnifiedAIOrchestration = () => {
     refetchInterval: 10000,
   });
 
+  const { data: learningInsights } = useQuery({
+    queryKey: ['ai-learning-insights', selectedTenantId],
+    queryFn: () => enhancedAIOrchestrationService.getLearningInsights(selectedTenantId || undefined),
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
   const requestPrediction = useMutation({
     mutationFn: async ({ 
       context, 
@@ -51,6 +57,7 @@ export const useUnifiedAIOrchestration = () => {
     onSuccess: () => {
       console.log('AI prediction request successful');
       queryClient.invalidateQueries({ queryKey: ['unified-ai-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-learning-insights'] });
     },
     onError: (error) => {
       console.error('AI prediction request failed:', error);
@@ -71,9 +78,31 @@ export const useUnifiedAIOrchestration = () => {
     },
     onSuccess: () => {
       console.log('Feedback provided successfully');
+      queryClient.invalidateQueries({ queryKey: ['ai-learning-insights'] });
     },
     onError: (error) => {
       console.error('Error providing feedback:', error);
+    }
+  });
+
+  const recordOutcome = useMutation({
+    mutationFn: async ({ 
+      decisionId, 
+      outcome, 
+      outcomeData 
+    }: { 
+      decisionId: string; 
+      outcome: 'success' | 'failure' | 'partial_success'; 
+      outcomeData?: any;
+    }) => {
+      return enhancedAIOrchestrationService.recordDecisionOutcome(decisionId, outcome, outcomeData);
+    },
+    onSuccess: () => {
+      console.log('Decision outcome recorded successfully');
+      queryClient.invalidateQueries({ queryKey: ['ai-learning-insights'] });
+    },
+    onError: (error) => {
+      console.error('Error recording decision outcome:', error);
     }
   });
 
@@ -100,10 +129,28 @@ export const useUnifiedAIOrchestration = () => {
       queueSize: 0,
       activeAgents: 0
     },
+    learningInsights: learningInsights || {
+      learning: {
+        totalFeedback: 0,
+        positiveRatio: 0,
+        topIssues: [],
+        improvementAreas: [],
+        recentPatterns: []
+      },
+      context: {
+        totalContextsAnalyzed: 0,
+        avgSuccessRate: 0,
+        riskDistribution: { low: 0, medium: 0, high: 0 },
+        topPerformingContexts: [],
+        problematicContexts: []
+      },
+      combinedScore: 0
+    },
     agentsLoading,
     error,
     requestPrediction: requestPrediction.mutateAsync,
     provideFeedback: provideFeedback.mutateAsync,
+    recordOutcome: recordOutcome.mutateAsync,
     refreshAgents: refreshAgents.mutateAsync,
     isRequesting: requestPrediction.isPending,
     selectedTenantId

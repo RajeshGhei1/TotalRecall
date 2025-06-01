@@ -7,10 +7,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { AIAgentManagement } from './AIAgentManagement';
 import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
+import { Brain, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export const AIOrchestrationManager = () => {
-  const { agents, metrics, requestPrediction, refreshAgents, isRequesting } = useUnifiedAIOrchestration();
+  const { 
+    agents, 
+    metrics, 
+    learningInsights,
+    requestPrediction, 
+    provideFeedback,
+    recordOutcome,
+    refreshAgents, 
+    isRequesting 
+  } = useUnifiedAIOrchestration();
   const [testPrompt, setTestPrompt] = useState('');
+  const [lastTestResponse, setLastTestResponse] = useState<any>(null);
 
   const handleTestRequest = async () => {
     if (!testPrompt.trim()) return;
@@ -27,9 +38,27 @@ export const AIOrchestrationManager = () => {
         priority: 'high'
       });
       
+      setLastTestResponse(response);
       console.log('Test response:', response);
     } catch (error) {
       console.error('Test request failed:', error);
+    }
+  };
+
+  const handleProvideFeedback = async (feedback: 'positive' | 'negative') => {
+    if (!lastTestResponse) return;
+
+    try {
+      // For testing, we'll create a mock decision ID
+      const mockDecisionId = `test_${Date.now()}`;
+      await provideFeedback({
+        decisionId: mockDecisionId,
+        feedback,
+        details: { testFeedback: true, prompt: testPrompt }
+      });
+      console.log(`Feedback provided: ${feedback}`);
+    } catch (error) {
+      console.error('Failed to provide feedback:', error);
     }
   };
 
@@ -53,7 +82,7 @@ export const AIOrchestrationManager = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
@@ -83,6 +112,20 @@ export const AIOrchestrationManager = () => {
 
         <Card>
           <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center">
+              <Brain className="h-4 w-4 mr-1" />
+              Learning Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(learningInsights.combinedScore * 100).toFixed(1)}%
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Queue Size</CardTitle>
           </CardHeader>
           <CardContent>
@@ -94,7 +137,8 @@ export const AIOrchestrationManager = () => {
       <Tabs defaultValue="agents" className="space-y-4">
         <TabsList>
           <TabsTrigger value="agents">Agent Management</TabsTrigger>
-          <TabsTrigger value="testing">Testing</TabsTrigger>
+          <TabsTrigger value="testing">Testing & Feedback</TabsTrigger>
+          <TabsTrigger value="learning">Learning Insights</TabsTrigger>
           <TabsTrigger value="metrics">Enhanced Metrics</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
@@ -104,30 +148,152 @@ export const AIOrchestrationManager = () => {
         </TabsContent>
 
         <TabsContent value="testing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Test AI Request</CardTitle>
-              <CardDescription>
-                Test the AI orchestration system with a sample request
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <textarea
-                  className="w-full h-32 p-3 border rounded-md"
-                  placeholder="Enter a test prompt..."
-                  value={testPrompt}
-                  onChange={(e) => setTestPrompt(e.target.value)}
-                />
-              </div>
-              <Button 
-                onClick={handleTestRequest} 
-                disabled={isRequesting || !testPrompt.trim()}
-              >
-                {isRequesting ? 'Processing...' : 'Send Test Request'}
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Test AI Request</CardTitle>
+                <CardDescription>
+                  Test the AI orchestration system with a sample request
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <textarea
+                    className="w-full h-32 p-3 border rounded-md"
+                    placeholder="Enter a test prompt..."
+                    value={testPrompt}
+                    onChange={(e) => setTestPrompt(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleTestRequest} 
+                  disabled={isRequesting || !testPrompt.trim()}
+                >
+                  {isRequesting ? 'Processing...' : 'Send Test Request'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {lastTestResponse && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Test Response</CardTitle>
+                  <CardDescription>
+                    Provide feedback to improve AI learning
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Response:</p>
+                    <p className="text-sm mt-1">{JSON.stringify(lastTestResponse.result, null, 2)}</p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Confidence: {(lastTestResponse.confidence_score * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleProvideFeedback('positive')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      👍 Positive
+                    </Button>
+                    <Button 
+                      onClick={() => handleProvideFeedback('negative')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      👎 Negative
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="learning">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Brain className="h-5 w-5 mr-2" />
+                  Learning Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm">Total Feedback:</span>
+                  <Badge variant="outline">{learningInsights.learning.totalFeedback}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Positive Rate:</span>
+                  <Badge variant="default">
+                    {(learningInsights.learning.positiveRatio * 100).toFixed(1)}%
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Patterns Found:</span>
+                  <Badge variant="outline">{learningInsights.learning.recentPatterns.length}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2" />
+                  Context Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm">Contexts Analyzed:</span>
+                  <Badge variant="outline">{learningInsights.context.totalContextsAnalyzed}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Success Rate:</span>
+                  <Badge variant="default">
+                    {(learningInsights.context.avgSuccessRate * 100).toFixed(1)}%
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Risk Distribution:</span>
+                  <div className="flex gap-1">
+                    <Badge variant="default" className="text-xs">
+                      L:{learningInsights.context.riskDistribution.low}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      M:{learningInsights.context.riskDistribution.medium}
+                    </Badge>
+                    <Badge variant="destructive" className="text-xs">
+                      H:{learningInsights.context.riskDistribution.high}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {learningInsights.learning.topIssues.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    Top Issues
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {learningInsights.learning.topIssues.slice(0, 3).map((issue, index) => (
+                      <li key={index} className="text-xs text-gray-600 border-l-2 border-red-200 pl-2">
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="metrics">

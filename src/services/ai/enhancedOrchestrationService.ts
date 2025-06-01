@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { AIAgent, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
@@ -7,6 +8,8 @@ import { aiAgentSelector } from './aiAgentSelector';
 import { aiRequestProcessor } from './aiRequestProcessor';
 import { aiModelHealthService } from './aiModelHealthService';
 import { aiCostTrackingService } from './aiCostTrackingService';
+import { aiLearningDataService } from './aiLearningDataService';
+import { decisionContextManager } from './decisionContextManager';
 
 export class EnhancedAIOrchestrationService {
   private agents: Map<string, AIAgent> = new Map();
@@ -69,6 +72,19 @@ export class EnhancedAIOrchestrationService {
 
     aiCacheService.incrementTotalRequests();
 
+    // Analyze context for intelligent decision making
+    const contextAnalysis = await decisionContextManager.analyzeContext(context);
+    console.log(`Context analysis completed: complexity=${contextAnalysis.contextComplexity}, risk=${contextAnalysis.riskLevel}`);
+
+    // Apply contextual recommendations to agent selection and confidence adjustments
+    if (contextAnalysis.contextualRecommendations.length > 0) {
+      const bestRecommendation = contextAnalysis.contextualRecommendations[0];
+      if (bestRecommendation.recommended_agent && bestRecommendation.context_similarity > 0.8) {
+        request.agent_id = bestRecommendation.recommended_agent;
+        console.log(`Using recommended agent ${bestRecommendation.recommended_agent} based on historical context`);
+      }
+    }
+
     // Check model health before processing
     if (context.tenant_id) {
       const modelConfig = await tenantAIModelService.getTenantAIConfig(context.tenant_id);
@@ -82,7 +98,7 @@ export class EnhancedAIOrchestrationService {
 
     // For high/urgent priority, process immediately
     if (priority === 'high' || priority === 'urgent') {
-      return this.processRequest(request);
+      return this.processRequest(request, contextAnalysis);
     }
 
     // Add to queue for normal/low priority
@@ -110,7 +126,9 @@ export class EnhancedAIOrchestrationService {
         const request = this.requestQueue.shift();
         if (request) {
           try {
-            await this.processRequest(request);
+            // Analyze context for queued requests too
+            const contextAnalysis = await decisionContextManager.analyzeContext(request.context);
+            await this.processRequest(request, contextAnalysis);
           } catch (error) {
             console.error('Error processing queued request:', error);
           }
@@ -139,7 +157,7 @@ export class EnhancedAIOrchestrationService {
     return aiAgentSelector.selectBestAgent(context, availableAgents);
   }
 
-  private async processRequest(request: AIRequest): Promise<AIResponse> {
+  private async processRequest(request: AIRequest, contextAnalysis?: any): Promise<AIResponse> {
     const startTime = Date.now();
 
     try {
@@ -157,6 +175,18 @@ export class EnhancedAIOrchestrationService {
         }
       } else {
         response = aiRequestProcessor.generateMockResponse(request);
+      }
+
+      // Apply confidence adjustments based on context analysis
+      if (contextAnalysis?.contextualRecommendations.length > 0) {
+        const bestRecommendation = contextAnalysis.contextualRecommendations[0];
+        if (bestRecommendation.confidence_adjustment !== 0) {
+          response.confidence_score = Math.max(0, Math.min(1, 
+            response.confidence_score + bestRecommendation.confidence_adjustment
+          ));
+          response.reasoning = response.reasoning || [];
+          response.reasoning.push(`Confidence adjusted by ${bestRecommendation.confidence_adjustment.toFixed(2)} based on historical context`);
+        }
       }
 
       const endTime = Date.now();
@@ -187,6 +217,7 @@ export class EnhancedAIOrchestrationService {
 
   async provideFeedback(decisionId: string, feedback: 'positive' | 'negative', details?: any): Promise<void> {
     try {
+      // Update the decision record
       const { error } = await supabase
         .from('ai_decisions')
         .update({
@@ -196,10 +227,75 @@ export class EnhancedAIOrchestrationService {
         .eq('id', decisionId);
 
       if (error) throw error;
+
+      // Get decision details for learning
+      const { data: decision } = await supabase
+        .from('ai_decisions')
+        .select('*')
+        .eq('id', decisionId)
+        .single();
+
+      if (decision) {
+        // Record learning data
+        await aiLearningDataService.recordFeedback(
+          decisionId,
+          decision.user_id || 'system',
+          decision.tenant_id,
+          feedback,
+          {
+            original_decision: decision.decision,
+            satisfaction_score: feedback === 'positive' ? 1.0 : 0.0,
+            feedback_details: details,
+            context_relevance: decision.confidence_score || 0.5
+          },
+          feedback === 'negative' ? 1.2 : 0.8 // Weight negative feedback higher for learning
+        );
+      }
       
       console.log(`Feedback recorded for decision ${decisionId}: ${feedback}`);
     } catch (error) {
       console.error('Error providing feedback:', error);
+    }
+  }
+
+  async recordDecisionOutcome(decisionId: string, outcome: 'success' | 'failure' | 'partial_success', outcomeData?: any): Promise<void> {
+    try {
+      await aiLearningDataService.recordDecisionOutcome(decisionId, outcome, outcomeData);
+      console.log(`Decision outcome recorded: ${outcome} for decision ${decisionId}`);
+    } catch (error) {
+      console.error('Error recording decision outcome:', error);
+    }
+  }
+
+  async getLearningInsights(tenantId?: string): Promise<any> {
+    try {
+      const learningInsights = await aiLearningDataService.getLearningInsights(tenantId);
+      const contextInsights = await decisionContextManager.getContextInsights(tenantId);
+      
+      return {
+        learning: learningInsights,
+        context: contextInsights,
+        combinedScore: (learningInsights.positiveRatio + contextInsights.avgSuccessRate) / 2
+      };
+    } catch (error) {
+      console.error('Error getting learning insights:', error);
+      return {
+        learning: {
+          totalFeedback: 0,
+          positiveRatio: 0,
+          topIssues: [],
+          improvementAreas: [],
+          recentPatterns: []
+        },
+        context: {
+          totalContextsAnalyzed: 0,
+          avgSuccessRate: 0,
+          riskDistribution: { low: 0, medium: 0, high: 0 },
+          topPerformingContexts: [],
+          problematicContexts: []
+        },
+        combinedScore: 0
+      };
     }
   }
 

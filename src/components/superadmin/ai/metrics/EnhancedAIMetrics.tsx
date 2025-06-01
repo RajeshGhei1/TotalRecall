@@ -1,17 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAIPerformance } from '@/hooks/ai/useAIPerformance';
+import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { aiModelHealthService } from '@/services/ai/aiModelHealthService';
 import { aiCacheService } from '@/services/ai/aiCacheService';
 import { aiCostTrackingService } from '@/services/ai/aiCostTrackingService';
-import { Activity, DollarSign, Zap, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Activity, DollarSign, Zap, AlertTriangle, CheckCircle, Clock, Brain, TrendingUp, Target } from 'lucide-react';
 
 export const EnhancedAIMetrics = () => {
   const { aggregatedMetrics } = useAIPerformance();
+  const { learningInsights } = useUnifiedAIOrchestration();
   const [healthMetrics, setHealthMetrics] = useState<any>(null);
   const [cacheMetrics, setCacheMetrics] = useState<any>(null);
   const [costReport, setCostReport] = useState<any>(null);
@@ -80,6 +81,7 @@ export const EnhancedAIMetrics = () => {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="learning">Learning & Intelligence</TabsTrigger>
           <TabsTrigger value="health">Model Health</TabsTrigger>
           <TabsTrigger value="cache">Cache Analytics</TabsTrigger>
           <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
@@ -124,6 +126,23 @@ export const EnhancedAIMetrics = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Learning Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {(learningInsights.combinedScore * 100).toFixed(1)}%
+                </div>
+                <div className="text-sm text-gray-600">
+                  {learningInsights.learning.totalFeedback} feedback entries
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
                   <DollarSign className="h-4 w-4 mr-2" />
                   Total Cost (30d)
                 </CardTitle>
@@ -135,23 +154,6 @@ export const EnhancedAIMetrics = () => {
                 <div className="text-sm text-gray-600">
                   {costReport?.totalRequests || 0} requests
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Avg Response Time
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {aggregatedMetrics?.avgResponseTime?.toFixed(0) || 0}ms
-                </div>
-                <Badge variant={aggregatedMetrics?.avgResponseTime < 1000 ? "default" : "secondary"}>
-                  {aggregatedMetrics?.avgResponseTime < 1000 ? "Fast" : "Moderate"}
-                </Badge>
               </CardContent>
             </Card>
           </div>
@@ -212,6 +214,114 @@ export const EnhancedAIMetrics = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="learning">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Brain className="h-5 w-5 mr-2" />
+                  Learning Analytics
+                </CardTitle>
+                <CardDescription>AI system learning and improvement metrics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Total Feedback:</span>
+                  <Badge variant="outline">{learningInsights.learning.totalFeedback}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Positive Feedback:</span>
+                  <Badge variant="default">
+                    {(learningInsights.learning.positiveRatio * 100).toFixed(1)}%
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Learning Patterns:</span>
+                  <Badge variant="outline">{learningInsights.learning.recentPatterns.length}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Combined Learning Score:</span>
+                  <Badge variant={learningInsights.combinedScore > 0.7 ? "default" : "secondary"}>
+                    {(learningInsights.combinedScore * 100).toFixed(1)}%
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="h-5 w-5 mr-2" />
+                  Context Intelligence
+                </CardTitle>
+                <CardDescription>Context-aware decision making performance</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Contexts Analyzed:</span>
+                  <Badge variant="outline">{learningInsights.context.totalContextsAnalyzed}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Avg Success Rate:</span>
+                  <Badge variant="default">
+                    {(learningInsights.context.avgSuccessRate * 100).toFixed(1)}%
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Low Risk Contexts:</span>
+                  <Badge variant="default">{learningInsights.context.riskDistribution.low}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>High Risk Contexts:</span>
+                  <Badge variant="destructive">{learningInsights.context.riskDistribution.high}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {learningInsights.learning.topIssues.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    Top Issues
+                  </CardTitle>
+                  <CardDescription>Most frequently reported issues</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {learningInsights.learning.topIssues.slice(0, 5).map((issue, index) => (
+                      <li key={index} className="text-sm text-gray-700 border-l-2 border-red-200 pl-2">
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {learningInsights.learning.improvementAreas.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2" />
+                    Improvement Areas
+                  </CardTitle>
+                  <CardDescription>Recommended areas for enhancement</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {learningInsights.learning.improvementAreas.slice(0, 5).map((area, index) => (
+                      <li key={index} className="text-sm text-gray-700 border-l-2 border-blue-200 pl-2">
+                        {area}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
