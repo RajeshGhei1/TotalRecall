@@ -2819,7 +2819,12 @@ export type Database = {
     }
     Enums: {
       ai_agent_status: "active" | "inactive" | "training" | "error"
-      ai_agent_type: "cognitive" | "predictive" | "automation" | "analysis"
+      ai_agent_type:
+        | "cognitive"
+        | "predictive"
+        | "automation"
+        | "analysis"
+        | "deep_research"
       application_status:
         | "applied"
         | "screening"
@@ -2961,7 +2966,13 @@ export const Constants = {
   public: {
     Enums: {
       ai_agent_status: ["active", "inactive", "training", "error"],
-      ai_agent_type: ["cognitive", "predictive", "automation", "analysis"],
+      ai_agent_type: [
+        "cognitive",
+        "predictive",
+        "automation",
+        "analysis",
+        "deep_research",
+      ],
       application_status: [
         "applied",
         "screening",

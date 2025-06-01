@@ -16,7 +16,8 @@ import {
   Clock,
   DollarSign,
   Target,
-  Users
+  Users,
+  Search
 } from 'lucide-react';
 import { useAIAgents } from '@/hooks/ai/useAIAgents';
 import { useAIPerformance } from '@/hooks/ai/useAIPerformance';
@@ -28,14 +29,16 @@ const agentTypeIcons = {
   cognitive: Brain,
   predictive: TrendingUp,
   automation: Cog,
-  analysis: BarChart3
+  analysis: BarChart3,
+  deep_research: Search
 };
 
 const agentTypeColors = {
   cognitive: 'bg-blue-500',
   predictive: 'bg-purple-500',
   automation: 'bg-green-500',
-  analysis: 'bg-orange-500'
+  analysis: 'bg-orange-500',
+  deep_research: 'bg-red-500'
 };
 
 export const AIAgentManagement = () => {

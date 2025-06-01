@@ -1,5 +1,5 @@
 
-export type AIAgentType = 'cognitive' | 'predictive' | 'automation' | 'analysis';
+export type AIAgentType = 'cognitive' | 'predictive' | 'automation' | 'analysis' | 'deep_research';
 export type AIAgentStatus = 'active' | 'inactive' | 'training' | 'error';
 
 export interface AIAgent {

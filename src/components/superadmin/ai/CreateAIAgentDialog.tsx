@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +27,7 @@ import { AIAgentType, AIAgentStatus } from '@/types/ai';
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
-  type: z.enum(['cognitive', 'predictive', 'automation', 'analysis']),
+  type: z.enum(['cognitive', 'predictive', 'automation', 'analysis', 'deep_research']),
   capabilities: z.string().min(1, 'At least one capability is required'),
   preferredModel: z.string().min(1, 'Preferred model is required'),
   temperature: z.number().min(0).max(2).default(0.7),
@@ -129,6 +128,7 @@ export const CreateAIAgentDialog = ({ open, onOpenChange }: CreateAIAgentDialogP
                 <SelectItem value="predictive">Predictive</SelectItem>
                 <SelectItem value="automation">Automation</SelectItem>
                 <SelectItem value="analysis">Analysis</SelectItem>
+                <SelectItem value="deep_research">Deep Research</SelectItem>
               </SelectContent>
             </Select>
           </div>

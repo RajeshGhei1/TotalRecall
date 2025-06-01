@@ -232,7 +232,9 @@ export class EnhancedAIOrchestrationService {
       suggest: ['conversation', 'support', 'guidance'],
       automate: ['automation', 'process_optimization', 'workflow'],
       form: ['form_assistance', 'data_completion', 'validation'],
-      talent: ['talent_analysis', 'recruitment', 'matching']
+      talent: ['talent_analysis', 'recruitment', 'matching'],
+      research: ['deep_research', 'multi_source_analysis', 'comprehensive_reporting', 'market_intelligence'],
+      investigate: ['deep_research', 'investigation', 'data_synthesis', 'research_methodology']
     };
 
     for (const [key, capabilities] of Object.entries(capabilityMap)) {
@@ -249,6 +251,7 @@ export class EnhancedAIOrchestrationService {
     if (actionLower.includes('predict') || actionLower.includes('forecast')) return 'predictive';
     if (actionLower.includes('analyze') || actionLower.includes('insight')) return 'analysis';
     if (actionLower.includes('automate') || actionLower.includes('workflow')) return 'automation';
+    if (actionLower.includes('research') || actionLower.includes('investigate') || actionLower.includes('comprehensive')) return 'deep_research';
     return 'cognitive';
   }
 

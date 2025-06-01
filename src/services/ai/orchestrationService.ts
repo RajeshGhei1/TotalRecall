@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { AIAgent, AIDecision, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
@@ -66,6 +67,11 @@ export class AIOrchestrationService {
     if (context.action.includes('automate') || context.action.includes('workflow')) {
       const automationAgent = agentsByType.find(a => a.type === 'automation');
       if (automationAgent) return automationAgent.id;
+    }
+
+    if (context.action.includes('research') || context.action.includes('investigate') || context.action.includes('comprehensive')) {
+      const researchAgent = agentsByType.find(a => a.type === 'deep_research');
+      if (researchAgent) return researchAgent.id;
     }
 
     // Default to first available agent
