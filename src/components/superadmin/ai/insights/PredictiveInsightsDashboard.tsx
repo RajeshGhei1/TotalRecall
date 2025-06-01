@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,14 @@ export const PredictiveInsightsDashboard = () => {
   } = usePredictiveInsights();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'forecasts' | 'risks' | 'opportunities'>('overview');
+
+  const handleRefreshInsights = async () => {
+    try {
+      await refreshInsights();
+    } catch (error) {
+      console.error('Failed to refresh insights:', error);
+    }
+  };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -89,7 +96,7 @@ export const PredictiveInsightsDashboard = () => {
           </h2>
           <p className="text-gray-600 text-sm md:text-base">AI-powered analytics and forecasting</p>
         </div>
-        <Button onClick={refreshInsights} disabled={isRefreshing} className="w-full sm:w-auto">
+        <Button onClick={handleRefreshInsights} disabled={isRefreshing} className="w-full sm:w-auto">
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           {isRefreshing ? 'Refreshing...' : 'Refresh Insights'}
         </Button>
