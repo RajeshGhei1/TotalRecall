@@ -2,199 +2,341 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAIPerformance } from '@/hooks/ai/useAIPerformance';
 import { aiModelHealthService } from '@/services/ai/aiModelHealthService';
+import { aiCacheService } from '@/services/ai/aiCacheService';
 import { aiCostTrackingService } from '@/services/ai/aiCostTrackingService';
-import { Activity, DollarSign, Zap, Shield } from 'lucide-react';
+import { Activity, DollarSign, Zap, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 export const EnhancedAIMetrics = () => {
+  const { aggregatedMetrics } = useAIPerformance();
   const [healthMetrics, setHealthMetrics] = useState<any>(null);
+  const [cacheMetrics, setCacheMetrics] = useState<any>(null);
   const [costReport, setCostReport] = useState<any>(null);
-  const [healthStatuses, setHealthStatuses] = useState<any[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
-    loadMetrics();
-    const interval = setInterval(loadMetrics, 30000); // Refresh every 30 seconds
+    const fetchMetrics = () => {
+      const health = aiModelHealthService.getHealthMetrics();
+      const cache = aiCacheService.getCacheMetrics();
+      
+      setHealthMetrics(health);
+      setCacheMetrics(cache);
+      setLastUpdate(new Date());
+      
+      // Fetch cost report
+      aiCostTrackingService.generateCostReport().then(report => {
+        setCostReport(report);
+      }).catch(error => {
+        console.error('Error fetching cost report:', error);
+      });
+    };
+
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 30000); // Update every 30 seconds
+
     return () => clearInterval(interval);
   }, []);
 
-  const loadMetrics = async () => {
-    try {
-      const health = aiModelHealthService.getHealthMetrics();
-      const statuses = aiModelHealthService.getAllHealthStatuses();
-      const cost = await aiCostTrackingService.generateCostReport();
-      
-      setHealthMetrics(health);
-      setHealthStatuses(statuses);
-      setCostReport(cost);
-    } catch (error) {
-      console.error('Error loading enhanced AI metrics:', error);
+  const handleRefreshMetrics = () => {
+    const health = aiModelHealthService.getHealthMetrics();
+    const cache = aiCacheService.getCacheMetrics();
+    
+    setHealthMetrics(health);
+    setCacheMetrics(cache);
+    setLastUpdate(new Date());
+  };
+
+  const handleClearCache = () => {
+    if (window.confirm('Are you sure you want to clear the AI cache? This will affect response times temporarily.')) {
+      aiCacheService.clearCache();
+      setCacheMetrics(aiCacheService.getCacheMetrics());
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Uptime</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{healthMetrics?.uptime || 0}%</div>
-            <Progress value={healthMetrics?.uptime || 0} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Response</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{healthMetrics?.averageResponseTime || 0}ms</div>
-            <p className="text-xs text-muted-foreground">
-              Across {healthMetrics?.totalModels || 0} models
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${costReport?.totalCost?.toFixed(4) || '0.00'}</div>
-            <p className="text-xs text-muted-foreground">
-              Last 30 days
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Healthy Models</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {healthMetrics?.healthyModels || 0}/{healthMetrics?.totalModels || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Models operational
-            </p>
-          </CardContent>
-        </Card>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Enhanced AI Metrics</h2>
+          <p className="text-gray-600">
+            Last updated: {lastUpdate.toLocaleTimeString()}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleRefreshMetrics} variant="outline">
+            <Activity className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={handleClearCache} variant="outline">
+            Clear Cache
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="health" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="health">Model Health</TabsTrigger>
-          <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="health">Model Health</TabsTrigger>
+          <TabsTrigger value="cache">Cache Analytics</TabsTrigger>
+          <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="health">
-          <Card>
-            <CardHeader>
-              <CardTitle>Model Health Status</CardTitle>
-              <CardDescription>Real-time health monitoring for all AI models</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {healthStatuses.map((status, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Badge variant={status.isHealthy ? "default" : "destructive"}>
-                        {status.isHealthy ? "Healthy" : "Unhealthy"}
-                      </Badge>
-                      <div>
-                        <div className="font-medium">{status.modelId}</div>
-                        <div className="text-sm text-gray-600">{status.provider}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">{status.responseTime}ms</div>
-                      <div className="text-xs text-gray-600">
-                        Last checked: {new Date(status.lastChecked).toLocaleTimeString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="costs">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Cost Breakdown</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <Activity className="h-4 w-4 mr-2" />
+                  System Health
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Total Requests:</span>
-                    <span className="font-medium">{costReport?.totalRequests || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Successful:</span>
-                    <span className="font-medium text-green-600">{costReport?.successfulRequests || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Failed:</span>
-                    <span className="font-medium text-red-600">{costReport?.failedRequests || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Avg Cost/Request:</span>
-                    <span className="font-medium">${costReport?.averageCostPerRequest?.toFixed(6) || '0.00'}</span>
-                  </div>
+                <div className="text-2xl font-bold">
+                  {healthMetrics?.uptime || 0}%
+                </div>
+                <Badge variant={healthMetrics?.uptime >= 95 ? "default" : "destructive"}>
+                  {healthMetrics?.uptime >= 95 ? "Healthy" : "Degraded"}
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Cache Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {cacheMetrics?.cacheHitRate || 0}%
+                </div>
+                <div className="text-sm text-gray-600">
+                  {cacheMetrics?.cacheHits || 0} hits / {cacheMetrics?.totalRequests || 0} requests
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Cost by Model</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Total Cost (30d)
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {costReport?.costByModel && Object.entries(costReport.costByModel).map(([model, cost]: [string, any]) => (
-                    <div key={model} className="flex justify-between">
-                      <span className="text-sm">{model}:</span>
-                      <span className="text-sm font-medium">${cost.toFixed(4)}</span>
-                    </div>
-                  ))}
+                <div className="text-2xl font-bold">
+                  ${costReport?.totalCost?.toFixed(4) || '0.0000'}
                 </div>
+                <div className="text-sm text-gray-600">
+                  {costReport?.totalRequests || 0} requests
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Avg Response Time
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {aggregatedMetrics?.avgResponseTime?.toFixed(0) || 0}ms
+                </div>
+                <Badge variant={aggregatedMetrics?.avgResponseTime < 1000 ? "default" : "secondary"}>
+                  {aggregatedMetrics?.avgResponseTime < 1000 ? "Fast" : "Moderate"}
+                </Badge>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
         <TabsContent value="performance">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Request Performance</CardTitle>
+                <CardDescription>AI request statistics and success rates</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Total Requests:</span>
+                  <Badge variant="outline">{aggregatedMetrics?.totalRequests || 0}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Successful Requests:</span>
+                  <Badge variant="default">{aggregatedMetrics?.successfulRequests || 0}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Failed Requests:</span>
+                  <Badge variant="destructive">{aggregatedMetrics?.failedRequests || 0}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Success Rate:</span>
+                  <Badge variant={
+                    aggregatedMetrics?.totalRequests > 0 && 
+                    (aggregatedMetrics.successfulRequests / aggregatedMetrics.totalRequests) > 0.95 
+                      ? "default" : "secondary"
+                  }>
+                    {aggregatedMetrics?.totalRequests > 0 
+                      ? ((aggregatedMetrics.successfulRequests / aggregatedMetrics.totalRequests) * 100).toFixed(1)
+                      : 0}%
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Quality Metrics</CardTitle>
+                <CardDescription>AI response quality and user satisfaction</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Average Accuracy:</span>
+                  <Badge variant="outline">{(aggregatedMetrics?.avgAccuracy || 0).toFixed(2)}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>User Satisfaction:</span>
+                  <Badge variant="outline">{(aggregatedMetrics?.avgSatisfaction || 0).toFixed(2)}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Cost:</span>
+                  <Badge variant="outline">${(aggregatedMetrics?.totalCost || 0).toFixed(4)}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="health">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
-              <CardDescription>System performance over the last 30 days</CardDescription>
+              <CardTitle>Model Health Status</CardTitle>
+              <CardDescription>Real-time health monitoring of AI models</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">{healthMetrics?.totalModels || 0}</div>
-                  <div className="text-sm text-gray-600">Total Models</div>
+              {healthMetrics ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {healthMetrics.healthyModels}
+                    </div>
+                    <div className="text-sm text-gray-600">Healthy Models</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">
+                      {healthMetrics.unhealthyModels}
+                    </div>
+                    <div className="text-sm text-gray-600">Unhealthy Models</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">
+                      {healthMetrics.averageResponseTime}ms
+                    </div>
+                    <div className="text-sm text-gray-600">Avg Response Time</div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">{healthMetrics?.healthyModels || 0}</div>
-                  <div className="text-sm text-gray-600">Healthy Models</div>
+              ) : (
+                <div className="text-center text-gray-500">Loading health metrics...</div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cache">
+          <Card>
+            <CardHeader>
+              <CardTitle>Cache Analytics</CardTitle>
+              <CardDescription>AI response caching performance and statistics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {cacheMetrics ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{cacheMetrics.cacheSize}</div>
+                      <div className="text-sm text-gray-600">Cached Entries</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{cacheMetrics.cacheHits}</div>
+                      <div className="text-sm text-gray-600">Cache Hits</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{cacheMetrics.totalRequests}</div>
+                      <div className="text-sm text-gray-600">Total Requests</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{cacheMetrics.cacheHitRate}%</div>
+                      <div className="text-sm text-gray-600">Hit Rate</div>
+                    </div>
+                  </div>
+                  
+                  {cacheMetrics.oldestCacheEntry && (
+                    <div className="mt-4 text-sm text-gray-600">
+                      <p>Oldest cache entry: {new Date(cacheMetrics.oldestCacheEntry).toLocaleString()}</p>
+                      <p>Newest cache entry: {new Date(cacheMetrics.newestCacheEntry).toLocaleString()}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-red-600">{healthMetrics?.unhealthyModels || 0}</div>
-                  <div className="text-sm text-gray-600">Unhealthy Models</div>
+              ) : (
+                <div className="text-center text-gray-500">Loading cache metrics...</div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="costs">
+          <Card>
+            <CardHeader>
+              <CardTitle>Cost Analysis</CardTitle>
+              <CardDescription>AI usage costs and spending patterns</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {costReport ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">${costReport.totalCost.toFixed(4)}</div>
+                      <div className="text-sm text-gray-600">Total Cost (30d)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{costReport.totalRequests}</div>
+                      <div className="text-sm text-gray-600">Total Requests</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">${costReport.averageCostPerRequest.toFixed(6)}</div>
+                      <div className="text-sm text-gray-600">Avg Cost/Request</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{costReport.successfulRequests}</div>
+                      <div className="text-sm text-gray-600">Successful Requests</div>
+                    </div>
+                  </div>
+
+                  {Object.keys(costReport.costByModel).length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold mb-2">Cost by Model</h4>
+                      <div className="space-y-2">
+                        {Object.entries(costReport.costByModel).map(([model, cost]) => (
+                          <div key={model} className="flex justify-between">
+                            <span>{model}</span>
+                            <span>${(cost as number).toFixed(6)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="text-center text-gray-500">Loading cost metrics...</div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

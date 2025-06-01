@@ -1,79 +1,163 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { AIRequest, AIResponse } from '@/types/ai';
+export interface CacheMetrics {
+  totalRequests: number;
+  cacheHits: number;
+  cacheHitRate: number;
+  cacheSize: number;
+  oldestCacheEntry?: Date;
+  newestCacheEntry?: Date;
+}
+
+export interface CachedResponse {
+  data: any;
+  timestamp: Date;
+  hitCount: number;
+  expiresAt: Date;
+}
 
 export class AICacheService {
-  private cacheHits = 0;
+  private cache: Map<string, CachedResponse> = new Map();
   private totalRequests = 0;
+  private cacheHits = 0;
+  private readonly DEFAULT_TTL = 30 * 60 * 1000; // 30 minutes
 
-  async checkCache(request: AIRequest): Promise<AIResponse | null> {
-    try {
-      const contextHash = this.generateContextHash(request.context, request.parameters);
-      
-      const { data, error } = await supabase
-        .from('ai_context_cache')
-        .select('cached_response, hit_count')
-        .eq('context_hash', contextHash)
-        .eq('agent_id', request.agent_id)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
+  generateCacheKey(request: any): string {
+    const { context, parameters } = request;
+    const keyData = {
+      module: context.module,
+      action: context.action,
+      entity_type: context.entity_type,
+      entity_id: context.entity_id,
+      tenant_id: context.tenant_id,
+      parameters: JSON.stringify(parameters)
+    };
+    
+    return btoa(JSON.stringify(keyData)).replace(/[+/=]/g, '');
+  }
 
-      if (error || !data) return null;
+  async checkCache(request: any): Promise<any | null> {
+    this.totalRequests++;
+    
+    const cacheKey = this.generateCacheKey(request);
+    const cached = this.cache.get(cacheKey);
 
-      // Update hit count
-      await supabase
-        .from('ai_context_cache')
-        .update({ 
-          hit_count: data.hit_count + 1,
-          last_accessed_at: new Date().toISOString()
-        })
-        .eq('context_hash', contextHash);
-
-      this.cacheHits++;
-      return data.cached_response as unknown as AIResponse;
-    } catch (error) {
-      console.error('Error checking cache:', error);
+    if (!cached) {
       return null;
     }
+
+    // Check if cache entry has expired
+    if (new Date() > cached.expiresAt) {
+      this.cache.delete(cacheKey);
+      return null;
+    }
+
+    // Update hit count and increment cache hits
+    cached.hitCount++;
+    this.cacheHits++;
+    
+    console.log(`Cache hit for key: ${cacheKey.substring(0, 10)}...`);
+    return cached.data;
   }
 
-  async cacheResponse(request: AIRequest, response: AIResponse): Promise<void> {
-    try {
-      const contextHash = this.generateContextHash(request.context, request.parameters);
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1); // Cache for 1 hour
+  async cacheResponse(request: any, response: any, ttl?: number): Promise<void> {
+    const cacheKey = this.generateCacheKey(request);
+    const expirationTime = ttl || this.DEFAULT_TTL;
+    
+    const cachedResponse: CachedResponse = {
+      data: response,
+      timestamp: new Date(),
+      hitCount: 0,
+      expiresAt: new Date(Date.now() + expirationTime)
+    };
 
-      await supabase
-        .from('ai_context_cache')
-        .upsert({
-          cache_key: `${request.agent_id}_${contextHash}`,
-          agent_id: request.agent_id,
-          tenant_id: request.context.tenant_id,
-          context_hash: contextHash,
-          cached_response: response as any,
-          expires_at: expiresAt.toISOString(),
-          hit_count: 0
-        });
-    } catch (error) {
-      console.error('Error caching response:', error);
+    this.cache.set(cacheKey, cachedResponse);
+    
+    // Clean up expired entries periodically
+    if (this.cache.size % 100 === 0) {
+      this.cleanupExpiredEntries();
+    }
+
+    console.log(`Cached response for key: ${cacheKey.substring(0, 10)}...`);
+  }
+
+  private cleanupExpiredEntries(): void {
+    const now = new Date();
+    let cleanedCount = 0;
+
+    for (const [key, cached] of this.cache.entries()) {
+      if (now > cached.expiresAt) {
+        this.cache.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      console.log(`Cleaned up ${cleanedCount} expired cache entries`);
     }
   }
 
-  private generateContextHash(context: any, parameters: any): string {
-    const content = JSON.stringify({ context, parameters });
-    return btoa(content).slice(0, 32); // Simple hash for demo
-  }
+  getCacheMetrics(): CacheMetrics {
+    const cacheHitRate = this.totalRequests > 0 ? (this.cacheHits / this.totalRequests) * 100 : 0;
+    
+    let oldestEntry: Date | undefined;
+    let newestEntry: Date | undefined;
 
-  getCacheMetrics() {
+    for (const cached of this.cache.values()) {
+      if (!oldestEntry || cached.timestamp < oldestEntry) {
+        oldestEntry = cached.timestamp;
+      }
+      if (!newestEntry || cached.timestamp > newestEntry) {
+        newestEntry = cached.timestamp;
+      }
+    }
+
     return {
-      cacheHits: this.cacheHits,
       totalRequests: this.totalRequests,
-      cacheHitRate: this.totalRequests > 0 ? (this.cacheHits / this.totalRequests) * 100 : 0
+      cacheHits: this.cacheHits,
+      cacheHitRate: Math.round(cacheHitRate * 100) / 100,
+      cacheSize: this.cache.size,
+      oldestCacheEntry: oldestEntry,
+      newestCacheEntry: newestEntry
     };
   }
 
-  incrementTotalRequests() {
+  incrementTotalRequests(): void {
     this.totalRequests++;
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+    console.log('AI cache cleared');
+  }
+
+  getCacheSize(): number {
+    return this.cache.size;
+  }
+
+  // Get cache entries for debugging/monitoring
+  getCacheEntries(): Array<{ key: string; cached: CachedResponse }> {
+    return Array.from(this.cache.entries()).map(([key, cached]) => ({
+      key: key.substring(0, 10) + '...',
+      cached: {
+        ...cached,
+        data: '[Hidden for brevity]'
+      }
+    }));
+  }
+
+  // Manually invalidate cache for specific patterns
+  invalidatePattern(pattern: string): number {
+    let invalidatedCount = 0;
+    
+    for (const [key, _] of this.cache.entries()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+        invalidatedCount++;
+      }
+    }
+
+    console.log(`Invalidated ${invalidatedCount} cache entries matching pattern: ${pattern}`);
+    return invalidatedCount;
   }
 }
 
