@@ -38,7 +38,7 @@ const AuditLogViewer: React.FC = () => {
   const handleFilterChange = (key: keyof AuditLogFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value || undefined
+      [key]: value === 'all' ? undefined : value
     }));
     setPage(1);
   };
@@ -80,12 +80,12 @@ const AuditLogViewer: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Action</label>
-              <Select value={filters.action || ''} onValueChange={(value) => handleFilterChange('action', value)}>
+              <Select value={filters.action || 'all'} onValueChange={(value) => handleFilterChange('action', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Actions</SelectItem>
+                  <SelectItem value="all">All Actions</SelectItem>
                   <SelectItem value="CREATE">Create</SelectItem>
                   <SelectItem value="UPDATE">Update</SelectItem>
                   <SelectItem value="DELETE">Delete</SelectItem>
@@ -100,12 +100,12 @@ const AuditLogViewer: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Entity Type</label>
-              <Select value={filters.entity_type || ''} onValueChange={(value) => handleFilterChange('entity_type', value)}>
+              <Select value={filters.entity_type || 'all'} onValueChange={(value) => handleFilterChange('entity_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Entities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Entities</SelectItem>
+                  <SelectItem value="all">All Entities</SelectItem>
                   <SelectItem value="tenant">Tenant</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="company">Company</SelectItem>
@@ -118,12 +118,12 @@ const AuditLogViewer: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Severity</label>
-              <Select value={filters.severity || ''} onValueChange={(value) => handleFilterChange('severity', value)}>
+              <Select value={filters.severity || 'all'} onValueChange={(value) => handleFilterChange('severity', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Severities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Severities</SelectItem>
+                  <SelectItem value="all">All Severities</SelectItem>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -134,12 +134,12 @@ const AuditLogViewer: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Module</label>
-              <Select value={filters.module_name || ''} onValueChange={(value) => handleFilterChange('module_name', value)}>
+              <Select value={filters.module_name || 'all'} onValueChange={(value) => handleFilterChange('module_name', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Modules" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Modules</SelectItem>
+                  <SelectItem value="all">All Modules</SelectItem>
                   <SelectItem value="auth">Authentication</SelectItem>
                   <SelectItem value="tenant_management">Tenant Management</SelectItem>
                   <SelectItem value="user_management">User Management</SelectItem>
