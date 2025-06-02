@@ -32,15 +32,15 @@ const AnalyticsBusinessIntelligence = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Analytics & Business Intelligence</BreadcrumbPage>
+              <BreadcrumbPage>BI Dashboard</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Analytics & Business Intelligence</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Business Intelligence Dashboard</h1>
           <p className="text-sm md:text-base text-muted-foreground">
-            Comprehensive analytics, revenue management, and business intelligence dashboard
+            Comprehensive analytics, revenue management, and business intelligence
           </p>
         </div>
 
