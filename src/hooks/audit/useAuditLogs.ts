@@ -71,19 +71,25 @@ export const useAuditLogs = (filters: AuditLogFilters = {}, page = 1, pageSize =
   });
 };
 
-export const useAuditLogStats = () => {
+export const useAuditLogStats = (tenantId?: string) => {
   return useQuery({
-    queryKey: ['audit-log-stats'],
+    queryKey: ['audit-log-stats', tenantId],
     queryFn: async () => {
       // Get stats for the last 7 days
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('audit_logs')
         .select('action, severity, created_at')
         .gte('created_at', sevenDaysAgo.toISOString());
 
+      // Apply tenant filter if provided
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Calculate stats

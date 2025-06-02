@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +11,7 @@ import { useAuditLogs } from '@/hooks/audit/useAuditLogs';
 import { AuditLogFilters } from '@/types/audit';
 import { format } from 'date-fns';
 import AuditLogDetailDialog from './AuditLogDetailDialog';
+import TenantSelector from '@/components/superadmin/user-activity/TenantSelector';
 
 const severityIcons = {
   low: Info,
@@ -27,8 +27,18 @@ const severityColors = {
   critical: 'bg-red-100 text-red-800'
 };
 
-const AuditLogViewer: React.FC = () => {
-  const [filters, setFilters] = useState<AuditLogFilters>({});
+interface AuditLogViewerProps {
+  selectedTenantId?: string;
+  onTenantChange?: (tenantId: string | undefined) => void;
+}
+
+const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ 
+  selectedTenantId, 
+  onTenantChange 
+}) => {
+  const [filters, setFilters] = useState<AuditLogFilters>({
+    tenant_id: selectedTenantId
+  });
   const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -40,6 +50,17 @@ const AuditLogViewer: React.FC = () => {
       ...prev,
       [key]: value === 'all' ? undefined : value
     }));
+    setPage(1);
+  };
+
+  const handleTenantChange = (tenantId: string | undefined) => {
+    setFilters(prev => ({
+      ...prev,
+      tenant_id: tenantId
+    }));
+    if (onTenantChange) {
+      onTenantChange(tenantId);
+    }
     setPage(1);
   };
 
@@ -64,7 +85,15 @@ const AuditLogViewer: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tenant</label>
+              <TenantSelector 
+                selectedTenantId={selectedTenantId}
+                onTenantChange={handleTenantChange}
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Search</label>
               <div className="relative">
@@ -156,7 +185,7 @@ const AuditLogViewer: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                setFilters({});
+                setFilters({ tenant_id: selectedTenantId });
                 setPage(1);
               }}
             >

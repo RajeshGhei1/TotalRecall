@@ -6,8 +6,12 @@ import { Activity, AlertTriangle, Eye, Shield, TrendingUp, Users } from 'lucide-
 import { useAuditLogStats } from '@/hooks/audit/useAuditLogs';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts';
 
-const AuditDashboard: React.FC = () => {
-  const { data: stats, isLoading } = useAuditLogStats();
+interface AuditDashboardProps {
+  selectedTenantId?: string;
+}
+
+const AuditDashboard: React.FC<AuditDashboardProps> = ({ selectedTenantId }) => {
+  const { data: stats, isLoading } = useAuditLogStats(selectedTenantId);
 
   if (isLoading) {
     return (
