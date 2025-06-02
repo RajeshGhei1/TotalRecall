@@ -1,10 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AIAgent, AIRequest, AIResponse, AIContext } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
 import { aiCacheService } from './aiCacheService';
 import { aiMetricsService } from './aiMetricsService';
-import { aiAgentSelector } from './aiAgentSelector';
+import { hybridAgentSelector } from './hybridAgentSelector';
+import { moduleContextManager } from './moduleContextManager';
 import { aiRequestProcessor } from './aiRequestProcessor';
 import { aiModelHealthService } from './aiModelHealthService';
 import { aiCostTrackingService } from './aiCostTrackingService';
@@ -17,7 +17,7 @@ export class EnhancedAIOrchestrationService {
   private isProcessingQueue = false;
 
   async initialize(): Promise<void> {
-    console.log('Initializing Enhanced AI Orchestration Service...');
+    console.log('Initializing Enhanced AI Orchestration Service with Hybrid Selection...');
     await this.loadActiveAgents();
     this.startQueueProcessor();
 
@@ -56,10 +56,31 @@ export class EnhancedAIOrchestrationService {
   }
 
   async requestPrediction(context: AIContext, parameters: any, priority: 'low' | 'normal' | 'high' | 'urgent' = 'normal'): Promise<AIResponse> {
+    // Enhance context with module information
+    const enhancedContext = await moduleContextManager.enhanceContextWithModule(context);
+    
+    // Estimate token usage for budget checking
+    const estimatedTokens = this.estimateTokenUsage(parameters);
+    
+    // Check module token budget
+    const budgetCheck = await moduleContextManager.checkTokenBudget(
+      context.module, 
+      context.tenant_id, 
+      estimatedTokens
+    );
+    
+    if (!budgetCheck.allowed) {
+      throw new Error(`Token budget exceeded: ${budgetCheck.reason}`);
+    }
+
+    if (budgetCheck.overage_amount && budgetCheck.overage_amount > 0) {
+      console.warn(`Module ${context.module} will exceed budget by ${budgetCheck.overage_amount} tokens`);
+    }
+
     const request: AIRequest = {
       request_id: this.generateRequestId(),
-      agent_id: await this.selectBestAgent(context),
-      context,
+      agent_id: await this.selectBestAgent(enhancedContext),
+      context: enhancedContext,
       parameters,
       priority
     };
@@ -73,7 +94,7 @@ export class EnhancedAIOrchestrationService {
     aiCacheService.incrementTotalRequests();
 
     // Analyze context for intelligent decision making
-    const contextAnalysis = await decisionContextManager.analyzeContext(context);
+    const contextAnalysis = await decisionContextManager.analyzeContext(enhancedContext);
     console.log(`Context analysis completed: complexity=${contextAnalysis.contextComplexity}, risk=${contextAnalysis.riskLevel}`);
 
     // Apply contextual recommendations to agent selection and confidence adjustments
@@ -154,7 +175,8 @@ export class EnhancedAIOrchestrationService {
       agent.tenant_id === null || agent.tenant_id === context.tenant_id
     );
 
-    return aiAgentSelector.selectBestAgent(context, availableAgents);
+    // Use hybrid agent selector instead of basic selection
+    return hybridAgentSelector.selectAgent(context, availableAgents);
   }
 
   private async processRequest(request: AIRequest, contextAnalysis?: any): Promise<AIResponse> {
@@ -192,6 +214,18 @@ export class EnhancedAIOrchestrationService {
       const endTime = Date.now();
       const responseTime = endTime - startTime;
 
+      // Record module usage for token tracking and billing
+      const tokensUsed = this.calculateTokensUsed(request, response);
+      const cost = await this.calculateCost(request, response, tokensUsed);
+      
+      await moduleContextManager.recordModuleUsage(
+        request.context.module,
+        request.context.tenant_id,
+        tokensUsed,
+        cost,
+        true
+      );
+
       await aiMetricsService.logRequest(request, 'completed', startTime, endTime, responseTime);
       await aiCacheService.cacheResponse(request, response);
       await aiMetricsService.updatePerformanceMetrics(request.agent_id, request.context.tenant_id, responseTime, true);
@@ -199,6 +233,15 @@ export class EnhancedAIOrchestrationService {
       return response;
     } catch (error) {
       console.error('Error processing AI request:', error);
+      
+      // Record failed usage
+      await moduleContextManager.recordModuleUsage(
+        request.context.module,
+        request.context.tenant_id || null,
+        0,
+        0,
+        false
+      );
       
       await aiMetricsService.logRequest(request, 'failed', startTime, Date.now(), 0, error as Error);
       await aiMetricsService.updatePerformanceMetrics(request.agent_id, request.context.tenant_id, 0, false);
@@ -213,6 +256,30 @@ export class EnhancedAIOrchestrationService {
         error: (error as Error).message
       };
     }
+  }
+
+  private estimateTokenUsage(parameters: any): number {
+    // Basic token estimation based on prompt length
+    const promptText = JSON.stringify(parameters);
+    // Rough estimate: 1 token ≈ 4 characters for English text
+    return Math.ceil(promptText.length / 4) * 1.5; // Include response estimation
+  }
+
+  private calculateTokensUsed(request: AIRequest, response: AIResponse): number {
+    // For now, use estimation. In production, this would come from the actual AI service response
+    const inputTokens = this.estimateTokenUsage(request.parameters);
+    const outputTokens = JSON.stringify(response.result).length / 4;
+    return Math.ceil(inputTokens + outputTokens);
+  }
+
+  private async calculateCost(request: AIRequest, response: AIResponse, tokensUsed: number): Promise<number> {
+    // Use the cost tracking service for accurate cost calculation
+    const modelId = 'gpt-4o-mini'; // Default model, would be determined from agent config
+    const inputTokens = Math.ceil(tokensUsed * 0.6); // Rough split
+    const outputTokens = Math.ceil(tokensUsed * 0.4);
+    
+    const costCalc = aiCostTrackingService.calculateCost(modelId, inputTokens, outputTokens);
+    return costCalc.totalCost;
   }
 
   async provideFeedback(decisionId: string, feedback: 'positive' | 'negative', details?: any): Promise<void> {
@@ -297,6 +364,11 @@ export class EnhancedAIOrchestrationService {
         combinedScore: 0
       };
     }
+  }
+
+  async refreshModuleAssignments(moduleName?: string): Promise<void> {
+    await hybridAgentSelector.refreshAssignments(moduleName);
+    moduleContextManager.clearCache();
   }
 
   private generateRequestId(): string {

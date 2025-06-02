@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { EmailManagementPage } from '@/components/email/EmailManagementPage';
-import TenantLayout from '@/components/TenantLayout';
+import AdminLayout from '@/components/AdminLayout';
 
 const EmailManagement: React.FC = () => {
   return (
-    <TenantLayout>
+    <AdminLayout>
       <div className="p-6">
         <EmailManagementPage />
       </div>
-    </TenantLayout>
+    </AdminLayout>
   );
 };
 
