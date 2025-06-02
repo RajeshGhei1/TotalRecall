@@ -8,6 +8,7 @@ import People from '@/pages/superadmin/People';
 import AIOrchestration from '@/pages/superadmin/AIOrchestration';
 import AIAnalytics from '@/pages/superadmin/AIAnalytics';
 import AuditLogs from '@/pages/superadmin/AuditLogs';
+import UserActivity from '@/pages/superadmin/UserActivity';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import Settings from '@/pages/superadmin/Settings';
@@ -31,7 +32,7 @@ const SuperAdminRoutes = () => {
       
       {/* Security & Compliance */}
       <Route path="audit-logs" element={<AuditLogs />} />
-      <Route path="user-activity" element={<AuditLogs />} />
+      <Route path="user-activity" element={<UserActivity />} />
       
       {/* Business Management */}
       <Route path="subscription-plans" element={<SubscriptionPlans />} />
