@@ -83,7 +83,7 @@ const People = () => {
 
   const handlePersonCreated = () => {
     queryClient.invalidateQueries({ queryKey: ['people', personType] });
-    toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} added successfully`);
+    toast.success('Contact added successfully');
     setIsCreatePersonDialogOpen(false);
   };
 
