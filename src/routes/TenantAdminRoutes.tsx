@@ -86,7 +86,7 @@ const TenantAdminRoutes = () => {
       {/* Companies Database Module Protected Routes */}
       <Route path="companies" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Companies Database" 
+          moduleName="company_data_access" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -97,7 +97,7 @@ const TenantAdminRoutes = () => {
       {/* Business Contact Database Module Protected Routes */}
       <Route path="contacts" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Business Contact Database" 
+          moduleName="business_contacts_data_access" 
           tenantId={currentTenantId}
           userId={user?.id}
         >

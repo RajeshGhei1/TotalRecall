@@ -51,14 +51,14 @@ const defaultNavItems: NavItem[] = [
     label: 'Companies', 
     icon: Building2, 
     href: '/tenant-admin/companies',
-    requiresModule: 'Companies Database'
+    requiresModule: 'company_data_access'
   },
   { 
     id: 'contacts',
     label: 'Contacts', 
     icon: Users, 
     href: '/tenant-admin/contacts',
-    requiresModule: 'Business Contact Database'
+    requiresModule: 'business_contacts_data_access'
   },
   { 
     id: 'smart-talent-analytics',
@@ -104,8 +104,8 @@ export const useTenantAdminNavigation = () => {
 
   // Get module access for each required module
   const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
-  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'Companies Database', user?.id);
-  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'Business Contact Database', user?.id);
+  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
+  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
 
   // Filter navigation items based on module access
@@ -117,9 +117,9 @@ export const useTenantAdminNavigation = () => {
     switch (item.requiresModule) {
       case 'ATS Core':
         return atsAccess?.hasAccess === true;
-      case 'Companies Database':
+      case 'company_data_access':
         return companiesAccess?.hasAccess === true;
-      case 'Business Contact Database':
+      case 'business_contacts_data_access':
         return contactsAccess?.hasAccess === true;
       case 'smart_talent_analytics':
         return analyticsAccess?.hasAccess === true;
