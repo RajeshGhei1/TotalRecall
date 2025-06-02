@@ -64,9 +64,11 @@ export const useTenantUsers = (tenantId: string) => {
         .from("user_tenants")
         .select(`
           id,
+          user_id,
+          tenant_id,
           user_role,
           department,
-          user:user_id (
+          profiles!user_tenants_user_id_fkey (
             id,
             email,
             full_name
@@ -75,7 +77,20 @@ export const useTenantUsers = (tenantId: string) => {
         .eq("tenant_id", tenantId);
 
       if (error) throw error;
-      return data as TenantUserAssociation[];
+      
+      // Transform the data to match TenantUserAssociation interface
+      return data.map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        tenant_id: item.tenant_id,
+        user_role: item.user_role,
+        department: item.department,
+        user: {
+          id: item.profiles.id,
+          email: item.profiles.email,
+          full_name: item.profiles.full_name
+        }
+      })) as TenantUserAssociation[];
     },
     enabled: !!tenantId,
   });
