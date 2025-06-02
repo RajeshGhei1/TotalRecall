@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +10,20 @@ import { Search, Filter, Download, Power, Monitor, Clock, MapPin } from 'lucide-
 import { useUserSessions, useTerminateSession } from '@/hooks/audit/useUserSessions';
 import { UserSessionFilters } from '@/types/user-sessions';
 import { format } from 'date-fns';
+import TenantSelector from '@/components/superadmin/user-activity/TenantSelector';
 
-const UserSessionViewer: React.FC = () => {
-  const [filters, setFilters] = useState<UserSessionFilters>({});
+interface UserSessionViewerProps {
+  selectedTenantId?: string;
+  onTenantChange?: (tenantId: string | undefined) => void;
+}
+
+const UserSessionViewer: React.FC<UserSessionViewerProps> = ({ 
+  selectedTenantId, 
+  onTenantChange 
+}) => {
+  const [filters, setFilters] = useState<UserSessionFilters>({
+    tenant_id: selectedTenantId
+  });
   const [page, setPage] = useState(1);
 
   const { data: sessionData, isLoading } = useUserSessions(filters, page);
@@ -24,6 +34,17 @@ const UserSessionViewer: React.FC = () => {
       ...prev,
       [key]: value === 'all' ? undefined : value
     }));
+    setPage(1);
+  };
+
+  const handleTenantChange = (tenantId: string | undefined) => {
+    setFilters(prev => ({
+      ...prev,
+      tenant_id: tenantId
+    }));
+    if (onTenantChange) {
+      onTenantChange(tenantId);
+    }
     setPage(1);
   };
 
@@ -57,7 +78,15 @@ const UserSessionViewer: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tenant</label>
+              <TenantSelector 
+                selectedTenantId={selectedTenantId}
+                onTenantChange={handleTenantChange}
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Search</label>
               <div className="relative">
@@ -102,24 +131,19 @@ const UserSessionViewer: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Actions</label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setFilters({});
-                  setPage(1);
-                }}
-                className="w-full"
-              >
-                Clear Filters
-              </Button>
-            </div>
           </div>
 
           <div className="flex items-center gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFilters({ tenant_id: selectedTenantId });
+                setPage(1);
+              }}
+            >
+              Clear Filters
+            </Button>
             <Button variant="outline" size="sm" className="ml-auto">
               <Download className="h-4 w-4 mr-2" />
               Export Sessions

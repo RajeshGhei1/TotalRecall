@@ -6,8 +6,12 @@ import { Activity, Users, Monitor, Clock, TrendingUp, Globe } from 'lucide-react
 import { useUserSessionStats } from '@/hooks/audit/useUserSessions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts';
 
-const UserActivityDashboard: React.FC = () => {
-  const { data: stats, isLoading } = useUserSessionStats();
+interface UserActivityDashboardProps {
+  selectedTenantId?: string;
+}
+
+const UserActivityDashboard: React.FC<UserActivityDashboardProps> = ({ selectedTenantId }) => {
+  const { data: stats, isLoading } = useUserSessionStats(selectedTenantId);
 
   if (isLoading) {
     return (

@@ -1,18 +1,36 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Shield, Activity, ArrowLeft } from 'lucide-react';
 import AuditDashboard from '@/components/superadmin/audit/AuditDashboard';
 import AuditLogViewer from '@/components/superadmin/audit/AuditLogViewer';
 
 const AuditLogs: React.FC = () => {
+  const navigate = useNavigate();
+  const [selectedTenantId, setSelectedTenantId] = useState<string | undefined>();
+
+  const handleBackToDashboard = () => {
+    navigate('/superadmin/dashboard');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-6 w-6 text-primary" />
-          <h1 className="text-3xl font-bold">Audit Logs</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl font-bold">Audit Logs</h1>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleBackToDashboard}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to BI Dashboard
+          </Button>
         </div>
         <p className="text-muted-foreground">
           Monitor system activities, track user actions, and maintain security compliance
@@ -32,11 +50,14 @@ const AuditLogs: React.FC = () => {
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
-          <AuditDashboard />
+          <AuditDashboard selectedTenantId={selectedTenantId} />
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-6">
-          <AuditLogViewer />
+          <AuditLogViewer 
+            selectedTenantId={selectedTenantId} 
+            onTenantChange={setSelectedTenantId}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -65,19 +65,25 @@ export const useUserSessions = (filters: UserSessionFilters = {}, page = 1, page
   });
 };
 
-export const useUserSessionStats = () => {
+export const useUserSessionStats = (tenantId?: string) => {
   return useQuery({
-    queryKey: ['user-session-stats'],
+    queryKey: ['user-session-stats', tenantId],
     queryFn: async () => {
       // Get stats for the last 7 days
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_sessions')
         .select('*')
         .gte('login_at', sevenDaysAgo.toISOString());
 
+      // Apply tenant filter if provided
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Calculate stats
