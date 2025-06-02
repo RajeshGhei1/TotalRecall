@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,12 +34,14 @@ import ResetPasswordDialog from '@/components/tenant-user-manager/ResetPasswordD
 import { useToast } from '@/hooks/use-toast';
 import { useSuperAdminUsers } from '@/hooks/useSuperAdminUsers';
 
-interface User {
+interface UserWithTenant {
   id: string;
   email: string;
   full_name: string | null;
   role: string;
   created_at: string;
+  tenant_name: string | null;
+  tenant_id: string | null;
 }
 
 const Users = () => {
@@ -60,20 +63,46 @@ const Users = () => {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as User[];
+      if (profilesError) throw profilesError;
+
+      // Then get tenant associations for each user
+      const usersWithTenants: UserWithTenant[] = await Promise.all(
+        profiles.map(async (profile) => {
+          const { data: tenantAssociation } = await supabase
+            .from('user_tenants')
+            .select(`
+              tenant_id,
+              tenants:tenant_id (
+                id,
+                name
+              )
+            `)
+            .eq('user_id', profile.id)
+            .maybeSingle();
+
+          return {
+            ...profile,
+            tenant_name: tenantAssociation?.tenants?.name || null,
+            tenant_id: tenantAssociation?.tenant_id || null
+          };
+        })
+      );
+
+      return usersWithTenants;
     },
   });
 
   // Filter users based on search term
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.tenant_name && user.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getRoleBadgeVariant = (role: string) => {
@@ -152,7 +181,7 @@ const Users = () => {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search users..."
+                    placeholder="Search users or tenants..."
                     className="pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -181,6 +210,7 @@ const Users = () => {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Tenant</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -193,6 +223,15 @@ const Users = () => {
                           {user.full_name || 'N/A'}
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          {user.tenant_name ? (
+                            <Badge variant="outline">
+                              {user.tenant_name}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No tenant</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={getRoleBadgeVariant(user.role)}>
                             {user.role || 'user'}
