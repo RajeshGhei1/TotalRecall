@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,8 @@ import {
   TrendingUp,
   Filter,
   Download,
-  Eye
+  Eye,
+  UserCheck
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { atsService } from '@/services/atsService';
@@ -24,6 +24,7 @@ import ApplicationCard from './ApplicationCard';
 import ATSMetrics from './ATSMetrics';
 import CreateJobDialog from './CreateJobDialog';
 import CreateCandidateDialog from './CreateCandidateDialog';
+import TalentPoolManager from './TalentPoolManager';
 
 const ATSDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -54,7 +55,7 @@ const ATSDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Applicant Tracking System</h1>
           <p className="text-muted-foreground">
-            Manage your hiring pipeline with AI-powered insights
+            Complete talent and recruitment management with AI-powered insights
           </p>
         </div>
         <div className="flex gap-2">
@@ -79,7 +80,7 @@ const ATSDashboard = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search candidates, jobs, or applications..."
+                placeholder="Search candidates, jobs, applications, or talent..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -95,12 +96,18 @@ const ATSDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="candidates">
-            Candidates
+          <TabsTrigger value="talent-pool">
+            Talent Pool
             <Badge variant="secondary" className="ml-2">
               {candidates.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="candidates">
+            Active Candidates
+            <Badge variant="secondary" className="ml-2">
+              {candidates.filter(c => c.tags?.includes('active')).length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="jobs">
@@ -157,9 +164,26 @@ const ATSDashboard = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="talent-pool" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Talent Pool Management</h2>
+              <p className="text-sm text-muted-foreground">
+                Comprehensive talent database with skills, experience, and relationship tracking
+              </p>
+            </div>
+            <Button onClick={() => setCreateCandidateOpen(true)}>
+              <UserCheck className="mr-2 h-4 w-4" />
+              Add to Talent Pool
+            </Button>
+          </div>
+          
+          <TalentPoolManager searchTerm={searchTerm} />
+        </TabsContent>
+
         <TabsContent value="candidates" className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Candidates</h2>
+            <h2 className="text-xl font-semibold">Active Candidates</h2>
             <Button onClick={() => setCreateCandidateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Add Candidate
@@ -170,7 +194,7 @@ const ATSDashboard = () => {
             <div className="text-center py-12">Loading candidates...</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {candidates.map(candidate => (
+              {candidates.filter(c => c.tags?.includes('active')).map(candidate => (
                 <CandidateCard key={candidate.id} candidate={candidate} />
               ))}
             </div>

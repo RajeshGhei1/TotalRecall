@@ -44,7 +44,7 @@ const defaultNavItems: NavItem[] = [
   },
   { 
     id: 'people',
-    label: 'People', 
+    label: 'Business Contacts', 
     icon: Users2, 
     href: '/superadmin/people'
   },

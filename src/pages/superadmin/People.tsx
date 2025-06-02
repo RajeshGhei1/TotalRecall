@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -9,7 +8,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,7 +28,8 @@ const People = () => {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [personType, setPersonType] = useState<'talent' | 'contact'>('talent');
+  // Fixed to only handle business contacts
+  const personType = 'contact';
   const [isCompanyLinkFormOpen, setIsCompanyLinkFormOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
@@ -67,10 +66,10 @@ const People = () => {
     fetchCompanies();
   }, []);
 
-  // Reset activeTab to dashboard when switching person type
+  // Reset activeTab to dashboard when component mounts
   useEffect(() => {
     setActiveTab('dashboard');
-  }, [personType]);
+  }, []);
 
   // Function to handle linking a person to a company
   const handleLinkToCompany = (personId: string) => {
@@ -106,24 +105,22 @@ const People = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>People</BreadcrumbPage>
+                  <BreadcrumbPage>Business Contacts</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
 
             <div className="mb-6 md:mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">People Management</h1>
-              <p className="text-sm md:text-base text-muted-foreground">Manage talents and business contacts across the JobMojo platform.</p>
-            </div>
-
-            {/* Person type selector */}
-            <div className="mb-4 md:mb-6">
-              <Tabs defaultValue={personType} onValueChange={(value) => setPersonType(value as 'talent' | 'contact')} className="w-full sm:w-[400px]">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="talent">Talent Pool</TabsTrigger>
-                  <TabsTrigger value="contact">Business Contacts</TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Business Contacts Management</h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                Manage business contacts and company relationships across the platform.
+              </p>
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Talent management has been moved to the ATS module for better workflow integration. 
+                  Access talent data through the ATS Core module in tenant admin portals.
+                </p>
+              </div>
             </div>
 
             {/* Company loading error */}
