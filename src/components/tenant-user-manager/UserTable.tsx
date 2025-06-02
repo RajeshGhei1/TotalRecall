@@ -105,7 +105,10 @@ const UserTable: React.FC<UserTableProps> = ({
                   <TableCell>{association.user.email}</TableCell>
                   <TableCell>{association.user.full_name || "N/A"}</TableCell>
                   <TableCell>
-                    {departments.find(d => d.id === association.department)?.name || "Unassigned"}
+                    {association.department ? 
+                      departments.find(d => d.id === association.department)?.name || "Unknown" : 
+                      "Unassigned"
+                    }
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">

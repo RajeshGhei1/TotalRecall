@@ -1,104 +1,114 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { TenantUserAssociation, UserRole } from "./types";
 import { User } from "@/types/user";
+
+export const departments = [
+  { id: "hr", name: "Human Resources" },
+  { id: "engineering", name: "Engineering" },
+  { id: "sales", name: "Sales" },
+  { id: "marketing", name: "Marketing" },
+  { id: "finance", name: "Finance" },
+  { id: "operations", name: "Operations" }
+];
+
+export const getRoleDisplayName = (role: string) => {
+  switch (role) {
+    case "tenant_admin":
+      return "Admin";
+    case "manager":
+      return "Manager";
+    case "recruiter":
+      return "Recruiter";
+    default:
+      return "User";
+  }
+};
 
 export const useTenantUsers = (tenantId: string) => {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("user");
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("no-department");
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch all available users
   const { data: availableUsers = [] } = useQuery({
-    queryKey: ["availableUsers"],
+    queryKey: ["available-users", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: existingUsers } = await supabase
+        .from("user_tenants")
+        .select("user_id")
+        .eq("tenant_id", tenantId);
+
+      const existingUserIds = existingUsers?.map(u => u.user_id) || [];
+
+      const { data: users, error } = await supabase
         .from("profiles")
-        .select("id, email, full_name")
-        .order("email");
+        .select("*")
+        .not("id", "in", `(${existingUserIds.length > 0 ? existingUserIds.join(",") : "null"})`);
 
       if (error) throw error;
-      return data as User[];
+      return users as User[];
     },
+    enabled: !!tenantId,
   });
 
   // Fetch current tenant users
   const { data: tenantUsers = [], isLoading } = useQuery({
-    queryKey: ["tenantUsers", tenantId],
+    queryKey: ["tenant-users", tenantId],
     queryFn: async () => {
-      // First get the user_tenant associations
-      const { data: userTenants, error: userTenantsError } = await supabase
+      const { data, error } = await supabase
         .from("user_tenants")
         .select(`
-          id, 
-          user_id, 
-          tenant_id,
+          id,
           user_role,
-          department
+          department,
+          user:user_id (
+            id,
+            email,
+            full_name
+          )
         `)
         .eq("tenant_id", tenantId);
 
-      if (userTenantsError) {
-        console.error("Error fetching tenant users:", userTenantsError);
-        return [] as TenantUserAssociation[];
-      }
-      
-      // Then get the user details separately and merge them
-      const result: TenantUserAssociation[] = [];
-      
-      for (const userTenant of userTenants) {
-        const { data: userData, error: userError } = await supabase
-          .from("profiles")
-          .select("id, email, full_name")
-          .eq("id", userTenant.user_id)
-          .single();
-          
-        if (!userError && userData) {
-          result.push({
-            ...userTenant,
-            user: userData
-          });
-        }
-      }
-      
-      return result;
+      if (error) throw error;
+      return data as TenantUserAssociation[];
     },
     enabled: !!tenantId,
   });
 
   // Add user to tenant
   const addUserMutation = useMutation({
-    mutationFn: async ({ userId, role, department }: { userId: string, role: string, department?: string }) => {
-      const { data, error } = await supabase
+    mutationFn: async () => {
+      const { error } = await supabase
         .from("user_tenants")
-        .insert([{ 
-          user_id: userId, 
+        .insert({
+          user_id: selectedUserId,
           tenant_id: tenantId,
-          user_role: role,
-          department: department || null
-        }])
-        .select();
+          user_role: selectedRole,
+          department: selectedDepartment === "no-department" ? null : selectedDepartment
+        });
 
       if (error) throw error;
-      return data[0];
     },
     onSuccess: () => {
       toast({
-        title: "User added",
-        description: "User has been added to the tenant successfully.",
+        title: "User added successfully",
+        description: "The user has been added to this tenant.",
       });
+      queryClient.invalidateQueries({ queryKey: ["tenant-users", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["available-users", tenantId] });
       setSelectedUserId("");
       setSelectedRole("user");
-      setSelectedDepartment("");
-      queryClient.invalidateQueries({ queryKey: ["tenantUsers", tenantId] });
+      setSelectedDepartment("no-department");
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to add user: ${error.message}`,
+        title: "Error adding user",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -106,51 +116,53 @@ export const useTenantUsers = (tenantId: string) => {
 
   // Remove user from tenant
   const removeUserMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (associationId: string) => {
       const { error } = await supabase
         .from("user_tenants")
         .delete()
-        .eq("id", id);
+        .eq("id", associationId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       toast({
-        title: "User removed",
-        description: "User has been removed from the tenant.",
+        title: "User removed successfully",
+        description: "The user has been removed from this tenant.",
       });
-      queryClient.invalidateQueries({ queryKey: ["tenantUsers", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["tenant-users", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["available-users", tenantId] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to remove user: ${error.message}`,
+        title: "Error removing user",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
   // Update user role
-  const updateUserRoleMutation = useMutation({
-    mutationFn: async ({ id, role }: { id: string, role: string }) => {
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
       const { error } = await supabase
         .from("user_tenants")
-        .update({ user_role: role })
-        .eq("id", id);
+        .update({ user_role: newRole })
+        .eq("user_id", userId)
+        .eq("tenant_id", tenantId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       toast({
-        title: "Role updated",
-        description: "User role has been updated.",
+        title: "Role updated successfully",
+        description: "The user's role has been updated.",
       });
-      queryClient.invalidateQueries({ queryKey: ["tenantUsers", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["tenant-users", tenantId] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to update role: ${error.message}`,
+        title: "Error updating role",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -158,29 +170,23 @@ export const useTenantUsers = (tenantId: string) => {
 
   // Reset user password
   const resetPasswordMutation = useMutation({
-    mutationFn: async ({ userId, newPassword }: { userId: string, newPassword: string }) => {
-      const { data, error } = await supabase.functions.invoke('reset-user-password', {
-        body: {
-          userId,
-          tenantId,
-          newPassword,
-        },
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const { error } = await supabase.functions.invoke('reset-user-password', {
+        body: { userId, newPassword }
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error || 'Password reset failed');
-      return data;
     },
     onSuccess: () => {
       toast({
-        title: "Password reset",
-        description: "User password has been reset successfully.",
+        title: "Password reset successfully",
+        description: "The user's password has been updated.",
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to reset password: ${error.message}`,
+        title: "Error resetting password",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -193,19 +199,12 @@ export const useTenantUsers = (tenantId: string) => {
 
   const handleAddUser = () => {
     if (selectedUserId) {
-      addUserMutation.mutate({ 
-        userId: selectedUserId, 
-        role: selectedRole,
-        department: selectedDepartment
-      });
+      addUserMutation.mutate();
     }
   };
 
   const handleRoleChange = (userId: string, newRole: string) => {
-    const association = tenantUsers.find(tu => tu.user.id === userId);
-    if (association) {
-      updateUserRoleMutation.mutate({ id: association.id, role: newRole });
-    }
+    updateRoleMutation.mutate({ userId, newRole });
   };
 
   const handleResetPassword = (userId: string, newPassword: string) => {
@@ -229,22 +228,4 @@ export const useTenantUsers = (tenantId: string) => {
     handleResetPassword,
     removeUserMutation
   };
-};
-
-export const departments = [
-  { id: "recruiting", name: "Recruiting" },
-  { id: "sales", name: "Sales" },
-  { id: "marketing", name: "Marketing" },
-  { id: "operations", name: "Operations" },
-  { id: "hr", name: "Human Resources" },
-];
-
-export const getRoleDisplayName = (role: string) => {
-  const roleMap: Record<string, string> = {
-    "tenant_admin": "Admin",
-    "manager": "Manager", 
-    "recruiter": "Recruiter",
-    "user": "User"
-  };
-  return roleMap[role] || role;
 };

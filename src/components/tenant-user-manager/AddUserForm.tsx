@@ -81,7 +81,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="no-department">None</SelectItem>
             {departments.map(dept => (
               <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
             ))}
