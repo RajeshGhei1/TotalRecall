@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +15,8 @@ import {
   Filter,
   Download,
   Eye,
-  UserCheck
+  UserCheck,
+  BarChart3
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { atsService } from '@/services/atsService';
@@ -25,6 +27,9 @@ import ATSMetrics from './ATSMetrics';
 import CreateJobDialog from './CreateJobDialog';
 import CreateCandidateDialog from './CreateCandidateDialog';
 import TalentPoolManager from './TalentPoolManager';
+import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
+import TalentHiringTrends from '@/components/reporting/charts/TalentHiringTrends';
+import JobPostingsOverview from '@/components/reporting/charts/JobPostingsOverview';
 
 const ATSDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -96,7 +101,7 @@ const ATSDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="talent-pool">
             Talent Pool
@@ -121,6 +126,14 @@ const ATSDashboard = () => {
             <Badge variant="secondary" className="ml-2">
               {applications.length}
             </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="talent-analytics">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Talent Analytics
+          </TabsTrigger>
+          <TabsTrigger value="recruiting-analytics">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Recruiting Analytics
           </TabsTrigger>
         </TabsList>
 
@@ -245,6 +258,53 @@ const ATSDashboard = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="talent-analytics">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">Talent Analytics</h2>
+                <p className="text-sm text-muted-foreground">
+                  Comprehensive talent metrics and insights
+                </p>
+              </div>
+            </div>
+            <TalentMetricsDashboard />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="recruiting-analytics">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">Recruiting Analytics</h2>
+                <p className="text-sm text-muted-foreground">
+                  Hiring trends and recruitment performance metrics
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hiring Trends</CardTitle>
+                  <CardDescription>Talent hiring data over time</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <TalentHiringTrends />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Job Postings</CardTitle>
+                  <CardDescription>Job posting metrics</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <JobPostingsOverview />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 

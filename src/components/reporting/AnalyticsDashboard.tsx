@@ -4,15 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
-import TalentMetricsDashboard from '@/components/talent/TalentMetricsDashboard';
 import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 // Enhanced company dashboard
 import CompanyRevenueChart from "./charts/CompanyRevenueChart";
 import CompanyGrowthChart from "./charts/CompanyGrowthChart";
-import TalentHiringTrends from "./charts/TalentHiringTrends";
-import JobPostingsOverview from "./charts/JobPostingsOverview";
 
 const AnalyticsDashboard = () => {
   const [activeTab, setActiveTab] = React.useState("overview");
@@ -21,14 +20,12 @@ const AnalyticsDashboard = () => {
   const { data: overviewData } = useQuery({
     queryKey: ['dashboardOverview'],
     queryFn: async () => {
-      const [talentsCount, contactsCount, companiesCount] = await Promise.all([
-        supabase.from('talents').select('id', { count: 'exact', head: true }),
+      const [contactsCount, companiesCount] = await Promise.all([
         supabase.from('people').select('id', { count: 'exact', head: true }),
         supabase.from('companies').select('id', { count: 'exact', head: true })
       ]);
       
       return {
-        talents: talentsCount.count || 0,
         contacts: contactsCount.count || 0, 
         companies: companiesCount.count || 0
       };
@@ -39,32 +36,21 @@ const AnalyticsDashboard = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Analytics Dashboard</CardTitle>
+          <CardTitle>Operational Analytics Dashboard</CardTitle>
           <CardDescription>
-            Comprehensive analytics and reporting for your recruitment platform
+            Analytics and reporting for core business operations
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="talent">Talent</TabsTrigger>
               <TabsTrigger value="contacts">Contacts</TabsTrigger>
               <TabsTrigger value="companies">Companies</TabsTrigger>
-              <TabsTrigger value="recruiting">Recruiting</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Total Talents</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{overviewData?.talents || 0}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Talents in the database</p>
-                  </CardContent>
-                </Card>
+              <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Business Contacts</CardTitle>
@@ -107,15 +93,15 @@ const AnalyticsDashboard = () => {
               </div>
               
               <Alert>
-                <AlertTitle>Analytics Insights</AlertTitle>
-                <AlertDescription>
-                  Use the tabs above to explore detailed analytics for each entity type, or create custom reports using the Report Builder.
+                <AlertTitle>Talent & Recruiting Analytics</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>Talent and recruiting analytics have been moved to the ATS (Applicant Tracking System) module for better workflow integration.</p>
+                  <Button variant="outline" size="sm" className="mt-2">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Access ATS Analytics in Tenant Portal
+                  </Button>
                 </AlertDescription>
               </Alert>
-            </TabsContent>
-            
-            <TabsContent value="talent">
-              <TalentMetricsDashboard />
             </TabsContent>
             
             <TabsContent value="contacts">
@@ -141,31 +127,6 @@ const AnalyticsDashboard = () => {
                     </CardHeader>
                     <CardContent className="h-[300px]">
                       <CompanyRevenueChart />
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="recruiting">
-              <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Hiring Trends</CardTitle>
-                      <CardDescription>Talent hiring data over time</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                      <TalentHiringTrends />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Job Postings</CardTitle>
-                      <CardDescription>Job posting metrics</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                      <JobPostingsOverview />
                     </CardContent>
                   </Card>
                 </div>
