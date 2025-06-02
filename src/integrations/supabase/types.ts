@@ -578,6 +578,78 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          additional_context: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: unknown | null
+          module_name: string | null
+          new_values: Json | null
+          old_values: Json | null
+          request_id: string | null
+          session_id: string | null
+          severity: string | null
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          additional_context?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: unknown | null
+          module_name?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          request_id?: string | null
+          session_id?: string | null
+          severity?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          additional_context?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: unknown | null
+          module_name?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          request_id?: string | null
+          session_id?: string | null
+          severity?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavioral_patterns: {
         Row: {
           created_at: string | null
@@ -2585,6 +2657,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          device_info: Json | null
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity_at: string | null
+          login_at: string
+          login_method: string | null
+          logout_at: string | null
+          session_token: string
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_info?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          login_at?: string
+          login_method?: string | null
+          logout_at?: string | null
+          session_token: string
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_info?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          login_at?: string
+          login_method?: string | null
+          logout_at?: string | null
+          session_token?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_subscriptions: {
         Row: {
           assigned_by: string | null
@@ -2792,6 +2924,10 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_audit_logs: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       create_user_profile: {
         Args: { user_email: string; user_full_name: string; user_role: string }
         Returns: string
@@ -2803,6 +2939,24 @@ export type Database = {
       is_super_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          p_user_id: string
+          p_tenant_id: string
+          p_action: string
+          p_entity_type: string
+          p_entity_id?: string
+          p_old_values?: Json
+          p_new_values?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_session_id?: string
+          p_severity?: string
+          p_module_name?: string
+          p_additional_context?: Json
+        }
+        Returns: string
       }
       resolve_user_subscription: {
         Args: { p_user_id: string; p_tenant_id: string }

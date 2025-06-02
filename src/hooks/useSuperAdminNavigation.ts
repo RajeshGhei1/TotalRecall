@@ -13,7 +13,9 @@ import {
   Cog,
   TrendingUp,
   Brain,
-  Zap
+  Zap,
+  Shield,
+  Activity
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -59,6 +61,18 @@ const defaultNavItems: NavItem[] = [
     label: 'AI Analytics', 
     icon: Zap, 
     href: '/superadmin/ai-analytics'
+  },
+  { 
+    id: 'audit-logs',
+    label: 'Audit Logs', 
+    icon: Shield, 
+    href: '/superadmin/audit-logs'
+  },
+  { 
+    id: 'user-activity',
+    label: 'User Activity', 
+    icon: Activity, 
+    href: '/superadmin/user-activity'
   },
   { 
     id: 'subscription-plans',
