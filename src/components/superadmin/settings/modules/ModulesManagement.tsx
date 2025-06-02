@@ -41,6 +41,7 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
     { value: 'core', label: 'Core', count: modules?.filter(m => m.category === 'core').length || 0 },
     { value: 'analytics', label: 'Analytics', count: modules?.filter(m => m.category === 'analytics').length || 0 },
     { value: 'communication', label: 'Communication', count: modules?.filter(m => m.category === 'communication').length || 0 },
+    { value: 'data-services', label: 'Data Services', count: modules?.filter(m => m.category === 'data-services').length || 0 },
     { value: 'integrations', label: 'Integrations', count: modules?.filter(m => m.category === 'integrations').length || 0 },
     { value: 'recruitment', label: 'Recruitment', count: modules?.filter(m => m.category === 'recruitment').length || 0 },
     { value: 'talent', label: 'Talent Management', count: modules?.filter(m => m.category === 'talent').length || 0 },
