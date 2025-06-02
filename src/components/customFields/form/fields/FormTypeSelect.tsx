@@ -21,6 +21,16 @@ interface FormTypeSelectProps {
   form: UseFormReturn<FieldFormValues>;
 }
 
+const fieldTypeOptions = [
+  { value: 'text', label: 'Text' },
+  { value: 'textarea', label: 'Text Area' },
+  { value: 'number', label: 'Number' },
+  { value: 'date', label: 'Date' },
+  { value: 'dropdown', label: 'Dropdown' },
+  { value: 'multiselect', label: 'Multi-Select' },
+  { value: 'boolean', label: 'Yes/No' }
+];
+
 const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
   return (
     <FormField
@@ -31,7 +41,7 @@ const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
           <FormLabel>Field Type</FormLabel>
           <Select
             onValueChange={field.onChange}
-            value={field.value as string || ""}
+            value={field.value as string || undefined}
           >
             <FormControl>
               <SelectTrigger>
@@ -39,13 +49,11 @@ const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent className="z-[1000] bg-white">
-              <SelectItem value="text">Text</SelectItem>
-              <SelectItem value="textarea">Text Area</SelectItem>
-              <SelectItem value="number">Number</SelectItem>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="dropdown">Dropdown</SelectItem>
-              <SelectItem value="multiselect">Multi-Select</SelectItem>
-              <SelectItem value="boolean">Yes/No</SelectItem>
+              {fieldTypeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormMessage />

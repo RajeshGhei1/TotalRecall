@@ -124,6 +124,15 @@ const CreateUserDialog = ({
     }
   };
 
+  // Filter out tenants with empty IDs and ensure all have valid values
+  const validTenants = tenants.filter(tenant => 
+    tenant && 
+    tenant.id && 
+    typeof tenant.id === 'string' && 
+    tenant.id.trim() !== '' &&
+    tenant.name
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -178,7 +187,7 @@ const CreateUserDialog = ({
                   <FormLabel>Tenant (Optional)</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    value={field.value}
+                    value={field.value || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -186,8 +195,8 @@ const CreateUserDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">No tenant</SelectItem>
-                      {tenants.map((tenant) => (
+                      <SelectItem value="no-tenant-selected">No tenant</SelectItem>
+                      {validTenants.map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.id}>
                           {tenant.name}
                         </SelectItem>

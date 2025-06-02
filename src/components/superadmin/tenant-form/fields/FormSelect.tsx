@@ -47,6 +47,17 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     }
   };
 
+  // Filter out any options with empty string values and ensure all options have valid values
+  const validOptions = options.filter(option => 
+    option && 
+    typeof option.value === 'string' && 
+    option.value.trim() !== '' &&
+    typeof option.label === 'string'
+  ).map(option => ({
+    value: option.value || `option-${Math.random().toString(36).substr(2, 9)}`,
+    label: option.label || option.value || 'Unknown Option'
+  }));
+
   return (
     <FormField
       control={form.control}
@@ -69,11 +80,15 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent className="z-[10001] bg-white border shadow-lg">
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value || "default-option"}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {validOptions.length === 0 ? (
+                <SelectItem value="no-options-available">No options available</SelectItem>
+              ) : (
+                validOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <FormMessage />
