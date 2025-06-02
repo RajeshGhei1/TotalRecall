@@ -1,7 +1,6 @@
 
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
-import JobList from '../components/JobList';
 import CompanySpotlight from '../components/CompanySpotlight';
 import HowItWorks from '../components/HowItWorks';
 import SignupForm from '../components/SignupForm';
@@ -13,7 +12,6 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <JobList />
         <CompanySpotlight />
         <HowItWorks />
         <SignupForm />
