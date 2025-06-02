@@ -101,9 +101,16 @@ export const useUserSessionStats = () => {
         return acc;
       }, {} as Record<string, number>);
 
-      // Get top devices (simplified - would need better device parsing)
+      // Get top devices (safely handle device_info)
       const deviceCounts = data.reduce((acc, session) => {
-        const device = session.device_info?.type || 'Unknown';
+        let device = 'Unknown';
+        
+        // Safely extract device type from device_info
+        if (session.device_info && typeof session.device_info === 'object' && session.device_info !== null) {
+          const deviceInfo = session.device_info as Record<string, any>;
+          device = deviceInfo.type || 'Unknown';
+        }
+        
         acc[device] = (acc[device] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -113,10 +120,11 @@ export const useUserSessionStats = () => {
         .slice(0, 5)
         .map(([device, count]) => ({ device, count }));
 
-      // Get top locations (simplified - based on IP)
+      // Get top locations (based on IP)
       const locationCounts = data.reduce((acc, session) => {
         const location = session.ip_address || 'Unknown';
-        acc[location] = (acc[location] || 0) + 1;
+        const locationKey = String(location);
+        acc[locationKey] = (acc[locationKey] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
