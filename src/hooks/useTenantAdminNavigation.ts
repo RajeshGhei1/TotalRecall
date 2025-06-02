@@ -30,33 +30,35 @@ const defaultNavItems: NavItem[] = [
     label: 'Applicant Tracking', 
     icon: UserCheck, 
     href: '/tenant-admin/ats',
-    requiresModule: 'ats_core'
+    requiresModule: 'ATS Core'
   },
   { 
     id: 'jobs',
     label: 'Jobs', 
     icon: Briefcase, 
     href: '/tenant-admin/jobs',
-    requiresModule: 'ats_core'
+    requiresModule: 'ATS Core'
   },
   { 
     id: 'talent',
     label: 'Talent Pool', 
     icon: Users2, 
     href: '/tenant-admin/talent',
-    requiresModule: 'ats_core'
+    requiresModule: 'ATS Core'
   },
   { 
     id: 'companies',
     label: 'Companies', 
     icon: Building2, 
-    href: '/tenant-admin/companies'
+    href: '/tenant-admin/companies',
+    requiresModule: 'Companies Database'
   },
   { 
     id: 'contacts',
     label: 'Contacts', 
     icon: Users, 
-    href: '/tenant-admin/contacts'
+    href: '/tenant-admin/contacts',
+    requiresModule: 'Business Contact Database'
   },
   { 
     id: 'smart-talent-analytics',
@@ -100,10 +102,10 @@ export const useTenantAdminNavigation = () => {
 
   const currentTenantId = tenantData?.tenant_id || null;
 
-  // Get module access for ATS Core
-  const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ats_core', user?.id);
-  
-  // Get module access for Smart Talent Analytics
+  // Get module access for each required module
+  const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
+  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'Companies Database', user?.id);
+  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'Business Contact Database', user?.id);
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
 
   // Filter navigation items based on module access
@@ -112,15 +114,18 @@ export const useTenantAdminNavigation = () => {
       return true; // Always show items that don't require modules
     }
 
-    if (item.requiresModule === 'ats_core') {
-      return atsAccess?.hasAccess === true;
+    switch (item.requiresModule) {
+      case 'ATS Core':
+        return atsAccess?.hasAccess === true;
+      case 'Companies Database':
+        return companiesAccess?.hasAccess === true;
+      case 'Business Contact Database':
+        return contactsAccess?.hasAccess === true;
+      case 'smart_talent_analytics':
+        return analyticsAccess?.hasAccess === true;
+      default:
+        return true;
     }
-
-    if (item.requiresModule === 'smart_talent_analytics') {
-      return analyticsAccess?.hasAccess === true;
-    }
-
-    return true;
   });
 
   return useNavigationPreferences('tenant_admin', filteredNavItems);

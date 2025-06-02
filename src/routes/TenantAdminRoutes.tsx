@@ -57,7 +57,7 @@ const TenantAdminRoutes = () => {
       {/* ATS Core Module Protected Routes */}
       <Route path="ats" element={
         <UnifiedModuleAccessGuard 
-          moduleName="ats_core" 
+          moduleName="ATS Core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -66,7 +66,7 @@ const TenantAdminRoutes = () => {
       } />
       <Route path="jobs" element={
         <UnifiedModuleAccessGuard 
-          moduleName="ats_core" 
+          moduleName="ATS Core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -75,11 +75,33 @@ const TenantAdminRoutes = () => {
       } />
       <Route path="talent/*" element={
         <UnifiedModuleAccessGuard 
-          moduleName="ats_core" 
+          moduleName="ATS Core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
           <Talent />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Companies Database Module Protected Routes */}
+      <Route path="companies" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="Companies Database" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Companies />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Business Contact Database Module Protected Routes */}
+      <Route path="contacts" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="Business Contact Database" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Contacts />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -93,10 +115,6 @@ const TenantAdminRoutes = () => {
           <SmartTalentAnalytics />
         </UnifiedModuleAccessGuard>
       } />
-      
-      {/* Business Management */}
-      <Route path="companies" element={<Companies />} />
-      <Route path="contacts" element={<Contacts />} />
       
       {/* Settings */}
       <Route path="settings" element={<Settings />} />
