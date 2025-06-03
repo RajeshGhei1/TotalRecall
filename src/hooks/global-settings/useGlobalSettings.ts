@@ -31,12 +31,10 @@ export const useGlobalSettings = (category?: string) => {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Parse JSON values based on setting_type
+      // Fix: Don't double-parse jsonb values - they're already parsed by Supabase
       return data.map(setting => ({
         ...setting,
-        setting_value: setting.setting_type === 'json' 
-          ? setting.setting_value 
-          : JSON.parse(String(setting.setting_value))
+        setting_value: setting.setting_value // Direct access, no JSON.parse needed
       })) as GlobalSetting[];
     },
   });
@@ -58,7 +56,7 @@ export const useUpdateGlobalSetting = () => {
       const { data, error } = await supabase
         .from('global_settings')
         .update({
-          setting_value: JSON.stringify(setting_value),
+          setting_value: setting_value, // Store directly as jsonb, no stringify needed
           updated_by,
           updated_at: new Date().toISOString()
         })
@@ -71,18 +69,10 @@ export const useUpdateGlobalSetting = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['global-settings'] });
-      toast({
-        title: 'Setting Updated',
-        description: 'Global setting has been updated successfully.',
-      });
     },
     onError: (error) => {
       console.error('Failed to update global setting:', error);
-      toast({
-        title: 'Update Failed',
-        description: 'Failed to update global setting. Please try again.',
-        variant: 'destructive',
-      });
+      throw error; // Re-throw to be handled by caller
     },
   });
 };
@@ -96,7 +86,7 @@ export const useCreateGlobalSetting = () => {
         .from('global_settings')
         .insert({
           ...setting,
-          setting_value: JSON.stringify(setting.setting_value)
+          setting_value: setting.setting_value // Store directly as jsonb
         })
         .select()
         .single();
@@ -106,18 +96,10 @@ export const useCreateGlobalSetting = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['global-settings'] });
-      toast({
-        title: 'Setting Created',
-        description: 'New global setting has been created successfully.',
-      });
     },
     onError: (error) => {
       console.error('Failed to create global setting:', error);
-      toast({
-        title: 'Creation Failed',
-        description: 'Failed to create global setting. Please try again.',
-        variant: 'destructive',
-      });
+      throw error; // Re-throw to be handled by caller
     },
   });
 };
