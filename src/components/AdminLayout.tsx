@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sidebar } from './layout/Sidebar';
 import { MobileNavigation } from './layout/MobileNavigation';
@@ -6,10 +7,10 @@ import { WeakPasswordNotification } from './layout/WeakPasswordNotification';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  navigation: any[];
+  navigation?: any[];
 }
 
-const AdminLayout = ({ children, navigation }: AdminLayoutProps) => {
+const AdminLayout = ({ children, navigation = [] }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
