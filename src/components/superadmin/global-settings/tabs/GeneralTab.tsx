@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -83,8 +84,7 @@ const GeneralTab: React.FC = () => {
             setting_type: settingToSave.type as 'string' | 'number' | 'boolean' | 'json',
             category: 'general',
             description: settingToSave.description,
-            is_sensitive: false,
-            updated_by: user.id
+            is_sensitive: false
           });
         }
       }
