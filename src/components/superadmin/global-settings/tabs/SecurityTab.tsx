@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,14 +51,44 @@ const SecurityTab: React.FC = () => {
         return acc;
       }, {} as Record<string, any>);
 
+      console.log('Loading settings from database:', settingsMap);
+
+      // Fix: Use explicit undefined checks instead of || operator for boolean values
       setFormData(prev => ({
-        password_min_length: settingsMap.password_min_length || prev.password_min_length,
-        password_require_uppercase: settingsMap.password_require_uppercase || prev.password_require_uppercase,
-        password_require_lowercase: settingsMap.password_require_lowercase || prev.password_require_lowercase,
-        password_require_numbers: settingsMap.password_require_numbers || prev.password_require_numbers,
-        password_require_symbols: settingsMap.password_require_symbols || prev.password_require_symbols,
-        session_timeout: settingsMap.session_timeout || prev.session_timeout
+        password_min_length: settingsMap.password_min_length !== undefined 
+          ? Number(settingsMap.password_min_length) 
+          : prev.password_min_length,
+        password_require_uppercase: settingsMap.password_require_uppercase !== undefined 
+          ? Boolean(settingsMap.password_require_uppercase) 
+          : prev.password_require_uppercase,
+        password_require_lowercase: settingsMap.password_require_lowercase !== undefined 
+          ? Boolean(settingsMap.password_require_lowercase) 
+          : prev.password_require_lowercase,
+        password_require_numbers: settingsMap.password_require_numbers !== undefined 
+          ? Boolean(settingsMap.password_require_numbers) 
+          : prev.password_require_numbers,
+        password_require_symbols: settingsMap.password_require_symbols !== undefined 
+          ? Boolean(settingsMap.password_require_symbols) 
+          : prev.password_require_symbols,
+        session_timeout: settingsMap.session_timeout !== undefined 
+          ? Number(settingsMap.session_timeout) 
+          : prev.session_timeout
       }));
+
+      console.log('Form data after loading:', {
+        password_require_uppercase: settingsMap.password_require_uppercase !== undefined 
+          ? Boolean(settingsMap.password_require_uppercase) 
+          : DEFAULT_VALUES.password_require_uppercase,
+        password_require_lowercase: settingsMap.password_require_lowercase !== undefined 
+          ? Boolean(settingsMap.password_require_lowercase) 
+          : DEFAULT_VALUES.password_require_lowercase,
+        password_require_numbers: settingsMap.password_require_numbers !== undefined 
+          ? Boolean(settingsMap.password_require_numbers) 
+          : DEFAULT_VALUES.password_require_numbers,
+        password_require_symbols: settingsMap.password_require_symbols !== undefined 
+          ? Boolean(settingsMap.password_require_symbols) 
+          : DEFAULT_VALUES.password_require_symbols,
+      });
     }
   }, [settings]);
 
