@@ -4,39 +4,54 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield } from 'lucide-react';
+import { Shield, Key } from 'lucide-react';
+import { PasswordChangeForm } from './PasswordChangeForm';
 
 export const SecurityTabContent = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Security Settings
-        </CardTitle>
-        <CardDescription>
-          Manage your account security and privacy.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>Change Password</Label>
-          <div className="flex gap-2">
-            <Input type="password" placeholder="Current password" />
-            <Input type="password" placeholder="New password" />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Two-Factor Authentication</Label>
-          <p className="text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <PasswordChangeForm />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Key className="h-5 w-5" />
+            Two-Factor Authentication
+          </CardTitle>
+          <CardDescription>
             Add an extra layer of security to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Two-factor authentication is not yet available. This feature will be coming soon.
           </p>
-          <Button variant="outline">Enable 2FA</Button>
-        </div>
+          <Button variant="outline" disabled>
+            Enable 2FA (Coming Soon)
+          </Button>
+        </CardContent>
+      </Card>
 
-        <Button>Update Security</Button>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Account Security
+          </CardTitle>
+          <CardDescription>
+            Monitor and manage your account security
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Recent Activity</Label>
+            <p className="text-sm text-muted-foreground">
+              Your account activity is monitored for suspicious behavior. 
+              Session timeout is managed according to your organization's security policy.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

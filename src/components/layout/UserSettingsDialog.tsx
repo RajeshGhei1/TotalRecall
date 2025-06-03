@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,39 @@ import {
 interface UserSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultTab?: string;
 }
 
-export const UserSettingsDialog = ({ open, onOpenChange }: UserSettingsDialogProps) => {
+export const UserSettingsDialog = ({ 
+  open, 
+  onOpenChange, 
+  defaultTab = 'profile' 
+}: UserSettingsDialogProps) => {
+  const [activeTab, setActiveTab] = React.useState(defaultTab);
+
+  // Listen for custom events to open specific tabs
+  useEffect(() => {
+    const handleOpenUserSettings = (event: CustomEvent) => {
+      if (event.detail?.tab) {
+        setActiveTab(event.detail.tab);
+      }
+      onOpenChange(true);
+    };
+
+    window.addEventListener('openUserSettings', handleOpenUserSettings as EventListener);
+    
+    return () => {
+      window.removeEventListener('openUserSettings', handleOpenUserSettings as EventListener);
+    };
+  }, [onOpenChange]);
+
+  // Reset to default tab when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -31,7 +61,7 @@ export const UserSettingsDialog = ({ open, onOpenChange }: UserSettingsDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
