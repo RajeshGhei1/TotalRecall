@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AIContext } from '@/types/ai';
 
@@ -74,15 +73,33 @@ export class ModuleContextManager {
         permissions = tenantPermissions;
       }
 
+      // Safely convert Supabase Json types to our expected types
+      const safeConfig = moduleConfig ? this.convertJsonToRecord(moduleConfig.default_limits) : {};
+      const safePermissions = permissions ? this.convertJsonToRecord(permissions) : {};
+      const safeLimits = moduleConfig?.default_limits ? this.convertJsonToRecord(moduleConfig.default_limits) : {};
+
       return {
-        config: moduleConfig || {},
-        permissions: permissions || {},
-        limits: moduleConfig?.default_limits || {}
+        config: safeConfig,
+        permissions: safePermissions,
+        limits: safeLimits
       };
     } catch (error) {
       console.error(`Error loading context for module ${module}:`, error);
       return { config: {}, permissions: {}, limits: {} };
     }
+  }
+
+  // Helper method to safely convert Supabase Json type to Record<string, any>
+  private convertJsonToRecord(jsonData: any): Record<string, any> {
+    if (jsonData === null || jsonData === undefined) {
+      return {};
+    }
+    
+    if (typeof jsonData === 'object' && !Array.isArray(jsonData)) {
+      return jsonData as Record<string, any>;
+    }
+    
+    return {};
   }
 
   async checkTokenBudget(
