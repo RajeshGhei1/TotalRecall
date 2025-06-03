@@ -15,6 +15,8 @@ import { Wrench, Plus, Calendar, Clock, AlertTriangle, Loader2 } from 'lucide-re
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
+type MaintenanceType = 'scheduled' | 'emergency' | 'update';
+
 const MaintenanceTab: React.FC = () => {
   const [user, setUser] = React.useState<any>(null);
   const { data: maintenanceRecords, isLoading: maintenanceLoading } = useSystemMaintenance();
@@ -27,7 +29,7 @@ const MaintenanceTab: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    maintenance_type: 'scheduled',
+    maintenance_type: 'scheduled' as MaintenanceType,
     scheduled_start: '',
     scheduled_end: '',
     affected_services: [] as string[]
@@ -164,7 +166,7 @@ const MaintenanceTab: React.FC = () => {
                       <Label htmlFor="maintenance_type">Type</Label>
                       <Select
                         value={formData.maintenance_type}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, maintenance_type: value }))}
+                        onValueChange={(value: MaintenanceType) => setFormData(prev => ({ ...prev, maintenance_type: value }))}
                       >
                         <SelectTrigger>
                           <SelectValue />

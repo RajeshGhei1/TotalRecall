@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
+type NotificationType = 'info' | 'warning' | 'error' | 'success';
+
 const NotificationsTab: React.FC = () => {
   const { data: notifications, isLoading } = useSystemNotifications();
   const createNotification = useCreateSystemNotification();
@@ -24,7 +26,7 @@ const NotificationsTab: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    type: 'info',
+    type: 'info' as NotificationType,
     priority: 0,
     starts_at: '',
     ends_at: '',
@@ -72,7 +74,7 @@ const NotificationsTab: React.FC = () => {
     setFormData({
       title: notification.title,
       message: notification.message,
-      type: notification.type,
+      type: notification.type as NotificationType,
       priority: notification.priority,
       starts_at: notification.starts_at ? new Date(notification.starts_at).toISOString().slice(0, 16) : '',
       ends_at: notification.ends_at ? new Date(notification.ends_at).toISOString().slice(0, 16) : '',
@@ -146,7 +148,7 @@ const NotificationsTab: React.FC = () => {
                       <Label htmlFor="type">Type</Label>
                       <Select
                         value={formData.type}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                        onValueChange={(value: NotificationType) => setFormData(prev => ({ ...prev, type: value }))}
                       >
                         <SelectTrigger>
                           <SelectValue />
