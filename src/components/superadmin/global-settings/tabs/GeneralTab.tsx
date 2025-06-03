@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useGlobalSettings, useUpdateGlobalSetting } from '@/hooks/global-settings/useGlobalSettings';
+import { useGlobalSettings, useUpdateGlobalSetting, useCreateGlobalSetting } from '@/hooks/global-settings/useGlobalSettings';
 import { Loader2, Save } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +14,13 @@ const GeneralTab: React.FC = () => {
   const [user, setUser] = React.useState<any>(null);
   const { data: settings, isLoading } = useGlobalSettings('general');
   const updateSetting = useUpdateGlobalSetting();
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const createSetting = useCreateGlobalSetting();
+  const [formData, setFormData] = useState<Record<string, any>>({
+    system_name: 'Total Recall AI',
+    system_timezone: 'UTC',
+    max_file_upload_size: 10485760 // 10MB in bytes
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -23,48 +29,77 @@ const GeneralTab: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
-    if (settings) {
+    if (settings && settings.length > 0) {
       const initialData = settings.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value;
         return acc;
       }, {} as Record<string, any>);
-      setFormData(initialData);
+      setFormData(prev => ({ ...prev, ...initialData }));
     }
   }, [settings]);
 
   const handleSave = async () => {
-    if (!user?.id || !settings) return;
+    if (!user?.id) return;
 
+    setIsSaving(true);
     try {
-      await Promise.all(
-        settings.map(setting => {
-          const newValue = formData[setting.setting_key];
-          if (newValue !== setting.setting_value) {
-            return updateSetting.mutateAsync({
-              id: setting.id,
-              setting_value: newValue,
-              updated_by: user.id
-            });
-          }
-          return Promise.resolve();
-        })
-      );
+      // Define the settings we want to save
+      const settingsToSave = [
+        {
+          key: 'system_name',
+          value: formData.system_name,
+          type: 'string',
+          description: 'The display name of the system'
+        },
+        {
+          key: 'system_timezone',
+          value: formData.system_timezone,
+          type: 'string',
+          description: 'Default timezone for the system'
+        },
+        {
+          key: 'max_file_upload_size',
+          value: formData.max_file_upload_size,
+          type: 'number',
+          description: 'Maximum file upload size in bytes'
+        }
+      ];
+
+      // Process each setting
+      for (const settingToSave of settingsToSave) {
+        const existingSetting = settings?.find(s => s.setting_key === settingToSave.key);
+        
+        if (existingSetting) {
+          // Update existing setting
+          await updateSetting.mutateAsync({
+            id: existingSetting.id,
+            setting_value: settingToSave.value,
+            updated_by: user.id
+          });
+        } else {
+          // Create new setting
+          await createSetting.mutateAsync({
+            setting_key: settingToSave.key,
+            setting_value: settingToSave.value,
+            setting_type: settingToSave.type as 'string' | 'number' | 'boolean' | 'json',
+            category: 'general',
+            description: settingToSave.description,
+            is_sensitive: false,
+            created_by: user.id,
+            updated_by: user.id
+          });
+        }
+      }
     } catch (error) {
       console.error('Failed to save settings:', error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleInputChange = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -128,10 +163,10 @@ const GeneralTab: React.FC = () => {
       <div className="flex justify-end">
         <Button 
           onClick={handleSave}
-          disabled={updateSetting.isPending}
+          disabled={isSaving || isLoading}
           className="flex items-center gap-2"
         >
-          {updateSetting.isPending ? (
+          {isSaving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Save className="h-4 w-4" />
