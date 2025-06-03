@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -85,7 +84,6 @@ const GeneralTab: React.FC = () => {
             category: 'general',
             description: settingToSave.description,
             is_sensitive: false,
-            created_by: user.id,
             updated_by: user.id
           });
         }
