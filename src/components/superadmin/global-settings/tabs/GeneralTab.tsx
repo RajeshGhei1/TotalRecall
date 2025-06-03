@@ -9,6 +9,7 @@ import { useGlobalSettings, useUpdateGlobalSetting, useCreateGlobalSetting } fro
 import { Loader2, Save } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const GeneralTab: React.FC = () => {
   const [user, setUser] = React.useState<any>(null);
@@ -39,7 +40,14 @@ const GeneralTab: React.FC = () => {
   }, [settings]);
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to save settings.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -88,8 +96,18 @@ const GeneralTab: React.FC = () => {
           });
         }
       }
+
+      toast({
+        title: 'Success',
+        description: 'Settings saved successfully.',
+      });
     } catch (error) {
       console.error('Failed to save settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSaving(false);
     }
