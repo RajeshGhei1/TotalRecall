@@ -9,6 +9,7 @@ import { Loader2, Save, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { invalidatePasswordRequirementsCache } from '@/utils/passwordValidation';
 
 interface SecurityFormData {
   password_min_length: number;
@@ -194,9 +195,12 @@ const SecurityTab: React.FC = () => {
         }
       }
 
+      // Invalidate password requirements cache after successful save
+      invalidatePasswordRequirementsCache();
+
       toast({
         title: 'Success',
-        description: 'Security settings saved successfully.',
+        description: 'Security settings saved successfully. Password requirements will be enforced for new signups.',
       });
     } catch (error) {
       console.error('Failed to save security settings:', error);

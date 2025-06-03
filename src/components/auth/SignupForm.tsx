@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,15 +14,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { loginSchema } from "./LoginForm";
-
-// Schema for signup validation
-export const signupSchema = loginSchema.extend({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+import { usePasswordRequirements } from "@/hooks/usePasswordRequirements";
+import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -31,6 +24,20 @@ interface SignupFormProps {
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({ onSubmit }) => {
+  const { passwordSchema, validatePasswordStrength, getRequirementsList, isLoading: requirementsLoading } = usePasswordRequirements();
+  const [currentPassword, setCurrentPassword] = useState('');
+
+  // Create signup schema with dynamic password validation
+  const signupSchema = z.object({
+    email: loginSchema.shape.email,
+    fullName: z.string().min(2, "Full name must be at least 2 characters"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -40,6 +47,17 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSubmit }) => {
       confirmPassword: "",
     },
   });
+
+  const passwordValidation = validatePasswordStrength(currentPassword);
+  const requirementsList = getRequirementsList();
+
+  if (requirementsLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -77,9 +95,22 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSubmit }) => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setCurrentPassword(e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
+              <PasswordStrengthIndicator 
+                password={currentPassword}
+                validation={passwordValidation}
+                requirements={requirementsList}
+              />
             </FormItem>
           )}
         />
@@ -96,7 +127,11 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSubmit }) => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={!passwordValidation.isValid && currentPassword.length > 0}
+        >
           Sign Up
         </Button>
       </form>
