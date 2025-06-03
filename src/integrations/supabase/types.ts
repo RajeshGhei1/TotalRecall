@@ -1880,6 +1880,123 @@ export type Database = {
           },
         ]
       }
+      global_email_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          html_content: string
+          id: string
+          is_active: boolean
+          name: string
+          subject: string
+          template_key: string
+          text_content: string | null
+          updated_at: string
+          updated_by: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean
+          name: string
+          subject: string
+          template_key: string
+          text_content?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject?: string
+          template_key?: string
+          text_content?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_email_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "global_email_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_settings: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_sensitive: boolean
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          setting_key: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_settings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "global_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interviews: {
         Row: {
           application_id: string
@@ -2232,6 +2349,101 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_metrics: {
+        Row: {
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          metric_unit: string | null
+          metric_value: number
+          recorded_at: string
+          threshold_critical: number | null
+          threshold_warning: number | null
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type?: string
+          metric_unit?: string | null
+          metric_value: number
+          recorded_at?: string
+          threshold_critical?: number | null
+          threshold_warning?: number | null
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          metric_unit?: string | null
+          metric_value?: number
+          recorded_at?: string
+          threshold_critical?: number | null
+          threshold_warning?: number | null
+        }
+        Relationships: []
+      }
+      system_maintenance: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          affected_services: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          maintenance_type: string
+          notification_sent: boolean
+          scheduled_end: string
+          scheduled_start: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          affected_services?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          maintenance_type?: string
+          notification_sent?: boolean
+          scheduled_end: string
+          scheduled_start: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          affected_services?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          maintenance_type?: string
+          notification_sent?: boolean
+          scheduled_end?: string
+          scheduled_start?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_maintenance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_modules: {
         Row: {
           category: string
@@ -2270,6 +2482,59 @@ export type Database = {
           version?: string | null
         }
         Relationships: []
+      }
+      system_notifications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          message: string
+          priority: number
+          starts_at: string | null
+          target_users: Json | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          message: string
+          priority?: number
+          starts_at?: string | null
+          target_users?: Json | null
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          message?: string
+          priority?: number
+          starts_at?: string | null
+          target_users?: Json | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_notifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       talent_skills: {
         Row: {
