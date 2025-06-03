@@ -1,85 +1,117 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantContext } from '@/contexts/TenantContext';
 
-export interface AIPerformanceMetric {
-  id: string;
+interface AIPerformanceMetrics {
   agent_id: string;
-  tenant_id?: string;
-  metric_date: string;
+  agent_name?: string;
   total_requests: number;
   successful_requests: number;
   failed_requests: number;
   average_response_time_ms: number;
+  success_rate: number;
   total_cost: number;
   accuracy_score: number;
   user_satisfaction_score: number;
-  created_at: string;
-  updated_at: string;
 }
 
-export const useAIPerformance = (agentId?: string, days: number = 30) => {
-  const { selectedTenantId } = useTenantContext();
+interface AggregatedMetrics {
+  totalRequests: number;
+  totalSuccessfulRequests: number;
+  totalFailedRequests: number;
+  overallSuccessRate: number;
+  averageResponseTime: number;
+  totalCost: number;
+  averageAccuracy: number;
+  averageUserSatisfaction: number;
+}
 
+export const useAIPerformance = (tenantId?: string, dateRange?: { from: Date; to: Date }) => {
   const performanceQuery = useQuery({
-    queryKey: ['ai-performance', agentId, selectedTenantId, days],
-    queryFn: async (): Promise<AIPerformanceMetric[]> => {
+    queryKey: ['ai-performance', tenantId, dateRange],
+    queryFn: async (): Promise<AIPerformanceMetrics[]> => {
       let query = supabase
         .from('ai_performance_metrics')
-        .select('*')
-        .gte('metric_date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .order('metric_date', { ascending: false });
+        .select(`
+          agent_id,
+          total_requests,
+          successful_requests,
+          failed_requests,
+          average_response_time_ms,
+          total_cost,
+          accuracy_score,
+          user_satisfaction_score,
+          ai_agents(name)
+        `);
 
-      if (agentId) {
-        query = query.eq('agent_id', agentId);
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
       }
 
-      if (selectedTenantId) {
-        query = query.eq('tenant_id', selectedTenantId);
+      if (dateRange) {
+        query = query
+          .gte('metric_date', dateRange.from.toISOString().split('T')[0])
+          .lte('metric_date', dateRange.to.toISOString().split('T')[0]);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      return data || [];
+
+      return (data || []).map(metric => {
+        const successRate = metric.total_requests > 0 
+          ? (metric.successful_requests / metric.total_requests) * 100 
+          : 0;
+
+        return {
+          agent_id: metric.agent_id,
+          agent_name: (metric.ai_agents as any)?.name || 'Unknown Agent',
+          total_requests: metric.total_requests,
+          successful_requests: metric.successful_requests,
+          failed_requests: metric.failed_requests,
+          average_response_time_ms: metric.average_response_time_ms,
+          success_rate: Math.round(successRate * 100) / 100,
+          total_cost: metric.total_cost,
+          accuracy_score: metric.accuracy_score,
+          user_satisfaction_score: metric.user_satisfaction_score
+        };
+      });
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const aggregatedMetrics = performanceQuery.data?.reduce((acc, metric) => {
-    return {
-      totalRequests: acc.totalRequests + metric.total_requests,
-      successfulRequests: acc.successfulRequests + metric.successful_requests,
-      failedRequests: acc.failedRequests + metric.failed_requests,
-      totalCost: acc.totalCost + metric.total_cost,
-      avgResponseTime: acc.totalRequests > 0 
-        ? (acc.avgResponseTime * acc.totalRequests + metric.average_response_time_ms * metric.total_requests) / (acc.totalRequests + metric.total_requests)
-        : metric.average_response_time_ms,
-      avgAccuracy: acc.totalRequests > 0
-        ? (acc.avgAccuracy * acc.totalRequests + metric.accuracy_score * metric.total_requests) / (acc.totalRequests + metric.total_requests)
-        : metric.accuracy_score,
-      avgSatisfaction: acc.totalRequests > 0
-        ? (acc.avgSatisfaction * acc.totalRequests + metric.user_satisfaction_score * metric.total_requests) / (acc.totalRequests + metric.total_requests)
-        : metric.user_satisfaction_score,
-    };
-  }, {
-    totalRequests: 0,
-    successfulRequests: 0,
-    failedRequests: 0,
-    totalCost: 0,
-    avgResponseTime: 0,
-    avgAccuracy: 0,
-    avgSatisfaction: 0,
-  });
+  const aggregatedMetrics: AggregatedMetrics = {
+    totalRequests: performanceQuery.data?.reduce((sum, m) => sum + m.total_requests, 0) || 0,
+    totalSuccessfulRequests: performanceQuery.data?.reduce((sum, m) => sum + m.successful_requests, 0) || 0,
+    totalFailedRequests: performanceQuery.data?.reduce((sum, m) => sum + m.failed_requests, 0) || 0,
+    overallSuccessRate: 0,
+    averageResponseTime: 0,
+    totalCost: performanceQuery.data?.reduce((sum, m) => sum + m.total_cost, 0) || 0,
+    averageAccuracy: 0,
+    averageUserSatisfaction: 0
+  };
+
+  // Calculate derived metrics
+  if (aggregatedMetrics.totalRequests > 0) {
+    aggregatedMetrics.overallSuccessRate = 
+      (aggregatedMetrics.totalSuccessfulRequests / aggregatedMetrics.totalRequests) * 100;
+  }
+
+  if (performanceQuery.data && performanceQuery.data.length > 0) {
+    aggregatedMetrics.averageResponseTime = 
+      performanceQuery.data.reduce((sum, m) => sum + m.average_response_time_ms, 0) / performanceQuery.data.length;
+    
+    aggregatedMetrics.averageAccuracy = 
+      performanceQuery.data.reduce((sum, m) => sum + m.accuracy_score, 0) / performanceQuery.data.length;
+    
+    aggregatedMetrics.averageUserSatisfaction = 
+      performanceQuery.data.reduce((sum, m) => sum + m.user_satisfaction_score, 0) / performanceQuery.data.length;
+  }
 
   return {
-    metrics: performanceQuery.data || [],
+    performanceMetrics: performanceQuery.data || [],
     aggregatedMetrics,
     isLoading: performanceQuery.isLoading,
     error: performanceQuery.error,
-    successRate: aggregatedMetrics && aggregatedMetrics.totalRequests > 0 
-      ? (aggregatedMetrics.successfulRequests / aggregatedMetrics.totalRequests) * 100 
-      : 0
+    refetch: performanceQuery.refetch
   };
 };

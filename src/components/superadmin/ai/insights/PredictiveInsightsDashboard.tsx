@@ -1,395 +1,256 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+import React from 'react';
+import { Card, CardContent, CardDescription,CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { usePredictiveInsights } from '@/hooks/ai/usePredictiveInsights';
-import { 
-  TrendingUp, TrendingDown, Minus, BarChart3, AlertTriangle, 
-  Target, RefreshCw, Brain, ArrowUpRight, ArrowDownRight,
-  DollarSign, Users, Calendar, Shield
+import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
+import {
+  BarChart,
+  Brain,
+  Calendar,
+  Eye,
+  Lightning,
+  ThumbsUp,
 } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
-export const PredictiveInsightsDashboard = () => {
-  const { 
-    trends, 
-    forecasts, 
-    risks, 
-    opportunities, 
-    insightsSummary, 
-    isLoading, 
-    refreshInsights, 
-    isRefreshing 
-  } = usePredictiveInsights();
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'forecasts' | 'risks' | 'opportunities'>('overview');
-
-  const handleRefreshInsights = async () => {
-    try {
-      await refreshInsights();
-    } catch (error) {
-      console.error('Failed to refresh insights:', error);
+export const PredictiveInsightsDashboard: React.FC = () => {
+  const { learningInsights } = useUnifiedAIOrchestration();
+  
+  // This is placeholder data - in a real implementation, we would get actual insights
+  const placeholderInsights = [
+    {
+      id: 'insight-1',
+      title: 'Increased Support Requests',
+      description: 'Predicted 15% increase in support tickets over the next week',
+      confidence: 0.87,
+      type: 'trend',
+      module: 'support',
+      timestamp: '2025-06-01T10:30:00Z'
+    },
+    {
+      id: 'insight-2',
+      title: 'User Engagement Pattern',
+      description: 'Users most active on Tuesdays and Thursdays between 2-4pm',
+      confidence: 0.92,
+      type: 'pattern',
+      module: 'analytics',
+      timestamp: '2025-06-02T15:45:00Z'
+    },
+    {
+      id: 'insight-3',
+      title: 'Content Performance',
+      description: 'Video content generating 3x more engagement than text',
+      confidence: 0.84,
+      type: 'analysis',
+      module: 'content',
+      timestamp: '2025-06-02T09:15:00Z'
     }
-  };
+  ];
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'increasing': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'decreasing': return <TrendingDown className="h-4 w-4 text-red-500" />;
-      case 'stable': return <Minus className="h-4 w-4 text-yellow-500" />;
-      default: return <Minus className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getRiskLevelColor = (level: string) => {
-    switch (level) {
-      case 'low': return 'bg-green-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'high': return 'bg-orange-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getPotentialColor = (potential: string) => {
-    switch (potential) {
-      case 'high': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-gray-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl sm:text-2xl font-bold">Predictive Insights</h2>
-          <Button disabled>
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            Loading...
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-16 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Context insights that could be used in a real implementation
+  const { context } = learningInsights;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold flex items-center">
-            <Brain className="h-6 w-6 mr-2 flex-shrink-0" />
-            Predictive Insights
-          </h2>
-          <p className="text-gray-600 text-sm md:text-base">AI-powered analytics and forecasting</p>
+          <h2 className="text-xl font-bold">Predictive Insights</h2>
+          <p className="text-sm text-gray-600">
+            AI-generated insights and predictions to enhance decision-making
+          </p>
         </div>
-        <Button onClick={handleRefreshInsights} disabled={isRefreshing} className="w-full sm:w-auto">
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh Insights'}
+        <Button className="flex items-center gap-2">
+          <Brain className="h-4 w-4" />
+          Generate New Insights
         </Button>
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <BarChart3 className="h-4 w-4 mr-2 flex-shrink-0" />
-              Overall Score
-            </CardTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Available Insights</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-            <div className="text-xl sm:text-2xl font-bold">
-              {(insightsSummary.overallScore * 100).toFixed(1)}%
-            </div>
-            <Progress value={insightsSummary.overallScore * 100} className="mt-2" />
+          <CardContent>
+            <div className="text-2xl font-bold">{placeholderInsights.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Active predictive insights
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2 flex-shrink-0" />
-              Positive Trends
-            </CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Confidence</CardTitle>
+            <ThumbsUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-            <div className="text-xl sm:text-2xl font-bold text-green-600">
-              {trends.filter(t => t.trend === 'increasing').length}
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(placeholderInsights.reduce((sum, i) => sum + i.confidence, 0) / placeholderInsights.length * 100).toFixed(1)}%
             </div>
-            <p className="text-xs text-gray-600 mt-1">Out of {trends.length} metrics</p>
+            <p className="text-xs text-muted-foreground">
+              Prediction confidence level
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-              High Risks
-            </CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Modules Covered</CardTitle>
+            <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-            <div className="text-xl sm:text-2xl font-bold text-red-600">
-              {risks.filter(r => r.riskLevel === 'high' || r.riskLevel === 'critical').length}
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(placeholderInsights.map(i => i.module)).size}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Requiring attention</p>
+            <p className="text-xs text-muted-foreground">
+              Business areas with insights
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Target className="h-4 w-4 mr-2 flex-shrink-0" />
-              Opportunities
-            </CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-            <div className="text-xl sm:text-2xl font-bold text-blue-600">
-              {opportunities.filter(o => o.potential === 'high').length}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">High potential</p>
+          <CardContent>
+            <div className="text-xl font-bold">Today</div>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Insights Tabs */}
-      <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="space-y-4">
-        <div className="overflow-x-auto">
-          <TabsList className="flex w-full lg:w-auto min-w-full lg:min-w-0">
-            <TabsTrigger value="overview" className="flex-1 lg:flex-none text-xs sm:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="trends" className="flex-1 lg:flex-none text-xs sm:text-sm">Trends</TabsTrigger>
-            <TabsTrigger value="forecasts" className="flex-1 lg:flex-none text-xs sm:text-sm">Forecasts</TabsTrigger>
-            <TabsTrigger value="risks" className="flex-1 lg:flex-none text-xs sm:text-sm">Risks</TabsTrigger>
-            <TabsTrigger value="opportunities" className="flex-1 lg:flex-none text-xs sm:text-sm">Opportunities</TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <Card>
-              <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                <CardTitle className="text-lg">Key Insights Summary</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  AI-generated insights based on current data analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                <div className="space-y-3">
-                  {insightsSummary.keyInsights.map((insight, index) => (
-                    <div key={index} className="flex items-start space-x-2">
-                      <Badge variant="outline" className="text-xs flex-shrink-0">
-                        {index + 1}
-                      </Badge>
-                      <p className="text-sm break-words">{insight}</p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Latest Predictive Insights</CardTitle>
+          <CardDescription>
+            AI-generated insights to help optimize operations and decision-making
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {placeholderInsights.map((insight) => (
+              <div key={insight.id} className="border rounded-md overflow-hidden">
+                <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-1.5 rounded-full bg-blue-100">
+                      {insight.type === 'trend' ? (
+                        <BarChart className="h-4 w-4 text-blue-600" />
+                      ) : insight.type === 'pattern' ? (
+                        <Brain className="h-4 w-4 text-purple-600" />
+                      ) : (
+                        <Lightning className="h-4 w-4 text-amber-600" />
+                      )}
                     </div>
-                  ))}
+                    <h3 className="font-medium">{insight.title}</h3>
+                  </div>
+                  <Badge variant="outline">
+                    {Math.round(insight.confidence * 100)}% confidence
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                <CardTitle className="text-lg">Performance Overview</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Overall system health and performance indicators
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Prediction Accuracy</span>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={85} className="w-20" />
-                      <span className="text-sm font-medium">85%</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Data Completeness</span>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={92} className="w-20" />
-                      <span className="text-sm font-medium">92%</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Insight Confidence</span>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={78} className="w-20" />
-                      <span className="text-sm font-medium">78%</span>
-                    </div>
+                <div className="p-4">
+                  <p className="text-sm mb-3">{insight.description}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500">
+                    <span className="capitalize">{insight.module}</span>
+                    <span>{new Date(insight.timestamp).toLocaleDateString()}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="trends">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            {trends.map((trend, index) => (
-              <Card key={index}>
-                <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                  <CardTitle className="text-sm sm:text-base flex items-center">
-                    {getTrendIcon(trend.trend)}
-                    <span className="ml-2 truncate">{trend.metric}</span>
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Confidence: {(trend.confidence * 100).toFixed(1)}%
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Current Trend:</span>
-                      <Badge variant={trend.trend === 'increasing' ? 'default' : trend.trend === 'decreasing' ? 'destructive' : 'secondary'}>
-                        {trend.trend}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      <p>Next prediction: {trend.prediction[0]?.predictedValue.toFixed(1)} ({trend.prediction[0]?.confidence.toFixed(0)}% confidence)</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="bg-gray-50 border-t px-4 py-2 flex justify-between">
+                  <Button variant="ghost" size="sm">
+                    View Details
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Take Action
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="forecasts">
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {forecasts.map((forecast, index) => (
-              <Card key={index}>
-                <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                  <CardTitle className="text-sm sm:text-base flex items-center">
-                    <DollarSign className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{forecast.metric}</span>
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    {forecast.forecastPeriod} forecast
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Current:</span>
-                      <span className="font-medium">{forecast.currentValue.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Predicted:</span>
-                      <div className="flex items-center space-x-1">
-                        <span className="font-medium">{forecast.predictedValue.toLocaleString()}</span>
-                        {forecast.predictedValue > forecast.currentValue ? (
-                          <ArrowUpRight className="h-3 w-3 text-green-500" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3 text-red-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      <p>{forecast.trend}</p>
-                      <p className="mt-1">Confidence: {(forecast.confidence * 100).toFixed(1)}%</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Trending Patterns</CardTitle>
+            <CardDescription>
+              Recently identified patterns and trends
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 bg-blue-50 rounded-md">
+                <div className="flex-grow">
+                  <h4 className="font-medium">Weekly Usage Pattern</h4>
+                  <p className="text-sm text-gray-600">
+                    Usage peaks on Wednesday afternoons
+                  </p>
+                </div>
+                <Badge variant="outline" className="ml-2">
+                  88% confidence
+                </Badge>
+              </div>
+              
+              <div className="flex items-center p-3 bg-green-50 rounded-md">
+                <div className="flex-grow">
+                  <h4 className="font-medium">Resource Optimization</h4>
+                  <p className="text-sm text-gray-600">
+                    25% potential efficiency increase identified
+                  </p>
+                </div>
+                <Badge variant="outline" className="ml-2">
+                  74% confidence
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="risks">
-          <div className="space-y-4">
-            {risks.map((risk, index) => (
-              <Card key={index} className={`border-l-4 ${getRiskLevelColor(risk.riskLevel).replace('bg-', 'border-')}`}>
-                <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                    <CardTitle className="text-sm sm:text-base">{risk.riskType}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={risk.riskLevel === 'critical' || risk.riskLevel === 'high' ? 'destructive' : risk.riskLevel === 'medium' ? 'default' : 'secondary'}>
-                        {risk.riskLevel}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {risk.urgency} urgency
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Probability: {(risk.probability * 100).toFixed(0)}% | Impact: {(risk.impact * 100).toFixed(0)}%
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                  <div className="space-y-3">
-                    <p className="text-sm break-words">{risk.description}</p>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Mitigation Suggestions:</h4>
-                      <ul className="text-xs space-y-1">
-                        {risk.mitigationSuggestions.map((suggestion, idx) => (
-                          <li key={idx} className="flex items-start space-x-2">
-                            <span className="text-gray-400">•</span>
-                            <span className="break-words">{suggestion}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="opportunities">
-          <div className="space-y-4">
-            {opportunities.map((opportunity, index) => (
-              <Card key={index} className="border-l-4 border-green-400">
-                <CardHeader className="px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                    <CardTitle className="text-sm sm:text-base">{opportunity.opportunityType}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={opportunity.potential === 'high' ? 'default' : 'secondary'}>
-                        {opportunity.potential} potential
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        ROI: {(opportunity.estimatedROI * 100).toFixed(0)}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Confidence: {(opportunity.confidence * 100).toFixed(0)}% | Timeline: {opportunity.timeToRealize}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-                  <div className="space-y-3">
-                    <p className="text-sm break-words">{opportunity.description}</p>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Action Items:</h4>
-                      <ul className="text-xs space-y-1">
-                        {opportunity.actionItems.map((item, idx) => (
-                          <li key={idx} className="flex items-start space-x-2">
-                            <span className="text-gray-400">•</span>
-                            <span className="break-words">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Recommended Actions</CardTitle>
+            <CardDescription>
+              AI-suggested actions based on insights
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 bg-amber-50 rounded-md">
+                <div className="p-2 bg-amber-100 rounded-full mr-3">
+                  <Lightning className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="flex-grow">
+                  <h4 className="font-medium">Prepare Support Team</h4>
+                  <p className="text-sm text-gray-600">
+                    Increase support staff for predicted ticket surge
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Schedule
+                </Button>
+              </div>
+              
+              <div className="flex items-center p-3 bg-purple-50 rounded-md">
+                <div className="p-2 bg-purple-100 rounded-full mr-3">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="flex-grow">
+                  <h4 className="font-medium">Optimize Email Schedule</h4>
+                  <p className="text-sm text-gray-600">
+                    Send emails during peak engagement times
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Implement
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
