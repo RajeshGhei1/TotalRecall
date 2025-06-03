@@ -36,7 +36,7 @@ export const useGlobalSettings = (category?: string) => {
         ...setting,
         setting_value: setting.setting_type === 'json' 
           ? setting.setting_value 
-          : JSON.parse(setting.setting_value)
+          : JSON.parse(String(setting.setting_value))
       })) as GlobalSetting[];
     },
   });

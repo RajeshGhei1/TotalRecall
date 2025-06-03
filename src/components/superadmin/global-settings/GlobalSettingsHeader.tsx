@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Settings2, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,7 +18,16 @@ const GlobalSettingsHeader: React.FC = () => {
         <div className="flex items-center gap-2">
           <Settings2 className="h-6 w-6 text-primary" />
           <h1 className="text-3xl font-bold">Global Settings</h1>
-          <Shield className="h-5 w-5 text-yellow-500" title="Super Admin Only" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Shield className="h-5 w-5 text-yellow-500" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Super Admin Only</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <Button 
           variant="outline" 

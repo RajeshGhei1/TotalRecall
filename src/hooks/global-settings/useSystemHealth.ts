@@ -40,7 +40,14 @@ export const useSystemHealthMetrics = (timeRange: 'hour' | 'day' | 'week' = 'hou
         .order('recorded_at', { ascending: false });
 
       if (error) throw error;
-      return data as SystemHealthMetric[];
+      
+      // Convert metadata from Json type to Record<string, any>
+      return data.map(metric => ({
+        ...metric,
+        metadata: typeof metric.metadata === 'object' && metric.metadata !== null 
+          ? metric.metadata as Record<string, any>
+          : {}
+      })) as SystemHealthMetric[];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -82,7 +89,12 @@ export const useSystemHealthSummary = () => {
       // Group by metric_name and get the latest value
       const latestMetrics = data.reduce((acc, metric) => {
         if (!acc[metric.metric_name] || new Date(metric.recorded_at) > new Date(acc[metric.metric_name].recorded_at)) {
-          acc[metric.metric_name] = metric;
+          acc[metric.metric_name] = {
+            ...metric,
+            metadata: typeof metric.metadata === 'object' && metric.metadata !== null 
+              ? metric.metadata as Record<string, any>
+              : {}
+          };
         }
         return acc;
       }, {} as Record<string, SystemHealthMetric>);
