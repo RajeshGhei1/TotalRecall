@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useGlobalSettings, useUpdateGlobalSetting, useCreateGlobalSetting } from '@/hooks/global-settings/useGlobalSettings';
-import { Loader2, Save, Shield } from 'lucide-react';
+import { Loader2, Save, Shield, Clock, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { invalidatePasswordRequirementsCache } from '@/utils/passwordValidation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SecurityFormData {
   password_min_length: number;
@@ -20,14 +22,24 @@ interface SecurityFormData {
   session_timeout: number;
 }
 
+// Enhanced defaults for better security baseline
 const DEFAULT_VALUES: SecurityFormData = {
   password_min_length: 8,
   password_require_uppercase: false,
-  password_require_lowercase: false,
-  password_require_numbers: false,
+  password_require_lowercase: true, // Enhanced: enabled by default
+  password_require_numbers: true,  // Enhanced: enabled by default
   password_require_symbols: false,
-  session_timeout: 3600
+  session_timeout: 3600 // 1 hour - keeping current sensible default
 };
+
+// Session timeout presets for better UX
+const SESSION_TIMEOUT_PRESETS = [
+  { label: '15 minutes', value: 900 },
+  { label: '30 minutes', value: 1800 },
+  { label: '1 hour', value: 3600 },
+  { label: '2 hours', value: 7200 },
+  { label: '4 hours', value: 14400 },
+];
 
 const SecurityTab: React.FC = () => {
   const [user, setUser] = React.useState<any>(null);
@@ -52,9 +64,6 @@ const SecurityTab: React.FC = () => {
         return acc;
       }, {} as Record<string, any>);
 
-      console.log('Loading settings from database:', settingsMap);
-
-      // Fix: Use explicit undefined checks instead of || operator for boolean values
       setFormData(prev => ({
         password_min_length: settingsMap.password_min_length !== undefined 
           ? Number(settingsMap.password_min_length) 
@@ -75,21 +84,6 @@ const SecurityTab: React.FC = () => {
           ? Number(settingsMap.session_timeout) 
           : prev.session_timeout
       }));
-
-      console.log('Form data after loading:', {
-        password_require_uppercase: settingsMap.password_require_uppercase !== undefined 
-          ? Boolean(settingsMap.password_require_uppercase) 
-          : DEFAULT_VALUES.password_require_uppercase,
-        password_require_lowercase: settingsMap.password_require_lowercase !== undefined 
-          ? Boolean(settingsMap.password_require_lowercase) 
-          : DEFAULT_VALUES.password_require_lowercase,
-        password_require_numbers: settingsMap.password_require_numbers !== undefined 
-          ? Boolean(settingsMap.password_require_numbers) 
-          : DEFAULT_VALUES.password_require_numbers,
-        password_require_symbols: settingsMap.password_require_symbols !== undefined 
-          ? Boolean(settingsMap.password_require_symbols) 
-          : DEFAULT_VALUES.password_require_symbols,
-      });
     }
   }, [settings]);
 
@@ -113,6 +107,46 @@ const SecurityTab: React.FC = () => {
     }
 
     return true;
+  };
+
+  // Enhanced: Get security level assessment
+  const getSecurityLevel = (): { level: 'weak' | 'medium' | 'strong'; score: number } => {
+    let score = 0;
+    
+    // Password length scoring
+    if (formData.password_min_length >= 12) score += 3;
+    else if (formData.password_min_length >= 8) score += 2;
+    else score += 1;
+    
+    // Character requirements scoring
+    if (formData.password_require_uppercase) score += 1;
+    if (formData.password_require_lowercase) score += 1;
+    if (formData.password_require_numbers) score += 1;
+    if (formData.password_require_symbols) score += 2;
+    
+    // Session timeout scoring (shorter is more secure)
+    if (formData.session_timeout <= 1800) score += 2; // 30 min or less
+    else if (formData.session_timeout <= 3600) score += 1; // 1 hour or less
+    
+    const maxScore = 10;
+    const percentage = (score / maxScore) * 100;
+    
+    if (percentage >= 80) return { level: 'strong', score: percentage };
+    if (percentage >= 60) return { level: 'medium', score: percentage };
+    return { level: 'weak', score: percentage };
+  };
+
+  // Enhanced: Get session timeout warning
+  const getSessionTimeoutWarning = (): string | null => {
+    const minutes = Math.round(formData.session_timeout / 60);
+    
+    if (formData.session_timeout < 900) { // Less than 15 minutes
+      return `Very short session timeout (${minutes} minutes) may cause frequent user interruptions.`;
+    }
+    if (formData.session_timeout > 14400) { // More than 4 hours
+      return `Long session timeout (${minutes} minutes) may pose security risks for unattended sessions.`;
+    }
+    return null;
   };
 
   const handleSave = async () => {
@@ -171,19 +205,16 @@ const SecurityTab: React.FC = () => {
         }
       ];
 
-      // Process each setting
       for (const settingToSave of settingsToSave) {
         const existingSetting = settings?.find(s => s.setting_key === settingToSave.key);
         
         if (existingSetting) {
-          // Update existing setting
           await updateSetting.mutateAsync({
             id: existingSetting.id,
             setting_value: settingToSave.value,
             updated_by: user.id
           });
         } else {
-          // Create new setting
           await createSetting.mutateAsync({
             setting_key: settingToSave.key,
             setting_value: settingToSave.value,
@@ -195,7 +226,6 @@ const SecurityTab: React.FC = () => {
         }
       }
 
-      // Invalidate password requirements cache after successful save
       invalidatePasswordRequirementsCache();
 
       toast({
@@ -218,11 +248,56 @@ const SecurityTab: React.FC = () => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleSessionTimeoutPreset = (preset: number) => {
+    setFormData(prev => ({ ...prev, session_timeout: preset }));
+  };
+
   const isLoading = isLoadingSettings;
   const isBusy = isSaving || updateSetting.isPending || createSetting.isPending;
+  const securityAssessment = getSecurityLevel();
+  const sessionWarning = getSessionTimeoutWarning();
 
   return (
     <div className="space-y-6">
+      {/* Enhanced: Security Level Indicator */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security Level Assessment
+          </CardTitle>
+          <CardDescription>
+            Current security configuration strength
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Security Level</span>
+                <span className={`text-sm font-semibold ${
+                  securityAssessment.level === 'strong' ? 'text-green-600' :
+                  securityAssessment.level === 'medium' ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {securityAssessment.level.toUpperCase()} ({Math.round(securityAssessment.score)}%)
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    securityAssessment.level === 'strong' ? 'bg-green-500' :
+                    securityAssessment.level === 'medium' ? 'bg-yellow-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${securityAssessment.score}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -253,13 +328,16 @@ const SecurityTab: React.FC = () => {
                   max="32"
                   disabled={isBusy}
                 />
+                <p className="text-sm text-muted-foreground">
+                  Recommended: 8+ characters for basic security, 12+ for enhanced security
+                </p>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Require Uppercase Letters</Label>
-                    <p className="text-sm text-muted-foreground">Password must contain at least one uppercase letter</p>
+                    <p className="text-sm text-muted-foreground">Password must contain at least one uppercase letter (A-Z)</p>
                   </div>
                   <Switch
                     checked={formData.password_require_uppercase}
@@ -271,7 +349,7 @@ const SecurityTab: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Require Lowercase Letters</Label>
-                    <p className="text-sm text-muted-foreground">Password must contain at least one lowercase letter</p>
+                    <p className="text-sm text-muted-foreground">Password must contain at least one lowercase letter (a-z)</p>
                   </div>
                   <Switch
                     checked={formData.password_require_lowercase}
@@ -283,7 +361,7 @@ const SecurityTab: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Require Numbers</Label>
-                    <p className="text-sm text-muted-foreground">Password must contain at least one number</p>
+                    <p className="text-sm text-muted-foreground">Password must contain at least one number (0-9)</p>
                   </div>
                   <Switch
                     checked={formData.password_require_numbers}
@@ -311,7 +389,10 @@ const SecurityTab: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Session Management</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Session Management
+          </CardTitle>
           <CardDescription>
             Configure user session and authentication settings
           </CardDescription>
@@ -321,6 +402,25 @@ const SecurityTab: React.FC = () => {
             <div className="h-8 bg-gray-200 rounded animate-pulse" />
           ) : (
             <>
+              {/* Enhanced: Session Timeout Presets */}
+              <div className="space-y-3">
+                <Label>Quick Session Timeout Presets</Label>
+                <div className="flex flex-wrap gap-2">
+                  {SESSION_TIMEOUT_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.value}
+                      variant={formData.session_timeout === preset.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleSessionTimeoutPreset(preset.value)}
+                      disabled={isBusy}
+                      className="text-xs"
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="session_timeout">Session Timeout (seconds) *</Label>
                 <Input
@@ -336,6 +436,16 @@ const SecurityTab: React.FC = () => {
                   Current: {Math.round(formData.session_timeout / 60)} minutes
                 </p>
               </div>
+
+              {/* Enhanced: Session Timeout Warning */}
+              {sessionWarning && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    {sessionWarning}
+                  </AlertDescription>
+                </Alert>
+              )}
             </>
           )}
         </CardContent>
