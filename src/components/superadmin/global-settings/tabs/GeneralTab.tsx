@@ -8,13 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useGlobalSettings, useUpdateGlobalSetting } from '@/hooks/global-settings/useGlobalSettings';
 import { Loader2, Save } from 'lucide-react';
 import { useState } from 'react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const GeneralTab: React.FC = () => {
-  const { user } = useAuthContext();
+  const [user, setUser] = React.useState<any>(null);
   const { data: settings, isLoading } = useGlobalSettings('general');
   const updateSetting = useUpdateGlobalSetting();
   const [formData, setFormData] = useState<Record<string, any>>({});
+
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   React.useEffect(() => {
     if (settings) {

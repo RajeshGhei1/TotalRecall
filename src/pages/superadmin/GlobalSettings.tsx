@@ -8,8 +8,11 @@ import GlobalSettingsTabs from '@/components/superadmin/global-settings/GlobalSe
 import GeneralTab from '@/components/superadmin/global-settings/tabs/GeneralTab';
 import SecurityTab from '@/components/superadmin/global-settings/tabs/SecurityTab';
 import PerformanceTab from '@/components/superadmin/global-settings/tabs/PerformanceTab';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Construction } from 'lucide-react';
+import MaintenanceTab from '@/components/superadmin/global-settings/tabs/MaintenanceTab';
+import NotificationsTab from '@/components/superadmin/global-settings/tabs/NotificationsTab';
+import EmailTab from '@/components/superadmin/global-settings/tabs/EmailTab';
+import SystemTab from '@/components/superadmin/global-settings/tabs/SystemTab';
+import UsersTab from '@/components/superadmin/global-settings/tabs/UsersTab';
 
 const GlobalSettings = () => {
   console.log("Rendering SuperAdmin Global Settings Page");
@@ -35,98 +38,23 @@ const GlobalSettings = () => {
               </TabsContent>
               
               <TabsContent value="maintenance" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Construction className="h-5 w-5" />
-                      Maintenance Management
-                    </CardTitle>
-                    <CardDescription>
-                      Schedule maintenance windows and monitor system health
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      Maintenance management features coming soon...
-                    </div>
-                  </CardContent>
-                </Card>
+                <MaintenanceTab />
               </TabsContent>
               
               <TabsContent value="notifications" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Construction className="h-5 w-5" />
-                      System Notifications
-                    </CardTitle>
-                    <CardDescription>
-                      Manage system-wide notifications and alerts
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      System notifications management coming soon...
-                    </div>
-                  </CardContent>
-                </Card>
+                <NotificationsTab />
               </TabsContent>
               
               <TabsContent value="email" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Construction className="h-5 w-5" />
-                      Email Templates
-                    </CardTitle>
-                    <CardDescription>
-                      Manage global email templates and settings
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      Email template management coming soon...
-                    </div>
-                  </CardContent>
-                </Card>
+                <EmailTab />
               </TabsContent>
               
               <TabsContent value="system" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Construction className="h-5 w-5" />
-                      System Information
-                    </CardTitle>
-                    <CardDescription>
-                      View system information and health metrics
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      System information dashboard coming soon...
-                    </div>
-                  </CardContent>
-                </Card>
+                <SystemTab />
               </TabsContent>
               
               <TabsContent value="users" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Construction className="h-5 w-5" />
-                      User Management
-                    </CardTitle>
-                    <CardDescription>
-                      Global user settings and default configurations
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      Global user management coming soon...
-                    </div>
-                  </CardContent>
-                </Card>
+                <UsersTab />
               </TabsContent>
             </GlobalSettingsTabs>
           </ErrorBoundary>
