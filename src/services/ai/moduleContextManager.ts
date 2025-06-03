@@ -21,8 +21,14 @@ interface ModuleBudget {
   reset_date: Date;
 }
 
+interface ModuleContextData {
+  config: Record<string, any>;
+  permissions: Record<string, any>;
+  limits: Record<string, any>;
+}
+
 export class ModuleContextManager {
-  private contextCache: Map<string, any> = new Map();
+  private contextCache: Map<string, ModuleContextData> = new Map();
   private budgetCache: Map<string, ModuleBudget> = new Map();
 
   async enhanceContextWithModule(context: AIContext): Promise<AIContext> {
@@ -33,7 +39,7 @@ export class ModuleContextManager {
       this.contextCache.set(cacheKey, moduleContext);
     }
 
-    const moduleData = this.contextCache.get(cacheKey);
+    const moduleData = this.contextCache.get(cacheKey)!;
     
     return {
       ...context,
@@ -46,7 +52,7 @@ export class ModuleContextManager {
     };
   }
 
-  private async loadModuleContext(module: string, tenantId?: string): Promise<any> {
+  private async loadModuleContext(module: string, tenantId?: string): Promise<ModuleContextData> {
     try {
       // Load module configuration
       const { data: moduleConfig } = await supabase

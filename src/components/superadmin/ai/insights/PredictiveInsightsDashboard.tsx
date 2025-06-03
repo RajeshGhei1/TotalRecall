@@ -9,7 +9,7 @@ import {
   Brain,
   Calendar,
   Eye,
-  Lightning,
+  Zap,
   ThumbsUp,
 } from 'lucide-react';
 
@@ -142,7 +142,7 @@ export const PredictiveInsightsDashboard: React.FC = () => {
                       ) : insight.type === 'pattern' ? (
                         <Brain className="h-4 w-4 text-purple-600" />
                       ) : (
-                        <Lightning className="h-4 w-4 text-amber-600" />
+                        <Zap className="h-4 w-4 text-amber-600" />
                       )}
                     </div>
                     <h3 className="font-medium">{insight.title}</h3>
@@ -220,7 +220,7 @@ export const PredictiveInsightsDashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center p-3 bg-amber-50 rounded-md">
                 <div className="p-2 bg-amber-100 rounded-full mr-3">
-                  <Lightning className="h-5 w-5 text-amber-600" />
+                  <Zap className="h-5 w-5 text-amber-600" />
                 </div>
                 <div className="flex-grow">
                   <h4 className="font-medium">Prepare Support Team</h4>

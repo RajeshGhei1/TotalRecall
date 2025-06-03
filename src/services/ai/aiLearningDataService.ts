@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface LearningInsights {
@@ -12,10 +13,10 @@ export class AILearningDataService {
   async recordFeedback(
     decisionId: string,
     userId: string,
-    tenantId?: string,
     feedbackType: 'positive' | 'negative',
     feedbackData: any = {},
-    learningWeight: number = 1.0
+    learningWeight: number = 1.0,
+    tenantId?: string
   ): Promise<void> {
     try {
       await supabase
