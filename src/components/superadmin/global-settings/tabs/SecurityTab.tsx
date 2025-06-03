@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { invalidatePasswordRequirementsCache } from '@/utils/passwordValidation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PasswordStrengthPreview } from './PasswordStrengthPreview';
+import { BulkPasswordPolicyEnforcement } from './BulkPasswordPolicyEnforcement';
 
 interface SecurityFormData {
   password_min_length: number;
@@ -387,6 +388,11 @@ const SecurityTab: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Phase 2: Password Strength Preview */}
+      {!isLoading && (
+        <PasswordStrengthPreview requirements={formData} />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -450,6 +456,9 @@ const SecurityTab: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Phase 4: Bulk Password Policy Enforcement */}
+      <BulkPasswordPolicyEnforcement />
 
       <div className="flex justify-end">
         <Button 

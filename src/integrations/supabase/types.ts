@@ -2184,6 +2184,47 @@ export type Database = {
         }
         Relationships: []
       }
+      password_policy_enforcement: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          enforcement_date: string | null
+          id: string
+          notes: string | null
+          policy_version: Json
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          enforcement_date?: string | null
+          id?: string
+          notes?: string | null
+          policy_version: Json
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          enforcement_date?: string | null
+          id?: string
+          notes?: string | null
+          policy_version?: Json
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "password_policy_enforcement_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       people: {
         Row: {
           created_at: string
@@ -2223,6 +2264,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          last_policy_check: string | null
+          password_last_changed: string | null
+          password_meets_policy: boolean | null
+          policy_check_required: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
@@ -2231,6 +2276,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          last_policy_check?: string | null
+          password_last_changed?: string | null
+          password_meets_policy?: boolean | null
+          policy_check_required?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
@@ -2239,6 +2288,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          last_policy_check?: string | null
+          password_last_changed?: string | null
+          password_meets_policy?: boolean | null
+          policy_check_required?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
@@ -3189,6 +3242,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_password_policy_compliance: {
+        Args: { user_password_hash: string; user_id: string }
+        Returns: boolean
+      }
       cleanup_old_audit_logs: {
         Args: { retention_days?: number }
         Returns: number
