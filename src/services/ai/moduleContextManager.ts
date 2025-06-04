@@ -1,221 +1,244 @@
-import { supabase } from '@/integrations/supabase/client';
+
 import { AIContext } from '@/types/ai';
+import { supabase } from '@/integrations/supabase/client';
 
-interface ModuleUsage {
-  module: string;
+interface ModuleTokenBudget {
+  module_name: string;
   tenant_id: string | null;
-  tokens_used: number;
-  cost: number;
-  success: boolean;
-  timestamp: Date;
+  monthly_limit: number;
+  current_usage: number;
+  overage_policy: 'block' | 'warn' | 'charge';
+  cost_per_token_overage?: number;
 }
 
-interface ModuleBudget {
-  module: string;
-  tenant_id: string | null;
-  monthly_token_limit: number;
-  monthly_cost_limit: number;
-  current_tokens: number;
-  current_cost: number;
-  reset_date: Date;
-}
-
-interface ModuleContextData {
-  config: Record<string, any>;
-  permissions: Record<string, any>;
-  limits: Record<string, any>;
+interface ModuleUsageMetrics {
+  total_requests: number;
+  total_tokens: number;
+  total_cost: number;
+  average_tokens_per_request: number;
+  success_rate: number;
 }
 
 export class ModuleContextManager {
-  private contextCache: Map<string, ModuleContextData> = new Map();
-  private budgetCache: Map<string, ModuleBudget> = new Map();
+  private budgetCache = new Map<string, ModuleTokenBudget>();
 
   async enhanceContextWithModule(context: AIContext): Promise<AIContext> {
-    const cacheKey = `${context.module}-${context.tenant_id || 'global'}`;
-    
-    if (!this.contextCache.has(cacheKey)) {
-      const moduleContext = await this.loadModuleContext(context.module, context.tenant_id);
-      this.contextCache.set(cacheKey, moduleContext);
-    }
-
-    const moduleData = this.contextCache.get(cacheKey)!;
-    
-    return {
+    const enhancedContext = {
       ...context,
-      session_data: {
-        ...context.session_data,
-        module_config: moduleData.config,
-        module_permissions: moduleData.permissions,
-        usage_limits: moduleData.limits
-      }
+      module_metadata: await this.getModuleMetadata(context.module, context.tenant_id),
+      budget_status: await this.getBudgetStatus(context.module, context.tenant_id),
+      usage_history: await this.getRecentUsageMetrics(context.module, context.tenant_id)
     };
+
+    return enhancedContext;
   }
 
-  private async loadModuleContext(module: string, tenantId?: string): Promise<ModuleContextData> {
-    try {
-      // Load module configuration
-      const { data: moduleConfig } = await supabase
-        .from('system_modules')
-        .select('*')
-        .eq('name', module)
-        .maybeSingle();
-
-      // Load tenant-specific module permissions if tenant_id exists
-      let permissions = null;
-      if (tenantId) {
-        const { data: tenantPermissions } = await supabase
-          .from('tenant_module_assignments')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .eq('module_name', module)
-          .maybeSingle();
-        
-        permissions = tenantPermissions;
-      }
-
-      // Safely convert Supabase Json types to our expected types
-      const safeConfig = moduleConfig ? this.convertJsonToRecord(moduleConfig.default_limits) : {};
-      const safePermissions = permissions ? this.convertJsonToRecord(permissions) : {};
-      const safeLimits = moduleConfig?.default_limits ? this.convertJsonToRecord(moduleConfig.default_limits) : {};
-
-      return {
-        config: safeConfig,
-        permissions: safePermissions,
-        limits: safeLimits
-      };
-    } catch (error) {
-      console.error(`Error loading context for module ${module}:`, error);
-      return { config: {}, permissions: {}, limits: {} };
-    }
-  }
-
-  // Helper method to safely convert Supabase Json type to Record<string, any>
-  private convertJsonToRecord(jsonData: any): Record<string, any> {
-    if (jsonData === null || jsonData === undefined) {
-      return {};
-    }
-    
-    if (typeof jsonData === 'object' && !Array.isArray(jsonData)) {
-      return jsonData as Record<string, any>;
-    }
-    
-    return {};
-  }
-
-  async checkTokenBudget(
-    module: string, 
-    tenantId: string | undefined, 
-    estimatedTokens: number
-  ): Promise<{
+  async checkTokenBudget(moduleName: string, tenantId: string | null, estimatedTokens: number): Promise<{
     allowed: boolean;
     reason?: string;
     overage_amount?: number;
   }> {
-    const budgetKey = `${module}-${tenantId || 'global'}`;
+    const budget = await this.getModuleBudget(moduleName, tenantId);
     
-    if (!this.budgetCache.has(budgetKey)) {
-      await this.loadModuleBudget(module, tenantId);
-    }
-
-    const budget = this.budgetCache.get(budgetKey);
     if (!budget) {
-      return { allowed: true }; // No budget limits configured
+      return { allowed: true }; // No budget limits set
     }
 
-    const projectedTokens = budget.current_tokens + estimatedTokens;
+    const projectedUsage = budget.current_usage + estimatedTokens;
     
-    if (projectedTokens > budget.monthly_token_limit) {
-      const overage = projectedTokens - budget.monthly_token_limit;
-      return {
-        allowed: false,
-        reason: `Module ${module} would exceed monthly token limit by ${overage} tokens`,
-        overage_amount: overage
-      };
+    if (projectedUsage <= budget.monthly_limit) {
+      return { allowed: true };
     }
 
-    // Check if we're approaching the limit (90% threshold)
-    if (projectedTokens > budget.monthly_token_limit * 0.9) {
-      const overage = projectedTokens - (budget.monthly_token_limit * 0.9);
-      return {
-        allowed: true,
-        reason: `Module ${module} approaching token limit`,
-        overage_amount: overage
-      };
-    }
-
-    return { allowed: true };
-  }
-
-  private async loadModuleBudget(module: string, tenantId?: string): Promise<void> {
-    try {
-      // This would load from a module_budgets table in a real implementation
-      // For now, we'll create default budgets
-      const defaultBudget: ModuleBudget = {
-        module,
-        tenant_id: tenantId || null,
-        monthly_token_limit: 100000, // 100k tokens per month
-        monthly_cost_limit: 50, // $50 per month
-        current_tokens: 0,
-        current_cost: 0,
-        reset_date: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
-      };
-
-      const budgetKey = `${module}-${tenantId || 'global'}`;
-      this.budgetCache.set(budgetKey, defaultBudget);
-    } catch (error) {
-      console.error(`Error loading budget for module ${module}:`, error);
+    const overage = projectedUsage - budget.monthly_limit;
+    
+    switch (budget.overage_policy) {
+      case 'block':
+        return { 
+          allowed: false, 
+          reason: `Token budget exceeded. Monthly limit: ${budget.monthly_limit}, current usage: ${budget.current_usage}`,
+          overage_amount: overage
+        };
+      
+      case 'warn':
+        console.warn(`Module ${moduleName} exceeding token budget by ${overage} tokens`);
+        return { allowed: true, overage_amount: overage };
+      
+      case 'charge':
+        const overageCost = overage * (budget.cost_per_token_overage || 0.001);
+        console.log(`Module ${moduleName} overage will cost $${overageCost.toFixed(4)}`);
+        return { allowed: true, overage_amount: overage };
+      
+      default:
+        return { allowed: true };
     }
   }
 
   async recordModuleUsage(
-    module: string,
-    tenantId: string | null,
-    tokensUsed: number,
+    moduleName: string, 
+    tenantId: string | null, 
+    tokensUsed: number, 
     cost: number,
     success: boolean
   ): Promise<void> {
     try {
-      // Update budget cache
-      const budgetKey = `${module}-${tenantId || 'global'}`;
-      const budget = this.budgetCache.get(budgetKey);
-      
-      if (budget) {
-        budget.current_tokens += tokensUsed;
-        budget.current_cost += cost;
-      }
+      // Update budget usage
+      await this.updateBudgetUsage(moduleName, tenantId, tokensUsed);
 
-      // Log usage to database (would be implemented with a module_usage table)
-      console.log(`Module usage recorded: ${module}, tokens: ${tokensUsed}, cost: ${cost}, success: ${success}`);
+      // Record detailed usage metrics
+      await this.recordUsageMetrics(moduleName, tenantId, tokensUsed, cost, success);
+
     } catch (error) {
       console.error('Error recording module usage:', error);
     }
   }
 
-  async getModuleUsageStats(module: string, tenantId?: string): Promise<{
-    totalTokens: number;
-    totalCost: number;
-    successRate: number;
-    usageThisMonth: number;
-  }> {
-    // This would query the module_usage table in a real implementation
-    const budgetKey = `${module}-${tenantId || 'global'}`;
-    const budget = this.budgetCache.get(budgetKey);
+  private async getModuleMetadata(moduleName: string, tenantId?: string): Promise<any> {
+    try {
+      const { data: moduleInfo } = await supabase
+        .from('system_modules')
+        .select('*')
+        .eq('name', moduleName)
+        .single();
+
+      // Get tenant-specific module assignment if applicable
+      if (tenantId) {
+        const { data: assignment } = await supabase
+          .from('tenant_module_assignments')
+          .select('*')
+          .eq('module_id', moduleInfo?.id)
+          .eq('tenant_id', tenantId)
+          .single();
+
+        return {
+          module_info: moduleInfo,
+          tenant_assignment: assignment
+        };
+      }
+
+      return { module_info: moduleInfo };
+    } catch (error) {
+      console.error('Error fetching module metadata:', error);
+      return {};
+    }
+  }
+
+  private async getBudgetStatus(moduleName: string, tenantId: string | null): Promise<any> {
+    const budget = await this.getModuleBudget(moduleName, tenantId);
+    
+    if (!budget) return null;
+
+    const utilizationPercentage = (budget.current_usage / budget.monthly_limit) * 100;
     
     return {
-      totalTokens: budget?.current_tokens || 0,
-      totalCost: budget?.current_cost || 0,
-      successRate: 0.95, // Placeholder
-      usageThisMonth: budget?.current_tokens || 0
+      monthly_limit: budget.monthly_limit,
+      current_usage: budget.current_usage,
+      remaining: budget.monthly_limit - budget.current_usage,
+      utilization_percentage: utilizationPercentage,
+      status: utilizationPercentage > 90 ? 'critical' : 
+              utilizationPercentage > 75 ? 'warning' : 'healthy'
     };
   }
 
-  clearCache(): void {
-    this.contextCache.clear();
+  private async getRecentUsageMetrics(moduleName: string, tenantId: string | null): Promise<ModuleUsageMetrics> {
+    try {
+      // Get usage from the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data: logs } = await supabase
+        .from('ai_request_logs')
+        .select('input_tokens, output_tokens, total_cost, status')
+        .eq('tenant_id', tenantId)
+        .like('context->>module', moduleName)
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      if (!logs || logs.length === 0) {
+        return {
+          total_requests: 0,
+          total_tokens: 0,
+          total_cost: 0,
+          average_tokens_per_request: 0,
+          success_rate: 0
+        };
+      }
+
+      const totalRequests = logs.length;
+      const successfulRequests = logs.filter(log => log.status === 'completed').length;
+      const totalTokens = logs.reduce((sum, log) => sum + (log.input_tokens || 0) + (log.output_tokens || 0), 0);
+      const totalCost = logs.reduce((sum, log) => sum + (log.total_cost || 0), 0);
+
+      return {
+        total_requests: totalRequests,
+        total_tokens: totalTokens,
+        total_cost: totalCost,
+        average_tokens_per_request: totalRequests > 0 ? totalTokens / totalRequests : 0,
+        success_rate: totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 0
+      };
+
+    } catch (error) {
+      console.error('Error fetching usage metrics:', error);
+      return {
+        total_requests: 0,
+        total_tokens: 0,
+        total_cost: 0,
+        average_tokens_per_request: 0,
+        success_rate: 0
+      };
+    }
   }
 
-  async refreshModuleBudgets(): Promise<void> {
+  private async getModuleBudget(moduleName: string, tenantId: string | null): Promise<ModuleTokenBudget | null> {
+    const cacheKey = `${moduleName}-${tenantId || 'global'}`;
+    
+    if (this.budgetCache.has(cacheKey)) {
+      return this.budgetCache.get(cacheKey) || null;
+    }
+
+    try {
+      // For now, return mock data since we don't have the schema yet
+      // TODO: Replace with actual database query when schema is implemented
+      const mockBudget: ModuleTokenBudget = {
+        module_name: moduleName,
+        tenant_id: tenantId,
+        monthly_limit: 100000, // Default 100k tokens per month
+        current_usage: 0,
+        overage_policy: 'warn'
+      };
+
+      this.budgetCache.set(cacheKey, mockBudget);
+      return mockBudget;
+
+    } catch (error) {
+      console.error('Error fetching module budget:', error);
+      return null;
+    }
+  }
+
+  private async updateBudgetUsage(moduleName: string, tenantId: string | null, tokensUsed: number): Promise<void> {
+    const budget = await this.getModuleBudget(moduleName, tenantId);
+    if (budget) {
+      budget.current_usage += tokensUsed;
+      const cacheKey = `${moduleName}-${tenantId || 'global'}`;
+      this.budgetCache.set(cacheKey, budget);
+
+      // TODO: Update database when schema is implemented
+    }
+  }
+
+  private async recordUsageMetrics(
+    moduleName: string, 
+    tenantId: string | null, 
+    tokensUsed: number, 
+    cost: number, 
+    success: boolean
+  ): Promise<void> {
+    // This will be implemented when we have the proper metrics tracking tables
+    console.log(`Module ${moduleName} usage: ${tokensUsed} tokens, $${cost.toFixed(6)}, success: ${success}`);
+  }
+
+  clearCache(): void {
     this.budgetCache.clear();
-    // Would reload all budgets from database
   }
 }
 

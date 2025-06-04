@@ -1,294 +1,192 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAIAgents } from '@/hooks/ai/useAIAgents';
-import { AIAgentType } from '@/types/ai';
-import { Loader2 } from 'lucide-react';
+import { useAIModels } from '@/hooks/ai/useAIModels';
+import { AIAgentType, AIAgentStatus } from '@/types/ai';
+
+const agentSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  type: z.enum(['cognitive', 'predictive', 'automation', 'analysis', 'deep_research']),
+  capabilities: z.string().min(1, 'At least one capability is required'),
+  preferredModel: z.string().min(1, 'Preferred model is required'),
+  temperature: z.number().min(0).max(2).default(0.7),
+  tenant_id: z.string().optional(),
+});
+
+type AgentFormData = z.infer<typeof agentSchema>;
 
 interface CreateAIAgentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const AGENT_TYPES: { value: AIAgentType; label: string; description: string }[] = [
-  {
-    value: 'cognitive',
-    label: 'Cognitive Assistant',
-    description: 'General purpose AI for user assistance and decision support'
-  },
-  {
-    value: 'predictive',
-    label: 'Predictive Analytics',
-    description: 'Specialized in forecasting and trend analysis'
-  },
-  {
-    value: 'automation',
-    label: 'Workflow Automation',
-    description: 'Handles process automation and optimization'
-  },
-  {
-    value: 'analysis',
-    label: 'Data Analysis',
-    description: 'Focused on data analysis and insight generation'
-  },
-  {
-    value: 'deep_research',
-    label: 'Deep Research',
-    description: 'Advanced research and knowledge synthesis'
-  }
-];
-
-const AVAILABLE_CAPABILITIES = [
-  'conversation',
-  'decision_support',
-  'content_generation',
-  'task_planning',
-  'trend_analysis',
-  'forecasting',
-  'pattern_recognition',
-  'risk_assessment',
-  'workflow_design',
-  'process_optimization',
-  'task_automation',
-  'integration_management',
-  'data_analysis',
-  'visualization',
-  'statistical_analysis',
-  'insight_generation',
-  'research',
-  'knowledge_synthesis',
-  'literature_review',
-  'expert_analysis'
-];
-
-export const CreateAIAgentDialog: React.FC<CreateAIAgentDialogProps> = ({
-  open,
-  onOpenChange
-}) => {
+export const CreateAIAgentDialog = ({ open, onOpenChange }: CreateAIAgentDialogProps) => {
   const { createAgent } = useAIAgents();
-  const [formData, setFormData] = useState({
-    name: '',
-    type: '' as AIAgentType,
-    description: '',
-    capabilities: [] as string[],
-    model: 'gpt-4o-mini',
-    temperature: 0.7,
-    max_tokens: 1000
+  const { models } = useAIModels();
+
+  const form = useForm<AgentFormData>({
+    resolver: zodResolver(agentSchema),
+    defaultValues: {
+      type: 'cognitive',
+      temperature: 0.7,
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name.trim() || !formData.type) {
-      return;
-    }
-
+  const onSubmit = async (data: AgentFormData) => {
     try {
-      await createAgent.mutateAsync({
-        name: formData.name,
-        type: formData.type,
-        description: formData.description,
-        capabilities: formData.capabilities,
+      const agentData = {
+        name: data.name,
+        description: data.description,
+        type: data.type as AIAgentType,
+        capabilities: data.capabilities.split(',').map(cap => cap.trim()),
         model_config: {
-          model: formData.model,
-          temperature: formData.temperature,
-          max_tokens: formData.max_tokens
+          preferred_model: data.preferredModel,
+          temperature: data.temperature,
         },
         performance_metrics: {
           accuracy: 0,
           response_time: 0,
-          user_satisfaction: 0
         },
-        status: 'active',
-        is_active: true
-      });
+        status: 'active' as AIAgentStatus,
+        is_active: true,
+        tenant_id: data.tenant_id || null,
+        created_by: null,
+      };
 
-      // Reset form
-      setFormData({
-        name: '',
-        type: '' as AIAgentType,
-        description: '',
-        capabilities: [],
-        model: 'gpt-4o-mini',
-        temperature: 0.7,
-        max_tokens: 1000
-      });
-
+      await createAgent.mutateAsync(agentData);
+      form.reset();
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to create agent:', error);
+      console.error('Error creating agent:', error);
     }
   };
-
-  const handleCapabilityToggle = (capability: string, checked: boolean) => {
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        capabilities: [...prev.capabilities, capability]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        capabilities: prev.capabilities.filter(c => c !== capability)
-      }));
-    }
-  };
-
-  const selectedAgentType = AGENT_TYPES.find(type => type.value === formData.type);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create New AI Agent</DialogTitle>
+          <DialogTitle>Create AI Agent</DialogTitle>
           <DialogDescription>
-            Configure a new AI agent for your system
+            Configure a new AI agent with specific capabilities and model preferences.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Agent Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Customer Support Assistant"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Agent Type *</Label>
-              <Select 
-                value={formData.type} 
-                onValueChange={(value: AIAgentType) => setFormData(prev => ({ ...prev, type: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select agent type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AGENT_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              {...form.register('name')}
+              placeholder="Enter agent name"
+            />
+            {form.formState.errors.name && (
+              <p className="text-sm text-red-600 mt-1">
+                {form.formState.errors.name.message}
+              </p>
+            )}
           </div>
 
-          {selectedAgentType && (
-            <div className="bg-blue-50 p-3 rounded-md">
-              <p className="text-sm text-blue-800">{selectedAgentType.description}</p>
-            </div>
-          )}
-
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe what this agent will do..."
+              {...form.register('description')}
+              placeholder="Describe the agent's purpose and functionality"
               rows={3}
             />
           </div>
 
-          <div className="space-y-3">
-            <Label>Capabilities</Label>
-            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
-              {AVAILABLE_CAPABILITIES.map((capability) => (
-                <div key={capability} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={capability}
-                    checked={formData.capabilities.includes(capability)}
-                    onCheckedChange={(checked) => handleCapabilityToggle(capability, checked as boolean)}
-                  />
-                  <Label 
-                    htmlFor={capability} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {capability.replace('_', ' ')}
-                  </Label>
-                </div>
-              ))}
-            </div>
+          <div>
+            <Label htmlFor="type">Agent Type</Label>
+            <Select onValueChange={(value) => form.setValue('type', value as AIAgentType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select agent type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cognitive">Cognitive</SelectItem>
+                <SelectItem value="predictive">Predictive</SelectItem>
+                <SelectItem value="automation">Automation</SelectItem>
+                <SelectItem value="analysis">Analysis</SelectItem>
+                <SelectItem value="deep_research">Deep Research</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-4">
-            <Label>Model Configuration</Label>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="model">Model</Label>
-                <Select 
-                  value={formData.model} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                    <SelectItem value="gpt-4.5-preview">GPT-4.5 Preview</SelectItem>
-                    <SelectItem value="claude-opus-4-20250514">Claude Opus 4</SelectItem>
-                    <SelectItem value="claude-sonnet-4-20250514">Claude Sonnet 4</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="temperature">Temperature</Label>
-                <Input
-                  id="temperature"
-                  type="number"
-                  min="0"
-                  max="2"
-                  step="0.1"
-                  value={formData.temperature}
-                  onChange={(e) => setFormData(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="max_tokens">Max Tokens</Label>
-                <Input
-                  id="max_tokens"
-                  type="number"
-                  min="100"
-                  max="4000"
-                  step="100"
-                  value={formData.max_tokens}
-                  onChange={(e) => setFormData(prev => ({ ...prev, max_tokens: parseInt(e.target.value) }))}
-                />
-              </div>
-            </div>
+          <div>
+            <Label htmlFor="capabilities">Capabilities</Label>
+            <Input
+              id="capabilities"
+              {...form.register('capabilities')}
+              placeholder="conversation, support, analysis (comma separated)"
+            />
+            {form.formState.errors.capabilities && (
+              <p className="text-sm text-red-600 mt-1">
+                {form.formState.errors.capabilities.message}
+              </p>
+            )}
           </div>
 
-          <DialogFooter>
+          <div>
+            <Label htmlFor="preferredModel">Preferred Model</Label>
+            <Select onValueChange={(value) => form.setValue('preferredModel', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select preferred AI model" />
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((model) => (
+                  <SelectItem key={model.id} value={model.model_id}>
+                    {model.name} ({model.provider})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="temperature">Temperature</Label>
+            <Input
+              id="temperature"
+              type="number"
+              step="0.1"
+              min="0"
+              max="2"
+              {...form.register('temperature', { valueAsNumber: true })}
+              placeholder="0.7"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Lower values make output more focused, higher values more creative
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createAgent.isPending || !formData.name.trim() || !formData.type}>
-              {createAgent.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Agent
+            <Button type="submit" disabled={createAgent.isPending}>
+              {createAgent.isPending ? 'Creating...' : 'Create Agent'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

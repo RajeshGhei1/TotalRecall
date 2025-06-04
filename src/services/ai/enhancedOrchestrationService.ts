@@ -303,19 +303,19 @@ export class EnhancedAIOrchestrationService {
         .single();
 
       if (decision) {
-        // Record learning data with explicit typing
+        // Record learning data
         await aiLearningDataService.recordFeedback(
           decisionId,
           decision.user_id || 'system',
-          feedback as 'positive' | 'negative', // Explicit cast to fix type error
+          decision.tenant_id,
+          feedback,
           {
             original_decision: decision.decision,
             satisfaction_score: feedback === 'positive' ? 1.0 : 0.0,
             feedback_details: details,
             context_relevance: decision.confidence_score || 0.5
           },
-          feedback === 'negative' ? 1.2 : 0.8, // Weight negative feedback higher for learning
-          decision.tenant_id
+          feedback === 'negative' ? 1.2 : 0.8 // Weight negative feedback higher for learning
         );
       }
       

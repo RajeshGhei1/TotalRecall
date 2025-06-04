@@ -1,14 +1,19 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { AIAgent } from '@/types/ai';
+import { AIAgent, AIAgentType } from '@/types/ai';
 
 interface DefaultAgentConfig {
   name: string;
-  type: 'cognitive' | 'predictive' | 'automation' | 'analysis' | 'deep_research';
+  type: AIAgentType;
   description: string;
   capabilities: string[];
   model_config: Record<string, any>;
   performance_metrics: Record<string, any>;
+}
+
+interface CapabilityUpdate {
+  type: AIAgentType;
+  newCapabilities: string[];
 }
 
 export class AIAgentSeeder {
@@ -16,165 +21,183 @@ export class AIAgentSeeder {
     {
       name: 'Cognitive Assistant',
       type: 'cognitive',
-      description: 'General purpose cognitive AI for user assistance and decision support',
-      capabilities: ['conversation', 'decision_support', 'content_generation', 'task_planning'],
+      description: 'General-purpose AI assistant for cognitive tasks and decision support',
+      capabilities: ['conversation', 'support', 'guidance', 'problem_solving', 'analysis'],
       model_config: {
         temperature: 0.7,
         max_tokens: 1000,
-        model: 'gpt-4o-mini'
+        model_preference: 'gpt-4o-mini'
       },
       performance_metrics: {
         accuracy: 0.85,
-        response_time: 500,
+        response_time: 800,
         user_satisfaction: 0.9
       }
     },
     {
-      name: 'Predictive Analytics Agent',
+      name: 'Predictive Analytics Engine',
       type: 'predictive',
-      description: 'Specialized in predictive analytics and trend forecasting',
-      capabilities: ['trend_analysis', 'forecasting', 'pattern_recognition', 'risk_assessment'],
+      description: 'AI agent specialized in forecasting and predictive analytics',
+      capabilities: ['prediction', 'analytics', 'forecasting', 'trend_analysis', 'risk_assessment'],
       model_config: {
         temperature: 0.3,
-        max_tokens: 800,
-        model: 'gpt-4o'
+        max_tokens: 1500,
+        model_preference: 'gpt-4o'
       },
       performance_metrics: {
-        accuracy: 0.92,
-        response_time: 750,
-        prediction_accuracy: 0.88
+        accuracy: 0.88,
+        response_time: 1200,
+        prediction_accuracy: 0.82
       }
     },
     {
       name: 'Workflow Automation Agent',
       type: 'automation',
-      description: 'Handles workflow automation and process optimization',
-      capabilities: ['workflow_design', 'process_optimization', 'task_automation', 'integration_management'],
+      description: 'AI agent for process automation and workflow optimization',
+      capabilities: ['automation', 'process_optimization', 'workflow', 'task_routing', 'scheduling'],
       model_config: {
         temperature: 0.2,
-        max_tokens: 1200,
-        model: 'gpt-4o-mini'
+        max_tokens: 800,
+        model_preference: 'gpt-4o-mini'
       },
       performance_metrics: {
-        accuracy: 0.90,
+        accuracy: 0.92,
         response_time: 600,
-        automation_success_rate: 0.95
+        automation_success_rate: 0.89
       }
     },
     {
-      name: 'Data Analysis Agent',
+      name: 'Data Analysis Specialist',
       type: 'analysis',
-      description: 'Specialized in data analysis and insight generation',
-      capabilities: ['data_analysis', 'visualization', 'statistical_analysis', 'insight_generation'],
+      description: 'AI agent for data analysis and insights generation',
+      capabilities: ['analysis', 'insights', 'reporting', 'data_mining', 'pattern_recognition'],
       model_config: {
-        temperature: 0.1,
-        max_tokens: 1500,
-        model: 'gpt-4o'
+        temperature: 0.4,
+        max_tokens: 2000,
+        model_preference: 'gpt-4o'
       },
       performance_metrics: {
-        accuracy: 0.94,
-        response_time: 800,
+        accuracy: 0.87,
+        response_time: 1000,
         insight_quality: 0.91
       }
     },
     {
       name: 'Deep Research Agent',
       type: 'deep_research',
-      description: 'Advanced research and knowledge synthesis capabilities',
-      capabilities: ['research', 'knowledge_synthesis', 'literature_review', 'expert_analysis'],
+      description: 'AI agent for comprehensive research and investigation tasks',
+      capabilities: ['deep_research', 'multi_source_analysis', 'comprehensive_reporting', 'market_intelligence', 'investigation'],
       model_config: {
-        temperature: 0.4,
-        max_tokens: 2000,
-        model: 'gpt-4o'
+        temperature: 0.5,
+        max_tokens: 3000,
+        model_preference: 'gpt-4o'
       },
       performance_metrics: {
-        accuracy: 0.96,
-        response_time: 1200,
+        accuracy: 0.89,
+        response_time: 2000,
         research_depth: 0.93
       }
     }
   ];
 
   async seedDefaultAgents(): Promise<void> {
-    console.log('Seeding default AI agents...');
+    console.log('Starting AI agent seeding process...');
 
     try {
       for (const agentConfig of this.defaultAgents) {
-        // Check if agent already exists
-        const { data: existingAgent } = await supabase
-          .from('ai_agents')
-          .select('id')
-          .eq('name', agentConfig.name)
-          .eq('type', agentConfig.type)
-          .maybeSingle();
-
-        if (!existingAgent) {
-          await supabase
-            .from('ai_agents')
-            .insert({
-              name: agentConfig.name,
-              type: agentConfig.type,
-              description: agentConfig.description,
-              capabilities: agentConfig.capabilities,
-              model_config: agentConfig.model_config as any,
-              performance_metrics: agentConfig.performance_metrics as any,
-              status: 'active',
-              is_active: true
-            });
-
-          console.log(`Created agent: ${agentConfig.name}`);
-        } else {
-          console.log(`Agent already exists: ${agentConfig.name}`);
-        }
+        await this.createAgentIfNotExists(agentConfig);
       }
-
-      console.log('✅ Default agents seeding completed');
+      console.log('AI agent seeding completed successfully');
     } catch (error) {
-      console.error('❌ Error seeding default agents:', error);
+      console.error('Error during AI agent seeding:', error);
       throw error;
     }
+  }
+
+  private async createAgentIfNotExists(config: DefaultAgentConfig): Promise<void> {
+    // Check if agent already exists
+    const { data: existingAgent } = await supabase
+      .from('ai_agents')
+      .select('id')
+      .eq('name', config.name)
+      .eq('type', config.type)
+      .maybeSingle();
+
+    if (existingAgent) {
+      console.log(`Agent "${config.name}" already exists, skipping...`);
+      return;
+    }
+
+    // Create new agent
+    const { error } = await supabase
+      .from('ai_agents')
+      .insert({
+        name: config.name,
+        type: config.type,
+        description: config.description,
+        capabilities: config.capabilities,
+        model_config: config.model_config as any,
+        performance_metrics: config.performance_metrics as any,
+        status: 'active',
+        is_active: true,
+        tenant_id: null, // Global agents
+        created_by: null
+      });
+
+    if (error) {
+      console.error(`Error creating agent "${config.name}":`, error);
+      throw error;
+    }
+
+    console.log(`Created default agent: ${config.name}`);
   }
 
   async updateAgentCapabilities(): Promise<void> {
     console.log('Updating agent capabilities...');
 
-    try {
-      for (const agentConfig of this.defaultAgents) {
-        await supabase
-          .from('ai_agents')
-          .update({
-            capabilities: agentConfig.capabilities,
-            model_config: agentConfig.model_config as any,
-            performance_metrics: agentConfig.performance_metrics as any
-          })
-          .eq('name', agentConfig.name)
-          .eq('type', agentConfig.type);
+    const capabilityUpdates: CapabilityUpdate[] = [
+      {
+        type: 'cognitive' as AIAgentType,
+        newCapabilities: ['natural_language_processing', 'contextual_understanding', 'multi_turn_conversation']
+      },
+      {
+        type: 'predictive' as AIAgentType,
+        newCapabilities: ['time_series_analysis', 'statistical_modeling', 'machine_learning']
+      },
+      {
+        type: 'automation' as AIAgentType,
+        newCapabilities: ['rule_based_automation', 'intelligent_routing', 'process_mining']
+      },
+      {
+        type: 'analysis' as AIAgentType,
+        newCapabilities: ['statistical_analysis', 'visualization', 'correlation_analysis']
+      },
+      {
+        type: 'deep_research' as AIAgentType,
+        newCapabilities: ['web_research', 'document_analysis', 'cross_reference_validation']
       }
+    ];
 
-      console.log('✅ Agent capabilities updated');
-    } catch (error) {
-      console.error('❌ Error updating agent capabilities:', error);
-      throw error;
+    for (const update of capabilityUpdates) {
+      const { data: agents } = await supabase
+        .from('ai_agents')
+        .select('id, capabilities')
+        .eq('type', update.type);
+
+      if (agents) {
+        for (const agent of agents) {
+          const existingCapabilities = agent.capabilities || [];
+          const mergedCapabilities = [...new Set([...existingCapabilities, ...update.newCapabilities])];
+
+          await supabase
+            .from('ai_agents')
+            .update({ capabilities: mergedCapabilities })
+            .eq('id', agent.id);
+        }
+      }
     }
-  }
 
-  async getAgentStats(): Promise<{
-    totalAgents: number;
-    activeAgents: number;
-    agentsByType: Record<string, number>;
-  }> {
-    const { data: agents } = await supabase
-      .from('ai_agents')
-      .select('type, is_active');
-
-    const totalAgents = agents?.length || 0;
-    const activeAgents = agents?.filter(a => a.is_active).length || 0;
-    const agentsByType = agents?.reduce((acc, agent) => {
-      acc[agent.type] = (acc[agent.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-    return { totalAgents, activeAgents, agentsByType };
+    console.log('Agent capabilities updated successfully');
   }
 }
 
