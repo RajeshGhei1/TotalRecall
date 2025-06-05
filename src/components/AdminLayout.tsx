@@ -18,7 +18,12 @@ const AdminLayout = ({ children, navigation = [] }: AdminLayoutProps) => {
       <Sidebar navigation={navigation} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopHeader />
+        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <MobileNavigation onMenuClick={() => setSidebarOpen(true)} />
+          <div className="flex-1 flex justify-end">
+            <TopHeader />
+          </div>
+        </div>
         <WeakPasswordNotification />
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
