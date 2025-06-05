@@ -10,7 +10,8 @@ import {
   Brain,
   Calendar,
   FileText,
-  Users2
+  Users2,
+  Zap
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
@@ -59,6 +60,12 @@ const defaultNavItems: NavItem[] = [
     icon: Users, 
     href: '/tenant-admin/contacts',
     requiresModule: 'business_contacts_data_access'
+  },
+  { 
+    id: 'intelligent-workflows',
+    label: 'Intelligent Workflows', 
+    icon: Zap, 
+    href: '/tenant-admin/intelligent-workflows'
   },
   { 
     id: 'smart-talent-analytics',
