@@ -54,7 +54,7 @@ export class PredictiveAnalyticsService {
 
       const { data: jobs } = await supabase
         .from('jobs')
-        .select('created_at, status')
+        .select('created_at, status, department')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -439,7 +439,7 @@ export class PredictiveAnalyticsService {
         }
 
         // Check for expansion opportunities
-        const uniqueJobTypes = new Set(metrics.jobs?.map(job => job.department)).size || 0;
+        const uniqueJobTypes = new Set(metrics.jobs?.map(job => job.department).filter(Boolean)).size || 0;
         
         if (uniqueJobTypes > 3) {
           opportunities.push({
