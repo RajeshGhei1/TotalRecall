@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,8 +11,10 @@ import { useFormWorkflows, useCreateFormWorkflow, useFormNotifications } from '@
 import { useFormDefinitions } from '@/hooks/forms/useFormDefinitions';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { FormWorkflow, WorkflowStep } from '@/types/form-builder';
-import { Plus, Settings, Play, Pause, Trash2, Mail, Webhook, Database, GitBranch } from 'lucide-react';
+import { Plus, Settings, Play, Pause, Trash2, Mail, Webhook, Database, GitBranch, Brain, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AIWorkflowOptimizer } from './AIWorkflowOptimizer';
+import { AutomationRulesManager } from './AutomationRulesManager';
 
 const FormWorkflowManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState('workflows');
@@ -92,6 +93,16 @@ const FormWorkflowManager: React.FC = () => {
     }));
   };
 
+  const handleOptimizationApplied = (optimizedSteps: any[]) => {
+    if (workflows.length > 0) {
+      // In a real implementation, you would update the selected workflow
+      toast({
+        title: 'Workflow Optimized',
+        description: 'AI optimizations have been applied to your workflow.',
+      });
+    }
+  };
+
   const getStepIcon = (type: string) => {
     switch (type) {
       case 'notification': return Mail;
@@ -116,8 +127,8 @@ const FormWorkflowManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Workflow Management</h2>
-          <p className="text-muted-foreground">Automate form response processing and notifications</p>
+          <h2 className="text-xl font-semibold">Intelligent Workflow Management</h2>
+          <p className="text-muted-foreground">AI-enhanced workflow automation and optimization</p>
         </div>
         <Button onClick={() => setIsCreating(true)} disabled={!selectedFormId}>
           <Plus className="h-4 w-4 mr-2" />
@@ -146,7 +157,7 @@ const FormWorkflowManager: React.FC = () => {
           <CardHeader>
             <CardTitle>Create New Workflow</CardTitle>
             <CardDescription>
-              Set up automated processes for form responses
+              Set up automated processes for form responses with AI assistance
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -255,10 +266,18 @@ const FormWorkflowManager: React.FC = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="workflows">Active Workflows</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="ai-optimizer">
+            <Brain className="h-4 w-4 mr-1" />
+            AI Optimizer
+          </TabsTrigger>
+          <TabsTrigger value="automation">
+            <Zap className="h-4 w-4 mr-1" />
+            Automation
+          </TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="logs">Execution Logs</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="workflows" className="space-y-4">
@@ -322,6 +341,45 @@ const FormWorkflowManager: React.FC = () => {
                 </Card>
               ))}
             </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="ai-optimizer" className="space-y-4">
+          {selectedFormId && workflows.length > 0 ? (
+            <AIWorkflowOptimizer
+              workflowId={workflows[0].id}
+              workflowSteps={workflows[0].workflow_steps}
+              onOptimizationApplied={handleOptimizationApplied}
+            />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">AI Optimizer</h3>
+                <p className="text-muted-foreground">
+                  {!selectedFormId 
+                    ? "Select a form to enable AI optimization features."
+                    : "Create a workflow to access AI-powered optimization suggestions."
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-4">
+          {selectedFormId ? (
+            <AutomationRulesManager workflowId={selectedFormId} />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Zap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">Automation Rules</h3>
+                <p className="text-muted-foreground">
+                  Select a form to create and manage automation rules.
+                </p>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 

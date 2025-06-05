@@ -11,3 +11,6 @@ export type {
   WorkflowInefficiency, 
   PredictiveInsight 
 } from './patternRecognition';
+
+// Intelligent Workflow Automation
+export * from './workflow';
