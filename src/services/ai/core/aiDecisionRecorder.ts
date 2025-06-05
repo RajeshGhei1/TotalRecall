@@ -27,19 +27,36 @@ export class AIDecisionRecorder {
     // Store in memory
     this.decisions.set(decisionId, fullDecision);
 
-    // Store in database
+    // Store in database - match the actual schema
     try {
-      await supabase
+      const { data, error } = await supabase
         .from('ai_decisions')
         .insert({
-          id: decisionId,
           agent_id: decision.agentId,
           user_id: decision.userId,
           tenant_id: decision.tenantId || null,
           decision: decision.decision as any,
+          context: {
+            module: 'ai-orchestration',
+            action: 'decision_recorded',
+            timestamp: new Date().toISOString(),
+            metadata: {}
+          } as any,
           confidence_score: decision.confidence,
           created_at: new Date().toISOString()
-        });
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      
+      // Update our memory store with the actual database ID
+      if (data?.id) {
+        fullDecision.id = data.id;
+        this.decisions.set(data.id, fullDecision);
+        this.decisions.delete(decisionId);
+        return data.id;
+      }
     } catch (error) {
       console.error('Error storing decision in database:', error);
     }
@@ -49,23 +66,24 @@ export class AIDecisionRecorder {
 
   async recordFeedback(decisionId: string, feedback: 'positive' | 'negative'): Promise<boolean> {
     const decision = this.decisions.get(decisionId);
-    if (!decision) {
-      console.warn(`Decision ${decisionId} not found`);
-      return false;
+    if (decision) {
+      decision.feedback = feedback;
     }
-
-    decision.feedback = feedback;
 
     // Update in database
     try {
-      await supabase
+      const { error } = await supabase
         .from('ai_decisions')
         .update({
           was_accepted: feedback === 'positive',
-          outcome_feedback: { feedback, timestamp: new Date().toISOString() }
+          outcome_feedback: { 
+            feedback, 
+            timestamp: new Date().toISOString() 
+          } as any
         })
         .eq('id', decisionId);
 
+      if (error) throw error;
       return true;
     } catch (error) {
       console.error('Error updating decision feedback:', error);
