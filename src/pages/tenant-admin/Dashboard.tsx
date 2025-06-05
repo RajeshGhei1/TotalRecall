@@ -12,11 +12,14 @@ import {
   MessageSquare,
   CalendarDays,
   PenLine,
-  UserRound
+  UserRound,
+  Zap,
+  Activity
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { WorkflowHealthWidget } from "@/components/dashboard/widgets";
 
 const TenantAdminDashboard = () => {
   const { user, bypassAuth } = useAuth();
@@ -208,6 +211,40 @@ const TenantAdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Workflow Health Widget */}
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <WorkflowHealthWidget tenantId={tenantData?.tenant_id} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                AI Automation
+              </CardTitle>
+              <CardDescription>
+                Intelligent workflow automation insights
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-blue-900">Workflow Efficiency</p>
+                  <p className="text-sm text-blue-700">AI has optimized 3 processes this week</p>
+                </div>
+                <Activity className="h-8 w-8 text-blue-600" />
+              </div>
+              
+              <Button 
+                onClick={() => navigate('/tenant-admin/intelligent-workflows')}
+                className="w-full"
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Manage Workflows
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Quick Actions */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card>
@@ -242,6 +279,14 @@ const TenantAdminDashboard = () => {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => navigate('/tenant-admin/intelligent-workflows')}
+                className="w-full justify-start"
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Intelligent Workflows
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => navigate('/tenant-admin/settings')}
                 className="w-full justify-start"
               >
@@ -269,6 +314,18 @@ const TenantAdminDashboard = () => {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date().toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start border-b pb-3">
+                  <div className="rounded-full h-8 w-8 flex items-center justify-center mr-3 bg-purple-100 text-purple-600">
+                    <Zap className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Intelligent Workflows Ready</p>
+                    <p className="text-xs text-muted-foreground">
+                      AI-powered automation is now available
                     </p>
                   </div>
                 </div>

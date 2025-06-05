@@ -14,6 +14,7 @@ import ApiSettings from "@/pages/tenant-admin/settings/ApiSettings";
 import CommunicationSettings from "@/pages/tenant-admin/settings/CommunicationSettings";
 import OutreachSettings from "@/pages/tenant-admin/settings/OutreachSettings";
 import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettings";
+import IntelligentWorkflowsPage from "@/components/workflow/IntelligentWorkflowsPage";
 import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleAccessGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -53,6 +54,9 @@ const TenantAdminRoutes = () => {
       
       {/* Core Tenant Pages */}
       <Route path="dashboard" element={<Dashboard />} />
+      
+      {/* Intelligent Workflows - Core Feature */}
+      <Route path="intelligent-workflows" element={<IntelligentWorkflowsPage />} />
       
       {/* ATS Core Module Protected Routes */}
       <Route path="ats" element={
