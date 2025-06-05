@@ -19,6 +19,7 @@ import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleA
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -57,6 +58,9 @@ const TenantAdminRoutes = () => {
       
       {/* Intelligent Workflows - Core Feature */}
       <Route path="intelligent-workflows" element={<IntelligentWorkflowsPage />} />
+      
+      {/* Predictive Insights - New Feature */}
+      <Route path="predictive-insights" element={<PredictiveInsights />} />
       
       {/* ATS Core Module Protected Routes */}
       <Route path="ats" element={

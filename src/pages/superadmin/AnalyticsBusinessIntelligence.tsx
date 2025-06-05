@@ -18,6 +18,7 @@ import InvoiceList from '@/components/superadmin/revenue/InvoiceList';
 import PaymentHistory from '@/components/superadmin/revenue/PaymentHistory';
 import ReportBuilder from '@/components/reporting/ReportBuilder';
 import DashboardBuilder from '@/components/dashboard/DashboardBuilder';
+import { PredictiveInsightsDashboard } from '@/components/superadmin/ai/insights';
 
 const AnalyticsBusinessIntelligence = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -40,13 +41,14 @@ const AnalyticsBusinessIntelligence = () => {
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Business Intelligence Dashboard</h1>
           <p className="text-sm md:text-base text-muted-foreground">
-            Comprehensive analytics, revenue management, and business intelligence
+            Comprehensive analytics, predictive insights, revenue management, and business intelligence
           </p>
         </div>
 
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-4 flex-wrap h-auto p-1">
             <TabsTrigger value="dashboard" className="whitespace-nowrap">Dashboard Overview</TabsTrigger>
+            <TabsTrigger value="predictive" className="whitespace-nowrap">Predictive Insights</TabsTrigger>
             <TabsTrigger value="operational" className="whitespace-nowrap">Operational Analytics</TabsTrigger>
             <TabsTrigger value="revenue-analytics" className="whitespace-nowrap">Revenue Analytics</TabsTrigger>
             <TabsTrigger value="revenue-management" className="whitespace-nowrap">Revenue Management</TabsTrigger>
@@ -56,6 +58,10 @@ const AnalyticsBusinessIntelligence = () => {
           
           <TabsContent value="dashboard">
             <DynamicDashboard />
+          </TabsContent>
+          
+          <TabsContent value="predictive">
+            <PredictiveInsightsDashboard />
           </TabsContent>
           
           <TabsContent value="operational">

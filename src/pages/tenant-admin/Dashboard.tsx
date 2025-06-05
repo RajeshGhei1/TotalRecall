@@ -14,12 +14,14 @@ import {
   PenLine,
   UserRound,
   Zap,
-  Activity
+  Activity,
+  Brain
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { WorkflowHealthWidget } from "@/components/dashboard/widgets";
+import { TenantPredictiveInsights } from "@/components/tenant/insights/TenantPredictiveInsights";
 
 const TenantAdminDashboard = () => {
   const { user, bypassAuth } = useAuth();
@@ -211,6 +213,12 @@ const TenantAdminDashboard = () => {
           </Card>
         </div>
 
+        {/* AI Predictive Insights */}
+        <TenantPredictiveInsights 
+          tenantId={tenantData?.tenant_id} 
+          simplified={true}
+        />
+
         {/* Workflow Health Widget */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <WorkflowHealthWidget tenantId={tenantData?.tenant_id} />
@@ -314,6 +322,18 @@ const TenantAdminDashboard = () => {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date().toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start border-b pb-3">
+                  <div className="rounded-full h-8 w-8 flex items-center justify-center mr-3 bg-purple-100 text-purple-600">
+                    <Brain className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Predictive Insights Available</p>
+                    <p className="text-xs text-muted-foreground">
+                      AI has generated new insights for your business
                     </p>
                   </div>
                 </div>

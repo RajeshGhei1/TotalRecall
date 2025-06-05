@@ -11,7 +11,8 @@ import {
   Calendar,
   FileText,
   Users2,
-  Zap
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
@@ -25,6 +26,12 @@ const defaultNavItems: NavItem[] = [
     label: 'Dashboard', 
     icon: LayoutDashboard, 
     href: '/tenant-admin/dashboard'
+  },
+  { 
+    id: 'predictive-insights',
+    label: 'Predictive Insights', 
+    icon: TrendingUp, 
+    href: '/tenant-admin/predictive-insights'
   },
   { 
     id: 'ats',
