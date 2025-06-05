@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Brain, TrendingUp, Users, Activity, Building2 } from 'lucide-react';
+import { Brain, TrendingUp, Users, Activity, Building2, Eye, Target } from 'lucide-react';
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -15,13 +15,25 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useBehavioralAnalytics } from '@/hooks/ai/useBehavioralAnalytics';
+import { useAdvancedPatterns } from '@/hooks/ai/useAdvancedPatterns';
 import { useTenantContext } from '@/contexts/TenantContext';
 import AdminLayout from '@/components/AdminLayout';
 import GlobalTenantSelector from '@/components/superadmin/settings/shared/GlobalTenantSelector';
+import { PatternRecognitionDashboard, PatternVisualization } from '@/components/ai/patterns';
 
 const AIAnalytics: React.FC = () => {
   const { selectedTenantId, selectedTenantName } = useTenantContext();
   const { behaviorAnalysis, userPatterns, analysisLoading, isAIEnhanced } = useBehavioralAnalytics();
+  
+  // Get advanced pattern analysis for the selected tenant
+  const {
+    patterns,
+    inefficiencies,
+    insights,
+    analysis,
+    isLoading: patternsLoading,
+    error: patternsError
+  } = useAdvancedPatterns(selectedTenantId || 'demo-user', selectedTenantId);
 
   // Show tenant selection state when no tenant is selected
   if (!selectedTenantId) {
@@ -70,7 +82,9 @@ const AIAnalytics: React.FC = () => {
     );
   }
 
-  if (analysisLoading) {
+  const isLoading = analysisLoading || patternsLoading;
+
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="p-4 md:p-6">
@@ -119,7 +133,7 @@ const AIAnalytics: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-bold">AI Analytics</h1>
                 <p className="text-muted-foreground">
-                  Monitor behavioral patterns and AI insights across the platform
+                  Comprehensive behavioral patterns and AI insights across the platform
                 </p>
               </div>
               
@@ -162,7 +176,17 @@ const AIAnalytics: React.FC = () => {
               </Alert>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Pattern Analysis Error Alert */}
+            {patternsError && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Error loading pattern analysis: {patternsError}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Enhanced Overview Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Interactions</CardTitle>
@@ -171,7 +195,7 @@ const AIAnalytics: React.FC = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{behaviorAnalysis?.totalInteractions || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    For {selectedTenantName}
+                    User interactions
                   </p>
                 </CardContent>
               </Card>
@@ -182,7 +206,7 @@ const AIAnalytics: React.FC = () => {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{userPatterns?.length || 0}</div>
+                  <div className="text-2xl font-bold">{patterns?.length || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Detected patterns
                   </p>
@@ -195,9 +219,37 @@ const AIAnalytics: React.FC = () => {
                   <Brain className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{behaviorAnalysis?.insights?.length || 0}</div>
+                  <div className="text-2xl font-bold">{insights?.length || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Generated insights
+                    Predictive insights
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Inefficiencies</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{inefficiencies?.length || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Workflow issues
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Risk Score</CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {analysis ? `${(analysis.riskScore * 100).toFixed(0)}%` : '0%'}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    System risk level
                   </p>
                 </CardContent>
               </Card>
@@ -208,7 +260,7 @@ const AIAnalytics: React.FC = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{behaviorAnalysis?.recommendations?.length || 0}</div>
+                  <div className="text-2xl font-bold">{analysis?.recommendations?.length || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
                     AI recommendations
                   </p>
@@ -216,12 +268,29 @@ const AIAnalytics: React.FC = () => {
               </Card>
             </div>
 
-            <Tabs defaultValue="insights" className="space-y-4">
+            <Tabs defaultValue="pattern-recognition" className="space-y-4">
               <TabsList>
+                <TabsTrigger value="pattern-recognition">Pattern Recognition</TabsTrigger>
+                <TabsTrigger value="visualizations">Pattern Visualizations</TabsTrigger>
                 <TabsTrigger value="insights">AI Insights</TabsTrigger>
-                <TabsTrigger value="patterns">Behavioral Patterns</TabsTrigger>
+                <TabsTrigger value="behavioral-patterns">Behavioral Patterns</TabsTrigger>
                 <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="pattern-recognition" className="space-y-4">
+                <PatternRecognitionDashboard 
+                  userId={selectedTenantId || 'demo-user'} 
+                  tenantId={selectedTenantId}
+                />
+              </TabsContent>
+
+              <TabsContent value="visualizations" className="space-y-4">
+                <PatternVisualization 
+                  patterns={patterns || []}
+                  inefficiencies={inefficiencies || []}
+                  insights={insights || []}
+                />
+              </TabsContent>
 
               <TabsContent value="insights" className="space-y-4">
                 <Card>
@@ -251,7 +320,7 @@ const AIAnalytics: React.FC = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="patterns" className="space-y-4">
+              <TabsContent value="behavioral-patterns" className="space-y-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>Interaction Patterns</CardTitle>
@@ -293,7 +362,15 @@ const AIAnalytics: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {behaviorAnalysis?.recommendations && behaviorAnalysis.recommendations.length > 0 ? (
+                    {analysis?.recommendations && analysis.recommendations.length > 0 ? (
+                      <div className="space-y-3">
+                        {analysis.recommendations.map((recommendation: string, index: number) => (
+                          <div key={index} className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm">{recommendation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : behaviorAnalysis?.recommendations && behaviorAnalysis.recommendations.length > 0 ? (
                       <div className="space-y-3">
                         {behaviorAnalysis.recommendations.map((recommendation: string, index: number) => (
                           <div key={index} className="p-3 bg-green-50 rounded-lg border border-green-200">
