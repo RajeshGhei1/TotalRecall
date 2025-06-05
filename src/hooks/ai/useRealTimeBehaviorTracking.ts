@@ -1,231 +1,74 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { enhancedBehavioralService, RealTimeInteractionEvent, SmartContext, UserPreference } from '@/services/ai/behavioralService/enhancedBehavioralService';
-import { useTenantContext } from '@/contexts/TenantContext';
+import {
+  useTrackingState,
+  useSmartContextDetection,
+  useInteractionTracking,
+  useAutoTracking,
+  useRealtimeUpdates,
+  type InteractionTrackingOptions,
+  type AutoTrackingOptions
+} from './core';
 
-export interface BehaviorTrackingOptions {
-  enableAutoTracking?: boolean;
-  trackScrolling?: boolean;
-  trackClicks?: boolean;
-  trackFormInteractions?: boolean;
+export interface BehaviorTrackingOptions extends InteractionTrackingOptions, AutoTrackingOptions {
   trackNavigation?: boolean;
-  debounceMs?: number;
 }
 
 export const useRealTimeBehaviorTracking = (
   userId: string,
   options: BehaviorTrackingOptions = {}
 ) => {
-  const { selectedTenantId } = useTenantContext();
   const location = useLocation();
-  const [smartContext, setSmartContext] = useState<SmartContext | null>(null);
-  const [userPreferences, setUserPreferences] = useState<UserPreference[]>([]);
-  const [predictedIntents, setPredictedIntents] = useState<string[]>([]);
-  const [isTracking, setIsTracking] = useState(false);
-  const sessionIdRef = useRef(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const {
+    smartContext,
+    setSmartContext,
+    userPreferences,
+    setUserPreferences,
+    predictedIntents,
+    setPredictedIntents,
+    isTracking,
+    setIsTracking,
+    sessionId
+  } = useTrackingState();
 
   const {
-    enableAutoTracking = true,
-    trackScrolling: enableScrollTracking = true,
-    trackClicks: enableClickTracking = true,
-    trackFormInteractions: enableFormTracking = true,
     trackNavigation: enableNavigationTracking = true,
-    debounceMs = 300
+    ...trackingOptions
   } = options;
 
   // Initialize smart context detection
-  useEffect(() => {
-    if (userId) {
-      const context = enhancedBehavioralService.detectSmartContext(
-        userId,
-        location.pathname,
-        navigator.userAgent
-      );
-      setSmartContext(context);
-      
-      // Predict user intents based on context
-      enhancedBehavioralService.predictUserIntent(userId, context)
-        .then(intents => setPredictedIntents(intents))
-        .catch(error => console.error('Error predicting user intents:', error));
-    }
-  }, [userId, location.pathname]);
+  useSmartContextDetection(userId, setSmartContext, setPredictedIntents);
 
-  // Track interaction with debouncing
-  const trackInteraction = useCallback(
-    (eventType: string, context: Record<string, any> = {}) => {
-      if (!userId || !enableAutoTracking) return;
+  // Initialize interaction tracking
+  const {
+    trackInteraction,
+    trackClick,
+    trackFormInteraction,
+    trackNavigation,
+    trackScrolling,
+    trackError,
+    trackWorkflowStep,
+    debounceTimerRef
+  } = useInteractionTracking(userId, smartContext, sessionId, trackingOptions);
 
-      // Clear existing debounce timer
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-
-      // Debounce the tracking call
-      debounceTimerRef.current = setTimeout(() => {
-        const event: RealTimeInteractionEvent = {
-          userId,
-          tenantId: selectedTenantId || undefined,
-          eventType,
-          context: {
-            ...context,
-            path: location.pathname,
-            smartContext,
-            timestamp: Date.now()
-          },
-          timestamp: Date.now(),
-          sessionId: sessionIdRef.current
-        };
-
-        enhancedBehavioralService.trackRealTimeInteraction(event);
-      }, debounceMs);
-    },
-    [userId, selectedTenantId, location.pathname, smartContext, enableAutoTracking, debounceMs]
+  // Initialize auto-tracking
+  useAutoTracking(
+    userId,
+    options,
+    { trackClick, trackScrolling, trackFormInteraction },
+    setIsTracking
   );
 
-  // Track specific event types
-  const trackClick = useCallback((target: string, metadata: Record<string, any> = {}) => {
-    trackInteraction('click', { target, ...metadata });
-  }, [trackInteraction]);
-
-  const trackFormInteraction = useCallback((formId: string, fieldName: string, action: string) => {
-    trackInteraction('form_interaction', { formId, fieldName, action });
-  }, [trackInteraction]);
-
-  const trackNavigationAction = useCallback((from: string, to: string, method: string = 'click') => {
-    trackInteraction('navigation', { from, to, method });
-  }, [trackInteraction]);
-
-  const trackScrollAction = useCallback((scrollPercentage: number, section: string) => {
-    trackInteraction('scroll', { scrollPercentage, section });
-  }, [trackInteraction]);
-
-  const trackError = useCallback((error: string, context: Record<string, any> = {}) => {
-    trackInteraction('error', { error, ...context });
-  }, [trackInteraction]);
-
-  const trackWorkflowStep = useCallback((workflow: string, step: string, status: string) => {
-    trackInteraction('workflow_step', { workflow, step, status });
-  }, [trackInteraction]);
-
-  // Auto-tracking setup
-  useEffect(() => {
-    if (!enableAutoTracking || !userId) return;
-
-    setIsTracking(true);
-
-    const handleClick = (event: MouseEvent) => {
-      if (!enableClickTracking) return;
-      
-      const target = event.target as HTMLElement;
-      const elementInfo = {
-        tagName: target.tagName,
-        className: target.className,
-        id: target.id,
-        text: target.textContent?.slice(0, 100)
-      };
-      
-      trackClick('auto_click', elementInfo);
-    };
-
-    const handleScroll = () => {
-      if (!enableScrollTracking) return;
-      
-      const scrollPercentage = Math.round(
-        (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
-      );
-      
-      trackScrollAction(scrollPercentage, 'page');
-    };
-
-    const handleFormInteraction = (event: Event) => {
-      if (!enableFormTracking) return;
-      
-      const target = event.target as HTMLInputElement;
-      if (target.form) {
-        const formId = target.form.id || 'unnamed_form';
-        const fieldName = target.name || target.id || 'unnamed_field';
-        trackFormInteraction(formId, fieldName, event.type);
-      }
-    };
-
-    // Add event listeners
-    if (enableClickTracking) {
-      document.addEventListener('click', handleClick);
-    }
-    
-    if (enableScrollTracking) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    }
-    
-    if (enableFormTracking) {
-      document.addEventListener('focus', handleFormInteraction, true);
-      document.addEventListener('blur', handleFormInteraction, true);
-      document.addEventListener('input', handleFormInteraction, true);
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClick);
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('focus', handleFormInteraction, true);
-      document.removeEventListener('blur', handleFormInteraction, true);
-      document.removeEventListener('input', handleFormInteraction, true);
-      setIsTracking(false);
-    };
-  }, [
-    enableAutoTracking, 
-    userId, 
-    enableClickTracking, 
-    enableScrollTracking, 
-    enableFormTracking, 
-    trackClick, 
-    trackScrollAction, 
-    trackFormInteraction
-  ]);
+  // Initialize real-time updates
+  const { getRecommendations } = useRealtimeUpdates(userId, smartContext);
 
   // Track navigation changes
   useEffect(() => {
     if (!enableNavigationTracking || !userId) return;
     
-    trackNavigationAction('previous_page', location.pathname, 'navigation');
-  }, [location.pathname, trackNavigationAction, userId, enableNavigationTracking]);
-
-  // Real-time updates subscription
-  useEffect(() => {
-    if (!userId) return;
-
-    const handleRealTimeUpdate = (event: RealTimeInteractionEvent) => {
-      if (event.userId === userId) {
-        // Update user preferences in real-time
-        enhancedBehavioralService.getPersonalizedRecommendations(userId, smartContext!)
-          .then(recommendations => {
-            // Handle recommendations update
-            console.log('Real-time recommendations:', recommendations);
-          })
-          .catch(error => console.error('Error getting recommendations:', error));
-      }
-    };
-
-    // Subscribe to real-time updates
-    enhancedBehavioralService.subscribeToRealTimeUpdates('*', handleRealTimeUpdate);
-
-    return () => {
-      enhancedBehavioralService.unsubscribeFromRealTimeUpdates('*', handleRealTimeUpdate);
-    };
-  }, [userId, smartContext]);
-
-  // Get personalized recommendations
-  const getRecommendations = useCallback(async () => {
-    if (!userId || !smartContext) return [];
-    
-    try {
-      return await enhancedBehavioralService.getPersonalizedRecommendations(userId, smartContext);
-    } catch (error) {
-      console.error('Error getting recommendations:', error);
-      return [];
-    }
-  }, [userId, smartContext]);
+    trackNavigation('previous_page', location.pathname, 'navigation');
+  }, [location.pathname, trackNavigation, userId, enableNavigationTracking]);
 
   // Cleanup
   useEffect(() => {
@@ -234,7 +77,7 @@ export const useRealTimeBehaviorTracking = (
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, []);
+  }, [debounceTimerRef]);
 
   return {
     // State
@@ -247,13 +90,13 @@ export const useRealTimeBehaviorTracking = (
     trackInteraction,
     trackClick,
     trackFormInteraction,
-    trackNavigation: trackNavigationAction,
-    trackScrolling: trackScrollAction,
+    trackNavigation,
+    trackScrolling,
     trackError,
     trackWorkflowStep,
     
     // Utilities
     getRecommendations,
-    sessionId: sessionIdRef.current
+    sessionId
   };
 };
