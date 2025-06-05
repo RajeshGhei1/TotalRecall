@@ -1,25 +1,9 @@
 
-import { AIAgent, AIContext } from '@/types/ai';
+import { AIAgent, AIContext, ModuleAIAssignment } from '@/types/ai';
 import { supabase } from '@/integrations/supabase/client';
-
-interface ModuleAIAssignment {
-  id: string;
-  module_name: string;
-  agent_id: string;
-  assignment_type: 'direct' | 'preferred';
-  priority: number;
-  is_active: boolean;
-}
-
-interface ModuleAIConfiguration {
-  agent_preferences: string[];
-  fallback_enabled: boolean;
-  performance_weights: Record<string, number>;
-}
 
 export class HybridAgentSelector {
   private assignmentCache = new Map<string, ModuleAIAssignment[]>();
-  private configCache = new Map<string, ModuleAIConfiguration>();
 
   async selectAgent(context: AIContext, availableAgents: AIAgent[]): Promise<string> {
     if (availableAgents.length === 0) {
@@ -46,35 +30,107 @@ export class HybridAgentSelector {
   }
 
   private async getDirectAssignment(moduleName: string, tenantId?: string): Promise<ModuleAIAssignment | null> {
-    const cacheKey = `${moduleName}-${tenantId || 'global'}`;
-    
-    if (!this.assignmentCache.has(cacheKey)) {
-      await this.loadAssignments(moduleName, tenantId);
-    }
+    try {
+      // Get the module ID first
+      const { data: moduleData } = await supabase
+        .from('system_modules')
+        .select('id')
+        .eq('name', moduleName)
+        .single();
 
-    const assignments = this.assignmentCache.get(cacheKey) || [];
-    return assignments.find(a => a.assignment_type === 'direct' && a.is_active) || null;
+      if (!moduleData) return null;
+
+      // Check cache first
+      const cacheKey = `${moduleData.id}-${tenantId || 'global'}-direct`;
+      if (this.assignmentCache.has(cacheKey)) {
+        const cached = this.assignmentCache.get(cacheKey);
+        return cached?.[0] || null;
+      }
+
+      // Query for direct assignment
+      let query = supabase
+        .from('module_ai_assignments')
+        .select('*')
+        .eq('module_id', moduleData.id)
+        .eq('assignment_type', 'direct')
+        .eq('is_active', true);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      } else {
+        query = query.is('tenant_id', null);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) {
+        console.error('Error fetching direct assignment:', error);
+        return null;
+      }
+
+      // Cache the result
+      this.assignmentCache.set(cacheKey, data ? [data] : []);
+      
+      return data;
+    } catch (error) {
+      console.error('Error in getDirectAssignment:', error);
+      return null;
+    }
   }
 
   private async getPreferredAgent(moduleName: string, tenantId: string | undefined, availableAgents: AIAgent[]): Promise<string | null> {
-    const cacheKey = `${moduleName}-${tenantId || 'global'}`;
-    
-    if (!this.assignmentCache.has(cacheKey)) {
-      await this.loadAssignments(moduleName, tenantId);
-    }
+    try {
+      // Get the module ID first
+      const { data: moduleData } = await supabase
+        .from('system_modules')
+        .select('id')
+        .eq('name', moduleName)
+        .single();
 
-    const assignments = this.assignmentCache.get(cacheKey) || [];
-    const preferredAssignments = assignments
-      .filter(a => a.assignment_type === 'preferred' && a.is_active)
-      .sort((a, b) => b.priority - a.priority);
+      if (!moduleData) return null;
 
-    for (const assignment of preferredAssignments) {
-      if (this.isAgentAvailable(assignment.agent_id, availableAgents)) {
-        return assignment.agent_id;
+      // Check cache first
+      const cacheKey = `${moduleData.id}-${tenantId || 'global'}-preferred`;
+      if (!this.assignmentCache.has(cacheKey)) {
+        // Query for preferred assignments
+        let query = supabase
+          .from('module_ai_assignments')
+          .select('*')
+          .eq('module_id', moduleData.id)
+          .eq('assignment_type', 'preferred')
+          .eq('is_active', true)
+          .order('priority', { ascending: false });
+
+        if (tenantId) {
+          query = query.eq('tenant_id', tenantId);
+        } else {
+          query = query.is('tenant_id', null);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('Error fetching preferred assignments:', error);
+          this.assignmentCache.set(cacheKey, []);
+        } else {
+          this.assignmentCache.set(cacheKey, data || []);
+        }
       }
-    }
 
-    return null;
+      const assignments = this.assignmentCache.get(cacheKey) || [];
+      
+      // Find the first available preferred agent
+      for (const assignment of assignments) {
+        if (this.isAgentAvailable(assignment.agent_id, availableAgents)) {
+          return assignment.agent_id;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error in getPreferredAgent:', error);
+      return null;
+    }
   }
 
   private performDynamicSelection(context: AIContext, availableAgents: AIAgent[]): string {
@@ -114,28 +170,6 @@ export class HybridAgentSelector {
     }
 
     return bestAgent.id;
-  }
-
-  private async loadAssignments(moduleName: string, tenantId?: string): Promise<void> {
-    try {
-      // For now, we'll implement a basic structure since the table doesn't exist yet
-      // This will be replaced when we add the proper database schema
-      const mockAssignments: ModuleAIAssignment[] = [];
-      
-      // TODO: Replace with actual database query when schema is implemented
-      // const { data } = await supabase
-      //   .from('module_ai_assignments')
-      //   .select('*')
-      //   .eq('module_name', moduleName)
-      //   .eq('tenant_id', tenantId || null)
-      //   .eq('is_active', true);
-
-      const cacheKey = `${moduleName}-${tenantId || 'global'}`;
-      this.assignmentCache.set(cacheKey, mockAssignments);
-    } catch (error) {
-      console.error('Error loading module AI assignments:', error);
-      this.assignmentCache.set(`${moduleName}-${tenantId || 'global'}`, []);
-    }
   }
 
   private isAgentAvailable(agentId: string, availableAgents: AIAgent[]): boolean {
@@ -180,19 +214,62 @@ export class HybridAgentSelector {
 
   clearCache(): void {
     this.assignmentCache.clear();
-    this.configCache.clear();
   }
 
   async refreshAssignments(moduleName?: string): Promise<void> {
     if (moduleName) {
       // Clear specific module cache
       for (const key of this.assignmentCache.keys()) {
-        if (key.startsWith(`${moduleName}-`)) {
+        if (key.includes(moduleName)) {
           this.assignmentCache.delete(key);
         }
       }
     } else {
       this.clearCache();
+    }
+  }
+
+  // New method to get assignment statistics
+  async getAssignmentStats(tenantId?: string): Promise<{
+    totalAssignments: number;
+    directAssignments: number;
+    preferredAssignments: number;
+    modulesWithAssignments: number;
+  }> {
+    try {
+      let query = supabase
+        .from('module_ai_assignments')
+        .select('assignment_type, module_id')
+        .eq('is_active', true);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      } else {
+        query = query.is('tenant_id', null);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const directAssignments = data?.filter(a => a.assignment_type === 'direct').length || 0;
+      const preferredAssignments = data?.filter(a => a.assignment_type === 'preferred').length || 0;
+      const modulesWithAssignments = new Set(data?.map(a => a.module_id)).size;
+
+      return {
+        totalAssignments: data?.length || 0,
+        directAssignments,
+        preferredAssignments,
+        modulesWithAssignments,
+      };
+    } catch (error) {
+      console.error('Error getting assignment stats:', error);
+      return {
+        totalAssignments: 0,
+        directAssignments: 0,
+        preferredAssignments: 0,
+        modulesWithAssignments: 0,
+      };
     }
   }
 }

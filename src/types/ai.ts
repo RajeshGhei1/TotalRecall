@@ -1,6 +1,7 @@
 
 export type AIAgentType = 'cognitive' | 'predictive' | 'automation' | 'analysis' | 'deep_research';
 export type AIAgentStatus = 'active' | 'inactive' | 'training' | 'error';
+export type ModuleAIAssignmentType = 'direct' | 'preferred';
 
 export interface AIAgent {
   id: string;
@@ -14,6 +15,40 @@ export interface AIAgent {
   tenant_id?: string;
   created_by?: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ModuleAIAssignment {
+  id: string;
+  module_id: string;
+  agent_id: string;
+  tenant_id?: string;
+  assignment_type: ModuleAIAssignmentType;
+  priority: number;
+  is_active: boolean;
+  performance_weights: {
+    accuracy: number;
+    speed: number;
+    cost: number;
+  };
+  token_budget_override?: number;
+  assigned_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ModuleAIAssignmentMetrics {
+  id: string;
+  assignment_id: string;
+  metric_date: string;
+  total_requests: number;
+  successful_requests: number;
+  failed_requests: number;
+  average_response_time_ms: number;
+  total_cost: number;
+  accuracy_score: number;
+  user_satisfaction_score: number;
   created_at: string;
   updated_at: string;
 }
