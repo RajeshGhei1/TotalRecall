@@ -21,7 +21,7 @@ export const BehavioralTrackingWrapper: React.FC<BehavioralTrackingWrapperProps>
   userId = 'demo-user'
 }) => {
   const { selectedTenantId } = useTenantContext();
-  const { trackInteraction, trackNavigationAction } = useRealTimeBehaviorTracking(userId);
+  const { trackInteraction } = useRealTimeBehaviorTracking(userId);
 
   useEffect(() => {
     if (trackOnMount) {
