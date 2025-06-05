@@ -28,10 +28,10 @@ export const useRealTimeBehaviorTracking = (
 
   const {
     enableAutoTracking = true,
-    trackScrolling = true,
-    trackClicks = true,
-    trackFormInteractions = true,
-    trackNavigation = true,
+    trackScrolling: enableScrollTracking = true,
+    trackClicks: enableClickTracking = true,
+    trackFormInteractions: enableFormTracking = true,
+    trackNavigation: enableNavigationTracking = true,
     debounceMs = 300
   } = options;
 
@@ -93,11 +93,11 @@ export const useRealTimeBehaviorTracking = (
     trackInteraction('form_interaction', { formId, fieldName, action });
   }, [trackInteraction]);
 
-  const trackNavigation = useCallback((from: string, to: string, method: string = 'click') => {
+  const trackNavigationAction = useCallback((from: string, to: string, method: string = 'click') => {
     trackInteraction('navigation', { from, to, method });
   }, [trackInteraction]);
 
-  const trackScrolling = useCallback((scrollPercentage: number, section: string) => {
+  const trackScrollAction = useCallback((scrollPercentage: number, section: string) => {
     trackInteraction('scroll', { scrollPercentage, section });
   }, [trackInteraction]);
 
@@ -116,7 +116,7 @@ export const useRealTimeBehaviorTracking = (
     setIsTracking(true);
 
     const handleClick = (event: MouseEvent) => {
-      if (!trackClicks) return;
+      if (!enableClickTracking) return;
       
       const target = event.target as HTMLElement;
       const elementInfo = {
@@ -130,17 +130,17 @@ export const useRealTimeBehaviorTracking = (
     };
 
     const handleScroll = () => {
-      if (!trackScrolling) return;
+      if (!enableScrollTracking) return;
       
       const scrollPercentage = Math.round(
         (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
       );
       
-      trackScrolling(scrollPercentage, 'page');
+      trackScrollAction(scrollPercentage, 'page');
     };
 
     const handleFormInteraction = (event: Event) => {
-      if (!trackFormInteractions) return;
+      if (!enableFormTracking) return;
       
       const target = event.target as HTMLInputElement;
       if (target.form) {
@@ -151,15 +151,15 @@ export const useRealTimeBehaviorTracking = (
     };
 
     // Add event listeners
-    if (trackClicks) {
+    if (enableClickTracking) {
       document.addEventListener('click', handleClick);
     }
     
-    if (trackScrolling) {
+    if (enableScrollTracking) {
       window.addEventListener('scroll', handleScroll, { passive: true });
     }
     
-    if (trackFormInteractions) {
+    if (enableFormTracking) {
       document.addEventListener('focus', handleFormInteraction, true);
       document.addEventListener('blur', handleFormInteraction, true);
       document.addEventListener('input', handleFormInteraction, true);
@@ -176,20 +176,20 @@ export const useRealTimeBehaviorTracking = (
   }, [
     enableAutoTracking, 
     userId, 
-    trackClicks, 
-    trackScrolling, 
-    trackFormInteractions, 
+    enableClickTracking, 
+    enableScrollTracking, 
+    enableFormTracking, 
     trackClick, 
-    trackScrolling as any, 
+    trackScrollAction, 
     trackFormInteraction
   ]);
 
   // Track navigation changes
   useEffect(() => {
-    if (!trackNavigation || !userId) return;
+    if (!enableNavigationTracking || !userId) return;
     
-    trackNavigation('previous_page', location.pathname, 'navigation');
-  }, [location.pathname, trackNavigation, userId, trackNavigation as any]);
+    trackNavigationAction('previous_page', location.pathname, 'navigation');
+  }, [location.pathname, trackNavigationAction, userId, enableNavigationTracking]);
 
   // Real-time updates subscription
   useEffect(() => {
@@ -247,8 +247,8 @@ export const useRealTimeBehaviorTracking = (
     trackInteraction,
     trackClick,
     trackFormInteraction,
-    trackNavigation: trackNavigation as any,
-    trackScrolling: trackScrolling as any,
+    trackNavigation: trackNavigationAction,
+    trackScrolling: trackScrollAction,
     trackError,
     trackWorkflowStep,
     
