@@ -57,7 +57,7 @@ export class HistoricalDataAnalyzer {
   private async getJobHistory(tenantId: string) {
     const { data, error } = await supabase
       .from('jobs')
-      .select('created_at, status')
+      .select('created_at, status, department')
       .eq('tenant_id', tenantId)
       .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()) // Last 90 days
       .order('created_at', { ascending: true });
@@ -99,7 +99,7 @@ export class HistoricalDataAnalyzer {
     };
   }
 
-  private analyzeJobPatterns(data: Array<{ created_at: string; status: string }>): HistoricalPattern {
+  private analyzeJobPatterns(data: Array<{ created_at: string; status: string; department: string | null }>): HistoricalPattern {
     // Group by month
     const monthlyData = new Map<string, number>();
     data.forEach(job => {
