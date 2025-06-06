@@ -72,7 +72,8 @@ const defaultNavItems: NavItem[] = [
     id: 'linkedin-integration',
     label: 'LinkedIn Integration', 
     icon: Users, 
-    href: '/tenant-admin/linkedin-integration'
+    href: '/tenant-admin/linkedin-integration',
+    requiresModule: 'LinkedIn Integration'
   },
   { 
     id: 'intelligent-workflows',
@@ -127,6 +128,7 @@ export const useTenantAdminNavigation = () => {
   const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
   const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
+  const { data: linkedinAccess } = useUnifiedModuleAccess(currentTenantId, 'LinkedIn Integration', user?.id);
 
   // Filter navigation items based on module access
   const filteredNavItems = defaultNavItems.filter(item => {
@@ -143,6 +145,8 @@ export const useTenantAdminNavigation = () => {
         return contactsAccess?.hasAccess === true;
       case 'smart_talent_analytics':
         return analyticsAccess?.hasAccess === true;
+      case 'LinkedIn Integration':
+        return linkedinAccess?.hasAccess === true;
       default:
         return true;
     }

@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
+import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -61,6 +62,17 @@ const TenantAdminRoutes = () => {
       
       {/* Predictive Insights - New Feature */}
       <Route path="predictive-insights" element={<PredictiveInsights />} />
+      
+      {/* LinkedIn Integration Module Protected Route */}
+      <Route path="linkedin-integration" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="LinkedIn Integration" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <LinkedInIntegrationPage />
+        </UnifiedModuleAccessGuard>
+      } />
       
       {/* ATS Core Module Protected Routes */}
       <Route path="ats" element={

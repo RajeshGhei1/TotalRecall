@@ -17,16 +17,7 @@ import SuperAdminRevenue from "./pages/superadmin/Revenue";
 import SuperAdminCompanies from "./pages/superadmin/Companies";
 import SuperAdminAnalytics from "./pages/superadmin/Analytics";
 import SuperAdminGlobalSettings from "./pages/superadmin/GlobalSettings";
-import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
-import TenantAdminATS from "./pages/tenant-admin/ATS";
-import TenantAdminJobs from "./pages/tenant-admin/Jobs";
-import TenantAdminTalent from "./pages/tenant-admin/Talent";
-import TenantAdminCompanies from "./pages/tenant-admin/Companies";
-import TenantAdminContacts from "./pages/tenant-admin/Contacts";
-import TenantAdminSmartTalentAnalytics from "./pages/tenant-admin/SmartTalentAnalytics";
-import TenantAdminSettings from "./pages/tenant-admin/Settings";
-import TenantAdminPredictiveInsights from "./pages/tenant-admin/PredictiveInsights";
-import LinkedInIntegrationPage from "./pages/tenant-admin/LinkedInIntegration";
+import TenantAdminRoutes from "./routes/TenantAdminRoutes";
 import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
@@ -88,54 +79,9 @@ function App() {
                 } />
 
                 {/* Tenant Admin Routes */}
-                <Route path="/tenant-admin/dashboard" element={
+                <Route path="/tenant-admin/*" element={
                   <AuthGuard>
-                    <TenantAdminDashboard />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/ats" element={
-                  <AuthGuard>
-                    <TenantAdminATS />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/jobs" element={
-                  <AuthGuard>
-                    <TenantAdminJobs />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/talent" element={
-                  <AuthGuard>
-                    <TenantAdminTalent />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/companies" element={
-                  <AuthGuard>
-                    <TenantAdminCompanies />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/contacts" element={
-                  <AuthGuard>
-                    <TenantAdminContacts />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/linkedin-integration" element={
-                  <AuthGuard>
-                    <LinkedInIntegrationPage />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/smart-talent-analytics" element={
-                  <AuthGuard>
-                    <TenantAdminSmartTalentAnalytics />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/settings" element={
-                  <AuthGuard>
-                    <TenantAdminSettings />
-                  </AuthGuard>
-                } />
-                <Route path="/tenant-admin/predictive-insights" element={
-                  <AuthGuard>
-                    <TenantAdminPredictiveInsights />
+                    <TenantAdminRoutes />
                   </AuthGuard>
                 } />
               </Routes>
