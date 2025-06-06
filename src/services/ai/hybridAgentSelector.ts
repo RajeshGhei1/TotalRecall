@@ -1,6 +1,36 @@
 
 import { AIAgent, AIContext, ModuleAIAssignment } from '@/types/ai';
-import { supabase } from '@/integrations/supabase/client';
+
+// Mock data for development until the database table is created
+const mockModuleAssignments: ModuleAIAssignment[] = [
+  {
+    id: '1',
+    module_id: 'hr-module',
+    agent_id: 'cognitive-agent-1',
+    tenant_id: null,
+    assignment_type: 'direct',
+    priority: 0,
+    is_active: true,
+    performance_weights: { accuracy: 0.4, speed: 0.3, cost: 0.3 },
+    token_budget_override: 10000,
+    assigned_by: 'admin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    module_id: 'hr-module',
+    agent_id: 'predictive-agent-1',
+    tenant_id: null,
+    assignment_type: 'preferred',
+    priority: 1,
+    is_active: true,
+    performance_weights: { accuracy: 0.5, speed: 0.2, cost: 0.3 },
+    assigned_by: 'admin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
 
 export class HybridAgentSelector {
   private assignmentCache = new Map<string, ModuleAIAssignment[]>();
@@ -31,47 +61,28 @@ export class HybridAgentSelector {
 
   private async getDirectAssignment(moduleName: string, tenantId?: string): Promise<ModuleAIAssignment | null> {
     try {
-      // Get the module ID first
-      const { data: moduleData } = await supabase
-        .from('system_modules')
-        .select('id')
-        .eq('name', moduleName)
-        .single();
-
-      if (!moduleData) return null;
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Check cache first
-      const cacheKey = `${moduleData.id}-${tenantId || 'global'}-direct`;
+      const cacheKey = `${moduleName}-${tenantId || 'global'}-direct`;
       if (this.assignmentCache.has(cacheKey)) {
         const cached = this.assignmentCache.get(cacheKey);
         return cached?.[0] || null;
       }
 
-      // Query for direct assignment
-      let query = supabase
-        .from('module_ai_assignments')
-        .select('*')
-        .eq('module_id', moduleData.id)
-        .eq('assignment_type', 'direct')
-        .eq('is_active', true);
-
-      if (tenantId) {
-        query = query.eq('tenant_id', tenantId);
-      } else {
-        query = query.is('tenant_id', null);
-      }
-
-      const { data, error } = await query.maybeSingle();
-
-      if (error) {
-        console.error('Error fetching direct assignment:', error);
-        return null;
-      }
+      // Filter mock data for direct assignment
+      const directAssignment = mockModuleAssignments.find(assignment => 
+        assignment.module_id === moduleName &&
+        assignment.assignment_type === 'direct' &&
+        assignment.is_active &&
+        assignment.tenant_id === (tenantId || null)
+      );
 
       // Cache the result
-      this.assignmentCache.set(cacheKey, data ? [data] : []);
+      this.assignmentCache.set(cacheKey, directAssignment ? [directAssignment] : []);
       
-      return data;
+      return directAssignment || null;
     } catch (error) {
       console.error('Error in getDirectAssignment:', error);
       return null;
@@ -80,41 +91,23 @@ export class HybridAgentSelector {
 
   private async getPreferredAgent(moduleName: string, tenantId: string | undefined, availableAgents: AIAgent[]): Promise<string | null> {
     try {
-      // Get the module ID first
-      const { data: moduleData } = await supabase
-        .from('system_modules')
-        .select('id')
-        .eq('name', moduleName)
-        .single();
-
-      if (!moduleData) return null;
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Check cache first
-      const cacheKey = `${moduleData.id}-${tenantId || 'global'}-preferred`;
+      const cacheKey = `${moduleName}-${tenantId || 'global'}-preferred`;
       if (!this.assignmentCache.has(cacheKey)) {
-        // Query for preferred assignments
-        let query = supabase
-          .from('module_ai_assignments')
-          .select('*')
-          .eq('module_id', moduleData.id)
-          .eq('assignment_type', 'preferred')
-          .eq('is_active', true)
-          .order('priority', { ascending: false });
+        // Filter mock data for preferred assignments
+        const preferredAssignments = mockModuleAssignments
+          .filter(assignment => 
+            assignment.module_id === moduleName &&
+            assignment.assignment_type === 'preferred' &&
+            assignment.is_active &&
+            assignment.tenant_id === (tenantId || null)
+          )
+          .sort((a, b) => b.priority - a.priority);
 
-        if (tenantId) {
-          query = query.eq('tenant_id', tenantId);
-        } else {
-          query = query.is('tenant_id', null);
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error fetching preferred assignments:', error);
-          this.assignmentCache.set(cacheKey, []);
-        } else {
-          this.assignmentCache.set(cacheKey, data || []);
-        }
+        this.assignmentCache.set(cacheKey, preferredAssignments);
       }
 
       const assignments = this.assignmentCache.get(cacheKey) || [];
@@ -237,27 +230,20 @@ export class HybridAgentSelector {
     modulesWithAssignments: number;
   }> {
     try {
-      let query = supabase
-        .from('module_ai_assignments')
-        .select('assignment_type, module_id')
-        .eq('is_active', true);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      if (tenantId) {
-        query = query.eq('tenant_id', tenantId);
-      } else {
-        query = query.is('tenant_id', null);
-      }
+      // Filter mock data by tenant
+      const filteredAssignments = mockModuleAssignments.filter(assignment =>
+        assignment.is_active && assignment.tenant_id === (tenantId || null)
+      );
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const directAssignments = data?.filter(a => a.assignment_type === 'direct').length || 0;
-      const preferredAssignments = data?.filter(a => a.assignment_type === 'preferred').length || 0;
-      const modulesWithAssignments = new Set(data?.map(a => a.module_id)).size;
+      const directAssignments = filteredAssignments.filter(a => a.assignment_type === 'direct').length;
+      const preferredAssignments = filteredAssignments.filter(a => a.assignment_type === 'preferred').length;
+      const modulesWithAssignments = new Set(filteredAssignments.map(a => a.module_id)).size;
 
       return {
-        totalAssignments: data?.length || 0,
+        totalAssignments: filteredAssignments.length,
         directAssignments,
         preferredAssignments,
         modulesWithAssignments,
