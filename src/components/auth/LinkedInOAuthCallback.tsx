@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +50,7 @@ export const LinkedInOAuthCallback: React.FC<LinkedInOAuthCallbackProps> = ({
           throw new Error('No tenant ID found in state');
         }
 
-        const success = await linkedinOAuthService.completeOAuthFlow(code, state, tenantId);
+        const success = await linkedinOAuthService.completeOAuthFlow(code, state);
 
         if (success) {
           setStatus('success');
@@ -64,7 +63,7 @@ export const LinkedInOAuthCallback: React.FC<LinkedInOAuthCallbackProps> = ({
           
           // Redirect back to settings after a short delay
           setTimeout(() => {
-            navigate('/superadmin/settings');
+            navigate('/tenant-admin/linkedin-integration');
           }, 2000);
         } else {
           throw new Error('Failed to complete OAuth flow');
@@ -133,16 +132,16 @@ export const LinkedInOAuthCallback: React.FC<LinkedInOAuthCallbackProps> = ({
           {status === 'error' && (
             <Button 
               variant="outline" 
-              onClick={() => navigate('/superadmin/settings')}
+              onClick={() => navigate('/tenant-admin/linkedin-integration')}
               className="w-full"
             >
-              Return to Settings
+              Return to LinkedIn Integration
             </Button>
           )}
           
           {status === 'success' && (
             <p className="text-xs text-gray-600">
-              Redirecting you back to settings...
+              Redirecting you back to LinkedIn Integration...
             </p>
           )}
         </CardContent>

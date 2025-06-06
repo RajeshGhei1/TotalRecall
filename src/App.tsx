@@ -15,9 +15,7 @@ import SuperAdminSettings from "./pages/superadmin/Settings";
 import SuperAdminUsers from "./pages/superadmin/Users";
 import SuperAdminRevenue from "./pages/superadmin/Revenue";
 import SuperAdminCompanies from "./pages/superadmin/Companies";
-import SuperAdminAI from "./pages/superadmin/AI";
 import SuperAdminAnalytics from "./pages/superadmin/Analytics";
-import SuperAdminAudit from "./pages/superadmin/Audit";
 import SuperAdminGlobalSettings from "./pages/superadmin/GlobalSettings";
 import TenantAdminDashboard from "./pages/tenant-admin/Dashboard";
 import TenantAdminATS from "./pages/tenant-admin/ATS";
@@ -25,7 +23,6 @@ import TenantAdminJobs from "./pages/tenant-admin/Jobs";
 import TenantAdminTalent from "./pages/tenant-admin/Talent";
 import TenantAdminCompanies from "./pages/tenant-admin/Companies";
 import TenantAdminContacts from "./pages/tenant-admin/Contacts";
-import TenantAdminIntelligentWorkflows from "./pages/tenant-admin/IntelligentWorkflows";
 import TenantAdminSmartTalentAnalytics from "./pages/tenant-admin/SmartTalentAnalytics";
 import TenantAdminSettings from "./pages/tenant-admin/Settings";
 import TenantAdminPredictiveInsights from "./pages/tenant-admin/PredictiveInsights";
@@ -50,109 +47,94 @@ function App() {
                 
                 {/* Super Admin Routes */}
                 <Route path="/superadmin/dashboard" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminDashboard />
                   </AuthGuard>
                 } />
                 <Route path="/superadmin/tenants" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminTenants />
                   </AuthGuard>
                 } />
                 <Route path="/superadmin/settings" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminSettings />
                   </AuthGuard>
                 } />
                 <Route path="/superadmin/users" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminUsers />
                   </AuthGuard>
                 } />
                 <Route path="/superadmin/revenue" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminRevenue />
                   </AuthGuard>
                 } />
                 <Route path="/superadmin/companies" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminCompanies />
                   </AuthGuard>
                 } />
-                <Route path="/superadmin/ai" element={
-                  <AuthGuard requiredRole="super_admin">
-                    <SuperAdminAI />
-                  </AuthGuard>
-                } />
                 <Route path="/superadmin/analytics" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminAnalytics />
                   </AuthGuard>
                 } />
-                <Route path="/superadmin/audit" element={
-                  <AuthGuard requiredRole="super_admin">
-                    <SuperAdminAudit />
-                  </AuthGuard>
-                } />
                 <Route path="/superadmin/global-settings" element={
-                  <AuthGuard requiredRole="super_admin">
+                  <AuthGuard requiresSuperAdmin={true}>
                     <SuperAdminGlobalSettings />
                   </AuthGuard>
                 } />
 
                 {/* Tenant Admin Routes */}
                 <Route path="/tenant-admin/dashboard" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminDashboard />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/ats" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminATS />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/jobs" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminJobs />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/talent" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminTalent />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/companies" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminCompanies />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/contacts" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminContacts />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/linkedin-integration" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <LinkedInIntegrationPage />
                   </AuthGuard>
                 } />
-                <Route path="/tenant-admin/intelligent-workflows" element={
-                  <AuthGuard requiredRole="tenant_admin">
-                    <TenantAdminIntelligentWorkflows />
-                  </AuthGuard>
-                } />
                 <Route path="/tenant-admin/smart-talent-analytics" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminSmartTalentAnalytics />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/settings" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminSettings />
                   </AuthGuard>
                 } />
                 <Route path="/tenant-admin/predictive-insights" element={
-                  <AuthGuard requiredRole="tenant_admin">
+                  <AuthGuard>
                     <TenantAdminPredictiveInsights />
                   </AuthGuard>
                 } />
