@@ -1,4 +1,5 @@
 
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LinkedInProfile {
@@ -45,7 +46,7 @@ class LinkedInApiService {
   private getConnection = async (tenantId: string): Promise<LinkedInConnection | null> => {
     const { data, error } = await supabase
       .from('tenant_social_media_connections')
-      .select('*')
+      .select('id, tenant_id, platform, access_token, refresh_token, token_expires_at, is_active, connection_config, connected_at, created_at, updated_at')
       .eq('tenant_id', tenantId)
       .eq('platform', 'linkedin')
       .eq('is_active', true)
@@ -311,7 +312,7 @@ class LinkedInApiService {
       }
 
       // Convert JSON data back to LinkedInProfile
-      return data.linkedin_data as LinkedInProfile;
+      return data.linkedin_data as unknown as LinkedInProfile;
     } catch (error) {
       console.error('Error getting enriched profile:', error);
       return null;
@@ -368,3 +369,4 @@ class LinkedInApiService {
 }
 
 export const linkedinApiService = new LinkedInApiService();
+
