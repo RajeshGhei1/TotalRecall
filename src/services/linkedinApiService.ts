@@ -1,5 +1,3 @@
-
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LinkedInProfile {
@@ -39,6 +37,13 @@ export interface LinkedInConnection {
   updated_at: string;
 }
 
+interface LinkedInConnectionConfig {
+  access_token?: string;
+  refresh_token?: string;
+  token_expires_at?: string;
+  permissions?: string[];
+}
+
 class LinkedInApiService {
   private baseUrl = 'https://api.linkedin.com/v2';
   
@@ -57,14 +62,17 @@ class LinkedInApiService {
       return null;
     }
     
+    // Cast connection_config to the expected type
+    const config = data.connection_config as LinkedInConnectionConfig;
+    
     // Map the database fields to our interface, handling missing token fields
     return {
       id: data.id,
       tenant_id: data.tenant_id,
       platform: data.platform,
-      access_token: data.connection_config?.access_token,
-      refresh_token: data.connection_config?.refresh_token,
-      token_expires_at: data.connection_config?.token_expires_at,
+      access_token: config?.access_token,
+      refresh_token: config?.refresh_token,
+      token_expires_at: config?.token_expires_at,
       is_active: data.is_active,
       connection_config: data.connection_config,
       connected_at: data.connected_at,
@@ -370,4 +378,3 @@ class LinkedInApiService {
 }
 
 export const linkedinApiService = new LinkedInApiService();
-
