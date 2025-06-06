@@ -1,27 +1,65 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ExternalLink } from 'lucide-react';
-import { LinkedInProfile } from '@/services/linkedinService';
+import { LinkedInProfile, linkedinApiService } from '@/services/linkedinApiService';
 
 interface LinkedInProfileBadgeProps {
-  profile: LinkedInProfile;
+  personId?: string;
+  profile?: LinkedInProfile;
   variant?: 'compact' | 'detailed';
   showViewButton?: boolean;
 }
 
 export const LinkedInProfileBadge: React.FC<LinkedInProfileBadgeProps> = ({
-  profile,
+  personId,
+  profile: providedProfile,
   variant = 'compact',
   showViewButton = true
 }) => {
+  const [profile, setProfile] = useState<LinkedInProfile | null>(providedProfile || null);
+  const [loading, setLoading] = useState(!providedProfile && !!personId);
+
+  useEffect(() => {
+    if (personId && !providedProfile) {
+      loadEnrichedProfile();
+    }
+  }, [personId, providedProfile]);
+
+  const loadEnrichedProfile = async () => {
+    if (!personId) return;
+    
+    setLoading(true);
+    try {
+      const enrichedProfile = await linkedinApiService.getEnrichedProfile(personId);
+      setProfile(enrichedProfile);
+    } catch (error) {
+      console.error('Error loading LinkedIn profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openLinkedInProfile = () => {
-    if (profile.publicProfileUrl) {
+    if (profile?.publicProfileUrl) {
       window.open(profile.publicProfileUrl, '_blank');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 bg-gray-300 rounded animate-pulse"></div>
+        <div className="h-4 w-20 bg-gray-300 rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return null;
+  }
 
   if (variant === 'compact') {
     return (

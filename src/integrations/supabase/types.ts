@@ -2116,6 +2116,44 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_profile_enrichments: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_updated: string | null
+          linkedin_data: Json
+          match_confidence: number | null
+          person_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          linkedin_data: Json
+          match_confidence?: number | null
+          person_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          linkedin_data?: Json
+          match_confidence?: number | null
+          person_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_profile_enrichments_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: true
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_permissions: {
         Row: {
           created_at: string

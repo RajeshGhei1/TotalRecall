@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { makeUserSuperAdmin } from "@/utils/makeUserSuperAdmin";
@@ -9,13 +9,32 @@ import { AuthHeader } from "@/components/auth/AuthHeader";
 import { LoginForm, LoginFormValues } from "@/components/auth/LoginForm";
 import { SignupForm, SignupFormValues } from "@/components/auth/SignupForm";
 import { SuperAdminForm, SuperAdminEmailFormValues } from "@/components/auth/SuperAdminForm";
+import LinkedInOAuthCallback from "@/components/auth/LinkedInOAuthCallback";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const { signIn, signUp, bypassAuth } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [superAdminPromoting, setSuperAdminPromoting] = useState(false);
   const [superAdminPromoted, setSuperAdminPromoted] = useState(false);
+
+  // Check if this is a LinkedIn OAuth callback
+  const isLinkedInCallback = searchParams.get('code') && searchParams.get('state');
+
+  // If this is a LinkedIn callback, show the callback component
+  if (isLinkedInCallback) {
+    return (
+      <LinkedInOAuthCallback 
+        onSuccess={(tenantId) => {
+          console.log('LinkedIn OAuth successful for tenant:', tenantId);
+        }}
+        onError={(error) => {
+          console.error('LinkedIn OAuth error:', error);
+        }}
+      />
+    );
+  }
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     try {

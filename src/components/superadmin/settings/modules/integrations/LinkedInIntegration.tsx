@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,13 @@ import {
   AlertCircle,
   Copy,
   Users,
-  BarChart3
+  BarChart3,
+  Unlink
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { linkedinOAuthService } from '@/services/linkedinOAuthService';
+import { linkedinApiService } from '@/services/linkedinApiService';
+import { supabase } from '@/integrations/supabase/client';
 import LinkedInEnrichmentDashboard from '@/components/people/linkedin/LinkedInEnrichmentDashboard';
 
 interface LinkedInIntegrationProps {
@@ -26,11 +30,41 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [credentials, setCredentials] = useState({
     clientId: '',
     clientSecret: '',
     redirectUri: `${window.location.origin}/auth/linkedin/callback`
   });
+  const [connectionData, setConnectionData] = useState<any>(null);
+
+  // Check if LinkedIn is already connected
+  useEffect(() => {
+    checkConnection();
+  }, [tenantId]);
+
+  const checkConnection = async () => {
+    setIsLoading(true);
+    try {
+      const { data } = await supabase
+        .from('tenant_social_media_connections')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('platform', 'linkedin')
+        .eq('is_active', true)
+        .single();
+
+      if (data) {
+        setIsConnected(true);
+        setConnectionData(data);
+      }
+    } catch (error) {
+      // Connection doesn't exist, which is fine
+      setIsConnected(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleConnect = async () => {
     if (!credentials.clientId || !credentials.clientSecret) {
@@ -45,22 +79,73 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
     setIsConnecting(true);
     
     try {
-      // Simulate API call to save credentials and establish connection
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setIsConnected(true);
-      toast({
-        title: "LinkedIn Connected",
-        description: "Successfully connected to LinkedIn API"
+      // Configure OAuth service
+      linkedinOAuthService.setConfig({
+        clientId: credentials.clientId,
+        clientSecret: credentials.clientSecret,
+        redirectUri: credentials.redirectUri,
+        scope: ['r_liteprofile', 'r_emailaddress', 'w_member_social']
       });
+
+      // Generate state parameter with tenant ID
+      const state = btoa(JSON.stringify({ 
+        tenantId, 
+        timestamp: Date.now() 
+      }));
+
+      // Get authorization URL and redirect
+      const authUrl = linkedinOAuthService.getAuthUrl(state);
+      window.location.href = authUrl;
+      
     } catch (error) {
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to LinkedIn. Please check your credentials.",
+        description: "Failed to initiate LinkedIn connection. Please check your credentials.",
         variant: "destructive"
       });
-    } finally {
       setIsConnecting(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      const success = await linkedinApiService.disconnect(tenantId);
+      if (success) {
+        setIsConnected(false);
+        setConnectionData(null);
+        toast({
+          title: "LinkedIn Disconnected",
+          description: "LinkedIn integration has been disconnected successfully."
+        });
+      } else {
+        throw new Error('Failed to disconnect');
+      }
+    } catch (error) {
+      toast({
+        title: "Disconnection Failed",
+        description: "Failed to disconnect LinkedIn integration.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const testConnection = async () => {
+    try {
+      const profile = await linkedinApiService.getUserProfile(tenantId);
+      if (profile) {
+        toast({
+          title: "Connection Test Successful",
+          description: `Connected as ${profile.firstName} ${profile.lastName}`
+        });
+      } else {
+        throw new Error('Failed to get profile');
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Test Failed",
+        description: "Unable to verify LinkedIn connection. Please reconnect.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -71,6 +156,17 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
       description: "Redirect URI copied to clipboard"
     });
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading LinkedIn integration status...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -197,6 +293,11 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                     <p className="text-sm text-green-800">
                       Your LinkedIn integration is active and ready for profile matching and data enrichment.
                     </p>
+                    {connectionData && (
+                      <div className="text-xs text-green-700 mt-2">
+                        Connected on: {new Date(connectionData.connected_at).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -227,10 +328,16 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                     </Card>
                   </div>
 
-                  <Button variant="outline" className="w-full">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Test Connection
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={testConnection} className="flex-1">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Test Connection
+                    </Button>
+                    <Button variant="outline" onClick={handleDisconnect} className="flex-1">
+                      <Unlink className="w-4 h-4 mr-2" />
+                      Disconnect
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
