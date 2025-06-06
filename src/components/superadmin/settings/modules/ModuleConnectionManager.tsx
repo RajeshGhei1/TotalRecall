@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Settings, 
   ArrowLeft,
-  Activity
+  Activity,
+  Users
 } from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { IntegrationSelector } from './integrations/IntegrationSelector';
@@ -71,8 +72,8 @@ export const ModuleConnectionManager: React.FC<ModuleConnectionManagerProps> = (
           <h3 className="text-lg font-semibold">{moduleDisplayName} Configuration</h3>
           <p className="text-sm text-gray-600">
             {selectedIntegration 
-              ? `Configure ${selectedIntegration} integration` 
-              : 'Select and configure integrations for this module'
+              ? `Configure ${selectedIntegration} integration with profile matching and data enrichment` 
+              : 'Select and configure integrations for enhanced contact management'
             }
           </p>
         </div>
@@ -105,10 +106,10 @@ export const ModuleConnectionManager: React.FC<ModuleConnectionManagerProps> = (
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Activity className="h-5 w-5 mr-2" />
-                  Module Status
+                  Module Status & Capabilities
                 </CardTitle>
                 <CardDescription>
-                  Current status and health of {moduleDisplayName.toLowerCase()}
+                  Current status and available features for {moduleDisplayName.toLowerCase()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -136,23 +137,44 @@ export const ModuleConnectionManager: React.FC<ModuleConnectionManagerProps> = (
                 </div>
 
                 <div className="mt-6">
-                  <h5 className="font-medium mb-3">Module Features</h5>
+                  <h5 className="font-medium mb-3">Advanced Features</h5>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Core Integration</span>
-                      <Badge variant="default">Enabled</Badge>
+                      <span className="text-sm">Profile Matching</span>
+                      <Badge variant="default">Available</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Bulk Data Enrichment</span>
+                      <Badge variant="default">Available</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Real-time Sync</span>
+                      <Badge variant="default">Available</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Analytics & Reporting</span>
+                      <Badge variant="default">Available</Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">API Access</span>
                       <Badge variant="default">Enabled</Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Analytics</span>
-                      <Badge variant="default">Enabled</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
                       <span className="text-sm">Webhooks</span>
                       <Badge variant="secondary">Available</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h6 className="font-medium text-blue-900">Enhanced Contact Management</h6>
+                      <p className="text-sm text-blue-800 mt-1">
+                        Configure integrations to automatically enrich your contact database with professional profiles, 
+                        track engagement, and maintain up-to-date contact information across all platforms.
+                      </p>
                     </div>
                   </div>
                 </div>
