@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DynamicFormWidget from '@/components/forms/integration/DynamicFormWidget';
+import { FormProvider } from '@/contexts/FormContext';
 
 const Dashboard = () => {
   const isMobile = useIsMobile();
@@ -237,10 +238,12 @@ const Dashboard = () => {
 
           {/* Dynamic Form Widget - responsive */}
           <div className="md:col-span-2 xl:col-span-1">
-            <DynamicFormWidget 
-              context={{ page: 'dashboard', userType: 'super_admin' }}
-              maxForms={3}
-            />
+            <FormProvider>
+              <DynamicFormWidget 
+                context={{ page: 'dashboard', userType: 'super_admin' }}
+                maxForms={3}
+              />
+            </FormProvider>
           </div>
         </div>
       </div>
