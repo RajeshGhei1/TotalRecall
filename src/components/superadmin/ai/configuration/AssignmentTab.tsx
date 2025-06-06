@@ -36,19 +36,27 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
     onPreferredAgentsChange(updated);
   };
 
+  const handleDirectAssignmentChange = (value: string) => {
+    if (value === 'none') {
+      onDirectAssignmentChange(null);
+    } else {
+      onDirectAssignmentChange(value);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
         <Label htmlFor="direct-assignment">Direct Agent Assignment</Label>
         <Select 
-          value={directAssignment || ''} 
-          onValueChange={(value) => onDirectAssignmentChange(value || null)}
+          value={directAssignment || 'none'} 
+          onValueChange={handleDirectAssignmentChange}
         >
           <SelectTrigger className="mt-1">
             <SelectValue placeholder="Select an agent (optional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No direct assignment (use preferences)</SelectItem>
+            <SelectItem value="none">No direct assignment (use preferences)</SelectItem>
             {agents.map((agent) => (
               <SelectItem key={agent.id} value={agent.id}>
                 {agent.name} ({agent.type})
