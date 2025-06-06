@@ -3,39 +3,94 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { enhancedAIOrchestrationService } from '@/services/ai/enhancedOrchestrationService';
 import { AIContext } from '@/types/ai';
 import { useTenantContext } from '@/contexts/TenantContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const useUnifiedAIOrchestration = () => {
   const queryClient = useQueryClient();
   const { selectedTenantId } = useTenantContext();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    enhancedAIOrchestrationService.initialize();
+    let mounted = true;
+    
+    const initializeService = async () => {
+      try {
+        console.log('Starting AI orchestration service initialization...');
+        await enhancedAIOrchestrationService.initialize();
+        if (mounted) {
+          setIsInitialized(true);
+          console.log('AI orchestration service initialized successfully');
+        }
+      } catch (error) {
+        console.error('Failed to initialize AI orchestration service:', error);
+        if (mounted) {
+          setIsInitialized(true); // Still set to true to allow queries to run
+        }
+      }
+    };
+
+    initializeService();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const { data: agents, isLoading: agentsLoading, error } = useQuery({
     queryKey: ['unified-ai-agents'],
-    queryFn: () => {
+    queryFn: async () => {
       try {
-        return enhancedAIOrchestrationService.getActiveAgents();
+        console.log('Fetching AI agents...');
+        const activeAgents = enhancedAIOrchestrationService.getActiveAgents();
+        console.log('Fetched agents:', activeAgents);
+        console.log('Number of agents:', activeAgents?.length || 0);
+        return activeAgents || [];
       } catch (error) {
         console.error('Error fetching AI agents:', error);
         return [];
       }
     },
+    enabled: isInitialized, // Only run query after service is initialized
     staleTime: 5 * 60 * 1000,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const { data: metrics } = useQuery({
     queryKey: ['unified-ai-metrics'],
     queryFn: () => enhancedAIOrchestrationService.getMetrics(),
+    enabled: isInitialized,
     refetchInterval: 10000,
   });
 
   const { data: learningInsights } = useQuery({
     queryKey: ['ai-learning-insights', selectedTenantId],
-    queryFn: () => enhancedAIOrchestrationService.getLearningInsights(selectedTenantId || undefined),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    queryFn: () => {
+      // Only fetch insights if we have a valid tenant ID (not null/undefined)
+      if (!selectedTenantId) {
+        console.log('Skipping learning insights fetch - no tenant selected');
+        return {
+          learning: {
+            totalFeedback: 0,
+            positiveRatio: 0,
+            topIssues: [],
+            improvementAreas: [],
+            recentPatterns: []
+          },
+          context: {
+            totalContextsAnalyzed: 0,
+            avgSuccessRate: 0,
+            riskDistribution: { low: 0, medium: 0, high: 0 },
+            topPerformingContexts: [],
+            problematicContexts: []
+          },
+          combinedScore: 0
+        };
+      }
+      return enhancedAIOrchestrationService.getLearningInsights(selectedTenantId);
+    },
+    enabled: isInitialized,
+    refetchInterval: 30000,
   });
 
   const requestPrediction = useMutation({
@@ -109,7 +164,9 @@ export const useUnifiedAIOrchestration = () => {
   const refreshAgents = useMutation({
     mutationFn: async () => {
       try {
+        console.log('Refreshing agents...');
         await enhancedAIOrchestrationService.refreshAgents();
+        console.log('Agents refreshed successfully');
       } catch (error) {
         console.error('Error refreshing agents:', error);
         throw error;
@@ -148,6 +205,7 @@ export const useUnifiedAIOrchestration = () => {
     },
     agentsLoading,
     error,
+    isInitialized,
     requestPrediction: requestPrediction.mutateAsync,
     provideFeedback: provideFeedback.mutateAsync,
     recordOutcome: recordOutcome.mutateAsync,

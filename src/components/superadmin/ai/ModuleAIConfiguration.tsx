@@ -17,7 +17,7 @@ import { PerformanceTab } from './configuration/PerformanceTab';
 
 export const ModuleAIConfiguration: React.FC = () => {
   const { data: modules, isLoading: modulesLoading } = useSystemModules();
-  const { agents, agentsLoading } = useUnifiedAIOrchestration();
+  const { agents, agentsLoading, error, isInitialized } = useUnifiedAIOrchestration();
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [activeTab, setActiveTab] = useState('assignments');
 
@@ -31,12 +31,14 @@ export const ModuleAIConfiguration: React.FC = () => {
 
   const selectedModuleData = modules?.find(m => m.id === selectedModule);
 
-  // Debug logging
+  // Enhanced debug logging
+  console.log('ModuleAIConfiguration - Initialization status:', isInitialized);
   console.log('ModuleAIConfiguration - agents:', agents);
   console.log('ModuleAIConfiguration - agentsLoading:', agentsLoading);
   console.log('ModuleAIConfiguration - agents length:', agents?.length);
+  console.log('ModuleAIConfiguration - error:', error);
 
-  if (modulesLoading || agentsLoading) {
+  if (modulesLoading || (agentsLoading && !isInitialized)) {
     return (
       <div className="space-y-4">
         <div className="animate-pulse space-y-4">
@@ -44,6 +46,30 @@ export const ModuleAIConfiguration: React.FC = () => {
             <div key={i} className="h-20 bg-gray-200 rounded"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error loading agents
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center">
+              <Brain className="h-6 w-6 mr-2" />
+              Module AI Configuration
+            </h2>
+            <p className="text-gray-600">Configure AI agent assignments and preferences for modules</p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="text-center py-8">
+            <Brain className="h-12 w-12 mx-auto text-red-400 mb-4" />
+            <p className="text-red-600 mb-2">Error loading AI agents</p>
+            <p className="text-sm text-gray-500">{error?.message || 'Unknown error occurred'}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -90,7 +116,14 @@ export const ModuleAIConfiguration: React.FC = () => {
                   <div className="text-center py-8">
                     <Brain className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <p className="text-gray-600 mb-2">No AI agents available</p>
-                    <p className="text-sm text-gray-500">Please create AI agents first in the Agents tab</p>
+                    <p className="text-sm text-gray-500">
+                      {agentsLoading ? 'Loading agents...' : 'Please create AI agents first in the Agents tab'}
+                    </p>
+                    {!agentsLoading && isInitialized && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        Service initialized: {isInitialized ? 'Yes' : 'No'} | Agents loaded: {agents?.length || 0}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
