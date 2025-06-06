@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { AISystemDashboard } from '@/components/ai/AISystemDashboard';
+import { AIOrchestrationManager } from '@/components/superadmin/ai/AIOrchestrationManager';
 import AdminLayout from '@/components/AdminLayout';
 
 const AIOrchestration: React.FC = () => {
@@ -31,7 +31,7 @@ const AIOrchestration: React.FC = () => {
             </Breadcrumb>
           </div>
 
-          <AISystemDashboard />
+          <AIOrchestrationManager />
         </div>
       </ErrorBoundary>
     </AdminLayout>
