@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export interface LinkedInProfile {
   id: string;
@@ -29,7 +28,7 @@ export interface LinkedInConnection {
   id: string;
   tenant_id: string;
   platform: string;
-  access_token: string;
+  access_token?: string;
   refresh_token?: string;
   token_expires_at?: string;
   is_active: boolean;
@@ -50,13 +49,26 @@ class LinkedInApiService {
       .eq('tenant_id', tenantId)
       .eq('platform', 'linkedin')
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       console.error('LinkedIn connection error:', error);
       return null;
     }
-    return data as LinkedInConnection;
+    
+    return {
+      id: data.id,
+      tenant_id: data.tenant_id,
+      platform: data.platform,
+      access_token: data.access_token || undefined,
+      refresh_token: data.refresh_token || undefined,
+      token_expires_at: data.token_expires_at || undefined,
+      is_active: data.is_active,
+      connection_config: data.connection_config,
+      connected_at: data.connected_at || undefined,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
   };
 
   // Store or update LinkedIn connection
@@ -95,7 +107,7 @@ class LinkedInApiService {
   // Get LinkedIn user profile
   getUserProfile = async (tenantId: string): Promise<LinkedInProfile | null> => {
     const connection = await this.getConnection(tenantId);
-    if (!connection) return null;
+    if (!connection?.access_token) return null;
 
     try {
       // Get basic profile
@@ -137,7 +149,7 @@ class LinkedInApiService {
   // This is a placeholder for the real implementation which would require LinkedIn's Partner API
   searchProfileByEmail = async (email: string, tenantId: string): Promise<LinkedInProfile | null> => {
     const connection = await this.getConnection(tenantId);
-    if (!connection) return null;
+    if (!connection?.access_token) return null;
 
     // Note: LinkedIn's public API doesn't support searching by email
     // This would require LinkedIn's Partner API or Recruiter API
@@ -149,7 +161,7 @@ class LinkedInApiService {
   // Get connections/network (requires additional permissions)
   getConnections = async (tenantId: string): Promise<LinkedInProfile[]> => {
     const connection = await this.getConnection(tenantId);
-    if (!connection) return [];
+    if (!connection?.access_token) return [];
 
     try {
       const response = await fetch(`${this.baseUrl}/people/~:(connections)`, {
@@ -174,7 +186,7 @@ class LinkedInApiService {
   // Post to LinkedIn
   postToLinkedIn = async (content: string, tenantId: string): Promise<boolean> => {
     const connection = await this.getConnection(tenantId);
-    if (!connection) return false;
+    if (!connection?.access_token) return false;
 
     try {
       const response = await fetch(`${this.baseUrl}/ugcPosts`, {
@@ -216,7 +228,7 @@ class LinkedInApiService {
         .from('people')
         .select('email, full_name')
         .eq('id', personId)
-        .single();
+        .maybeSingle();
 
       if (!person) return false;
 
@@ -234,16 +246,21 @@ class LinkedInApiService {
         email: person.email
       };
 
-      // Store enrichment data
-      await supabase
+      // Store enrichment data - convert to JSON-compatible format
+      const { error } = await supabase
         .from('linkedin_profile_enrichments')
         .upsert({
           person_id: personId,
           tenant_id: tenantId,
-          linkedin_data: linkedinProfile,
+          linkedin_data: linkedinProfile as any, // Convert to JSON
           match_confidence: 0.5, // Low confidence since it's not from real search
           last_updated: new Date().toISOString()
         });
+
+      if (error) {
+        console.error('Error storing LinkedIn enrichment:', error);
+        return false;
+      }
 
       return true;
     } catch (error) {
@@ -282,13 +299,19 @@ class LinkedInApiService {
   // Get enriched LinkedIn data for a person
   getEnrichedProfile = async (personId: string): Promise<LinkedInProfile | null> => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('linkedin_profile_enrichments')
         .select('linkedin_data, match_confidence')
         .eq('person_id', personId)
-        .single();
+        .maybeSingle();
 
-      return data ? data.linkedin_data : null;
+      if (error || !data) {
+        console.error('Error getting enriched profile:', error);
+        return null;
+      }
+
+      // Convert JSON data back to LinkedInProfile
+      return data.linkedin_data as LinkedInProfile;
     } catch (error) {
       console.error('Error getting enriched profile:', error);
       return null;
