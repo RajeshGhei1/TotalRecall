@@ -2184,6 +2184,45 @@ export type Database = {
         }
         Relationships: []
       }
+      module_usage_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          module_name: string
+          period_end: string
+          period_start: string
+          tenant_id: string
+          updated_at: string
+          usage_count: number
+          usage_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          module_name: string
+          period_end: string
+          period_start: string
+          tenant_id: string
+          updated_at?: string
+          usage_count?: number
+          usage_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          module_name?: string
+          period_end?: string
+          period_start?: string
+          tenant_id?: string
+          updated_at?: string
+          usage_count?: number
+          usage_type?: string
+        }
+        Relationships: []
+      }
       password_policy_enforcement: {
         Row: {
           action_type: string
@@ -2717,6 +2756,174 @@ export type Database = {
           },
         ]
       }
+      tenant_api_connections: {
+        Row: {
+          api_endpoint: string
+          authentication_config: Json
+          connection_name: string
+          created_at: string
+          id: string
+          is_active: boolean
+          tenant_id: string
+          updated_at: string
+          webhook_config: Json | null
+        }
+        Insert: {
+          api_endpoint: string
+          authentication_config?: Json
+          connection_name: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          updated_at?: string
+          webhook_config?: Json | null
+        }
+        Update: {
+          api_endpoint?: string
+          authentication_config?: Json
+          connection_name?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          updated_at?: string
+          webhook_config?: Json | null
+        }
+        Relationships: []
+      }
+      tenant_billing_connections: {
+        Row: {
+          connected_at: string
+          connection_config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_communication_connections: {
+        Row: {
+          connected_at: string
+          connection_config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_document_parsing_config: {
+        Row: {
+          ai_model_config: Json | null
+          created_at: string
+          id: string
+          is_active: boolean
+          parsing_rules: Json | null
+          supported_formats: Json | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          ai_model_config?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          parsing_rules?: Json | null
+          supported_formats?: Json | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          ai_model_config?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          parsing_rules?: Json | null
+          supported_formats?: Json | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_email_configurations: {
+        Row: {
+          automation_config: Json | null
+          created_at: string
+          id: string
+          signature_templates: Json | null
+          smtp_config: Json | null
+          tenant_id: string
+          tracking_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          automation_config?: Json | null
+          created_at?: string
+          id?: string
+          signature_templates?: Json | null
+          smtp_config?: Json | null
+          tenant_id: string
+          tracking_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          automation_config?: Json | null
+          created_at?: string
+          id?: string
+          signature_templates?: Json | null
+          smtp_config?: Json | null
+          tenant_id?: string
+          tracking_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_module_assignments: {
         Row: {
           assigned_at: string
@@ -2771,6 +2978,75 @@ export type Database = {
           },
         ]
       }
+      tenant_outreach_configurations: {
+        Row: {
+          automation_workflows: Json | null
+          campaign_templates: Json | null
+          created_at: string
+          follow_up_sequences: Json | null
+          id: string
+          is_active: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          automation_workflows?: Json | null
+          campaign_templates?: Json | null
+          created_at?: string
+          follow_up_sequences?: Json | null
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          automation_workflows?: Json | null
+          campaign_templates?: Json | null
+          created_at?: string
+          follow_up_sequences?: Json | null
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_social_media_connections: {
+        Row: {
+          connected_at: string
+          connection_config: Json
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          platform: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          platform: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          platform?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_subscriptions: {
         Row: {
           billing_cycle: string
@@ -2824,6 +3100,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tenant_video_connections: {
+        Row: {
+          connected_at: string
+          connection_config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string
+          connection_config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       tenants: {
         Row: {

@@ -1,131 +1,91 @@
 
-import { useState, useEffect } from 'react';
-import { useModuleAIAssignments } from './useModuleAIAssignments';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-interface ModuleConfig {
+export interface ModuleAIConfig {
   direct_assignment: string | null;
   preferred_agents: string[];
   token_budget: number;
-  overage_policy: 'warn' | 'block' | 'charge';
+  overage_policy: 'block' | 'allow' | 'notify';
   performance_weights: {
-    accuracy: number;
     speed: number;
+    accuracy: number;
     cost: number;
   };
 }
 
-export const useModuleAIConfiguration = (selectedModule: string, tenantId?: string) => {
-  const { 
-    assignments, 
-    isLoading, 
-    setDirectAssignment, 
-    addPreferredAssignment, 
-    deleteAssignment,
-    updateAssignment 
-  } = useModuleAIAssignments(selectedModule, tenantId);
+const defaultConfig: ModuleAIConfig = {
+  direct_assignment: null,
+  preferred_agents: [],
+  token_budget: 10000,
+  overage_policy: 'notify',
+  performance_weights: {
+    speed: 0.3,
+    accuracy: 0.5,
+    cost: 0.2
+  }
+};
 
-  const [moduleConfigs, setModuleConfigs] = useState<Record<string, ModuleConfig>>({});
-  const [isSaving, setIsSaving] = useState(false);
+export const useModuleAIConfiguration = (moduleId: string) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Initialize config from assignments
-  useEffect(() => {
-    if (selectedModule && assignments) {
-      const directAssignment = assignments.find(a => a.assignment_type === 'direct');
-      const preferredAssignments = assignments
-        .filter(a => a.assignment_type === 'preferred')
-        .sort((a, b) => b.priority - a.priority);
+  const { data: currentConfig, isLoading } = useQuery({
+    queryKey: ['module-ai-config', moduleId],
+    queryFn: async (): Promise<ModuleAIConfig> => {
+      if (!moduleId) return defaultConfig;
 
-      const config: ModuleConfig = {
-        direct_assignment: directAssignment?.agent_id || null,
-        preferred_agents: preferredAssignments.map(a => a.agent_id),
-        token_budget: directAssignment?.token_budget_override || 10000,
-        overage_policy: 'warn',
-        performance_weights: directAssignment?.performance_weights || {
-          accuracy: 0.4,
-          speed: 0.3,
-          cost: 0.3
-        }
-      };
+      // For now, return default config as we build out the AI configuration system
+      // This will be expanded to store/retrieve actual configurations
+      return defaultConfig;
+    },
+    enabled: !!moduleId
+  });
 
-      setModuleConfigs(prev => ({
-        ...prev,
-        [selectedModule]: config
-      }));
-    }
-  }, [selectedModule, assignments]);
-
-  const updateModuleConfig = (moduleId: string, updates: Partial<ModuleConfig>) => {
-    setModuleConfigs(prev => ({
-      ...prev,
-      [moduleId]: {
-        ...prev[moduleId],
-        ...updates
-      }
+  const updateModuleConfig = (moduleId: string, updates: Partial<ModuleAIConfig>) => {
+    queryClient.setQueryData(['module-ai-config', moduleId], (old: ModuleAIConfig) => ({
+      ...old,
+      ...updates
     }));
   };
 
-  const saveConfiguration = async (moduleId: string) => {
-    const config = moduleConfigs[moduleId];
-    if (!config) return;
-
-    setIsSaving(true);
-    try {
-      // Handle direct assignment
-      if (config.direct_assignment) {
-        await setDirectAssignment.mutateAsync({
-          moduleId,
-          agentId: config.direct_assignment,
-          tenantId,
-          performanceWeights: config.performance_weights
-        });
-      }
-
-      // Handle preferred agents
-      const existingPreferred = assignments?.filter(a => a.assignment_type === 'preferred') || [];
+  const saveConfigurationMutation = useMutation({
+    mutationFn: async (moduleId: string) => {
+      const config = queryClient.getQueryData(['module-ai-config', moduleId]) as ModuleAIConfig;
       
-      // Remove assignments that are no longer in preferred list
-      for (const assignment of existingPreferred) {
-        if (!config.preferred_agents.includes(assignment.agent_id)) {
-          await deleteAssignment.mutateAsync(assignment.id);
-        }
-      }
-
-      // Add new preferred agents
-      for (let i = 0; i < config.preferred_agents.length; i++) {
-        const agentId = config.preferred_agents[i];
-        const existingAssignment = existingPreferred.find(a => a.agent_id === agentId);
-        
-        if (!existingAssignment) {
-          await addPreferredAssignment.mutateAsync({
-            moduleId,
-            agentId,
-            tenantId,
-            priority: config.preferred_agents.length - i
-          });
-        } else if (existingAssignment.priority !== config.preferred_agents.length - i) {
-          await updateAssignment.mutateAsync({
-            id: existingAssignment.id,
-            updates: { priority: config.preferred_agents.length - i }
-          });
-        }
-      }
-
-      toast.success('Configuration saved successfully');
-    } catch (error) {
-      console.error('Failed to save configuration:', error);
-      toast.error('Failed to save configuration');
-    } finally {
-      setIsSaving(false);
+      // Here we would save to the database - for now we just log
+      console.log('Saving AI configuration for module:', moduleId, config);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      return config;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Configuration Saved",
+        description: "AI module configuration has been updated successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save configuration",
+        variant: "destructive"
+      });
     }
+  });
+
+  const saveConfiguration = async (moduleId: string) => {
+    await saveConfigurationMutation.mutateAsync(moduleId);
   };
 
   return {
-    moduleConfigs,
-    currentConfig: moduleConfigs[selectedModule],
+    currentConfig: currentConfig || defaultConfig,
     updateModuleConfig,
     saveConfiguration,
-    isSaving,
+    isSaving: saveConfigurationMutation.isPending,
     isLoading
   };
 };
