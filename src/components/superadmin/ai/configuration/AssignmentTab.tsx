@@ -27,6 +27,10 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
 }) => {
   const [addPreferredSelectValue, setAddPreferredSelectValue] = useState<string>('');
 
+  // Debug logging to see what agents data we're receiving
+  console.log('AssignmentTab - agents:', agents);
+  console.log('AssignmentTab - agents length:', agents?.length);
+
   const addPreferredAgent = (agentId: string) => {
     if (!preferredAgents.includes(agentId)) {
       onPreferredAgentsChange([...preferredAgents, agentId]);
@@ -47,6 +51,17 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
       onDirectAssignmentChange(value);
     }
   };
+
+  // Show a message if no agents are available
+  if (!agents || agents.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="text-center py-8">
+          <p className="text-gray-500">No AI agents available. Please create agents first.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

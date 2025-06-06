@@ -17,7 +17,7 @@ import { PerformanceTab } from './configuration/PerformanceTab';
 
 export const ModuleAIConfiguration: React.FC = () => {
   const { data: modules, isLoading: modulesLoading } = useSystemModules();
-  const { agents } = useUnifiedAIOrchestration();
+  const { agents, isLoading: agentsLoading } = useUnifiedAIOrchestration();
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [activeTab, setActiveTab] = useState('assignments');
 
@@ -31,7 +31,12 @@ export const ModuleAIConfiguration: React.FC = () => {
 
   const selectedModuleData = modules?.find(m => m.id === selectedModule);
 
-  if (modulesLoading) {
+  // Debug logging
+  console.log('ModuleAIConfiguration - agents:', agents);
+  console.log('ModuleAIConfiguration - agentsLoading:', agentsLoading);
+  console.log('ModuleAIConfiguration - agents length:', agents?.length);
+
+  if (modulesLoading || agentsLoading) {
     return (
       <div className="space-y-4">
         <div className="animate-pulse space-y-4">
@@ -81,58 +86,68 @@ export const ModuleAIConfiguration: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="assignments">Agent Assignment</TabsTrigger>
-                    <TabsTrigger value="budget">Token Budget</TabsTrigger>
-                    <TabsTrigger value="performance">Performance</TabsTrigger>
-                  </TabsList>
+                {!agents || agents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Brain className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600 mb-2">No AI agents available</p>
+                    <p className="text-sm text-gray-500">Please create AI agents first in the Agents tab</p>
+                  </div>
+                ) : (
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="assignments">Agent Assignment</TabsTrigger>
+                      <TabsTrigger value="budget">Token Budget</TabsTrigger>
+                      <TabsTrigger value="performance">Performance</TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent value="assignments" className="space-y-4 mt-4">
-                    <AssignmentTab
-                      agents={agents}
-                      directAssignment={currentConfig.direct_assignment}
-                      preferredAgents={currentConfig.preferred_agents}
-                      onDirectAssignmentChange={(agentId) => 
-                        updateModuleConfig(selectedModule, { direct_assignment: agentId })
-                      }
-                      onPreferredAgentsChange={(agentIds) => 
-                        updateModuleConfig(selectedModule, { preferred_agents: agentIds })
-                      }
-                    />
-                  </TabsContent>
+                    <TabsContent value="assignments" className="space-y-4 mt-4">
+                      <AssignmentTab
+                        agents={agents}
+                        directAssignment={currentConfig.direct_assignment}
+                        preferredAgents={currentConfig.preferred_agents}
+                        onDirectAssignmentChange={(agentId) => 
+                          updateModuleConfig(selectedModule, { direct_assignment: agentId })
+                        }
+                        onPreferredAgentsChange={(agentIds) => 
+                          updateModuleConfig(selectedModule, { preferred_agents: agentIds })
+                        }
+                      />
+                    </TabsContent>
 
-                  <TabsContent value="budget" className="space-y-4 mt-4">
-                    <BudgetTab
-                      tokenBudget={currentConfig.token_budget}
-                      overagePolicy={currentConfig.overage_policy}
-                      onTokenBudgetChange={(budget) => 
-                        updateModuleConfig(selectedModule, { token_budget: budget })
-                      }
-                      onOveragePolicyChange={(policy) => 
-                        updateModuleConfig(selectedModule, { overage_policy: policy })
-                      }
-                    />
-                  </TabsContent>
+                    <TabsContent value="budget" className="space-y-4 mt-4">
+                      <BudgetTab
+                        tokenBudget={currentConfig.token_budget}
+                        overagePolicy={currentConfig.overage_policy}
+                        onTokenBudgetChange={(budget) => 
+                          updateModuleConfig(selectedModule, { token_budget: budget })
+                        }
+                        onOveragePolicyChange={(policy) => 
+                          updateModuleConfig(selectedModule, { overage_policy: policy })
+                        }
+                      />
+                    </TabsContent>
 
-                  <TabsContent value="performance" className="space-y-4 mt-4">
-                    <PerformanceTab
-                      performanceWeights={currentConfig.performance_weights}
-                      onPerformanceWeightsChange={(weights) => 
-                        updateModuleConfig(selectedModule, { performance_weights: weights })
-                      }
-                    />
-                  </TabsContent>
-                </Tabs>
+                    <TabsContent value="performance" className="space-y-4 mt-4">
+                      <PerformanceTab
+                        performanceWeights={currentConfig.performance_weights}
+                        onPerformanceWeightsChange={(weights) => 
+                          updateModuleConfig(selectedModule, { performance_weights: weights })
+                        }
+                      />
+                    </TabsContent>
+                  </Tabs>
+                )}
 
-                <div className="flex justify-end mt-6">
-                  <Button 
-                    onClick={handleSaveConfiguration}
-                    disabled={isSaving || configLoading}
-                  >
-                    {isSaving ? 'Saving...' : 'Save Configuration'}
-                  </Button>
-                </div>
+                {agents && agents.length > 0 && (
+                  <div className="flex justify-end mt-6">
+                    <Button 
+                      onClick={handleSaveConfiguration}
+                      disabled={isSaving || configLoading}
+                    >
+                      {isSaving ? 'Saving...' : 'Save Configuration'}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
