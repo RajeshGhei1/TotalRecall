@@ -1,94 +1,61 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { SubscriptionService } from './subscriptionService';
 
-export interface AccessAuditLog {
+export interface ModuleAccessStats {
+  subscriptionModules: number;
+  overrideModules: number;
+  totalActiveModules: number;
+  planName: string;
+}
+
+export interface ModuleMigrationCandidate {
   id: string;
-  tenant_id: string;
-  user_id?: string;
-  module_name: string;
-  access_granted: boolean;
-  access_source: 'subscription' | 'tenant_override' | 'none';
-  subscription_details?: any;
-  override_details?: any;
-  timestamp: string;
+  moduleName: string;
+  moduleCategory: string;
+  assignedAt: string;
+  expiresAt?: string;
+  assignedBy: string;
 }
 
 export class ModuleAccessService {
   /**
-   * Log module access attempts for audit purposes
+   * Get comprehensive access statistics for a tenant
    */
-  static async logAccess(
-    tenantId: string,
-    moduleName: string,
-    accessGranted: boolean,
-    accessSource: 'subscription' | 'tenant_override' | 'none',
-    userId?: string,
-    subscriptionDetails?: any,
-    overrideDetails?: any
-  ): Promise<void> {
+  static async getAccessStats(tenantId: string): Promise<ModuleAccessStats> {
     try {
-      // In a real implementation, you'd save this to a dedicated audit table
-      console.log('Module Access Audit:', {
-        tenant_id: tenantId,
-        user_id: userId,
-        module_name: moduleName,
-        access_granted: accessGranted,
-        access_source: accessSource,
-        subscription_details: subscriptionDetails,
-        override_details: overrideDetails,
-        timestamp: new Date().toISOString()
-      });
+      // Get tenant subscription overview
+      const overview = await SubscriptionService.getTenantSubscriptionOverview(tenantId);
       
-      // TODO: Implement actual audit logging to database
-      // await supabase.from('module_access_audit').insert([auditData]);
-    } catch (error) {
-      console.error('Error logging module access:', error);
-    }
-  }
+      // Get modules available via subscription
+      let subscriptionModules = 0;
+      let planName = 'No Plan';
+      
+      if (overview?.tenantSubscription) {
+        const { data: permissions } = await supabase
+          .from('module_permissions')
+          .select('*')
+          .eq('plan_id', overview.tenantSubscription.plan_id)
+          .eq('is_enabled', true);
+        
+        subscriptionModules = permissions?.length || 0;
+        planName = overview.tenantSubscription.subscription_plans?.name || 'Unknown Plan';
+      }
 
-  /**
-   * Get access statistics for a tenant
-   */
-  static async getAccessStats(tenantId: string) {
-    try {
-      // Get subscription-based modules
-      const { data: tenantSub } = await (supabase as any)
-        .from('tenant_subscriptions')
-        .select(`
-          *,
-          subscription_plans(*),
-          module_permissions:module_permissions!inner(*)
-        `)
-        .eq('tenant_id', tenantId)
-        .eq('status', 'active')
-        .single();
-
-      // Get override assignments
-      const { data: overrides } = await (supabase as any)
+      // Get modules available via override
+      const { data: overrides } = await supabase
         .from('tenant_module_assignments')
-        .select(`
-          *,
-          system_modules(*)
-        `)
+        .select('*')
         .eq('tenant_id', tenantId)
         .eq('is_enabled', true);
 
-      const subscriptionModules = tenantSub?.module_permissions?.filter((p: any) => p.is_enabled) || [];
-      const overrideModules = overrides?.filter((o: any) => {
-        const now = new Date();
-        return !o.expires_at || new Date(o.expires_at) > now;
-      }) || [];
+      const overrideModules = overrides?.length || 0;
 
       return {
-        subscriptionModules: subscriptionModules.length,
-        overrideModules: overrideModules.length,
-        totalActiveModules: subscriptionModules.length + overrideModules.length,
-        planName: tenantSub?.subscription_plans?.name || 'No Plan',
-        overrideDetails: overrideModules.map((o: any) => ({
-          moduleName: o.system_modules?.name,
-          assignedAt: o.assigned_at,
-          expiresAt: o.expires_at
-        }))
+        subscriptionModules,
+        overrideModules,
+        totalActiveModules: subscriptionModules + overrideModules,
+        planName
       };
     } catch (error) {
       console.error('Error getting access stats:', error);
@@ -96,8 +63,7 @@ export class ModuleAccessService {
         subscriptionModules: 0,
         overrideModules: 0,
         totalActiveModules: 0,
-        planName: 'Error',
-        overrideDetails: []
+        planName: 'Error'
       };
     }
   }
@@ -105,28 +71,92 @@ export class ModuleAccessService {
   /**
    * Get modules that need migration from override to subscription
    */
-  static async getModulesNeedingMigration(tenantId: string) {
+  static async getModulesNeedingMigration(tenantId: string): Promise<ModuleMigrationCandidate[]> {
     try {
-      const { data: overrides } = await (supabase as any)
+      const { data: assignments } = await supabase
         .from('tenant_module_assignments')
         .select(`
           *,
-          system_modules(*)
+          module:system_modules(name, category)
         `)
         .eq('tenant_id', tenantId)
         .eq('is_enabled', true);
 
-      return overrides?.map((o: any) => ({
-        id: o.id,
-        moduleName: o.system_modules?.name,
-        moduleCategory: o.system_modules?.category,
-        assignedAt: o.assigned_at,
-        expiresAt: o.expires_at,
-        customLimits: o.custom_limits
-      })) || [];
+      if (!assignments) return [];
+
+      return assignments.map(assignment => ({
+        id: assignment.id,
+        moduleName: assignment.module?.name || 'Unknown Module',
+        moduleCategory: assignment.module?.category || 'Unknown',
+        assignedAt: assignment.assigned_at,
+        expiresAt: assignment.expires_at || undefined,
+        assignedBy: assignment.assigned_by
+      }));
     } catch (error) {
-      console.error('Error getting modules needing migration:', error);
+      console.error('Error getting migration candidates:', error);
       return [];
+    }
+  }
+
+  /**
+   * Check if a module is enabled for a tenant (via any method)
+   */
+  static async isModuleEnabled(tenantId: string, moduleName: string): Promise<{
+    enabled: boolean;
+    source: 'subscription' | 'override' | 'none';
+  }> {
+    try {
+      // First check subscription-based access
+      const overview = await SubscriptionService.getTenantSubscriptionOverview(tenantId);
+      
+      if (overview?.tenantSubscription) {
+        const { data: permission } = await supabase
+          .from('module_permissions')
+          .select('*')
+          .eq('plan_id', overview.tenantSubscription.plan_id)
+          .eq('module_name', moduleName)
+          .eq('is_enabled', true)
+          .single();
+
+        if (permission) {
+          return { enabled: true, source: 'subscription' };
+        }
+      }
+
+      // Check override access
+      const { data: assignment } = await supabase
+        .from('tenant_module_assignments')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('module_id', (await this.getModuleIdByName(moduleName)) || '')
+        .eq('is_enabled', true)
+        .single();
+
+      if (assignment) {
+        return { enabled: true, source: 'override' };
+      }
+
+      return { enabled: false, source: 'none' };
+    } catch (error) {
+      console.error('Error checking module enablement:', error);
+      return { enabled: false, source: 'none' };
+    }
+  }
+
+  /**
+   * Helper to get module ID by name
+   */
+  private static async getModuleIdByName(moduleName: string): Promise<string | null> {
+    try {
+      const { data: module } = await supabase
+        .from('system_modules')
+        .select('id')
+        .eq('name', moduleName)
+        .single();
+
+      return module?.id || null;
+    } catch (error) {
+      return null;
     }
   }
 }

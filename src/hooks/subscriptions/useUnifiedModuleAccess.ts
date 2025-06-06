@@ -70,12 +70,11 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
   try {
     // Get user's active subscription first (if userId provided)
     if (userId) {
-      const { data: userSubscription, error: userSubError } = await (supabase as any)
+      const { data: userSubscription, error: userSubError } = await supabase
         .from('user_subscriptions')
         .select(`
           *,
-          subscription_plans(*),
-          profiles!user_subscriptions_user_id_fkey(id, email, full_name)
+          subscription_plans(*)
         `)
         .eq('user_id', userId)
         .eq('tenant_id', tenantId)
@@ -83,17 +82,30 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
         .single();
 
       if (!userSubError && userSubscription) {
-        const moduleAccess = await checkModulePermission(userSubscription.plan_id, moduleName);
-        if (moduleAccess.hasAccess) {
+        // Check if this plan includes the module
+        const { data: permission } = await supabase
+          .from('module_permissions')
+          .select('*')
+          .eq('plan_id', userSubscription.plan_id)
+          .eq('module_name', moduleName)
+          .eq('is_enabled', true)
+          .single();
+
+        if (permission) {
           return {
-            ...moduleAccess,
+            hasAccess: true,
+            module: {
+              module_name: moduleName,
+              is_enabled: true,
+              limits: permission.limits as Record<string, any>
+            },
             plan: userSubscription.subscription_plans,
             subscription: userSubscription,
             subscriptionType: 'user',
             accessSource: 'subscription',
             subscriptionDetails: {
               subscriptionType: 'user',
-              planName: userSubscription.subscription_plans.name,
+              planName: userSubscription.subscription_plans?.name || 'Unknown',
               status: userSubscription.status
             }
           };
@@ -101,8 +113,8 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
       }
     }
 
-    // Fall back to tenant subscription
-    const { data: tenantSubscription, error: tenantSubError } = await (supabase as any)
+    // Check tenant subscription
+    const { data: tenantSubscription, error: tenantSubError } = await supabase
       .from('tenant_subscriptions')
       .select(`
         *,
@@ -112,29 +124,44 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
       .eq('status', 'active')
       .single();
 
-    if (tenantSubError || !tenantSubscription) {
-      return {
-        hasAccess: false,
-        module: null,
-        plan: null,
-        subscription: null,
-        subscriptionType: null,
-        accessSource: 'none'
-      };
+    if (!tenantSubError && tenantSubscription) {
+      // Check if this plan includes the module
+      const { data: permission } = await supabase
+        .from('module_permissions')
+        .select('*')
+        .eq('plan_id', tenantSubscription.plan_id)
+        .eq('module_name', moduleName)
+        .eq('is_enabled', true)
+        .single();
+
+      if (permission) {
+        return {
+          hasAccess: true,
+          module: {
+            module_name: moduleName,
+            is_enabled: true,
+            limits: permission.limits as Record<string, any>
+          },
+          plan: tenantSubscription.subscription_plans,
+          subscription: tenantSubscription,
+          subscriptionType: 'tenant',
+          accessSource: 'subscription',
+          subscriptionDetails: {
+            subscriptionType: 'tenant',
+            planName: tenantSubscription.subscription_plans?.name || 'Unknown',
+            status: tenantSubscription.status
+          }
+        };
+      }
     }
 
-    const moduleAccess = await checkModulePermission(tenantSubscription.plan_id, moduleName);
     return {
-      ...moduleAccess,
-      plan: tenantSubscription.subscription_plans,
-      subscription: tenantSubscription,
-      subscriptionType: 'tenant',
-      accessSource: 'subscription',
-      subscriptionDetails: {
-        subscriptionType: 'tenant',
-        planName: tenantSubscription.subscription_plans.name,
-        status: tenantSubscription.status
-      }
+      hasAccess: false,
+      module: null,
+      plan: null,
+      subscription: null,
+      subscriptionType: null,
+      accessSource: 'none'
     };
   } catch (error) {
     console.error('Error checking subscription access:', error);
@@ -151,15 +178,14 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
 
 async function checkTenantOverrideAccess(tenantId: string, moduleName: string): Promise<UnifiedAccessResult> {
   try {
-    // Get the module first
-    const { data: systemModule, error: moduleError } = await (supabase as any)
+    // Get module ID first
+    const { data: module } = await supabase
       .from('system_modules')
-      .select('*')
+      .select('id, name')
       .eq('name', moduleName)
-      .eq('is_active', true)
       .single();
 
-    if (moduleError || !systemModule) {
+    if (!module) {
       return {
         hasAccess: false,
         module: null,
@@ -171,18 +197,15 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
     }
 
     // Check tenant module assignment
-    const { data: assignment, error: assignmentError } = await (supabase as any)
+    const { data: assignment, error } = await supabase
       .from('tenant_module_assignments')
-      .select(`
-        *,
-        profiles!tenant_module_assignments_assigned_by_fkey(full_name)
-      `)
+      .select('*')
       .eq('tenant_id', tenantId)
-      .eq('module_id', systemModule.id)
+      .eq('module_id', module.id)
       .eq('is_enabled', true)
       .single();
 
-    if (assignmentError || !assignment) {
+    if (error || !assignment) {
       return {
         hasAccess: false,
         module: null,
@@ -194,10 +217,7 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
     }
 
     // Check if assignment is expired
-    const now = new Date();
-    const isExpired = assignment.expires_at && new Date(assignment.expires_at) <= now;
-
-    if (isExpired) {
+    if (assignment.expires_at && new Date(assignment.expires_at) <= new Date()) {
       return {
         hasAccess: false,
         module: null,
@@ -211,18 +231,18 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
     return {
       hasAccess: true,
       module: {
-        module_name: systemModule.name,
+        module_name: moduleName,
         is_enabled: true,
-        limits: assignment.custom_limits || systemModule.default_limits || {}
+        limits: assignment.custom_limits as Record<string, any> || {}
       },
       plan: null,
       subscription: null,
       subscriptionType: null,
       accessSource: 'tenant_override',
       overrideDetails: {
-        assignedBy: assignment.profiles?.full_name || 'System',
+        assignedBy: assignment.assigned_by,
         assignedAt: assignment.assigned_at,
-        expiresAt: assignment.expires_at
+        expiresAt: assignment.expires_at || undefined
       }
     };
   } catch (error) {
@@ -236,29 +256,4 @@ async function checkTenantOverrideAccess(tenantId: string, moduleName: string): 
       accessSource: 'none'
     };
   }
-}
-
-async function checkModulePermission(planId: string, moduleName: string) {
-  const { data: permission, error: permError } = await (supabase as any)
-    .from('module_permissions')
-    .select('*')
-    .eq('plan_id', planId)
-    .eq('module_name', moduleName)
-    .single();
-
-  if (permError || !permission) {
-    return {
-      hasAccess: false,
-      module: null
-    };
-  }
-
-  return {
-    hasAccess: permission.is_enabled,
-    module: {
-      module_name: permission.module_name,
-      is_enabled: permission.is_enabled,
-      limits: permission.limits
-    }
-  };
 }
