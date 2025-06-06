@@ -7,7 +7,7 @@ export interface ModuleAIConfig {
   direct_assignment: string | null;
   preferred_agents: string[];
   token_budget: number;
-  overage_policy: 'block' | 'allow' | 'notify';
+  overage_policy: 'block' | 'warn' | 'charge';
   performance_weights: {
     speed: number;
     accuracy: number;
@@ -19,7 +19,7 @@ const defaultConfig: ModuleAIConfig = {
   direct_assignment: null,
   preferred_agents: [],
   token_budget: 10000,
-  overage_policy: 'notify',
+  overage_policy: 'warn',
   performance_weights: {
     speed: 0.3,
     accuracy: 0.5,

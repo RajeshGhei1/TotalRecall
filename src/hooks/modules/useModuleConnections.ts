@@ -17,29 +17,56 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Map module names to their respective table names
-  const getTableName = (moduleName: string) => {
-    const tableMap: Record<string, string> = {
-      'social_media_integration': 'tenant_social_media_connections',
-      'communication_platforms': 'tenant_communication_connections',
-      'video_conferencing': 'tenant_video_connections',
-      'billing_integrations': 'tenant_billing_connections',
-      'api_connectors': 'tenant_api_connections'
-    };
-    return tableMap[moduleName];
-  };
-
   const { data: connections, isLoading } = useQuery({
     queryKey: ['module-connections', moduleName, tenantId],
     queryFn: async (): Promise<ModuleConnection[]> => {
-      const tableName = getTableName(moduleName);
-      if (!tableName || !tenantId) return [];
+      if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
+      let data: any[] = [];
+      let error: any = null;
+
+      // Use explicit table queries based on module name
+      if (moduleName === 'social_media_integration') {
+        const result = await supabase
+          .from('tenant_social_media_connections')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+        data = result.data || [];
+        error = result.error;
+      } else if (moduleName === 'communication_platforms') {
+        const result = await supabase
+          .from('tenant_communication_connections')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+        data = result.data || [];
+        error = result.error;
+      } else if (moduleName === 'video_conferencing') {
+        const result = await supabase
+          .from('tenant_video_connections')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+        data = result.data || [];
+        error = result.error;
+      } else if (moduleName === 'billing_integrations') {
+        const result = await supabase
+          .from('tenant_billing_connections')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+        data = result.data || [];
+        error = result.error;
+      } else if (moduleName === 'api_connectors') {
+        const result = await supabase
+          .from('tenant_api_connections')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+        data = result.data || [];
+        error = result.error;
+      }
 
       if (error) throw error;
       return data || [];
@@ -53,17 +80,62 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
       connection_config: Record<string, any>;
       expires_at?: string;
     }) => {
-      const tableName = getTableName(moduleName);
-      if (!tableName || !tenantId) throw new Error('Invalid module or tenant');
+      if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from(tableName)
-        .insert([{
-          tenant_id: tenantId,
-          ...connectionData
-        }])
-        .select()
-        .single();
+      let data: any = null;
+      let error: any = null;
+
+      const baseData = {
+        tenant_id: tenantId,
+        ...connectionData
+      };
+
+      if (moduleName === 'social_media_integration') {
+        const result = await supabase
+          .from('tenant_social_media_connections')
+          .insert([baseData])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'communication_platforms') {
+        const result = await supabase
+          .from('tenant_communication_connections')
+          .insert([baseData])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'video_conferencing') {
+        const result = await supabase
+          .from('tenant_video_connections')
+          .insert([baseData])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'billing_integrations') {
+        const result = await supabase
+          .from('tenant_billing_connections')
+          .insert([baseData])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'api_connectors') {
+        const result = await supabase
+          .from('tenant_api_connections')
+          .insert([{
+            ...baseData,
+            connection_name: connectionData.platform,
+            api_endpoint: 'https://api.example.com',
+            authentication_config: connectionData.connection_config
+          }])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
       return data;
@@ -89,15 +161,55 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
       id: string; 
       updates: Partial<ModuleConnection> 
     }) => {
-      const tableName = getTableName(moduleName);
-      if (!tableName) throw new Error('Invalid module');
+      let data: any = null;
+      let error: any = null;
 
-      const { data, error } = await supabase
-        .from(tableName)
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      if (moduleName === 'social_media_integration') {
+        const result = await supabase
+          .from('tenant_social_media_connections')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'communication_platforms') {
+        const result = await supabase
+          .from('tenant_communication_connections')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'video_conferencing') {
+        const result = await supabase
+          .from('tenant_video_connections')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'billing_integrations') {
+        const result = await supabase
+          .from('tenant_billing_connections')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else if (moduleName === 'api_connectors') {
+        const result = await supabase
+          .from('tenant_api_connections')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
       return data;
@@ -120,13 +232,39 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
 
   const deleteConnectionMutation = useMutation({
     mutationFn: async (id: string) => {
-      const tableName = getTableName(moduleName);
-      if (!tableName) throw new Error('Invalid module');
+      let error: any = null;
 
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id);
+      if (moduleName === 'social_media_integration') {
+        const result = await supabase
+          .from('tenant_social_media_connections')
+          .delete()
+          .eq('id', id);
+        error = result.error;
+      } else if (moduleName === 'communication_platforms') {
+        const result = await supabase
+          .from('tenant_communication_connections')
+          .delete()
+          .eq('id', id);
+        error = result.error;
+      } else if (moduleName === 'video_conferencing') {
+        const result = await supabase
+          .from('tenant_video_connections')
+          .delete()
+          .eq('id', id);
+        error = result.error;
+      } else if (moduleName === 'billing_integrations') {
+        const result = await supabase
+          .from('tenant_billing_connections')
+          .delete()
+          .eq('id', id);
+        error = result.error;
+      } else if (moduleName === 'api_connectors') {
+        const result = await supabase
+          .from('tenant_api_connections')
+          .delete()
+          .eq('id', id);
+        error = result.error;
+      }
 
       if (error) throw error;
     },

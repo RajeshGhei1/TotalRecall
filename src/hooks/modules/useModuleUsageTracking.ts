@@ -35,7 +35,14 @@ export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) =
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to ensure proper typing
+      return (data || []).map(item => ({
+        ...item,
+        metadata: typeof item.metadata === 'object' && item.metadata !== null 
+          ? item.metadata as Record<string, any>
+          : {}
+      }));
     },
     enabled: !!tenantId
   });
@@ -69,11 +76,18 @@ export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) =
 
       if (existing) {
         // Update existing record
+        const updatedMetadata = {
+          ...(typeof existing.metadata === 'object' && existing.metadata !== null 
+            ? existing.metadata as Record<string, any> 
+            : {}),
+          ...(usage.metadata || {})
+        };
+
         const { data, error } = await supabase
           .from('module_usage_tracking')
           .update({
             usage_count: existing.usage_count + (usage.usage_count || 1),
-            metadata: { ...existing.metadata, ...usage.metadata }
+            metadata: updatedMetadata
           })
           .eq('id', existing.id)
           .select()
