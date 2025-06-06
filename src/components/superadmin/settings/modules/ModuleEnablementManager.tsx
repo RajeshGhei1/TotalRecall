@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,11 +21,13 @@ import { SubscriptionService } from '@/services/subscriptionService';
 interface ModuleEnablementManagerProps {
   tenantId: string;
   tenantName: string;
+  onConfigureModule?: (moduleName: string) => void;
 }
 
 const ModuleEnablementManager: React.FC<ModuleEnablementManagerProps> = ({
   tenantId,
-  tenantName
+  tenantName,
+  onConfigureModule
 }) => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
 
@@ -79,10 +80,20 @@ const ModuleEnablementManager: React.FC<ModuleEnablementManagerProps> = ({
     return <Badge className="bg-amber-100 text-amber-800 border-amber-300">Via Override</Badge>;
   };
 
+  const handleConfigureModule = (moduleName: string) => {
+    if (onConfigureModule) {
+      onConfigureModule(moduleName);
+    }
+  };
+
   const getActionButton = (moduleName: string, status: ReturnType<typeof getModuleStatus>) => {
     if (status.enabled) {
       return (
-        <Button size="sm" variant="outline">
+        <Button 
+          size="sm" 
+          variant="outline"
+          onClick={() => handleConfigureModule(moduleName)}
+        >
           <Settings className="h-4 w-4 mr-1" />
           Configure
         </Button>

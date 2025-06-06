@@ -20,6 +20,11 @@ const IntegrationsTabContent = () => {
   const { tenants } = useTenants();
   const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
 
+  const handleConfigureModule = (moduleName: string) => {
+    setSelectedIntegration(moduleName);
+    setCurrentView('module-config');
+  };
+
   if (!selectedTenantId) {
     return (
       <Card>
@@ -75,6 +80,7 @@ const IntegrationsTabContent = () => {
             <ModuleEnablementManager
               tenantId={selectedTenantId}
               tenantName={selectedTenant.name}
+              onConfigureModule={handleConfigureModule}
             />
           )}
         </TabsContent>
