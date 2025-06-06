@@ -99,8 +99,8 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
               is_enabled: true,
               limits: permission.limits as Record<string, any>
             },
-            plan: userSubscription.subscription_plans,
-            subscription: userSubscription,
+            plan: userSubscription.subscription_plans as any, // Type assertion to avoid strict typing issues
+            subscription: userSubscription as any, // Type assertion to avoid strict typing issues
             subscriptionType: 'user',
             accessSource: 'subscription',
             subscriptionDetails: {
@@ -142,8 +142,8 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
             is_enabled: true,
             limits: permission.limits as Record<string, any>
           },
-          plan: tenantSubscription.subscription_plans,
-          subscription: tenantSubscription,
+          plan: tenantSubscription.subscription_plans as any, // Type assertion to avoid strict typing issues
+          subscription: tenantSubscription as any, // Type assertion to avoid strict typing issues
           subscriptionType: 'tenant',
           accessSource: 'subscription',
           subscriptionDetails: {
