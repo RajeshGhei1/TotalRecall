@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTenantContext } from '@/contexts/TenantContext';
 import LinkedInCredentialsSetup from '@/components/linkedin/LinkedInCredentialsSetup';
 import LinkedInIntegration from '@/components/superadmin/settings/modules/integrations/LinkedInIntegration';
+import ContactEnrichmentDashboard from '@/components/linkedin/enrichment/ContactEnrichmentDashboard';
 import { 
   Settings,
   Users,
@@ -65,25 +66,7 @@ const LinkedInIntegrationPage = () => {
         </TabsContent>
 
         <TabsContent value="enrichment" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Contact Data Enrichment
-              </CardTitle>
-              <CardDescription>
-                Enhance your contact database with LinkedIn profile information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">
-                  Data enrichment features will be available once LinkedIn integration is configured.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ContactEnrichmentDashboard />
         </TabsContent>
 
         <TabsContent value="automation" className="mt-6">
