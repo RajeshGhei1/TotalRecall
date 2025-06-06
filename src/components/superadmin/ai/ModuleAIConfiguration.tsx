@@ -17,7 +17,7 @@ import { PerformanceTab } from './configuration/PerformanceTab';
 
 export const ModuleAIConfiguration: React.FC = () => {
   const { data: modules, isLoading: modulesLoading } = useSystemModules();
-  const { agents, isLoading: agentsLoading } = useUnifiedAIOrchestration();
+  const { agents, agentsLoading } = useUnifiedAIOrchestration();
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [activeTab, setActiveTab] = useState('assignments');
 
