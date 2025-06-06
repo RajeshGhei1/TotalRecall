@@ -26,15 +26,13 @@ export interface LinkedInPosition {
 export interface LinkedInConnection {
   id: string;
   tenant_id: string;
-  access_token: string;
-  refresh_token?: string;
-  expires_at: string;
+  platform: string;
   is_active: boolean;
-  connection_config: {
-    client_id: string;
-    client_secret: string;
-    scopes: string[];
-  };
+  expires_at: string;
+  connection_config: any;
+  connected_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 class LinkedInService {
@@ -91,17 +89,19 @@ class LinkedInService {
       const linkedinProfile = await this.searchProfileByEmail(person.email, tenantId);
       
       if (linkedinProfile) {
-        // Store the LinkedIn data
+        // Store the LinkedIn data with proper Json formatting
+        const enrichmentData = {
+          linkedin_profile: linkedinProfile as any,
+          last_enriched: new Date().toISOString()
+        };
+
         await supabase
           .from('custom_field_values')
           .upsert({
             entity_id: personId,
             entity_type: 'contact',
-            field_id: null, // We'll need to create custom fields for LinkedIn data
-            value: {
-              linkedin_profile: linkedinProfile,
-              last_enriched: new Date().toISOString()
-            }
+            field_id: null,
+            value: enrichmentData
           });
 
         return true;
