@@ -46,7 +46,7 @@ class LinkedInApiService {
   private getConnection = async (tenantId: string): Promise<LinkedInConnection | null> => {
     const { data, error } = await supabase
       .from('tenant_social_media_connections')
-      .select('id, tenant_id, platform, access_token, refresh_token, token_expires_at, is_active, connection_config, connected_at, created_at, updated_at')
+      .select('*')
       .eq('tenant_id', tenantId)
       .eq('platform', 'linkedin')
       .eq('is_active', true)
@@ -57,16 +57,17 @@ class LinkedInApiService {
       return null;
     }
     
+    // Map the database fields to our interface, handling missing token fields
     return {
       id: data.id,
       tenant_id: data.tenant_id,
       platform: data.platform,
-      access_token: data.access_token || undefined,
-      refresh_token: data.refresh_token || undefined,
-      token_expires_at: data.token_expires_at || undefined,
+      access_token: data.connection_config?.access_token,
+      refresh_token: data.connection_config?.refresh_token,
+      token_expires_at: data.connection_config?.token_expires_at,
       is_active: data.is_active,
       connection_config: data.connection_config,
-      connected_at: data.connected_at || undefined,
+      connected_at: data.connected_at,
       created_at: data.created_at,
       updated_at: data.updated_at
     };
@@ -89,11 +90,11 @@ class LinkedInApiService {
         .upsert({
           tenant_id: tenantId,
           platform: 'linkedin',
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          token_expires_at: expiresAt,
           is_active: true,
           connection_config: {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            token_expires_at: expiresAt,
             permissions: ['r_liteprofile', 'r_emailaddress', 'w_member_social']
           }
         });
