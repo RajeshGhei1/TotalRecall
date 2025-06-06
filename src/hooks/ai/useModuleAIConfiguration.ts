@@ -28,7 +28,7 @@ export const useModuleAIConfiguration = (selectedModule: string, tenantId?: stri
   const [moduleConfigs, setModuleConfigs] = useState<Record<string, ModuleConfig>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize config from database assignments
+  // Initialize config from assignments
   useEffect(() => {
     if (selectedModule && assignments) {
       const directAssignment = assignments.find(a => a.assignment_type === 'direct');
@@ -82,8 +82,9 @@ export const useModuleAIConfiguration = (selectedModule: string, tenantId?: stri
       }
 
       // Handle preferred agents
-      // First, remove existing preferred assignments
       const existingPreferred = assignments?.filter(a => a.assignment_type === 'preferred') || [];
+      
+      // Remove assignments that are no longer in preferred list
       for (const assignment of existingPreferred) {
         if (!config.preferred_agents.includes(assignment.agent_id)) {
           await deleteAssignment.mutateAsync(assignment.id);

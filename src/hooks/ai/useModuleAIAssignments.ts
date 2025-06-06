@@ -1,95 +1,111 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { ModuleAIAssignment, ModuleAIAssignmentType } from '@/types/ai';
+
+// Mock data for development until the database table is created
+const mockAssignments: ModuleAIAssignment[] = [
+  {
+    id: '1',
+    module_id: 'hr-module',
+    agent_id: 'cognitive-agent-1',
+    tenant_id: null,
+    assignment_type: 'direct',
+    priority: 0,
+    is_active: true,
+    performance_weights: { accuracy: 0.4, speed: 0.3, cost: 0.3 },
+    token_budget_override: 10000,
+    assigned_by: 'admin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    module_id: 'hr-module',
+    agent_id: 'predictive-agent-1',
+    tenant_id: null,
+    assignment_type: 'preferred',
+    priority: 1,
+    is_active: true,
+    performance_weights: { accuracy: 0.5, speed: 0.2, cost: 0.3 },
+    assigned_by: 'admin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
 
 export const useModuleAIAssignments = (moduleId?: string, tenantId?: string) => {
   const queryClient = useQueryClient();
 
-  // Fetch assignments for a specific module
+  // Mock query that filters assignments by moduleId
   const { data: assignments, isLoading, error } = useQuery({
     queryKey: ['module-ai-assignments', moduleId, tenantId],
     queryFn: async () => {
-      let query = supabase
-        .from('module_ai_assignments')
-        .select(`
-          *,
-          ai_agents(id, name, type, capabilities),
-          system_modules(id, name, category)
-        `)
-        .eq('is_active', true);
-
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      let filtered = mockAssignments;
+      
       if (moduleId) {
-        query = query.eq('module_id', moduleId);
+        filtered = filtered.filter(assignment => assignment.module_id === moduleId);
       }
-
+      
       if (tenantId) {
-        query = query.eq('tenant_id', tenantId);
+        filtered = filtered.filter(assignment => assignment.tenant_id === tenantId);
       } else {
-        query = query.is('tenant_id', null);
+        filtered = filtered.filter(assignment => assignment.tenant_id === null);
       }
-
-      query = query.order('assignment_type', { ascending: false })
-                   .order('priority', { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as ModuleAIAssignment[];
+      
+      return filtered;
     },
     enabled: !!moduleId,
   });
 
-  // Create assignment
+  // Mock mutations
   const createAssignment = useMutation({
     mutationFn: async (assignment: Omit<ModuleAIAssignment, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('module_ai_assignments')
-        .insert([assignment])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const newAssignment = {
+        ...assignment,
+        id: `mock-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      mockAssignments.push(newAssignment);
+      return newAssignment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-ai-assignments'] });
     },
   });
 
-  // Update assignment
   const updateAssignment = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ModuleAIAssignment> }) => {
-      const { data, error } = await supabase
-        .from('module_ai_assignments')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const index = mockAssignments.findIndex(a => a.id === id);
+      if (index !== -1) {
+        mockAssignments[index] = { ...mockAssignments[index], ...updates, updated_at: new Date().toISOString() };
+        return mockAssignments[index];
+      }
+      throw new Error('Assignment not found');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-ai-assignments'] });
     },
   });
 
-  // Delete assignment
   const deleteAssignment = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('module_ai_assignments')
-        .update({ is_active: false })
-        .eq('id', id);
-
-      if (error) throw error;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const index = mockAssignments.findIndex(a => a.id === id);
+      if (index !== -1) {
+        mockAssignments[index].is_active = false;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-ai-assignments'] });
     },
   });
 
-  // Set direct assignment (ensures only one direct assignment per module/tenant)
   const setDirectAssignment = useMutation({
     mutationFn: async ({ 
       moduleId, 
@@ -102,38 +118,41 @@ export const useModuleAIAssignments = (moduleId?: string, tenantId?: string) => 
       tenantId?: string;
       performanceWeights?: { accuracy: number; speed: number; cost: number };
     }) => {
-      // First, deactivate any existing direct assignments for this module/tenant
-      await supabase
-        .from('module_ai_assignments')
-        .update({ is_active: false })
-        .eq('module_id', moduleId)
-        .eq('assignment_type', 'direct')
-        .eq('tenant_id', tenantId || null);
-
-      // Then create the new direct assignment
-      const { data, error } = await supabase
-        .from('module_ai_assignments')
-        .insert([{
-          module_id: moduleId,
-          agent_id: agentId,
-          tenant_id: tenantId,
-          assignment_type: 'direct' as ModuleAIAssignmentType,
-          priority: 0,
-          is_active: true,
-          performance_weights: performanceWeights || { accuracy: 0.4, speed: 0.3, cost: 0.3 },
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Deactivate existing direct assignments
+      mockAssignments.forEach(assignment => {
+        if (assignment.module_id === moduleId && 
+            assignment.assignment_type === 'direct' && 
+            assignment.tenant_id === (tenantId || null)) {
+          assignment.is_active = false;
+        }
+      });
+      
+      // Create new direct assignment
+      const newAssignment: ModuleAIAssignment = {
+        id: `direct-${Date.now()}`,
+        module_id: moduleId,
+        agent_id: agentId,
+        tenant_id: tenantId || null,
+        assignment_type: 'direct',
+        priority: 0,
+        is_active: true,
+        performance_weights: performanceWeights || { accuracy: 0.4, speed: 0.3, cost: 0.3 },
+        token_budget_override: 10000,
+        assigned_by: 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      mockAssignments.push(newAssignment);
+      return newAssignment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-ai-assignments'] });
     },
   });
 
-  // Add preferred assignment
   const addPreferredAssignment = useMutation({
     mutationFn: async ({ 
       moduleId, 
@@ -146,22 +165,24 @@ export const useModuleAIAssignments = (moduleId?: string, tenantId?: string) => 
       tenantId?: string;
       priority?: number;
     }) => {
-      const { data, error } = await supabase
-        .from('module_ai_assignments')
-        .insert([{
-          module_id: moduleId,
-          agent_id: agentId,
-          tenant_id: tenantId,
-          assignment_type: 'preferred' as ModuleAIAssignmentType,
-          priority,
-          is_active: true,
-          performance_weights: { accuracy: 0.4, speed: 0.3, cost: 0.3 },
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const newAssignment: ModuleAIAssignment = {
+        id: `preferred-${Date.now()}`,
+        module_id: moduleId,
+        agent_id: agentId,
+        tenant_id: tenantId || null,
+        assignment_type: 'preferred',
+        priority,
+        is_active: true,
+        performance_weights: { accuracy: 0.4, speed: 0.3, cost: 0.3 },
+        assigned_by: 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      mockAssignments.push(newAssignment);
+      return newAssignment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['module-ai-assignments'] });
@@ -185,19 +206,8 @@ export const useAllModuleAIAssignments = () => {
   return useQuery({
     queryKey: ['all-module-ai-assignments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('module_ai_assignments')
-        .select(`
-          *,
-          ai_agents(id, name, type, capabilities),
-          system_modules(id, name, category),
-          profiles!module_ai_assignments_assigned_by_fkey(id, full_name, email)
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return mockAssignments.filter(a => a.is_active);
     },
   });
 };

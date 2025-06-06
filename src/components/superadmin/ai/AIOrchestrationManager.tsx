@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { AIAgentManagement } from './AIAgentManagement';
+import { ModuleAIConfiguration } from './ModuleAIConfiguration';
 import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
 import { LearningInsightsDashboard, DecisionFeedbackInterface, ContextAnalysisVisualization } from './learning';
 import { PredictiveInsightsDashboard } from './insights';
@@ -141,18 +143,22 @@ export const AIOrchestrationManager = () => {
         <div className="overflow-x-auto">
           <TabsList className="flex w-full lg:w-auto min-w-full lg:min-w-0">
             <TabsTrigger value="agents" className="flex-1 lg:flex-none text-xs sm:text-sm">Agents</TabsTrigger>
+            <TabsTrigger value="module-config" className="flex-1 lg:flex-none text-xs sm:text-sm">Module Config</TabsTrigger>
             <TabsTrigger value="testing" className="flex-1 lg:flex-none text-xs sm:text-sm">Testing</TabsTrigger>
             <TabsTrigger value="predictive-insights" className="flex-1 lg:flex-none text-xs sm:text-sm">Insights</TabsTrigger>
             <TabsTrigger value="learning-dashboard" className="flex-1 lg:flex-none text-xs sm:text-sm">Learning</TabsTrigger>
             <TabsTrigger value="feedback-interface" className="flex-1 lg:flex-none text-xs sm:text-sm">Feedback</TabsTrigger>
             <TabsTrigger value="context-analysis" className="flex-1 lg:flex-none text-xs sm:text-sm">Context</TabsTrigger>
             <TabsTrigger value="metrics" className="flex-1 lg:flex-none text-xs sm:text-sm">Metrics</TabsTrigger>
-            <TabsTrigger value="performance" className="flex-1 lg:flex-none text-xs sm:text-sm">Performance</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="agents">
           <AIAgentManagement />
+        </TabsContent>
+
+        <TabsContent value="module-config">
+          <ModuleAIConfiguration />
         </TabsContent>
 
         <TabsContent value="testing">
@@ -243,52 +249,6 @@ export const AIOrchestrationManager = () => {
 
         <TabsContent value="metrics">
           <EnhancedAIMetrics />
-        </TabsContent>
-
-        <TabsContent value="performance">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Request Statistics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Total Requests:</span>
-                  <Badge variant="outline">{metrics.totalRequests}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Cache Hits:</span>
-                  <Badge variant="outline">{metrics.cacheHits}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Cache Hit Rate:</span>
-                  <Badge variant="outline">{metrics.cacheHitRate.toFixed(1)}%</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>System Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Active Agents:</span>
-                  <Badge variant="default">{metrics.activeAgents}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Queue Size:</span>
-                  <Badge variant={metrics.queueSize > 10 ? "destructive" : "outline"}>
-                    {metrics.queueSize}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">System Status:</span>
-                  <Badge variant="default">Operational</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </div>
