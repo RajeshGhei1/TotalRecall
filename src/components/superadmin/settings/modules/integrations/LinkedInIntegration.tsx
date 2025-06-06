@@ -1,9 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -11,14 +8,15 @@ import {
   Settings, 
   CheckCircle,
   AlertCircle,
-  Copy,
   Users,
   BarChart3,
-  Unlink
+  Unlink,
+  TestTube
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { linkedinOAuthService } from '@/services/linkedinOAuthService';
 import { linkedinApiService } from '@/services/linkedinApiService';
+import { linkedinCredentialsService } from '@/services/linkedinCredentialsService';
 import { supabase } from '@/integrations/supabase/client';
 import LinkedInEnrichmentDashboard from '@/components/people/linkedin/LinkedInEnrichmentDashboard';
 
@@ -30,47 +28,47 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isCredentialsConfigured, setIsCredentialsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [credentials, setCredentials] = useState({
-    clientId: '',
-    clientSecret: '',
-    redirectUri: `${window.location.origin}/auth/linkedin/callback`
-  });
   const [connectionData, setConnectionData] = useState<any>(null);
 
-  // Check if LinkedIn is already connected
+  // Check if LinkedIn is already connected and credentials are configured
   useEffect(() => {
-    checkConnection();
+    checkIntegrationStatus();
   }, [tenantId]);
 
-  const checkConnection = async () => {
+  const checkIntegrationStatus = async () => {
     setIsLoading(true);
     try {
+      // Check if credentials are configured
+      const credentialsConfigured = await linkedinCredentialsService.isConfigured(tenantId);
+      setIsCredentialsConfigured(credentialsConfigured);
+
+      // Check if OAuth connection is active
       const { data } = await supabase
         .from('tenant_social_media_connections')
         .select('*')
         .eq('tenant_id', tenantId)
         .eq('platform', 'linkedin')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setIsConnected(true);
         setConnectionData(data);
       }
     } catch (error) {
-      // Connection doesn't exist, which is fine
-      setIsConnected(false);
+      console.error('Error checking integration status:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleConnect = async () => {
-    if (!credentials.clientId || !credentials.clientSecret) {
+    if (!isCredentialsConfigured) {
       toast({
-        title: "Missing Credentials",
-        description: "Please provide both Client ID and Client Secret",
+        title: "Credentials Required",
+        description: "Please configure LinkedIn API credentials first",
         variant: "destructive"
       });
       return;
@@ -79,25 +77,18 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
     setIsConnecting(true);
     
     try {
-      // Configure OAuth service
-      linkedinOAuthService.setConfig({
-        clientId: credentials.clientId,
-        clientSecret: credentials.clientSecret,
-        redirectUri: credentials.redirectUri,
-        scope: ['r_liteprofile', 'r_emailaddress', 'w_member_social']
-      });
-
-      // Generate state parameter with tenant ID
-      const state = btoa(JSON.stringify({ 
-        tenantId, 
-        timestamp: Date.now() 
-      }));
-
-      // Get authorization URL and redirect
-      const authUrl = linkedinOAuthService.getAuthUrl(state);
-      window.location.href = authUrl;
+      // Get authorization URL
+      const authUrl = await linkedinOAuthService.getAuthUrl(tenantId);
+      
+      if (authUrl) {
+        // Redirect to LinkedIn OAuth
+        window.location.href = authUrl;
+      } else {
+        throw new Error('Failed to generate authorization URL');
+      }
       
     } catch (error) {
+      console.error('Connection error:', error);
       toast({
         title: "Connection Failed",
         description: "Failed to initiate LinkedIn connection. Please check your credentials.",
@@ -149,12 +140,28 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied",
-      description: "Redirect URI copied to clipboard"
-    });
+  const testCredentials = async () => {
+    try {
+      const isValid = await linkedinOAuthService.testCredentials(tenantId);
+      if (isValid) {
+        toast({
+          title: "Credentials Valid",
+          description: "LinkedIn API credentials are properly configured."
+        });
+      } else {
+        toast({
+          title: "Credentials Invalid",
+          description: "LinkedIn API credentials appear to be invalid or missing.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Test Failed",
+        description: "Unable to test LinkedIn credentials.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
@@ -170,14 +177,14 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="setup" className="w-full">
+      <Tabs defaultValue="connection" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="setup">Setup & Connection</TabsTrigger>
+          <TabsTrigger value="connection">Connection Status</TabsTrigger>
           <TabsTrigger value="enrichment" disabled={!isConnected}>Data Enrichment</TabsTrigger>
           <TabsTrigger value="analytics" disabled={!isConnected}>Analytics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="setup" className="mt-6">
+        <TabsContent value="connection" className="mt-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -186,104 +193,66 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                     <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
                       <span className="text-white font-bold text-sm">in</span>
                     </div>
-                    LinkedIn Integration Setup
+                    LinkedIn Integration Status
                   </CardTitle>
                   <CardDescription>
-                    Connect your LinkedIn Developer App to enable profile matching and data enrichment
+                    Manage your LinkedIn OAuth connection and API access
                   </CardDescription>
                 </div>
-                <Badge variant={isConnected ? "default" : "secondary"}>
-                  {isConnected ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-4 h-4 mr-1" />
-                      Not Connected
-                    </>
-                  )}
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge variant={isCredentialsConfigured ? "default" : "secondary"}>
+                    {isCredentialsConfigured ? "Credentials OK" : "Credentials Needed"}
+                  </Badge>
+                  <Badge variant={isConnected ? "default" : "secondary"}>
+                    {isConnected ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Connected
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        Not Connected
+                      </>
+                    )}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!isConnected && (
-                <>
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h4 className="font-medium text-blue-900 mb-2">Setup Instructions</h4>
-                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                      <li>Go to the LinkedIn Developer Portal</li>
-                      <li>Create a new app or select an existing one</li>
-                      <li>Copy your Client ID and Client Secret</li>
-                      <li>Add the redirect URI to your app settings</li>
-                      <li>Request the following permissions: r_liteprofile, r_emailaddress, w_member_social</li>
-                    </ol>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-3 border-blue-300 text-blue-700"
-                      onClick={() => window.open('https://developer.linkedin.com/apps', '_blank')}
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Open LinkedIn Developer Portal
-                    </Button>
-                  </div>
+              {!isCredentialsConfigured && (
+                <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                  <h4 className="font-medium text-amber-900 mb-2">Credentials Required</h4>
+                  <p className="text-sm text-amber-800 mb-3">
+                    You need to configure LinkedIn API credentials before you can connect to LinkedIn.
+                    Please use the Setup tab to configure your LinkedIn Developer App credentials.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-amber-300 text-amber-700"
+                    onClick={() => window.open('https://developer.linkedin.com/apps', '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    LinkedIn Developer Portal
+                  </Button>
+                </div>
+              )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="clientId">Client ID</Label>
-                      <Input
-                        id="clientId"
-                        type="text"
-                        value={credentials.clientId}
-                        onChange={(e) => setCredentials(prev => ({ ...prev, clientId: e.target.value }))}
-                        placeholder="Your LinkedIn App Client ID"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="clientSecret">Client Secret</Label>
-                      <Input
-                        id="clientSecret"
-                        type="password"
-                        value={credentials.clientSecret}
-                        onChange={(e) => setCredentials(prev => ({ ...prev, clientSecret: e.target.value }))}
-                        placeholder="Your LinkedIn App Client Secret"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="redirectUri">Redirect URI</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="redirectUri"
-                        type="text"
-                        value={credentials.redirectUri}
-                        readOnly
-                        className="bg-gray-50"
-                      />
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => copyToClipboard(credentials.redirectUri)}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-600">
-                      Add this URL to your LinkedIn app's authorized redirect URIs
-                    </p>
-                  </div>
-
+              {isCredentialsConfigured && !isConnected && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-900 mb-2">Ready to Connect</h4>
+                  <p className="text-sm text-blue-800 mb-3">
+                    LinkedIn API credentials are configured. Click the button below to authorize the connection.
+                  </p>
                   <Button 
                     onClick={handleConnect} 
-                    disabled={isConnecting || !credentials.clientId || !credentials.clientSecret}
+                    disabled={isConnecting}
                     className="w-full"
                   >
                     {isConnecting ? "Connecting..." : "Connect to LinkedIn"}
                   </Button>
-                </>
+                </div>
               )}
 
               {isConnected && (
@@ -295,7 +264,7 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                     </p>
                     {connectionData && (
                       <div className="text-xs text-green-700 mt-2">
-                        Connected on: {new Date(connectionData.connected_at).toLocaleDateString()}
+                        Connected on: {new Date(connectionData.connected_at || connectionData.created_at).toLocaleDateString()}
                       </div>
                     )}
                   </div>
@@ -309,7 +278,6 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                           <li>• Bulk contact enrichment</li>
                           <li>• Automatic profile linking</li>
                           <li>• Real-time data sync</li>
-                          <li>• Company page management</li>
                           <li>• Content posting capabilities</li>
                         </ul>
                       </CardContent>
@@ -322,13 +290,22 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                           <li>• r_liteprofile - Basic profile info</li>
                           <li>• r_emailaddress - Email addresses</li>
                           <li>• w_member_social - Post content</li>
-                          <li>• r_organization_social - Company data</li>
                         </ul>
                       </CardContent>
                     </Card>
                   </div>
+                </div>
+              )}
 
-                  <div className="flex gap-2">
+              <div className="flex gap-2">
+                {isCredentialsConfigured && (
+                  <Button variant="outline" onClick={testCredentials} className="flex-1">
+                    <TestTube className="w-4 h-4 mr-2" />
+                    Test Credentials
+                  </Button>
+                )}
+                {isConnected && (
+                  <>
                     <Button variant="outline" onClick={testConnection} className="flex-1">
                       <Settings className="w-4 h-4 mr-2" />
                       Test Connection
@@ -337,9 +314,9 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
                       <Unlink className="w-4 h-4 mr-2" />
                       Disconnect
                     </Button>
-                  </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

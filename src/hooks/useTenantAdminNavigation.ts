@@ -69,6 +69,12 @@ const defaultNavItems: NavItem[] = [
     requiresModule: 'business_contacts_data_access'
   },
   { 
+    id: 'linkedin-integration',
+    label: 'LinkedIn Integration', 
+    icon: Users, 
+    href: '/tenant-admin/linkedin-integration'
+  },
+  { 
     id: 'intelligent-workflows',
     label: 'Intelligent Workflows', 
     icon: Zap, 
