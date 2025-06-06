@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -25,10 +25,14 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
   onDirectAssignmentChange,
   onPreferredAgentsChange
 }) => {
+  const [addPreferredSelectValue, setAddPreferredSelectValue] = useState<string>('');
+
   const addPreferredAgent = (agentId: string) => {
     if (!preferredAgents.includes(agentId)) {
       onPreferredAgentsChange([...preferredAgents, agentId]);
     }
+    // Reset the select value to show placeholder again
+    setAddPreferredSelectValue('');
   };
 
   const removePreferredAgent = (index: number) => {
@@ -85,7 +89,12 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
             </div>
           ))}
           
-          <Select onValueChange={addPreferredAgent}>
+          <Select 
+            value={addPreferredSelectValue} 
+            onValueChange={(value) => {
+              addPreferredAgent(value);
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Add preferred agent" />
             </SelectTrigger>
