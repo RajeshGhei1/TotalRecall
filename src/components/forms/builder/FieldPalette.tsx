@@ -1,150 +1,225 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useCreateFormField } from '@/hooks/forms/useFormFields';
-import { FieldDefinition, FieldType } from '@/types/form-builder';
-import {
-  Type,
-  Hash,
-  Mail,
-  Phone,
-  Calendar,
-  ChevronDown,
-  CheckCircle,
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Type, 
+  Hash, 
+  Mail, 
+  Calendar, 
+  ToggleLeft, 
+  List, 
+  CheckSquare,
   FileText,
   Star,
-  Grid3X3,
+  Grid3X3
 } from 'lucide-react';
+import { FieldDefinition, FieldType } from '@/types/form-builder';
+import { useCreateFormField } from '@/hooks/forms/useFormFields';
+import { useToast } from '@/hooks/use-toast';
+import FieldSuggestionButton from './FieldSuggestionButton';
+import { FormDefinition } from '@/types/form-builder';
 
 interface FieldPaletteProps {
   formId: string;
-  selectedSection: string | null;
+  selectedSection?: string | null;
+  form?: FormDefinition;
 }
 
-const FIELD_TYPES: FieldDefinition[] = [
+const fieldDefinitions: FieldDefinition[] = [
   {
     type: 'text',
     label: 'Text Input',
     icon: 'Type',
     description: 'Single line text input',
+    defaultOptions: { placeholder: 'Enter text...' }
   },
   {
     type: 'textarea',
     label: 'Text Area',
     icon: 'FileText',
     description: 'Multi-line text input',
+    defaultOptions: { placeholder: 'Enter description...', rows: 4 }
   },
   {
     type: 'number',
     label: 'Number',
     icon: 'Hash',
     description: 'Numeric input field',
+    defaultOptions: { placeholder: '0' }
   },
   {
     type: 'email',
     label: 'Email',
     icon: 'Mail',
     description: 'Email address input',
-  },
-  {
-    type: 'phone',
-    label: 'Phone',
-    icon: 'Phone',
-    description: 'Phone number input',
+    defaultOptions: { placeholder: 'user@example.com' }
   },
   {
     type: 'date',
     label: 'Date',
     icon: 'Calendar',
     description: 'Date picker',
+    defaultOptions: {}
   },
   {
     type: 'dropdown',
     label: 'Dropdown',
-    icon: 'ChevronDown',
+    icon: 'List',
     description: 'Select from options',
+    defaultOptions: { 
+      options: [
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' }
+      ]
+    }
   },
   {
     type: 'checkbox',
     label: 'Checkbox',
-    icon: 'CheckCircle',
-    description: 'Multiple choice',
+    icon: 'CheckSquare',
+    description: 'Multiple selections',
+    defaultOptions: { 
+      options: [
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' }
+      ]
+    }
   },
   {
     type: 'radio',
-    label: 'Radio Buttons',
-    icon: 'CheckCircle',
-    description: 'Single choice',
+    label: 'Radio',
+    icon: 'ToggleLeft',
+    description: 'Single selection',
+    defaultOptions: { 
+      options: [
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' }
+      ]
+    }
   },
   {
     type: 'boolean',
     label: 'Yes/No',
-    icon: 'CheckCircle',
+    icon: 'ToggleLeft',
     description: 'Boolean toggle',
+    defaultOptions: {}
   },
+  {
+    type: 'rating',
+    label: 'Rating',
+    icon: 'Star',
+    description: 'Star rating input',
+    defaultOptions: { maxRating: 5 }
+  }
 ];
 
-const getFieldIcon = (iconName: string) => {
-  const icons = {
-    Type,
-    FileText,
-    Hash,
-    Mail,
-    Phone,
-    Calendar,
-    ChevronDown,
-    CheckCircle,
-    Star,
-    Grid3X3,
-  };
-  const IconComponent = icons[iconName as keyof typeof icons] || Type;
-  return <IconComponent className="h-4 w-4" />;
+const iconMap: Record<string, React.ComponentType<any>> = {
+  Type,
+  FileText,
+  Hash,
+  Mail,
+  Calendar,
+  List,
+  CheckSquare,
+  ToggleLeft,
+  Star,
+  Grid3X3
 };
 
-const FieldPalette: React.FC<FieldPaletteProps> = ({ formId, selectedSection }) => {
-  const createFieldMutation = useCreateFormField();
+const FieldPalette: React.FC<FieldPaletteProps> = ({ 
+  formId, 
+  selectedSection,
+  form 
+}) => {
+  const createField = useCreateFormField();
+  const { toast } = useToast();
 
-  const handleAddField = async (fieldType: FieldType) => {
+  const handleAddField = async (fieldDef: FieldDefinition | any) => {
     try {
       const fieldData = {
-        name: `${fieldType}_field_${Date.now()}`,
-        field_key: `${fieldType}_${Date.now()}`,
-        field_type: fieldType,
-        required: false,
+        name: fieldDef.label || fieldDef.name || 'New Field',
+        label: fieldDef.label || fieldDef.name || 'New Field',
+        field_type: fieldDef.type || fieldDef.fieldType,
+        required: fieldDef.required || false,
+        placeholder: fieldDef.placeholder || fieldDef.defaultOptions?.placeholder,
         form_id: formId,
-        section_id: selectedSection || undefined,
-        sort_order: 0,
+        section_id: selectedSection,
+        options: fieldDef.defaultOptions || fieldDef.options,
+        sort_order: 0
       };
 
-      await createFieldMutation.mutateAsync(fieldData);
-    } catch (error) {
-      console.error('Failed to add field:', error);
+      await createField.mutateAsync(fieldData);
+
+      toast({
+        title: 'Field Added',
+        description: `${fieldData.label} has been added to the form.`,
+      });
+    } catch (error: any) {
+      console.error('Error adding field:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to add field: ${error.message}`,
+        variant: 'destructive',
+      });
     }
   };
 
   return (
-    <div className="space-y-2">
-      {FIELD_TYPES.map((fieldDef) => (
-        <Card key={fieldDef.type} className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-3">
-            <Button
-              variant="ghost"
-              className="w-full justify-start p-0 h-auto"
-              onClick={() => handleAddField(fieldDef.type)}
-              disabled={createFieldMutation.isPending}
-            >
-              <div className="flex items-center gap-3">
-                {getFieldIcon(fieldDef.icon)}
-                <div className="text-left">
-                  <div className="font-medium text-sm">{fieldDef.label}</div>
-                  <div className="text-xs text-gray-500">{fieldDef.description}</div>
-                </div>
-              </div>
-            </Button>
+    <div className="space-y-4">
+      {/* AI Suggestions */}
+      {form && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-blue-800">AI Assistance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FieldSuggestionButton 
+              form={form}
+              onAddField={handleAddField}
+            />
           </CardContent>
         </Card>
-      ))}
+      )}
+
+      {/* Field Types */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Field Types</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {fieldDefinitions.map((fieldDef) => {
+            const IconComponent = iconMap[fieldDef.icon] || Type;
+            
+            return (
+              <Button
+                key={fieldDef.type}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-auto p-3 text-left"
+                onClick={() => handleAddField(fieldDef)}
+                disabled={createField.isPending}
+              >
+                <div className="flex items-start gap-3 w-full">
+                  <IconComponent className="h-4 w-4 mt-0.5 text-gray-600" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{fieldDef.label}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {fieldDef.type}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {fieldDef.description}
+                    </p>
+                  </div>
+                </div>
+              </Button>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 };

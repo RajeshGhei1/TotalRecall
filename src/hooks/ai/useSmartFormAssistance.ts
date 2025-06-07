@@ -3,13 +3,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { formSuggestionEngine, FormSuggestion, FormContext } from '@/services/ai/smartForms/formSuggestionEngine';
 import { smartAutocompleteService, AutocompleteOption, AutocompleteRequest } from '@/services/ai/smartForms/smartAutocompleteService';
+import { intelligentFormAnalyzer, FormAnalysis } from '@/services/ai/smartForms/intelligentFormAnalyzer';
 import { useTenantContext } from '@/contexts/TenantContext';
 
 export interface SmartFormState {
   suggestions: FormSuggestion[];
   autocompleteOptions: Record<string, AutocompleteOption[]>;
+  formAnalysis?: FormAnalysis;
   isLoadingSuggestions: boolean;
   isLoadingAutocomplete: Record<string, boolean>;
+  isLoadingAnalysis: boolean;
 }
 
 export const useSmartFormAssistance = (formType: string, userId: string) => {
@@ -18,7 +21,8 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     suggestions: [],
     autocompleteOptions: {},
     isLoadingSuggestions: false,
-    isLoadingAutocomplete: {}
+    isLoadingAutocomplete: {},
+    isLoadingAnalysis: false
   });
 
   const generateSuggestionsMutation = useMutation({
@@ -70,6 +74,26 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     }
   });
 
+  const analyzeFormMutation = useMutation({
+    mutationFn: async ({ form, fields, context }: { form: any, fields: any[], context?: Record<string, any> }) => {
+      return intelligentFormAnalyzer.analyzeForm(form, fields, context);
+    },
+    onSuccess: (analysis) => {
+      setFormState(prev => ({
+        ...prev,
+        formAnalysis: analysis,
+        isLoadingAnalysis: false
+      }));
+    },
+    onError: (error) => {
+      console.error('Error analyzing form:', error);
+      setFormState(prev => ({
+        ...prev,
+        isLoadingAnalysis: false
+      }));
+    }
+  });
+
   const generateSuggestions = useCallback(async (
     currentValues: Record<string, any>,
     userHistory: Record<string, any>[] = []
@@ -113,6 +137,20 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
 
     getAutocompleteMutation.mutate(request);
   }, [userId, selectedTenantId, getAutocompleteMutation]);
+
+  const analyzeForm = useCallback(async (
+    form: any,
+    fields: any[],
+    context?: Record<string, any>
+  ) => {
+    setFormState(prev => ({ ...prev, isLoadingAnalysis: true }));
+    
+    analyzeFormMutation.mutate({ 
+      form, 
+      fields, 
+      context: { ...context, userId, tenantId: selectedTenantId } 
+    });
+  }, [userId, selectedTenantId, analyzeFormMutation]);
 
   const applySuggestion = useCallback(async (suggestion: FormSuggestion) => {
     // Record that the user accepted this suggestion
@@ -174,12 +212,15 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     // State
     suggestions: formState.suggestions,
     autocompleteOptions: formState.autocompleteOptions,
+    formAnalysis: formState.formAnalysis,
     isLoadingSuggestions: formState.isLoadingSuggestions,
     isLoadingAutocomplete: formState.isLoadingAutocomplete,
+    isLoadingAnalysis: formState.isLoadingAnalysis,
     
     // Actions
     generateSuggestions,
     getAutocomplete,
+    analyzeForm,
     applySuggestion,
     dismissSuggestion,
     clearSuggestions,
@@ -187,6 +228,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     
     // Status
     hasSuggestions: formState.suggestions.length > 0,
-    hasAutocomplete: (fieldType: string) => (formState.autocompleteOptions[fieldType] || []).length > 0
+    hasAutocomplete: (fieldType: string) => (formState.autocompleteOptions[fieldType] || []).length > 0,
+    hasAnalysis: !!formState.formAnalysis
   };
 };

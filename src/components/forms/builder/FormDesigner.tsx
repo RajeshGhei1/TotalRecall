@@ -7,7 +7,7 @@ import FieldPalette from './FieldPalette';
 import FormCanvas from './FormCanvas';
 import SectionManager from './SectionManager';
 import { Button } from '@/components/ui/button';
-import { Save, Plus } from 'lucide-react';
+import { Save, Plus, Sparkles } from 'lucide-react';
 
 interface FormDesignerProps {
   form: FormDefinition;
@@ -22,10 +22,13 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ form }) => {
 
   return (
     <div className="h-full flex">
-      {/* Left Panel - Field Palette */}
+      {/* Left Panel - Field Palette with AI Suggestions */}
       <div className="w-80 border-r bg-gray-50 p-4 overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold">Field Types</h3>
+          <h3 className="font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            Smart Field Builder
+          </h3>
           <Button
             size="sm"
             variant="outline"
@@ -35,7 +38,11 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ form }) => {
             Section
           </Button>
         </div>
-        <FieldPalette formId={form.id} selectedSection={selectedSection} />
+        <FieldPalette 
+          formId={form.id} 
+          selectedSection={selectedSection}
+          form={form}
+        />
       </div>
 
       {/* Main Canvas */}

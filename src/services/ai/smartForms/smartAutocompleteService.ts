@@ -1,12 +1,13 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { AIRequestContext, AIRequestPayload } from '@/types/aiCore';
+import { aiAgentManager } from '../core/aiAgentManager';
 
 export interface AutocompleteOption {
   value: string;
   label: string;
-  frequency: number;
-  context?: string;
-  source: 'database' | 'history' | 'external';
+  description?: string;
+  confidence: number;
+  source: 'ai' | 'historical' | 'template';
 }
 
 export interface AutocompleteRequest {
@@ -20,8 +21,7 @@ export interface AutocompleteRequest {
 
 export class SmartAutocompleteService {
   private static instance: SmartAutocompleteService;
-  private cache = new Map<string, AutocompleteOption[]>();
-  private cacheExpiry = new Map<string, number>();
+  private optionsCache = new Map<string, AutocompleteOption[]>();
 
   private constructor() {}
 
@@ -33,210 +33,125 @@ export class SmartAutocompleteService {
   }
 
   async getAutocompleteSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const cacheKey = this.getCacheKey(request);
+    const cacheKey = `${request.fieldType}_${request.query}`;
     
     // Check cache first
-    if (this.isCacheValid(cacheKey)) {
-      const cached = this.cache.get(cacheKey);
-      if (cached) return this.filterAndSort(cached, request.query, request.limit);
+    if (this.optionsCache.has(cacheKey)) {
+      return this.optionsCache.get(cacheKey)!;
     }
 
-    // Get fresh suggestions
-    const suggestions = await this.fetchSuggestions(request);
+    const suggestions: AutocompleteOption[] = [];
+
+    // Add template-based suggestions
+    suggestions.push(...this.getTemplateSuggestions(request));
     
+    // Add historical data suggestions
+    suggestions.push(...this.getHistoricalSuggestions(request));
+    
+    // Add AI-powered suggestions
+    const aiSuggestions = await this.getAISuggestions(request);
+    suggestions.push(...aiSuggestions);
+
+    // Sort by confidence and limit results
+    const result = suggestions
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, request.limit || 10);
+
     // Cache the results
-    this.cache.set(cacheKey, suggestions);
-    this.cacheExpiry.set(cacheKey, Date.now() + 300000); // 5 minutes
+    this.optionsCache.set(cacheKey, result);
 
-    return this.filterAndSort(suggestions, request.query, request.limit);
+    return result;
   }
 
-  private async fetchSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const suggestions: AutocompleteOption[] = [];
+  private getTemplateSuggestions(request: AutocompleteRequest): AutocompleteOption[] {
+    const templates: Record<string, string[]> = {
+      'job_title': [
+        'Software Engineer', 'Product Manager', 'Data Scientist',
+        'Designer', 'Marketing Manager', 'Sales Representative'
+      ],
+      'department': [
+        'Engineering', 'Product', 'Marketing', 'Sales',
+        'Human Resources', 'Finance', 'Operations'
+      ],
+      'location': [
+        'San Francisco, CA', 'New York, NY', 'Remote',
+        'Seattle, WA', 'Austin, TX', 'Los Angeles, CA'
+      ],
+      'skills': [
+        'React', 'TypeScript', 'Python', 'JavaScript',
+        'Node.js', 'AWS', 'Docker', 'Kubernetes'
+      ]
+    };
 
-    switch (request.fieldType) {
-      case 'company_name':
-        suggestions.push(...await this.getCompanyNameSuggestions(request));
-        break;
-      case 'person_name':
-        suggestions.push(...await this.getPersonNameSuggestions(request));
-        break;
-      case 'email':
-        suggestions.push(...await this.getEmailSuggestions(request));
-        break;
-      case 'role':
-        suggestions.push(...await this.getRoleSuggestions(request));
-        break;
-      case 'industry':
-        suggestions.push(...await this.getIndustrySuggestions(request));
-        break;
-      case 'location':
-        suggestions.push(...await this.getLocationSuggestions(request));
-        break;
-      default:
-        suggestions.push(...await this.getGenericSuggestions(request));
-    }
-
-    return suggestions;
-  }
-
-  private async getCompanyNameSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('name')
-        .ilike('name', `%${request.query}%`)
-        .limit(request.limit || 10);
-
-      if (error) throw error;
-
-      return (data || []).map(company => ({
-        value: company.name,
-        label: company.name,
-        frequency: 1,
-        source: 'database' as const
+    const templateValues = templates[request.fieldType] || [];
+    
+    return templateValues
+      .filter(value => value.toLowerCase().includes(request.query.toLowerCase()))
+      .map(value => ({
+        value,
+        label: value,
+        confidence: 0.8,
+        source: 'template' as const
       }));
+  }
+
+  private getHistoricalSuggestions(request: AutocompleteRequest): AutocompleteOption[] {
+    // In a real implementation, this would query historical form data
+    // For now, return mock historical suggestions
+    const mockHistorical: Record<string, string[]> = {
+      'company_name': ['TechCorp Inc', 'InnovateLabs', 'DataFlow Systems'],
+      'industry': ['Technology', 'Healthcare', 'Finance', 'Education'],
+      'experience_level': ['Entry Level', 'Mid Level', 'Senior Level', 'Executive']
+    };
+
+    const historicalValues = mockHistorical[request.fieldType] || [];
+    
+    return historicalValues
+      .filter(value => value.toLowerCase().includes(request.query.toLowerCase()))
+      .map(value => ({
+        value,
+        label: value,
+        confidence: 0.7,
+        source: 'historical' as const
+      }));
+  }
+
+  private async getAISuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
+    try {
+      const agent = aiAgentManager.selectBestAgent(['autocomplete', 'data_completion'], request.tenantId);
+      if (!agent) return [];
+
+      // For now, return mock AI suggestions
+      // In a real implementation, this would call an AI service
+      return this.getMockAISuggestions(request);
     } catch (error) {
-      console.error('Error fetching company suggestions:', error);
+      console.error('Error getting AI autocomplete suggestions:', error);
       return [];
     }
   }
 
-  private async getPersonNameSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    try {
-      const { data, error } = await supabase
-        .from('people')
-        .select('full_name')
-        .ilike('full_name', `%${request.query}%`)
-        .limit(request.limit || 10);
+  private getMockAISuggestions(request: AutocompleteRequest): AutocompleteOption[] {
+    const aiSuggestions: Record<string, string[]> = {
+      'job_title': ['Full Stack Developer', 'DevOps Engineer', 'UX/UI Designer'],
+      'requirements': ['Bachelor\'s degree required', '3+ years experience', 'Strong communication skills'],
+      'benefits': ['Health insurance', 'Flexible working hours', 'Professional development budget']
+    };
 
-      if (error) throw error;
-
-      return (data || []).map(person => ({
-        value: person.full_name,
-        label: person.full_name,
-        frequency: 1,
-        source: 'database' as const
-      }));
-    } catch (error) {
-      console.error('Error fetching person suggestions:', error);
-      return [];
-    }
-  }
-
-  private async getEmailSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const suggestions: AutocompleteOption[] = [];
-
-    // If we have company context, suggest company domain emails
-    if (request.context?.companyName) {
-      const domain = this.inferDomainFromCompany(request.context.companyName);
-      suggestions.push({
-        value: `${request.query}@${domain}`,
-        label: `${request.query}@${domain}`,
-        frequency: 1,
-        context: 'Based on company name',
-        source: 'external'
-      });
-    }
-
-    return suggestions;
-  }
-
-  private async getRoleSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const commonRoles = [
-      'Software Engineer', 'Product Manager', 'Data Scientist', 'Designer',
-      'Marketing Manager', 'Sales Representative', 'HR Manager', 'Accountant',
-      'Business Analyst', 'Project Manager', 'DevOps Engineer', 'QA Engineer'
-    ];
-
-    return commonRoles
-      .filter(role => role.toLowerCase().includes(request.query.toLowerCase()))
-      .map(role => ({
-        value: role,
-        label: role,
-        frequency: 1,
-        source: 'external' as const
+    const suggestions = aiSuggestions[request.fieldType] || [];
+    
+    return suggestions
+      .filter(value => value.toLowerCase().includes(request.query.toLowerCase()))
+      .map(value => ({
+        value,
+        label: value,
+        description: `AI-suggested based on similar forms`,
+        confidence: 0.9,
+        source: 'ai' as const
       }));
   }
 
-  private async getIndustrySuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const commonIndustries = [
-      'Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing',
-      'Retail', 'Construction', 'Transportation', 'Media', 'Real Estate',
-      'Consulting', 'Non-profit', 'Government', 'Energy', 'Agriculture'
-    ];
-
-    return commonIndustries
-      .filter(industry => industry.toLowerCase().includes(request.query.toLowerCase()))
-      .map(industry => ({
-        value: industry,
-        label: industry,
-        frequency: 1,
-        source: 'external' as const
-      }));
-  }
-
-  private async getLocationSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    const commonLocations = [
-      'New York, NY', 'San Francisco, CA', 'Los Angeles, CA', 'Chicago, IL',
-      'Boston, MA', 'Seattle, WA', 'Austin, TX', 'Denver, CO', 'Atlanta, GA',
-      'Miami, FL', 'London, UK', 'Toronto, Canada', 'Remote', 'Hybrid'
-    ];
-
-    return commonLocations
-      .filter(location => location.toLowerCase().includes(request.query.toLowerCase()))
-      .map(location => ({
-        value: location,
-        label: location,
-        frequency: 1,
-        source: 'external' as const
-      }));
-  }
-
-  private async getGenericSuggestions(request: AutocompleteRequest): Promise<AutocompleteOption[]> {
-    // For now, return empty array for generic fields
-    // In the future, this could use AI to generate contextual suggestions
-    return [];
-  }
-
-  private filterAndSort(
-    suggestions: AutocompleteOption[], 
-    query: string, 
-    limit?: number
-  ): AutocompleteOption[] {
-    const filtered = suggestions.filter(s => 
-      s.value.toLowerCase().includes(query.toLowerCase()) ||
-      s.label.toLowerCase().includes(query.toLowerCase())
-    );
-
-    const sorted = filtered.sort((a, b) => {
-      // Prioritize exact matches
-      const aExact = a.value.toLowerCase().startsWith(query.toLowerCase()) ? 1 : 0;
-      const bExact = b.value.toLowerCase().startsWith(query.toLowerCase()) ? 1 : 0;
-      
-      if (aExact !== bExact) return bExact - aExact;
-      
-      // Then by frequency
-      return b.frequency - a.frequency;
-    });
-
-    return limit ? sorted.slice(0, limit) : sorted;
-  }
-
-  private getCacheKey(request: AutocompleteRequest): string {
-    return `${request.fieldType}_${request.userId}_${request.tenantId || 'global'}`;
-  }
-
-  private isCacheValid(cacheKey: string): boolean {
-    const expiry = this.cacheExpiry.get(cacheKey);
-    return expiry ? Date.now() < expiry : false;
-  }
-
-  private inferDomainFromCompany(companyName: string): string {
-    // Simple domain inference - in reality, this would be more sophisticated
-    return companyName.toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .substring(0, 10) + '.com';
+  clearCache(): void {
+    this.optionsCache.clear();
   }
 }
 
