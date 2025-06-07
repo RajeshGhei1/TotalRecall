@@ -17,13 +17,15 @@ import {
   AlertTriangle,
   CheckCircle,
   Lightbulb,
-  TrendingUp
+  TrendingUp,
+  Database
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { smartTalentMatchingService, type SmartMatchResult, type CandidateMatch } from '@/services/smartTalentMatchingService';
+import CreateTestDataDialog from './CreateTestDataDialog';
 
 const SmartTalentMatcher: React.FC = () => {
   const { toast } = useToast();
@@ -31,9 +33,10 @@ const SmartTalentMatcher: React.FC = () => {
   const [selectedJobId, setSelectedJobId] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [matchResults, setMatchResults] = useState<SmartMatchResult | null>(null);
+  const [showCreateTestData, setShowCreateTestData] = useState(false);
 
   // Fetch jobs for the tenant
-  const { data: jobs = [] } = useQuery({
+  const { data: jobs = [], refetch: refetchJobs } = useQuery({
     queryKey: ['jobs', selectedTenantId],
     queryFn: async () => {
       if (!selectedTenantId) return [];
@@ -46,6 +49,23 @@ const SmartTalentMatcher: React.FC = () => {
 
       if (error) throw error;
       return data;
+    },
+    enabled: !!selectedTenantId
+  });
+
+  // Fetch candidates count for display
+  const { data: candidatesCount = 0, refetch: refetchCandidates } = useQuery({
+    queryKey: ['candidates-count', selectedTenantId],
+    queryFn: async () => {
+      if (!selectedTenantId) return 0;
+      
+      const { count, error } = await supabase
+        .from('candidates')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', selectedTenantId);
+
+      if (error) throw error;
+      return count || 0;
     },
     enabled: !!selectedTenantId
   });
@@ -81,6 +101,16 @@ const SmartTalentMatcher: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleTestDataCreated = () => {
+    refetchJobs();
+    refetchCandidates();
+    setShowCreateTestData(false);
+    toast({
+      title: "Ready to Test!",
+      description: "Test data has been created. You can now select a job and run the AI analysis.",
+    });
   };
 
   const renderMatchCard = (match: CandidateMatch) => {
@@ -299,6 +329,50 @@ const SmartTalentMatcher: React.FC = () => {
         </div>
       </div>
 
+      {/* Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Active Jobs</p>
+                <p className="text-2xl font-bold">{jobs.length}</p>
+              </div>
+              <Briefcase className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Candidates</p>
+                <p className="text-2xl font-bold">{candidatesCount}</p>
+              </div>
+              <Users className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Test Data</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateTestData(true)}
+                  className="mt-1"
+                >
+                  <Database className="h-4 w-4 mr-2" />
+                  Create Test Data
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Job Analysis</CardTitle>
@@ -322,7 +396,7 @@ const SmartTalentMatcher: React.FC = () => {
             </div>
             <Button 
               onClick={handleAnalyzeJob}
-              disabled={!selectedJobId || isAnalyzing}
+              disabled={!selectedJobId || isAnalyzing || candidatesCount === 0}
               className="flex items-center gap-2"
             >
               {isAnalyzing ? (
@@ -338,6 +412,16 @@ const SmartTalentMatcher: React.FC = () => {
               )}
             </Button>
           </div>
+          {jobs.length === 0 && (
+            <p className="text-sm text-muted-foreground mt-2">
+              No active jobs found. Create test data to get started.
+            </p>
+          )}
+          {candidatesCount === 0 && (
+            <p className="text-sm text-muted-foreground mt-2">
+              No candidates found. Create test data to get started.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -366,6 +450,12 @@ const SmartTalentMatcher: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <CreateTestDataDialog
+        open={showCreateTestData}
+        onOpenChange={setShowCreateTestData}
+        onDataCreated={handleTestDataCreated}
+      />
     </div>
   );
 };
