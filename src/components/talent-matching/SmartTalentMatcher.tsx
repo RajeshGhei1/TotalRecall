@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,7 @@ const SmartTalentMatcher: React.FC = () => {
         .from('jobs')
         .select('id, title, department, status')
         .eq('tenant_id', selectedTenantId)
-        .eq('status', 'open');
+        .eq('status', 'active');
 
       if (error) throw error;
       return data;
