@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
 import Companies from "@/pages/tenant-admin/Companies";
@@ -21,6 +20,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
 import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
+import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher";
+import AdminLayout from "@/components/AdminLayout";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -133,6 +134,21 @@ const TenantAdminRoutes = () => {
           userId={user?.id}
         >
           <SmartTalentAnalytics />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Smart Talent Matching - AI Feature */}
+      <Route path="smart-talent-matching" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="ATS Core" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <AdminLayout>
+            <div className="p-6">
+              <SmartTalentMatcher />
+            </div>
+          </AdminLayout>
         </UnifiedModuleAccessGuard>
       } />
       

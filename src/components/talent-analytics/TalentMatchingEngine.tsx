@@ -1,13 +1,11 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Search, 
+  Brain, 
   Target, 
   Users, 
   Star, 
@@ -15,14 +13,12 @@ import {
   MapPin, 
   Clock,
   TrendingUp,
-  Brain,
   Zap
 } from 'lucide-react';
+import SmartTalentMatcher from '@/components/talent-matching/SmartTalentMatcher';
 
 const TalentMatchingEngine: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [matchType, setMatchType] = useState('role');
-  const [selectedRole, setSelectedRole] = useState('');
+  const [activeTab, setActiveTab] = useState('smart-matching');
 
   // Mock talent matching data
   const talentMatches = [
@@ -97,68 +93,20 @@ const TalentMatchingEngine: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Matching Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI-Powered Talent Matching Engine
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Match Type</label>
-              <Select value={matchType} onValueChange={setMatchType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select match type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="role">Role Matching</SelectItem>
-                  <SelectItem value="project">Project Matching</SelectItem>
-                  <SelectItem value="mentor">Mentorship Matching</SelectItem>
-                  <SelectItem value="succession">Succession Planning</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Target Role</label>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="senior-engineer">Senior Engineer</SelectItem>
-                  <SelectItem value="ml-engineer">ML Engineer</SelectItem>
-                  <SelectItem value="product-manager">Product Manager</SelectItem>
-                  <SelectItem value="data-scientist">Data Scientist</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Search Skills</label>
-              <Input
-                placeholder="e.g., React, Python, Leadership"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button onClick={runAIMatching} className="w-full flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Run AI Match
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="matches" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="smart-matching" className="flex items-center gap-2">
+            <Brain className="w-4 h-4" />
+            AI Matching
+          </TabsTrigger>
           <TabsTrigger value="matches">Talent Matches</TabsTrigger>
           <TabsTrigger value="requirements">Role Requirements</TabsTrigger>
           <TabsTrigger value="analytics">Match Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="smart-matching">
+          <SmartTalentMatcher />
+        </TabsContent>
 
         <TabsContent value="matches">
           <div className="space-y-4">

@@ -1,4 +1,3 @@
-
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,7 +11,8 @@ import {
   FileText,
   Users2,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Target
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
@@ -32,6 +32,13 @@ const defaultNavItems: NavItem[] = [
     label: 'Predictive Insights', 
     icon: TrendingUp, 
     href: '/tenant-admin/predictive-insights'
+  },
+  { 
+    id: 'smart-talent-matching',
+    label: 'AI Talent Matching', 
+    icon: Target, 
+    href: '/tenant-admin/smart-talent-matching',
+    requiresModule: 'ATS Core'
   },
   { 
     id: 'ats',
