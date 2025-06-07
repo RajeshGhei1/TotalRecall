@@ -29,12 +29,12 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     dismissSuggestion,
     isLoadingSuggestions,
     hasSuggestions
-  } = useSmartFormAssistance(form.form_type || 'general', user?.id || '');
+  } = useSmartFormAssistance(form.type || 'general', user?.id || '');
 
   useEffect(() => {
     // Generate initial suggestions based on form type and existing fields
     const context = {
-      formType: form.form_type || 'general',
+      formType: form.type || 'general',
       formName: form.name,
       description: form.description
     };

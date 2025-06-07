@@ -138,12 +138,13 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({
 
   const handleAddField = async (fieldDef: FieldDefinition | any) => {
     try {
+      const fieldKey = (fieldDef.label || fieldDef.name || 'New Field').toLowerCase().replace(/\s+/g, '_');
+      
       const fieldData = {
         name: fieldDef.label || fieldDef.name || 'New Field',
-        label: fieldDef.label || fieldDef.name || 'New Field',
+        field_key: fieldKey,
         field_type: fieldDef.type || fieldDef.fieldType,
         required: fieldDef.required || false,
-        placeholder: fieldDef.placeholder || fieldDef.defaultOptions?.placeholder,
         form_id: formId,
         section_id: selectedSection,
         options: fieldDef.defaultOptions || fieldDef.options,
@@ -154,7 +155,7 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({
 
       toast({
         title: 'Field Added',
-        description: `${fieldData.label} has been added to the form.`,
+        description: `${fieldData.name} has been added to the form.`,
       });
     } catch (error: any) {
       console.error('Error adding field:', error);

@@ -146,8 +146,8 @@ export const SmartInput: React.FC<SmartInputProps> = ({
                 >
                   <div>
                     <div className="font-medium">{option.label}</div>
-                    {option.context && (
-                      <div className="text-xs text-gray-500">{option.context}</div>
+                    {option.description && (
+                      <div className="text-xs text-gray-500">{option.description}</div>
                     )}
                   </div>
                   <Badge variant="outline" className="text-xs">

@@ -61,7 +61,7 @@ export class IntelligentFormAnalyzer {
   }
 
   private calculateCompleteness(form: FormDefinition, fields: FormField[]): number {
-    const requiredFieldTypes = this.getRequiredFieldsForFormType(form.form_type || 'general');
+    const requiredFieldTypes = this.getRequiredFieldsForFormType(form.type || 'general');
     const presentFieldTypes = fields.map(f => f.field_type);
     
     const completenessRatio = requiredFieldTypes.filter(type => 
@@ -83,7 +83,7 @@ export class IntelligentFormAnalyzer {
     if (!hasLogicalOrder) score -= 20;
 
     // Check for proper field labeling
-    const hasGoodLabels = fields.every(f => f.label && f.label.length > 2);
+    const hasGoodLabels = fields.every(f => f.name && f.name.length > 2);
     if (!hasGoodLabels) score -= 15;
 
     // Check for required field balance
@@ -99,9 +99,9 @@ export class IntelligentFormAnalyzer {
     context?: Record<string, any>
   ): Promise<FormSuggestion[]> {
     const formContext = {
-      formType: form.form_type || 'general',
+      formType: form.type || 'general',
       currentValues: fields.reduce((acc, field) => {
-        acc[field.field_key || field.name] = field.label;
+        acc[field.field_key || field.name] = field.name;
         return acc;
       }, {} as Record<string, any>),
       userHistory: [],
@@ -113,7 +113,7 @@ export class IntelligentFormAnalyzer {
   }
 
   private identifyMissingFields(form: FormDefinition, fields: FormField[]): string[] {
-    const requiredFields = this.getRequiredFieldsForFormType(form.form_type || 'general');
+    const requiredFields = this.getRequiredFieldsForFormType(form.type || 'general');
     const presentFields = fields.map(f => f.field_type);
     
     return requiredFields.filter(required => !presentFields.includes(required));
@@ -154,24 +154,24 @@ export class IntelligentFormAnalyzer {
       }
 
       // Check for accessibility issues
-      if (!field.label || field.label.length < 2) {
+      if (!field.name || field.name.length < 2) {
         issues.push({
           type: 'accessibility',
           severity: 'high',
           field: field.name,
-          message: 'Field missing proper label',
-          suggestion: 'Add a descriptive label for screen reader accessibility'
+          message: 'Field missing proper name',
+          suggestion: 'Add a descriptive name for screen reader accessibility'
         });
       }
 
       // Check for UX issues
-      if (field.field_type === 'textarea' && !field.placeholder) {
+      if (field.field_type === 'textarea' && !field.description) {
         issues.push({
           type: 'ux',
           severity: 'low',
           field: field.name,
-          message: 'Text area missing placeholder text',
-          suggestion: 'Add placeholder text to guide users on what to enter'
+          message: 'Text area missing description',
+          suggestion: 'Add description text to guide users on what to enter'
         });
       }
     });
