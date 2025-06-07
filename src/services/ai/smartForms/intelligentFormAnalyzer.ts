@@ -38,15 +38,34 @@ export class IntelligentFormAnalyzer {
     return IntelligentFormAnalyzer.instance;
   }
 
+  // Helper method to derive form type
+  private getFormType(form: FormDefinition): string {
+    const name = form.name?.toLowerCase() || '';
+    const description = form.description?.toLowerCase() || '';
+    
+    if (name.includes('job') || name.includes('application') || description.includes('job')) {
+      return 'job_application';
+    } else if (name.includes('contact') || description.includes('contact')) {
+      return 'contact_form';
+    } else if (name.includes('survey') || description.includes('survey')) {
+      return 'survey';
+    } else if (name.includes('registration') || description.includes('registration')) {
+      return 'registration';
+    }
+    
+    return 'general';
+  }
+
   async analyzeForm(
     form: FormDefinition,
     fields: FormField[],
     context?: Record<string, any>
   ): Promise<FormAnalysis> {
-    const completeness = this.calculateCompleteness(form, fields);
+    const formType = this.getFormType(form);
+    const completeness = this.calculateCompleteness(form, fields, formType);
     const usabilityScore = this.calculateUsabilityScore(form, fields);
-    const suggestions = await this.generateFieldSuggestions(form, fields, context);
-    const missingFields = this.identifyMissingFields(form, fields);
+    const suggestions = await this.generateFieldSuggestions(form, fields, context, formType);
+    const missingFields = this.identifyMissingFields(form, fields, formType);
     const fieldOrderSuggestions = this.analyzeFieldOrder(fields);
     const validationIssues = this.identifyValidationIssues(fields);
 
@@ -60,8 +79,8 @@ export class IntelligentFormAnalyzer {
     };
   }
 
-  private calculateCompleteness(form: FormDefinition, fields: FormField[]): number {
-    const requiredFieldTypes = this.getRequiredFieldsForFormType(form.type || 'general');
+  private calculateCompleteness(form: FormDefinition, fields: FormField[], formType: string): number {
+    const requiredFieldTypes = this.getRequiredFieldsForFormType(formType);
     const presentFieldTypes = fields.map(f => f.field_type);
     
     const completenessRatio = requiredFieldTypes.filter(type => 
@@ -96,10 +115,11 @@ export class IntelligentFormAnalyzer {
   private async generateFieldSuggestions(
     form: FormDefinition,
     fields: FormField[],
-    context?: Record<string, any>
+    context?: Record<string, any>,
+    formType?: string
   ): Promise<FormSuggestion[]> {
     const formContext = {
-      formType: form.type || 'general',
+      formType: formType || this.getFormType(form),
       currentValues: fields.reduce((acc, field) => {
         acc[field.field_key || field.name] = field.name;
         return acc;
@@ -112,8 +132,8 @@ export class IntelligentFormAnalyzer {
     return formSuggestionEngine.generateSuggestions(formContext);
   }
 
-  private identifyMissingFields(form: FormDefinition, fields: FormField[]): string[] {
-    const requiredFields = this.getRequiredFieldsForFormType(form.type || 'general');
+  private identifyMissingFields(form: FormDefinition, fields: FormField[], formType: string): string[] {
+    const requiredFields = this.getRequiredFieldsForFormType(formType);
     const presentFields = fields.map(f => f.field_type);
     
     return requiredFields.filter(required => !presentFields.includes(required));

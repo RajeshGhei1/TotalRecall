@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,26 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
   const { user } = useAuth();
   const [formContext, setFormContext] = useState<Record<string, any>>({});
 
+  // Derive form type from name, description, or default to 'general'
+  const getFormType = (form: FormDefinition): string => {
+    const name = form.name?.toLowerCase() || '';
+    const description = form.description?.toLowerCase() || '';
+    
+    if (name.includes('job') || name.includes('application') || description.includes('job')) {
+      return 'job_application';
+    } else if (name.includes('contact') || description.includes('contact')) {
+      return 'contact_form';
+    } else if (name.includes('survey') || description.includes('survey')) {
+      return 'survey';
+    } else if (name.includes('registration') || description.includes('registration')) {
+      return 'registration';
+    }
+    
+    return 'general';
+  };
+
+  const formType = getFormType(form);
+
   const {
     suggestions,
     generateSuggestions,
@@ -29,19 +48,19 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     dismissSuggestion,
     isLoadingSuggestions,
     hasSuggestions
-  } = useSmartFormAssistance(form.type || 'general', user?.id || '');
+  } = useSmartFormAssistance(formType, user?.id || '');
 
   useEffect(() => {
     // Generate initial suggestions based on form type and existing fields
     const context = {
-      formType: form.type || 'general',
+      formType: formType,
       formName: form.name,
       description: form.description
     };
     
     setFormContext(context);
     generateSuggestions(context, []);
-  }, [form, generateSuggestions]);
+  }, [form, generateSuggestions, formType]);
 
   const handleApplySuggestion = async (suggestion: any) => {
     try {
