@@ -23,13 +23,15 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
           fieldName: 'email',
           suggestedValue: 'user@example.com',
           confidence: 0.9,
-          reasoning: 'Email is commonly required for most forms'
+          reasoning: 'Email is commonly required for most forms',
+          source: 'ai'
         },
         {
           fieldName: 'full_name',
           suggestedValue: 'Full Name',
           confidence: 0.85,
-          reasoning: 'Name field is essential for user identification'
+          reasoning: 'Name field is essential for user identification',
+          source: 'ai'
         }
       ];
       
@@ -61,6 +63,10 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
       console.error('Error dismissing suggestion:', error);
       throw error;
     }
+  }, []);
+
+  const clearSuggestions = useCallback(() => {
+    setSuggestions([]);
   }, []);
 
   const getAutocomplete = useCallback(async (fieldType: string, value: string, context?: any) => {
@@ -102,6 +108,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     generateSuggestions,
     applySuggestion,
     dismissSuggestion,
+    clearSuggestions,
     getAutocomplete,
     clearAutocomplete,
     hasAutocomplete,

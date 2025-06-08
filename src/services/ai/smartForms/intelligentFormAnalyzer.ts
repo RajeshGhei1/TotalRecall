@@ -1,6 +1,6 @@
 
 import { FormDefinition, FormField } from '@/types/form-builder';
-import { formSuggestionEngine, FormSuggestion } from './formSuggestionEngine';
+import { FormSuggestionEngine, FormSuggestion } from './formSuggestionEngine';
 import { FormTypeDetector } from './formTypeDetector';
 import { FormCompletenessCalculator } from './formCompletenessCalculator';
 import { FormUsabilityScorer } from './formUsabilityScorer';
@@ -70,7 +70,7 @@ export class IntelligentFormAnalyzer {
       tenantId: context?.tenantId
     };
 
-    return formSuggestionEngine.generateSuggestions(formContext);
+    return FormSuggestionEngine.generateSuggestions(formContext);
   }
 }
 

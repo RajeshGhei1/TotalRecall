@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { formSuggestionEngine } from '@/services/ai/smartForms/formSuggestionEngine';
+import { FormSuggestionEngine } from '@/services/ai/smartForms/formSuggestionEngine';
 import ContextualWorkflowSuggestions from '@/components/ai/workflow/ContextualWorkflowSuggestions';
 import { Lightbulb, Zap, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +35,7 @@ const SmartFormSuggestions: React.FC<SmartFormSuggestionsProps> = ({
   const generateSuggestions = async () => {
     setIsLoading(true);
     try {
-      const formSuggestions = await formSuggestionEngine.generateSuggestions({
+      const formSuggestions = await FormSuggestionEngine.generateSuggestions({
         formType,
         currentValues,
         userHistory: [],

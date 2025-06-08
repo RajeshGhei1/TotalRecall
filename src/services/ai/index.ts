@@ -2,7 +2,7 @@
 export { enhancedBehavioralService } from './behavioralService/enhancedBehavioralService';
 export { personalizationEngine } from './personalizationEngine';
 export { formSuggestionEngine } from './smartForms/formSuggestionEngine';
-export { smartAutocompleteService } from './smartForms/smartAutocompleteService';
+export { SmartAutocompleteService } from './smartForms/smartAutocompleteService';
 
 // Advanced Pattern Recognition
 export { advancedPatternRecognitionService } from './patternRecognition';

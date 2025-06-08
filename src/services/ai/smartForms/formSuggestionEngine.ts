@@ -1,9 +1,9 @@
-
 export interface FormSuggestion {
   fieldName: string;
   suggestedValue: string;
   confidence: number;
   reasoning: string;
+  source: string;
 }
 
 export interface FormContext {
@@ -27,7 +27,8 @@ export class FormSuggestionEngine {
             fieldName: 'email',
             suggestedValue: 'applicant@example.com',
             confidence: 0.9,
-            reasoning: 'Email is essential for job applications'
+            reasoning: 'Email is essential for job applications',
+            source: 'ai'
           });
         }
         if (!context.currentValues.phone) {
@@ -35,7 +36,8 @@ export class FormSuggestionEngine {
             fieldName: 'phone',
             suggestedValue: '+1-XXX-XXX-XXXX',
             confidence: 0.8,
-            reasoning: 'Phone number helps with quick communication'
+            reasoning: 'Phone number helps with quick communication',
+            source: 'ai'
           });
         }
         break;
@@ -46,7 +48,8 @@ export class FormSuggestionEngine {
             fieldName: 'name',
             suggestedValue: 'Full Name',
             confidence: 0.95,
-            reasoning: 'Name is required for contact forms'
+            reasoning: 'Name is required for contact forms',
+            source: 'ai'
           });
         }
         break;
@@ -58,7 +61,8 @@ export class FormSuggestionEngine {
             fieldName: 'email',
             suggestedValue: 'user@example.com',
             confidence: 0.7,
-            reasoning: 'Email is commonly needed for most forms'
+            reasoning: 'Email is commonly needed for most forms',
+            source: 'ai'
           });
         }
     }
