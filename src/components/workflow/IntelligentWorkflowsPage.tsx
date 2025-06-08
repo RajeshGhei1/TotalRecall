@@ -1,214 +1,128 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useTenantContext } from '@/contexts/TenantContext';
-import FormWorkflowManager from '@/components/forms/workflow/FormWorkflowManager';
-import ContextualWorkflowSuggestions from '@/components/ai/workflow/ContextualWorkflowSuggestions';
-import WorkflowHealthWidget from '@/components/dashboard/widgets/WorkflowHealthWidget';
-import { Zap, Brain, BarChart3, Settings, Plus } from 'lucide-react';
+import { ContextualWorkflowSuggestions } from '@/components/ai/workflow/ContextualWorkflowSuggestions';
+import { useAuth } from '@/contexts/AuthContext';
 
 const IntelligentWorkflowsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const { selectedTenantId } = useTenantContext();
-
-  const handleSuggestionApplied = (suggestionId: string) => {
-    console.log('Applied suggestion:', suggestionId);
-    // Refresh workflow data or show success notification
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Intelligent Workflows</h1>
-          <p className="text-muted-foreground">
-            AI-powered automation and optimization for your business processes
-          </p>
-        </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Workflow
-        </Button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Intelligent Workflows</h1>
+        <p className="text-muted-foreground">
+          AI-powered workflow automation and optimization
+        </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="workflows">Workflows</TabsTrigger>
-          <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+      <Tabs defaultValue="suggestions" className="w-full">
+        <TabsList>
+          <TabsTrigger value="suggestions">AI Suggestions</TabsTrigger>
+          <TabsTrigger value="automations">Active Automations</TabsTrigger>
+          <TabsTrigger value="analytics">Workflow Analytics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WorkflowHealthWidget tenantId={selectedTenantId} />
+        <TabsContent value="suggestions" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ContextualWorkflowSuggestions
-              context={{
-                module: 'workflows',
-                tenantId: selectedTenantId
-              }}
-              onSuggestionApplied={handleSuggestionApplied}
+              module="forms"
+              formType="recruitment"
+              userId={user?.id || 'anonymous'}
+              tenantId="default-tenant"
             />
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                Quick Actions
-              </CardTitle>
-              <CardDescription>
-                Common workflow management tasks
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <Brain className="h-6 w-6" />
-                  <span>AI Optimization</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <Settings className="h-6 w-6" />
-                  <span>Automation Rules</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <BarChart3 className="h-6 w-6" />
-                  <span>Performance Reports</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="workflows" className="space-y-6">
-          <FormWorkflowManager />
-        </TabsContent>
-
-        <TabsContent value="ai-insights" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ContextualWorkflowSuggestions
-              context={{
-                module: 'ai_insights',
-                tenantId: selectedTenantId
-              }}
-              onSuggestionApplied={handleSuggestionApplied}
-            />
-            
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5" />
-                  Learning Insights
-                </CardTitle>
-                <CardDescription>
-                  What AI has learned about your workflows
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900">Pattern Recognition</h4>
-                    <p className="text-sm text-blue-700 mt-1">
-                      AI has identified 3 recurring workflow patterns that could be automated
-                    </p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-900">Success Factors</h4>
-                    <p className="text-sm text-green-700 mt-1">
-                      Workflows with pre-validation steps show 40% higher success rates
-                    </p>
-                  </div>
-                  <div className="p-4 bg-orange-50 rounded-lg">
-                    <h4 className="font-medium text-orange-900">Optimization Opportunity</h4>
-                    <p className="text-sm text-orange-700 mt-1">
-                      Parallel processing could reduce execution time by 35%
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Execution Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Total Executions</span>
-                      <span className="font-medium">1,247</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Success Rate</span>
-                      <span className="font-medium">94.3%</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Avg. Duration</span>
-                      <span className="font-medium">2.4 min</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Efficiency Gains</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Time Saved</span>
-                      <span className="font-medium text-green-600">847 hours</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Error Reduction</span>
-                      <span className="font-medium text-green-600">68%</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Cost Savings</span>
-                      <span className="font-medium text-green-600">$12,450</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
+                <CardTitle>Optimization Opportunities</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span>Onboarding Flow</span>
-                    <span className="font-medium">98.7%</span>
+                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <h4 className="font-medium text-amber-900">Process Efficiency</h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Identified 3 workflow steps that can be automated to save 2 hours daily.
+                    </p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Document Processing</span>
-                    <span className="font-medium">96.2%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Approval Routing</span>
-                    <span className="font-medium">94.8%</span>
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 className="font-medium text-purple-900">Smart Routing</h4>
+                    <p className="text-sm text-purple-700 mt-1">
+                      AI can intelligently route tasks based on team member expertise and availability.
+                    </p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="automations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Automations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Form Validation Automation</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically validates and routes form submissions
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Active</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Email Response Templates</h4>
+                    <p className="text-sm text-muted-foreground">
+                      AI generates contextual email responses
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Active</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <ContextualWorkflowSuggestions
+            module="automation"
+            userId={user?.id || 'anonymous'}
+            tenantId="default-tenant"
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Workflows Created</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">24</div>
+                <p className="text-xs text-muted-foreground">+12% from last month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Time Saved</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">46h</div>
+                <p className="text-xs text-muted-foreground">This month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Success Rate</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">94%</div>
+                <p className="text-xs text-muted-foreground">Automation accuracy</p>
               </CardContent>
             </Card>
           </div>

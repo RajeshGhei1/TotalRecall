@@ -58,11 +58,24 @@ export const useAIEmailResponse = () => {
         priority: emailContext.urgency === 'high' ? 'high' : 'normal'
       });
 
+      // Handle response structure properly
+      let responseText = '';
+      let tone: 'professional' | 'friendly' | 'formal' = 'professional';
+      let suggestions: string[] = [];
+
+      if (typeof aiResponse.result === 'object' && aiResponse.result !== null) {
+        responseText = aiResponse.result.generated_response || aiResponse.result.response || JSON.stringify(aiResponse.result);
+        tone = aiResponse.result.tone || 'professional';
+        suggestions = aiResponse.result.suggestions || [];
+      } else {
+        responseText = String(aiResponse.result);
+      }
+
       const emailResponse: AIEmailResponse = {
-        response: aiResponse.result.generated_response || aiResponse.result,
-        tone: aiResponse.result.tone || 'professional',
+        response: responseText,
+        tone: tone,
         confidence: aiResponse.confidence_score,
-        suggestions: aiResponse.suggestions || []
+        suggestions: suggestions
       };
 
       return emailResponse;
@@ -98,7 +111,12 @@ export const useAIEmailResponse = () => {
         priority: 'normal'
       });
 
-      return aiResponse.result.improved_response || aiResponse.result;
+      // Handle response structure properly
+      if (typeof aiResponse.result === 'object' && aiResponse.result !== null) {
+        return aiResponse.result.improved_response || aiResponse.result.response || JSON.stringify(aiResponse.result);
+      } else {
+        return String(aiResponse.result);
+      }
     } catch (error) {
       console.error('Failed to improve email response:', error);
       return null;
