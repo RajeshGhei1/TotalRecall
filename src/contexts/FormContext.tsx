@@ -1,19 +1,12 @@
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { FormDefinition, FormResponse } from '@/types/form-builder';
-import { formIntegrationService } from '@/services/FormIntegrationService';
-import { useTenantContext } from './TenantContext';
-import { useToast } from '@/hooks/use-toast';
 
 interface FormContextType {
-  activeForm: FormDefinition | null;
-  formData: Record<string, any>;
-  isSubmitting: boolean;
-  openForm: (form: FormDefinition, placementId?: string) => void;
-  closeForm: () => void;
-  updateFormData: (data: Record<string, any>) => void;
-  submitForm: (placementId?: string) => Promise<void>;
-  resetForm: () => void;
+  currentForm: FormDefinition | null;
+  setCurrentForm: (form: FormDefinition | null) => void;
+  responses: FormResponse[];
+  addResponse: (response: FormResponse) => void;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -27,119 +20,24 @@ export const useFormContext = () => {
 };
 
 interface FormProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
-  const [activeForm, setActiveForm] = useState<FormDefinition | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { selectedTenantId } = useTenantContext();
-  const { toast } = useToast();
+  const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
+  const [responses, setResponses] = useState<FormResponse[]>([]);
 
-  const openForm = useCallback((form: FormDefinition, placementId?: string) => {
-    setActiveForm(form);
-    setFormData({});
-    console.log('Opening form:', form.name, 'Placement:', placementId);
-
-    // Track form view event
-    formIntegrationService.trackFormEvent(
-      form.id,
-      'form_view',
-      placementId,
-      undefined,
-      { form_name: form.name },
-      selectedTenantId
-    );
-  }, [selectedTenantId]);
-
-  const closeForm = useCallback(() => {
-    if (activeForm) {
-      // Track form abandon if user had started filling it
-      if (Object.keys(formData).length > 0) {
-        formIntegrationService.trackFormEvent(
-          activeForm.id,
-          'form_abandon',
-          undefined,
-          undefined,
-          { abandoned_data: formData },
-          selectedTenantId
-        );
-      }
-    }
-    
-    setActiveForm(null);
-    setFormData({});
-    console.log('Closing form');
-  }, [activeForm, formData, selectedTenantId]);
-
-  const updateFormData = useCallback((data: Record<string, any>) => {
-    const isFirstUpdate = Object.keys(formData).length === 0 && Object.keys(data).length > 0;
-    
-    setFormData(prev => ({ ...prev, ...data }));
-
-    // Track form start event on first interaction
-    if (isFirstUpdate && activeForm) {
-      formIntegrationService.trackFormEvent(
-        activeForm.id,
-        'form_start',
-        undefined,
-        undefined,
-        { first_field: Object.keys(data)[0] },
-        selectedTenantId
-      );
-    }
-  }, [formData, activeForm, selectedTenantId]);
-
-  const submitForm = useCallback(async (placementId?: string) => {
-    if (!activeForm) return;
-
-    setIsSubmitting(true);
-    try {
-      const response = await formIntegrationService.submitFormResponse(
-        activeForm.id,
-        placementId || '',
-        formData,
-        selectedTenantId,
-        undefined // TODO: Get current user ID
-      );
-
-      toast({
-        title: 'Success',
-        description: 'Form submitted successfully',
-      });
-
-      console.log('Form submitted successfully:', response);
-      closeForm();
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to submit form',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [activeForm, formData, selectedTenantId, toast, closeForm]);
-
-  const resetForm = useCallback(() => {
-    setFormData({});
-  }, []);
+  const addResponse = (response: FormResponse) => {
+    setResponses(prev => [...prev, response]);
+  };
 
   return (
-    <FormContext.Provider
-      value={{
-        activeForm,
-        formData,
-        isSubmitting,
-        openForm,
-        closeForm,
-        updateFormData,
-        submitForm,
-        resetForm,
-      }}
-    >
+    <FormContext.Provider value={{
+      currentForm,
+      setCurrentForm,
+      responses,
+      addResponse
+    }}>
       {children}
     </FormContext.Provider>
   );

@@ -93,7 +93,7 @@ export interface FormPlacement {
   deployment_point_id: string;
   module_id?: string;
   tenant_id?: string;
-  status: string;
+  status: 'active' | 'inactive' | 'scheduled' | 'expired';
   priority: number;
   configuration?: any;
   starts_at?: string;
@@ -108,7 +108,7 @@ export interface FormPlacementInsert {
   deployment_point_id: string;
   module_id?: string;
   tenant_id?: string;
-  status?: string;
+  status?: 'active' | 'inactive' | 'scheduled' | 'expired';
   priority?: number;
   configuration?: any;
   starts_at?: string;
@@ -192,6 +192,17 @@ export interface FormResponseAnalyticsInsert {
   tenant_id?: string;
 }
 
+export interface WorkflowStep {
+  id: string;
+  step_type: string;
+  type: string;
+  action: string;
+  step_config: any;
+  config?: any;
+  order_index: number;
+  order?: number;
+}
+
 export interface FormWorkflow {
   id: string;
   form_id: string;
@@ -205,11 +216,46 @@ export interface FormWorkflow {
   updated_at: string;
 }
 
-export interface WorkflowStep {
+export interface FormWorkflowInsert {
+  form_id: string;
+  name: string;
+  description?: string;
+  trigger_conditions: any;
+  workflow_steps: WorkflowStep[];
+  is_active?: boolean;
+  created_by?: string;
+}
+
+export interface FormNotification {
   id: string;
-  step_type: string;
-  step_config: any;
-  order_index: number;
+  workflow_id?: string;
+  notification_type: string;
+  trigger_event: string;
+  recipients: string[];
+  template_data: Record<string, any>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormNotificationInsert {
+  workflow_id?: string;
+  notification_type: string;
+  trigger_event: string;
+  recipients: string[];
+  template_data: Record<string, any>;
+  is_active?: boolean;
+}
+
+export interface WorkflowExecutionLog {
+  id: string;
+  workflow_id: string;
+  response_id?: string;
+  status: string;
+  step_results: Record<string, any>[];
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
 }
 
 export interface FormModuleAssignment {
