@@ -1,17 +1,12 @@
 
-import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-
-interface Agent {
-  id: string;
-  name: string;
-  type: string;
-}
+import { Checkbox } from '@/components/ui/checkbox';
+import { AIAgent } from '@/hooks/ai/useUnifiedAIOrchestration';
 
 interface AssignmentTabProps {
-  agents: Agent[];
+  agents: AIAgent[];
   directAssignment: string | null;
   preferredAgents: string[];
   onDirectAssignmentChange: (agentId: string | null) => void;
@@ -25,106 +20,51 @@ export const AssignmentTab: React.FC<AssignmentTabProps> = ({
   onDirectAssignmentChange,
   onPreferredAgentsChange
 }) => {
-  const [addPreferredSelectValue, setAddPreferredSelectValue] = useState<string>('');
-
-  // Debug logging to see what agents data we're receiving
-  console.log('AssignmentTab - agents:', agents);
-  console.log('AssignmentTab - agents length:', agents?.length);
-
-  const addPreferredAgent = (agentId: string) => {
-    if (!preferredAgents.includes(agentId)) {
-      onPreferredAgentsChange([...preferredAgents, agentId]);
-    }
-    // Reset the select value to show placeholder again
-    setAddPreferredSelectValue('');
-  };
-
-  const removePreferredAgent = (index: number) => {
-    const updated = preferredAgents.filter((_, i) => i !== index);
-    onPreferredAgentsChange(updated);
-  };
-
-  const handleDirectAssignmentChange = (value: string) => {
-    if (value === 'none') {
-      onDirectAssignmentChange(null);
-    } else {
-      onDirectAssignmentChange(value);
-    }
-  };
-
-  // Show a message if no agents are available
-  if (!agents || agents.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="text-center py-8">
-          <p className="text-gray-500">No AI agents available. Please create agents first.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="direct-assignment">Direct Agent Assignment</Label>
-        <Select 
-          value={directAssignment || 'none'} 
-          onValueChange={handleDirectAssignmentChange}
-        >
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder="Select an agent (optional)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No direct assignment (use preferences)</SelectItem>
-            {agents.map((agent) => (
-              <SelectItem key={agent.id} value={agent.id}>
-                {agent.name} ({agent.type})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-gray-600 mt-1">
-          Direct assignment overrides all other selection logic
-        </p>
-      </div>
-
-      <div>
-        <Label>Preferred Agents (in order of preference)</Label>
-        <div className="space-y-2 mt-2">
-          {preferredAgents.map((agentId, index) => (
-            <div key={agentId} className="flex items-center justify-between p-2 border rounded">
-              <span>{agents.find(a => a.id === agentId)?.name || agentId}</span>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => removePreferredAgent(index)}
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-          
-          <Select 
-            value={addPreferredSelectValue} 
-            onValueChange={(value) => {
-              addPreferredAgent(value);
-            }}
-          >
+      <Card>
+        <CardHeader>
+          <CardTitle>Direct Assignment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={directAssignment || ''} onValueChange={onDirectAssignmentChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Add preferred agent" />
+              <SelectValue placeholder="Select agent for direct assignment" />
             </SelectTrigger>
             <SelectContent>
-              {agents
-                .filter(agent => !preferredAgents.includes(agent.id))
-                .map((agent) => (
+              <SelectItem value="">No direct assignment</SelectItem>
+              {agents.map((agent) => (
                 <SelectItem key={agent.id} value={agent.id}>
-                  {agent.name} ({agent.type})
+                  {agent.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferred Agents</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {agents.map((agent) => (
+            <div key={agent.id} className="flex items-center space-x-2">
+              <Checkbox
+                checked={preferredAgents.includes(agent.id)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onPreferredAgentsChange([...preferredAgents, agent.id]);
+                  } else {
+                    onPreferredAgentsChange(preferredAgents.filter(id => id !== agent.id));
+                  }
+                }}
+              />
+              <span>{agent.name}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };

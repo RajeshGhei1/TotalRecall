@@ -1,53 +1,41 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface Module {
-  id: string;
-  name: string;
-  category: string;
-  is_active: boolean;
-}
+import { SystemModule } from '@/hooks/modules/useSystemModules';
 
 interface ModuleSelectorProps {
-  modules?: Module[];
+  modules?: SystemModule[];
   selectedModule: string;
   onModuleSelect: (moduleId: string) => void;
 }
 
 export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
-  modules,
+  modules = [],
   selectedModule,
   onModuleSelect
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Select Module</CardTitle>
-        <CardDescription>Choose a module to configure AI settings</CardDescription>
+        <CardTitle>Select Module</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {modules?.map((module) => (
-          <div
+      <CardContent className="space-y-2">
+        {modules.map((module) => (
+          <Button
             key={module.id}
-            className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-              selectedModule === module.id 
-                ? 'border-blue-500 bg-blue-50' 
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
+            variant={selectedModule === module.id ? 'default' : 'outline'}
+            className="w-full justify-start"
             onClick={() => onModuleSelect(module.id)}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-medium">{module.name}</h4>
-                <p className="text-sm text-gray-600">{module.category}</p>
-              </div>
+            <div className="flex items-center justify-between w-full">
+              <span>{module.name}</span>
               <Badge variant={module.is_active ? 'default' : 'secondary'}>
                 {module.is_active ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-          </div>
+          </Button>
         ))}
       </CardContent>
     </Card>

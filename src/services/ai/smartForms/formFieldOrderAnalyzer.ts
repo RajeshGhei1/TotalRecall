@@ -1,31 +1,31 @@
 
-import { FormField } from '@/types/form-builder';
-import { FormTypeDetector } from './formTypeDetector';
-
 export interface FieldOrderSuggestion {
-  fieldId: string;
+  fieldName: string;
   currentPosition: number;
   suggestedPosition: number;
-  reasoning: string;
+  reason: string;
 }
 
 export class FormFieldOrderAnalyzer {
-  static analyzeFieldOrder(fields: FormField[]): FieldOrderSuggestion[] {
+  static analyzeFieldOrder(fields: any[]): FieldOrderSuggestion[] {
     const suggestions: FieldOrderSuggestion[] = [];
-    const idealOrder = FormTypeDetector.getIdealFieldOrder();
-
-    fields.forEach((field, index) => {
-      const idealIndex = idealOrder.indexOf(field.field_type);
-      if (idealIndex !== -1 && idealIndex !== index) {
-        suggestions.push({
-          fieldId: field.id,
-          currentPosition: index,
-          suggestedPosition: idealIndex,
-          reasoning: `${field.field_type} fields are typically placed earlier in forms for better user experience`
-        });
-      }
-    });
-
+    
+    // Check if email comes before name
+    const emailIndex = fields.findIndex(f => f.field_type === 'email' || f.type === 'email');
+    const nameIndex = fields.findIndex(f => 
+      (f.field_type === 'text' || f.type === 'text') && 
+      (f.name?.toLowerCase().includes('name') || f.field_key?.toLowerCase().includes('name'))
+    );
+    
+    if (emailIndex !== -1 && nameIndex !== -1 && emailIndex < nameIndex) {
+      suggestions.push({
+        fieldName: fields[emailIndex].name || 'Email field',
+        currentPosition: emailIndex,
+        suggestedPosition: nameIndex + 1,
+        reason: 'Email fields typically come after name fields'
+      });
+    }
+    
     return suggestions;
   }
 }

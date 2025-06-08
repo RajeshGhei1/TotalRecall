@@ -1,79 +1,32 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-
-interface PerformanceWeights {
-  accuracy: number;
-  speed: number;
-  cost: number;
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface PerformanceTabProps {
-  performanceWeights: PerformanceWeights;
-  onPerformanceWeightsChange: (weights: PerformanceWeights) => void;
+  // Add props as needed
 }
 
-export const PerformanceTab: React.FC<PerformanceTabProps> = ({
-  performanceWeights,
-  onPerformanceWeightsChange
-}) => {
-  const updateWeight = (key: keyof PerformanceWeights, value: number) => {
-    onPerformanceWeightsChange({
-      ...performanceWeights,
-      [key]: value
-    });
-  };
-
+export const PerformanceTab: React.FC<PerformanceTabProps> = () => {
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Performance Weights (for dynamic selection)</Label>
-        <div className="space-y-3 mt-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Accuracy</span>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                min="0"
-                max="1"
-                step="0.1"
-                value={performanceWeights.accuracy}
-                onChange={(e) => updateWeight('accuracy', parseFloat(e.target.value))}
-                className="w-20"
-              />
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Metrics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">95%</div>
+              <div className="text-sm text-muted-foreground">Success Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">1.2s</div>
+              <div className="text-sm text-muted-foreground">Avg Response Time</div>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Speed</span>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                min="0"
-                max="1"
-                step="0.1"
-                value={performanceWeights.speed}
-                onChange={(e) => updateWeight('speed', parseFloat(e.target.value))}
-                className="w-20"
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Cost Efficiency</span>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                min="0"
-                max="1"
-                step="0.1"
-                value={performanceWeights.cost}
-                onChange={(e) => updateWeight('cost', parseFloat(e.target.value))}
-                className="w-20"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
