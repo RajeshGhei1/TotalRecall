@@ -1,234 +1,110 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { formSuggestionEngine, FormSuggestion, FormContext } from '@/services/ai/smartForms/formSuggestionEngine';
-import { smartAutocompleteService, AutocompleteOption, AutocompleteRequest } from '@/services/ai/smartForms/smartAutocompleteService';
-import { intelligentFormAnalyzer, FormAnalysis } from '@/services/ai/smartForms/intelligentFormAnalyzer';
-import { useTenantContext } from '@/contexts/TenantContext';
+import { useState, useCallback } from 'react';
 
-export interface SmartFormState {
-  suggestions: FormSuggestion[];
-  autocompleteOptions: Record<string, AutocompleteOption[]>;
-  formAnalysis?: FormAnalysis;
-  isLoadingSuggestions: boolean;
-  isLoadingAutocomplete: Record<string, boolean>;
-  isLoadingAnalysis: boolean;
+export interface AutocompleteOption {
+  value: string;
+  label: string;
+  description?: string;
+  source: string;
 }
 
 export const useSmartFormAssistance = (formType: string, userId: string) => {
-  const { selectedTenantId } = useTenantContext();
-  const [formState, setFormState] = useState<SmartFormState>({
-    suggestions: [],
-    autocompleteOptions: {},
-    isLoadingSuggestions: false,
-    isLoadingAutocomplete: {},
-    isLoadingAnalysis: false
-  });
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [autocompleteOptions, setAutocompleteOptions] = useState<Record<string, AutocompleteOption[]>>({});
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isLoadingAutocomplete, setIsLoadingAutocomplete] = useState<Record<string, boolean>>({});
 
-  const generateSuggestionsMutation = useMutation({
-    mutationFn: async (context: FormContext) => {
-      return formSuggestionEngine.generateSuggestions(context);
-    },
-    onSuccess: (suggestions) => {
-      setFormState(prev => ({
-        ...prev,
-        suggestions,
-        isLoadingSuggestions: false
-      }));
-    },
-    onError: (error) => {
-      console.error('Error generating suggestions:', error);
-      setFormState(prev => ({
-        ...prev,
-        isLoadingSuggestions: false
-      }));
-    }
-  });
-
-  const getAutocompleteMutation = useMutation({
-    mutationFn: async (request: AutocompleteRequest) => {
-      return smartAutocompleteService.getAutocompleteSuggestions(request);
-    },
-    onSuccess: (options, variables) => {
-      setFormState(prev => ({
-        ...prev,
-        autocompleteOptions: {
-          ...prev.autocompleteOptions,
-          [variables.fieldType]: options
+  const generateSuggestions = useCallback(async (context: any, fields: any[]) => {
+    setIsLoadingSuggestions(true);
+    try {
+      // Mock suggestions - replace with actual AI logic
+      const mockSuggestions = [
+        {
+          fieldName: 'email',
+          suggestedValue: 'user@example.com',
+          confidence: 0.9,
+          reasoning: 'Email is commonly required for most forms'
         },
-        isLoadingAutocomplete: {
-          ...prev.isLoadingAutocomplete,
-          [variables.fieldType]: false
+        {
+          fieldName: 'full_name',
+          suggestedValue: 'Full Name',
+          confidence: 0.85,
+          reasoning: 'Name field is essential for user identification'
         }
-      }));
-    },
-    onError: (error, variables) => {
+      ];
+      
+      setSuggestions(mockSuggestions);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, []);
+
+  const applySuggestion = useCallback(async (suggestion: any) => {
+    try {
+      // Mock implementation - replace with actual logic
+      console.log('Applying suggestion:', suggestion);
+      return true;
+    } catch (error) {
+      console.error('Error applying suggestion:', error);
+      throw error;
+    }
+  }, []);
+
+  const dismissSuggestion = useCallback(async (suggestion: any) => {
+    try {
+      setSuggestions(prev => prev.filter(s => s.fieldName !== suggestion.fieldName));
+      return true;
+    } catch (error) {
+      console.error('Error dismissing suggestion:', error);
+      throw error;
+    }
+  }, []);
+
+  const getAutocomplete = useCallback(async (fieldType: string, value: string, context?: any) => {
+    setIsLoadingAutocomplete(prev => ({ ...prev, [fieldType]: true }));
+    try {
+      // Mock autocomplete options
+      const mockOptions: AutocompleteOption[] = [
+        {
+          value: value + '_suggestion',
+          label: `${value} (suggested)`,
+          description: 'AI suggested completion',
+          source: 'ai'
+        }
+      ];
+      
+      setAutocompleteOptions(prev => ({ ...prev, [fieldType]: mockOptions }));
+    } catch (error) {
       console.error('Error getting autocomplete:', error);
-      setFormState(prev => ({
-        ...prev,
-        isLoadingAutocomplete: {
-          ...prev.isLoadingAutocomplete,
-          [variables.fieldType]: false
-        }
-      }));
+    } finally {
+      setIsLoadingAutocomplete(prev => ({ ...prev, [fieldType]: false }));
     }
-  });
-
-  const analyzeFormMutation = useMutation({
-    mutationFn: async ({ form, fields, context }: { form: any, fields: any[], context?: Record<string, any> }) => {
-      return intelligentFormAnalyzer.analyzeForm(form, fields, context);
-    },
-    onSuccess: (analysis) => {
-      setFormState(prev => ({
-        ...prev,
-        formAnalysis: analysis,
-        isLoadingAnalysis: false
-      }));
-    },
-    onError: (error) => {
-      console.error('Error analyzing form:', error);
-      setFormState(prev => ({
-        ...prev,
-        isLoadingAnalysis: false
-      }));
-    }
-  });
-
-  const generateSuggestions = useCallback(async (
-    currentValues: Record<string, any>,
-    userHistory: Record<string, any>[] = []
-  ) => {
-    setFormState(prev => ({ ...prev, isLoadingSuggestions: true }));
-
-    const context: FormContext = {
-      formType,
-      currentValues,
-      userHistory,
-      userId,
-      tenantId: selectedTenantId || undefined
-    };
-
-    generateSuggestionsMutation.mutate(context);
-  }, [formType, userId, selectedTenantId, generateSuggestionsMutation]);
-
-  const getAutocomplete = useCallback(async (
-    fieldType: string,
-    query: string,
-    context?: Record<string, any>
-  ) => {
-    if (query.length < 2) return; // Don't search for very short queries
-
-    setFormState(prev => ({
-      ...prev,
-      isLoadingAutocomplete: {
-        ...prev.isLoadingAutocomplete,
-        [fieldType]: true
-      }
-    }));
-
-    const request: AutocompleteRequest = {
-      fieldType,
-      query,
-      context,
-      userId,
-      tenantId: selectedTenantId || undefined,
-      limit: 10
-    };
-
-    getAutocompleteMutation.mutate(request);
-  }, [userId, selectedTenantId, getAutocompleteMutation]);
-
-  const analyzeForm = useCallback(async (
-    form: any,
-    fields: any[],
-    context?: Record<string, any>
-  ) => {
-    setFormState(prev => ({ ...prev, isLoadingAnalysis: true }));
-    
-    analyzeFormMutation.mutate({ 
-      form, 
-      fields, 
-      context: { ...context, userId, tenantId: selectedTenantId } 
-    });
-  }, [userId, selectedTenantId, analyzeFormMutation]);
-
-  const applySuggestion = useCallback(async (suggestion: FormSuggestion) => {
-    // Record that the user accepted this suggestion
-    await formSuggestionEngine.recordSuggestionFeedback(
-      `${suggestion.fieldName}_${Date.now()}`,
-      true,
-      {
-        formType,
-        currentValues: {},
-        userHistory: [],
-        userId,
-        tenantId: selectedTenantId || undefined
-      }
-    );
-
-    // Record the pattern for future suggestions
-    formSuggestionEngine.recordUserPattern(userId, suggestion.fieldName, suggestion.suggestedValue);
-  }, [formType, userId, selectedTenantId]);
-
-  const dismissSuggestion = useCallback(async (suggestion: FormSuggestion) => {
-    // Record that the user dismissed this suggestion
-    await formSuggestionEngine.recordSuggestionFeedback(
-      `${suggestion.fieldName}_${Date.now()}`,
-      false,
-      {
-        formType,
-        currentValues: {},
-        userHistory: [],
-        userId,
-        tenantId: selectedTenantId || undefined
-      }
-    );
-
-    // Remove from current suggestions
-    setFormState(prev => ({
-      ...prev,
-      suggestions: prev.suggestions.filter(s => s !== suggestion)
-    }));
-  }, [formType, userId, selectedTenantId]);
-
-  const clearSuggestions = useCallback(() => {
-    setFormState(prev => ({
-      ...prev,
-      suggestions: []
-    }));
   }, []);
 
   const clearAutocomplete = useCallback((fieldType: string) => {
-    setFormState(prev => ({
-      ...prev,
-      autocompleteOptions: {
-        ...prev.autocompleteOptions,
-        [fieldType]: []
-      }
-    }));
+    setAutocompleteOptions(prev => ({ ...prev, [fieldType]: [] }));
   }, []);
 
+  const hasAutocomplete = useCallback((fieldType: string) => {
+    return (autocompleteOptions[fieldType] || []).length > 0;
+  }, [autocompleteOptions]);
+
+  const hasSuggestions = suggestions.length > 0;
+
   return {
-    // State
-    suggestions: formState.suggestions,
-    autocompleteOptions: formState.autocompleteOptions,
-    formAnalysis: formState.formAnalysis,
-    isLoadingSuggestions: formState.isLoadingSuggestions,
-    isLoadingAutocomplete: formState.isLoadingAutocomplete,
-    isLoadingAnalysis: formState.isLoadingAnalysis,
-    
-    // Actions
+    suggestions,
+    autocompleteOptions,
+    isLoadingSuggestions,
+    isLoadingAutocomplete,
     generateSuggestions,
-    getAutocomplete,
-    analyzeForm,
     applySuggestion,
     dismissSuggestion,
-    clearSuggestions,
+    getAutocomplete,
     clearAutocomplete,
-    
-    // Status
-    hasSuggestions: formState.suggestions.length > 0,
-    hasAutocomplete: (fieldType: string) => (formState.autocompleteOptions[fieldType] || []).length > 0,
-    hasAnalysis: !!formState.formAnalysis
+    hasAutocomplete,
+    hasSuggestions
   };
 };
