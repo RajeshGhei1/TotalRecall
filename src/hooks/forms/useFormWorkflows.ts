@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormWorkflow, FormNotification, WorkflowExecutionLog, FormWorkflowInsert, FormNotificationInsert } from '@/types/form-builder';
@@ -205,8 +204,14 @@ export const useWorkflowExecutionLogs = (workflowId?: string, responseId?: strin
       }
 
       return (data || []).map(log => ({
-        ...log,
-        step_results: Array.isArray(log.step_results) ? log.step_results as Record<string, any>[] : []
+        id: log.id,
+        workflow_id: log.workflow_id,
+        response_id: log.response_id,
+        status: log.execution_status || 'pending', // Map execution_status to status
+        step_results: Array.isArray(log.step_results) ? log.step_results as Record<string, any>[] : [],
+        error_message: log.error_message,
+        created_at: log.created_at,
+        completed_at: log.completed_at
       })) as WorkflowExecutionLog[];
     },
   });

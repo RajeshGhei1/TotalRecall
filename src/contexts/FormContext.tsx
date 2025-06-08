@@ -7,6 +7,10 @@ interface FormContextType {
   setCurrentForm: (form: FormDefinition | null) => void;
   responses: FormResponse[];
   addResponse: (response: FormResponse) => void;
+  activeForm: FormDefinition | null;
+  activePlacementId: string | null;
+  openForm: (form: FormDefinition, placementId?: string) => void;
+  closeForm: () => void;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -26,9 +30,21 @@ interface FormProviderProps {
 export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
   const [currentForm, setCurrentForm] = useState<FormDefinition | null>(null);
   const [responses, setResponses] = useState<FormResponse[]>([]);
+  const [activeForm, setActiveForm] = useState<FormDefinition | null>(null);
+  const [activePlacementId, setActivePlacementId] = useState<string | null>(null);
 
   const addResponse = (response: FormResponse) => {
     setResponses(prev => [...prev, response]);
+  };
+
+  const openForm = (form: FormDefinition, placementId?: string) => {
+    setActiveForm(form);
+    setActivePlacementId(placementId || null);
+  };
+
+  const closeForm = () => {
+    setActiveForm(null);
+    setActivePlacementId(null);
   };
 
   return (
@@ -36,7 +52,11 @@ export const FormProvider: React.FC<FormProviderProps> = ({ children }) => {
       currentForm,
       setCurrentForm,
       responses,
-      addResponse
+      addResponse,
+      activeForm,
+      activePlacementId,
+      openForm,
+      closeForm
     }}>
       {children}
     </FormContext.Provider>

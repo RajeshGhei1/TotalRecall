@@ -13,8 +13,8 @@ import { useTenantContext } from '@/contexts/TenantContext';
 import { FormWorkflow, WorkflowStep } from '@/types/form-builder';
 import { Plus, Settings, Play, Pause, Trash2, Mail, Webhook, Database, GitBranch, Brain, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { AIWorkflowOptimizer } from './AIWorkflowOptimizer';
-import { AutomationRulesManager } from './AutomationRulesManager';
+import AIWorkflowOptimizer from './AIWorkflowOptimizer';
+import AutomationRulesManager from './AutomationRulesManager';
 
 const FormWorkflowManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState('workflows');
@@ -68,9 +68,13 @@ const FormWorkflowManager: React.FC = () => {
 
   const addWorkflowStep = () => {
     const newStep: WorkflowStep = {
+      id: `step-${Date.now()}`,
+      step_type: 'notification',
       type: 'notification',
       action: 'send_email',
+      step_config: {},
       config: {},
+      order_index: newWorkflow.workflow_steps.length,
       order: newWorkflow.workflow_steps.length
     };
     setNewWorkflow(prev => ({
@@ -95,7 +99,6 @@ const FormWorkflowManager: React.FC = () => {
 
   const handleOptimizationApplied = (optimizedSteps: any[]) => {
     if (workflows.length > 0) {
-      // In a real implementation, you would update the selected workflow
       toast({
         title: 'Workflow Optimized',
         description: 'AI optimizations have been applied to your workflow.',
@@ -204,7 +207,11 @@ const FormWorkflowManager: React.FC = () => {
                       <div className="flex-1 grid grid-cols-3 gap-3">
                         <Select
                           value={step.type}
-                          onValueChange={(value) => updateWorkflowStep(index, { ...step, type: value as any })}
+                          onValueChange={(value) => updateWorkflowStep(index, { 
+                            ...step, 
+                            type: value,
+                            step_type: value
+                          })}
                         >
                           <SelectTrigger>
                             <SelectValue />
