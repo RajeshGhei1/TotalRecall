@@ -10,8 +10,8 @@ export const usePeople = (
   companyFilter?: string,
   context?: 'superadmin' | 'tenant'
 ) => {
-  // In Super Admin context, force personType to 'contact' only
-  const effectivePersonType = context === 'superadmin' ? 'contact' : personType;
+  // In Super Admin context, default to 'contact' if no personType specified
+  const effectivePersonType = context === 'superadmin' && !personType ? 'contact' : personType;
   
   const { 
     data: people = [], 

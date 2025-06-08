@@ -2,10 +2,9 @@
 import { FormField } from '@/types/form-builder';
 
 export interface ValidationIssue {
-  type: 'missing_validation' | 'conflicting_rules' | 'accessibility' | 'ux';
-  severity: 'low' | 'medium' | 'high';
-  field?: string;
-  message: string;
+  fieldId: string;
+  issue: string;
+  severity: 'error' | 'warning';
   suggestion: string;
 }
 
@@ -14,36 +13,43 @@ export class FormValidationAnalyzer {
     const issues: ValidationIssue[] = [];
 
     fields.forEach(field => {
-      // Check for missing validation on email fields
-      if (field.field_type === 'email' && !field.required) {
+      // Check for missing labels
+      if (!field.name || field.name.trim().length === 0) {
         issues.push({
-          type: 'missing_validation',
-          severity: 'medium',
-          field: field.name,
-          message: 'Email field should typically be required',
-          suggestion: 'Consider making this email field required for better data quality'
+          fieldId: field.id,
+          issue: 'Missing field label',
+          severity: 'error',
+          suggestion: 'Add a descriptive label for this field'
         });
       }
 
-      // Check for accessibility issues
-      if (!field.name || field.name.length < 2) {
+      // Check for email fields without proper validation
+      if (field.field_type === 'email' && !field.validation_rules) {
         issues.push({
-          type: 'accessibility',
-          severity: 'high',
-          field: field.name,
-          message: 'Field missing proper name',
-          suggestion: 'Add a descriptive name for screen reader accessibility'
+          fieldId: field.id,
+          issue: 'Email field lacks validation',
+          severity: 'warning',
+          suggestion: 'Add email format validation to ensure data quality'
         });
       }
 
-      // Check for UX issues
-      if (field.field_type === 'textarea' && !field.description) {
+      // Check for required fields without indication
+      if (field.required && !field.name?.includes('*')) {
         issues.push({
-          type: 'ux',
-          severity: 'low',
-          field: field.name,
-          message: 'Text area missing description',
-          suggestion: 'Add description text to guide users on what to enter'
+          fieldId: field.id,
+          issue: 'Required field not clearly marked',
+          severity: 'warning',
+          suggestion: 'Consider adding an asterisk (*) to indicate required fields'
+        });
+      }
+
+      // Check for very long field names
+      if (field.name && field.name.length > 50) {
+        issues.push({
+          fieldId: field.id,
+          issue: 'Field label too long',
+          severity: 'warning',
+          suggestion: 'Shorten the field label for better user experience'
         });
       }
     });
