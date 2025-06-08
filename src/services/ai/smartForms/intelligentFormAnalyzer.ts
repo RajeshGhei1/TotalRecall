@@ -35,7 +35,7 @@ export class IntelligentFormAnalyzer {
     fields: FormField[],
     context?: Record<string, any>
   ): Promise<FormAnalysis> {
-    const formType = this.getFormType(form);
+    const formType = FormTypeDetector.detectFormType(form);
     const completeness = FormCompletenessCalculator.calculateCompleteness(form, fields, formType);
     const usabilityScore = FormUsabilityScorer.calculateUsabilityScore(form, fields);
     const suggestions = await this.generateFieldSuggestions(form, fields, context, formType);
@@ -53,23 +53,6 @@ export class IntelligentFormAnalyzer {
     };
   }
 
-  private getFormType(form: FormDefinition): string {
-    const name = form.name?.toLowerCase() || '';
-    const description = form.description?.toLowerCase() || '';
-    
-    if (name.includes('job') || name.includes('application') || description.includes('job')) {
-      return 'job_application';
-    } else if (name.includes('contact') || description.includes('contact')) {
-      return 'contact_form';
-    } else if (name.includes('survey') || description.includes('survey')) {
-      return 'survey';
-    } else if (name.includes('registration') || description.includes('registration')) {
-      return 'registration';
-    }
-    
-    return 'general';
-  }
-
   private async generateFieldSuggestions(
     form: FormDefinition,
     fields: FormField[],
@@ -77,7 +60,7 @@ export class IntelligentFormAnalyzer {
     formType?: string
   ): Promise<FormSuggestion[]> {
     const formContext = {
-      formType: formType || this.getFormType(form),
+      formType: formType || FormTypeDetector.detectFormType(form),
       currentValues: fields.reduce((acc, field) => {
         acc[field.field_key || field.name] = field.name;
         return acc;
