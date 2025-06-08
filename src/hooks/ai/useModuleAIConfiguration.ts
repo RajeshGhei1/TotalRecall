@@ -6,6 +6,11 @@ export interface ModuleConfig {
   preferred_agents: string[];
   token_budget: number;
   overage_policy: string;
+  performance_weights?: {
+    accuracy: number;
+    speed: number;
+    cost: number;
+  };
 }
 
 export const useModuleAIConfiguration = (moduleId: string) => {
@@ -21,7 +26,12 @@ export const useModuleAIConfiguration = (moduleId: string) => {
           direct_assignment: null,
           preferred_agents: [],
           token_budget: 1000,
-          overage_policy: 'block'
+          overage_policy: 'block',
+          performance_weights: {
+            accuracy: 0.5,
+            speed: 0.3,
+            cost: 0.2
+          }
         });
         setIsLoading(false);
       }, 500);

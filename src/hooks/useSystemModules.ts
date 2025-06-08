@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SystemModule {
@@ -16,19 +16,21 @@ export interface SystemModule {
 }
 
 export const useSystemModules = (activeOnly: boolean = true) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['system-modules', activeOnly],
     queryFn: async () => {
-      let query = supabase
+      let queryBuilder = supabase
         .from('system_modules')
         .select('*')
         .order('name');
 
       if (activeOnly) {
-        query = query.eq('is_active', true);
+        queryBuilder = queryBuilder.eq('is_active', true);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await queryBuilder;
 
       if (error) {
         console.error('Error fetching system modules:', error);
@@ -38,6 +40,60 @@ export const useSystemModules = (activeOnly: boolean = true) => {
       return data as SystemModule[];
     },
   });
+
+  const createModule = useMutation({
+    mutationFn: async (moduleData: Partial<SystemModule>) => {
+      const { data, error } = await supabase
+        .from('system_modules')
+        .insert(moduleData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-modules'] });
+    },
+  });
+
+  const updateModule = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SystemModule> }) => {
+      const { data, error } = await supabase
+        .from('system_modules')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-modules'] });
+    },
+  });
+
+  const deleteModule = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('system_modules')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-modules'] });
+    },
+  });
+
+  return {
+    ...query,
+    createModule,
+    updateModule,
+    deleteModule
+  };
 };
 
 export const useSystemModuleById = (moduleId: string) => {
