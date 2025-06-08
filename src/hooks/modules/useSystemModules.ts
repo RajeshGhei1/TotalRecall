@@ -107,7 +107,14 @@ export const useSystemModules = (activeOnly: boolean = true) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setData(prev => prev.map(module => 
         module.id === id 
-          ? { ...module, ...updates, updated_at: new Date().toISOString() }
+          ? { 
+              ...module, 
+              ...updates, 
+              // Ensure required fields are maintained
+              name: updates.name || module.name,
+              category: updates.category || module.category,
+              updated_at: new Date().toISOString() 
+            }
           : module
       ));
       setIsSaving(false);

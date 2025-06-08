@@ -58,16 +58,17 @@ export const useAIEmailResponse = () => {
         priority: emailContext.urgency === 'high' ? 'high' : 'normal'
       });
 
-      // Handle response structure properly
+      // Handle response structure properly with null safety
       let responseText = '';
       let tone: 'professional' | 'friendly' | 'formal' = 'professional';
       let suggestions: string[] = [];
 
-      if (typeof aiResponse.result === 'object' && aiResponse.result !== null) {
-        responseText = aiResponse.result.generated_response || aiResponse.result.response || JSON.stringify(aiResponse.result);
-        tone = aiResponse.result.tone || 'professional';
-        suggestions = aiResponse.result.suggestions || [];
-      } else {
+      if (aiResponse.result && typeof aiResponse.result === 'object') {
+        const result = aiResponse.result as any;
+        responseText = result.generated_response || result.response || JSON.stringify(result);
+        tone = result.tone || 'professional';
+        suggestions = result.suggestions || [];
+      } else if (aiResponse.result) {
         responseText = String(aiResponse.result);
       }
 
@@ -111,12 +112,15 @@ export const useAIEmailResponse = () => {
         priority: 'normal'
       });
 
-      // Handle response structure properly
-      if (typeof aiResponse.result === 'object' && aiResponse.result !== null) {
-        return aiResponse.result.improved_response || aiResponse.result.response || JSON.stringify(aiResponse.result);
-      } else {
+      // Handle response structure properly with null safety
+      if (aiResponse.result && typeof aiResponse.result === 'object') {
+        const result = aiResponse.result as any;
+        return result.improved_response || result.response || JSON.stringify(result);
+      } else if (aiResponse.result) {
         return String(aiResponse.result);
       }
+      
+      return null;
     } catch (error) {
       console.error('Failed to improve email response:', error);
       return null;
