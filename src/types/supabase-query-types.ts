@@ -19,3 +19,16 @@ export interface CompanyRelationshipQueryResult {
   role: string;
   is_current: boolean;
 }
+
+export interface EmploymentHistoryQueryResult {
+  id: string;
+  role: string;
+  start_date: string;
+  end_date?: string;
+  is_current: boolean;
+  reports_to?: string;
+  company: {
+    id: string;
+    name: string;
+  } | null;
+}
