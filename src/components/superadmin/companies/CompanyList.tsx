@@ -1,9 +1,9 @@
 
 import React from 'react';
-import CompanyListContainer from './CompanyListContainer';
+import CompanyEnhancedListContainer from './CompanyEnhancedListContainer';
 
 const CompanyList: React.FC = () => {
-  return <CompanyListContainer />;
+  return <CompanyEnhancedListContainer />;
 };
 
 export default CompanyList;
