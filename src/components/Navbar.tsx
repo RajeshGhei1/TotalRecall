@@ -84,10 +84,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button asChild variant="ghost">
+                <Button variant="ghost">
                   <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button asChild>
+                <Button>
                   <Link to="/auth">Get Started</Link>
                 </Button>
               </div>
