@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Download, Upload, FileText } from 'lucide-react';
@@ -68,14 +67,14 @@ const CompanyEnhancedListContainer: React.FC = () => {
         if (!filters.locations.includes(company.location)) return false;
       }
       
-      // Company Type filter
-      if (filters.companyTypes?.length && company.companytype) {
-        if (!filters.companyTypes.includes(company.companytype)) return false;
+      // Company Type filter - fixed property name
+      if (filters.companyTypes?.length && company.companyType) {
+        if (!filters.companyTypes.includes(company.companyType)) return false;
       }
       
-      // Sector filter
-      if (filters.sectors?.length && company.companysector) {
-        if (!filters.sectors.includes(company.companysector)) return false;
+      // Sector filter - fixed property name
+      if (filters.sectors?.length && company.companySector) {
+        if (!filters.sectors.includes(company.companySector)) return false;
       }
       
       // Founded date range filter
@@ -89,10 +88,10 @@ const CompanyEnhancedListContainer: React.FC = () => {
         }
       }
       
-      // Registration date range filter
+      // Registration date range filter - fixed property name
       if (filters.registrationFrom || filters.registrationTo) {
-        if (company.registrationdate) {
-          const regDate = new Date(company.registrationdate);
+        if (company.registrationDate) {
+          const regDate = new Date(company.registrationDate);
           if (filters.registrationFrom && regDate < filters.registrationFrom) return false;
           if (filters.registrationTo && regDate > filters.registrationTo) return false;
         } else if (filters.registrationFrom || filters.registrationTo) {
