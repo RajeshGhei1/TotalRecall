@@ -32,6 +32,14 @@ const Auth = () => {
     }
   }, [user, loading, bypassAuth, navigate]);
 
+  // Handle bypass auth redirect
+  useEffect(() => {
+    if (bypassAuth && !loading) {
+      console.log('Bypass auth enabled, redirecting to superadmin dashboard');
+      navigate("/superadmin/dashboard");
+    }
+  }, [bypassAuth, loading, navigate]);
+
   // If this is a LinkedIn callback, show the callback component
   if (isLinkedInCallback) {
     return (
@@ -61,6 +69,16 @@ const Auth = () => {
         </div>
       </div>
     );
+  }
+
+  // Don't render if user is authenticated (will redirect)
+  if (user && !bypassAuth) {
+    return null;
+  }
+
+  // Don't render if bypass auth is enabled (will redirect)
+  if (bypassAuth) {
+    return null;
   }
 
   const onLoginSubmit = async (data: LoginFormValues) => {
@@ -122,22 +140,20 @@ const Auth = () => {
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <AuthHeader bypassAuth={bypassAuth} />
 
-        {!bypassAuth && (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login" className="mt-6">
-              <LoginForm onSubmit={onLoginSubmit} />
-            </TabsContent>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login" className="mt-6">
+            <LoginForm onSubmit={onLoginSubmit} />
+          </TabsContent>
 
-            <TabsContent value="signup" className="mt-6">
-              <SignupForm onSubmit={onSignupSubmit} />
-            </TabsContent>
-          </Tabs>
-        )}
+          <TabsContent value="signup" className="mt-6">
+            <SignupForm onSubmit={onSignupSubmit} />
+          </TabsContent>
+        </Tabs>
 
         <SuperAdminForm 
           onSubmit={onMakeSuperAdminSubmit} 
