@@ -32,8 +32,11 @@ const ParentCompanySelector: React.FC<ParentCompanySelectorProps> = ({
   const [searchValue, setSearchValue] = useState('');
   const { companies, isLoading } = useCompanies();
 
+  // Ensure companies is always an array, even if undefined
+  const safeCompanies = companies || [];
+
   // Filter companies to exclude current company and its children
-  const availableCompanies = companies?.filter(company => {
+  const availableCompanies = safeCompanies.filter(company => {
     // Exclude current company
     if (currentCompanyId && company.id === currentCompanyId) {
       return false;
@@ -45,7 +48,7 @@ const ParentCompanySelector: React.FC<ParentCompanySelectorProps> = ({
     }
     
     return true;
-  }) || [];
+  });
 
   // Filter by search value
   const filteredCompanies = availableCompanies.filter(company =>

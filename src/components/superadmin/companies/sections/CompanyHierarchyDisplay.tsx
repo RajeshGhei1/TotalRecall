@@ -26,13 +26,16 @@ const CompanyHierarchyDisplay: React.FC<CompanyHierarchyDisplayProps> = ({
   const [hierarchyTree, setHierarchyTree] = useState<HierarchyNode | null>(null);
 
   useEffect(() => {
-    if (!companies || !companyId) return;
+    // Ensure companies is always an array
+    const safeCompanies = companies || [];
+    
+    if (!safeCompanies.length || !companyId) return;
 
     const buildHierarchy = (rootId: string, level: number = 0): HierarchyNode | null => {
-      const company = companies.find(c => c.id === rootId);
+      const company = safeCompanies.find(c => c.id === rootId);
       if (!company) return null;
 
-      const children = companies
+      const children = safeCompanies
         .filter(c => c.parent_company_id === rootId)
         .map(child => buildHierarchy(child.id, level + 1))
         .filter(Boolean) as HierarchyNode[];
@@ -45,9 +48,9 @@ const CompanyHierarchyDisplay: React.FC<CompanyHierarchyDisplayProps> = ({
     };
 
     // Find the root company (walk up the parent chain)
-    let rootCompany = companies.find(c => c.id === companyId);
+    let rootCompany = safeCompanies.find(c => c.id === companyId);
     while (rootCompany?.parent_company_id) {
-      const parent = companies.find(c => c.id === rootCompany!.parent_company_id);
+      const parent = safeCompanies.find(c => c.id === rootCompany!.parent_company_id);
       if (parent) {
         rootCompany = parent;
       } else {
