@@ -48,6 +48,10 @@ export const companyFormSchema = z.object({
   verticles: z.string().optional(),
   companyProfile: z.string().min(1, "Company profile is required"),
   endUserChannel: z.string().min(1, "End user/channel is required"),
+  // Add parent company and group structure fields
+  parentCompanyId: z.string().optional(),
+  companyGroupName: z.string().optional(),
+  hierarchyLevel: z.number().optional(),
 });
 
 export type CompanyFormValues = z.infer<typeof companyFormSchema>;

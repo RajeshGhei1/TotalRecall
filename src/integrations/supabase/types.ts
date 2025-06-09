@@ -804,6 +804,7 @@ export type Database = {
         Row: {
           areaofspecialize: string | null
           cin: string | null
+          company_group_name: string | null
           companyprofile: string | null
           companysector: string | null
           companystatus: string | null
@@ -818,6 +819,7 @@ export type Database = {
           facebook: string | null
           founded: number | null
           globalregion: string | null
+          hierarchy_level: number | null
           holocation: string | null
           id: string
           industry: string | null
@@ -830,6 +832,7 @@ export type Database = {
           noofdirectives: string | null
           noofemployee: string | null
           paidupcapital: string | null
+          parent_company_id: string | null
           phone: string | null
           region: string | null
           registeredemailaddress: string | null
@@ -851,6 +854,7 @@ export type Database = {
         Insert: {
           areaofspecialize?: string | null
           cin?: string | null
+          company_group_name?: string | null
           companyprofile?: string | null
           companysector?: string | null
           companystatus?: string | null
@@ -865,6 +869,7 @@ export type Database = {
           facebook?: string | null
           founded?: number | null
           globalregion?: string | null
+          hierarchy_level?: number | null
           holocation?: string | null
           id?: string
           industry?: string | null
@@ -877,6 +882,7 @@ export type Database = {
           noofdirectives?: string | null
           noofemployee?: string | null
           paidupcapital?: string | null
+          parent_company_id?: string | null
           phone?: string | null
           region?: string | null
           registeredemailaddress?: string | null
@@ -898,6 +904,7 @@ export type Database = {
         Update: {
           areaofspecialize?: string | null
           cin?: string | null
+          company_group_name?: string | null
           companyprofile?: string | null
           companysector?: string | null
           companystatus?: string | null
@@ -912,6 +919,7 @@ export type Database = {
           facebook?: string | null
           founded?: number | null
           globalregion?: string | null
+          hierarchy_level?: number | null
           holocation?: string | null
           id?: string
           industry?: string | null
@@ -924,6 +932,7 @@ export type Database = {
           noofdirectives?: string | null
           noofemployee?: string | null
           paidupcapital?: string | null
+          parent_company_id?: string | null
           phone?: string | null
           region?: string | null
           registeredemailaddress?: string | null
@@ -942,7 +951,15 @@ export type Database = {
           website?: string | null
           yearofestablishment?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_parent_company_id_fkey"
+            columns: ["parent_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_relationships: {
         Row: {

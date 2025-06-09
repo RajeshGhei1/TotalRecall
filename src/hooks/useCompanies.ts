@@ -52,6 +52,10 @@ export interface Company {
   verticles?: string;
   companyProfile?: string;
   endUserChannel?: string;
+  // Add parent company and group structure fields
+  parent_company_id?: string;
+  company_group_name?: string;
+  hierarchy_level?: number;
 }
 
 export const useCompanies = () => {
@@ -98,6 +102,15 @@ export const useCompanies = () => {
   // Mutation for creating a new company
   const createCompany = useMutation({
     mutationFn: async (companyData: CompanyFormValues) => {
+      // Calculate hierarchy level based on parent
+      let hierarchyLevel = 0;
+      if (companyData.parentCompanyId) {
+        const parentCompany = companies?.find(c => c.id === companyData.parentCompanyId);
+        if (parentCompany) {
+          hierarchyLevel = (parentCompany.hierarchy_level || 0) + 1;
+        }
+      }
+
       // Extract the company data
       const companyDataForInsert = {
         name: companyData.name,
@@ -142,6 +155,10 @@ export const useCompanies = () => {
         verticles: companyData.verticles,
         companyProfile: companyData.companyProfile,
         endUserChannel: companyData.endUserChannel,
+        // Add parent company and group structure fields
+        parent_company_id: companyData.parentCompanyId || null,
+        company_group_name: companyData.companyGroupName || null,
+        hierarchy_level: hierarchyLevel,
       };
 
       const { data, error } = await supabase
