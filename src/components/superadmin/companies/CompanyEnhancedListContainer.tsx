@@ -11,13 +11,14 @@ import CompanyDeleteDialog from './CompanyDeleteDialog';
 import CreateCompanyDialog from './CreateCompanyDialog';
 import CompanyAdvancedFilters, { CompanyFilters } from './filters/CompanyAdvancedFilters';
 import SavedSearchManager from './filters/SavedSearchManager';
+import EnhancedExportDialog from './EnhancedExportDialog';
 import { useCompanyFilters } from './hooks/useCompanyFilters';
 import { useCompanyActions } from './hooks/useCompanyActions';
-import { exportCompaniesToCSV } from './utils/exportUtils';
 
 const CompanyEnhancedListContainer: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('list');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   
   const [filters, setFilters] = useState<CompanyFilters>({
     search: '',
@@ -56,8 +57,18 @@ const CompanyEnhancedListContainer: React.FC = () => {
     setSearchTerm('');
   };
 
-  const handleExportCurrent = () => {
-    exportCompaniesToCSV(filteredCompanies);
+  const getFilterSummary = () => {
+    const activeFilters = [];
+    if (searchTerm) activeFilters.push(`Search: "${searchTerm}"`);
+    if (filters.industries?.length) activeFilters.push(`${filters.industries.length} industries`);
+    if (filters.sizes?.length) activeFilters.push(`${filters.sizes.length} sizes`);
+    if (filters.locations?.length) activeFilters.push(`${filters.locations.length} locations`);
+    if (filters.companyTypes?.length) activeFilters.push(`${filters.companyTypes.length} types`);
+    if (filters.sectors?.length) activeFilters.push(`${filters.sectors.length} sectors`);
+    if (filters.foundedFrom || filters.foundedTo) activeFilters.push('Founded date range');
+    if (filters.registrationFrom || filters.registrationTo) activeFilters.push('Registration date range');
+    
+    return activeFilters.length > 0 ? activeFilters.join(', ') : 'All companies';
   };
 
   if (isLoading) {
@@ -76,7 +87,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
           Showing {filteredCompanies.length} of {companies?.length || 0} companies
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCurrent}>
+          <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
             <Download className="h-4 w-4 mr-2" />
             Export Results
           </Button>
@@ -142,6 +153,13 @@ const CompanyEnhancedListContainer: React.FC = () => {
         onClose={() => setIsCreateDialogOpen(false)}
         onSubmit={handleCreateCompany}
         isSubmitting={createCompany.isPending}
+      />
+
+      <EnhancedExportDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        companies={filteredCompanies}
+        currentFilters={getFilterSummary()}
       />
     </div>
   );

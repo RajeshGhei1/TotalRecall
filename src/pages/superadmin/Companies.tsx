@@ -11,23 +11,67 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Database, BarChart } from 'lucide-react';
+import { Plus, Upload, Database, BarChart, Download } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import CompanyList from '@/components/superadmin/companies/CompanyList';
 import CompanyMetricsDashboard from '@/components/superadmin/companies/CompanyMetricsDashboard';
 import CreateCompanyDialog from '@/components/superadmin/companies/CreateCompanyDialog';
-import BulkUploadDialog from '@/components/superadmin/companies/BulkUploadDialog';
+import EnhancedBulkUploadDialog from '@/components/superadmin/companies/EnhancedBulkUploadDialog';
+import EnhancedExportDialog from '@/components/superadmin/companies/EnhancedExportDialog';
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
 import { useCompanies } from '@/hooks/useCompanies';
+import { toast } from 'sonner';
 
 const Companies = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("companies");
   
-  const { companies, isLoading, createCompany } = useCompanies();
+  const { companies, isLoading, createCompany, refetch } = useCompanies();
+
+  const handleBulkImport = async (companiesToImport: Partial<any>[], options: { skipDuplicates: boolean }) => {
+    try {
+      let importedCount = 0;
+      let skippedCount = 0;
+
+      for (const companyData of companiesToImport) {
+        try {
+          // Check for duplicates if skipDuplicates is enabled
+          if (options.skipDuplicates) {
+            const existingCompany = companies?.find(
+              c => c.name.toLowerCase() === companyData.name?.toLowerCase() ||
+                   (companyData.email && c.email?.toLowerCase() === companyData.email?.toLowerCase())
+            );
+            
+            if (existingCompany) {
+              skippedCount++;
+              continue;
+            }
+          }
+
+          await createCompany.mutateAsync(companyData);
+          importedCount++;
+        } catch (error) {
+          console.error('Failed to import company:', companyData.name, error);
+        }
+      }
+
+      await refetch();
+      
+      if (skippedCount > 0) {
+        toast.success(`Import completed: ${importedCount} imported, ${skippedCount} skipped (duplicates)`);
+      } else {
+        toast.success(`Successfully imported ${importedCount} companies`);
+      }
+    } catch (error) {
+      console.error('Bulk import error:', error);
+      toast.error('Bulk import failed');
+      throw error;
+    }
+  };
 
   return (
     <AdminLayout>
@@ -54,7 +98,10 @@ const Companies = () => {
               <Plus className="mr-2 h-4 w-4" /> Add Company
             </Button>
             <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" /> Bulk Upload
+              <Upload className="mr-2 h-4 w-4" /> Bulk Import
+            </Button>
+            <Button variant="outline" onClick={() => setIsExportDialogOpen(true)}>
+              <Download className="mr-2 h-4 w-4" /> Export
             </Button>
             <Button variant="outline" onClick={() => setIsApiConnectionOpen(true)}>
               <Database className="mr-2 h-4 w-4" /> API Connection
@@ -107,9 +154,18 @@ const Companies = () => {
           isSubmitting={createCompany.isPending}
         />
         
-        <BulkUploadDialog 
+        <EnhancedBulkUploadDialog
           isOpen={isBulkUploadOpen}
           onClose={() => setIsBulkUploadOpen(false)}
+          existingCompanies={companies || []}
+          onImport={handleBulkImport}
+        />
+
+        <EnhancedExportDialog
+          isOpen={isExportDialogOpen}
+          onClose={() => setIsExportDialogOpen(false)}
+          companies={companies || []}
+          currentFilters="All companies"
         />
         
         <ApiConnectionDialog
