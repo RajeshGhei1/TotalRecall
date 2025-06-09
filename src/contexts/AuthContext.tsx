@@ -1,10 +1,11 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
   bypassAuth: boolean;
   signIn: (email: string, password: string) => Promise<void>;
@@ -24,18 +25,23 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [bypassAuth] = useState(false); // Set to true for development bypass
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session);
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -44,30 +50,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    console.log('Attempting to sign in with:', email);
+    const { data, error } = await supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    });
+    
+    if (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
+    
+    console.log('Sign in successful:', data);
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { error } = await supabase.auth.signUp({ 
+    console.log('Attempting to sign up with:', email);
+    
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName
         }
       }
     });
-    if (error) throw error;
+    
+    if (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
+    
+    console.log('Sign up successful:', data);
   };
 
   const signOut = async () => {
+    console.log('Attempting to sign out');
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
+    console.log('Sign out successful');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, bypassAuth, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, bypassAuth, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

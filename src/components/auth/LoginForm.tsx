@@ -1,10 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -27,6 +29,9 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -35,9 +40,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     },
   });
 
+  const handleSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await onSubmit(data);
+    } catch (err: any) {
+      console.error('Login form error:', err);
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <FormField
           control={form.control}
           name="email"
@@ -45,12 +71,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="email@example.com" {...field} />
+                <Input 
+                  placeholder="email@example.com" 
+                  type="email"
+                  disabled={isLoading}
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="password"
@@ -58,14 +90,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  disabled={isLoading}
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Sign In
+        
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
     </Form>
