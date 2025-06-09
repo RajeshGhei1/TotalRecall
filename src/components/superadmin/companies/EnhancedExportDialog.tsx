@@ -50,8 +50,8 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     { key: 'linkedin', label: 'LinkedIn', selected: false },
     { key: 'twitter', label: 'Twitter', selected: false },
     { key: 'facebook', label: 'Facebook', selected: false },
-    { key: 'created_at', label: 'Created Date', selected: false },
-    { key: 'updated_at', label: 'Updated Date', selected: false },
+    { key: 'cin', label: 'CIN', selected: false },
+    { key: 'companyStatus', label: 'Company Status', selected: false },
   ]);
   
   const [exportFormat, setExportFormat] = useState<'csv' | 'xlsx'>('csv');
@@ -94,11 +94,6 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
         selectedFields.map(field => {
           const value = company[field.key];
           if (value === null || value === undefined) return '';
-          
-          // Handle dates
-          if (field.key === 'created_at' || field.key === 'updated_at') {
-            return new Date(value as string).toLocaleDateString();
-          }
           
           // Escape commas and quotes in CSV
           const stringValue = String(value);
@@ -205,7 +200,7 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
                 <Checkbox
                   id="include-headers"
                   checked={includeHeaders}
-                  onCheckedChange={setIncludeHeaders}
+                  onCheckedChange={(checked) => setIncludeHeaders(checked === true)}
                 />
                 <Label htmlFor="include-headers" className="text-sm">
                   Include headers
@@ -238,7 +233,7 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
                     <Checkbox
                       id={field.key}
                       checked={field.selected}
-                      onCheckedChange={() => handleFieldToggle(field.key)}
+                      onCheckedChange={(checked) => handleFieldToggle(field.key)}
                     />
                     <Label htmlFor={field.key} className="text-sm font-normal">
                       {field.label}

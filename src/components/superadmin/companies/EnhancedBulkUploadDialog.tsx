@@ -345,7 +345,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                         id={`required-${index}`}
                         checked={mapping.isRequired}
                         onCheckedChange={(checked) => 
-                          handleFieldMappingChange(index, 'isRequired', checked)
+                          handleFieldMappingChange(index, 'isRequired', checked === true)
                         }
                       />
                       <Label htmlFor={`required-${index}`} className="text-sm">
@@ -465,7 +465,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                         <Checkbox
                           id="skip-duplicates"
                           checked={skipDuplicates}
-                          onCheckedChange={setSkipDuplicates}
+                          onCheckedChange={(checked) => setSkipDuplicates(checked === true)}
                         />
                         <Label htmlFor="skip-duplicates">Skip duplicate companies during import</Label>
                       </div>
