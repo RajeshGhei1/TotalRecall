@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FormSuggestionEngine } from '@/services/ai/smartForms/formSuggestionEngine';
-import ContextualWorkflowSuggestions from '@/components/ai/workflow/ContextualWorkflowSuggestions';
+import { ContextualWorkflowSuggestions } from '@/components/ai/workflow/ContextualWorkflowSuggestions';
 import { Lightbulb, Zap, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -112,18 +113,10 @@ const SmartFormSuggestions: React.FC<SmartFormSuggestionsProps> = ({
 
       {/* Workflow Suggestions */}
       <ContextualWorkflowSuggestions
-        context={{
-          module: 'forms',
-          formType,
-          userId,
-          tenantId
-        }}
-        onSuggestionApplied={(suggestionId) => {
-          toast({
-            title: 'Workflow Suggestion Applied',
-            description: 'Workflow automation has been set up for this form.',
-          });
-        }}
+        module="forms"
+        formType={formType}
+        userId={userId}
+        tenantId={tenantId}
       />
     </div>
   );

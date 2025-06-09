@@ -43,9 +43,20 @@ export const useSystemModules = (activeOnly: boolean = true) => {
 
   const createModule = useMutation({
     mutationFn: async (moduleData: Partial<SystemModule>) => {
+      // Ensure required fields are present
+      const moduleToCreate = {
+        name: moduleData.name || '',
+        category: moduleData.category || 'core',
+        is_active: moduleData.is_active ?? true,
+        description: moduleData.description,
+        version: moduleData.version,
+        dependencies: moduleData.dependencies,
+        default_limits: moduleData.default_limits
+      };
+
       const { data, error } = await supabase
         .from('system_modules')
-        .insert(moduleData)
+        .insert(moduleToCreate)
         .select()
         .single();
 
@@ -59,9 +70,20 @@ export const useSystemModules = (activeOnly: boolean = true) => {
 
   const updateModule = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<SystemModule> }) => {
+      // Only include fields that are being updated
+      const updateData: Partial<SystemModule> = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.category !== undefined) updateData.category = updates.category;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+      if (updates.version !== undefined) updateData.version = updates.version;
+      if (updates.dependencies !== undefined) updateData.dependencies = updates.dependencies;
+      if (updates.default_limits !== undefined) updateData.default_limits = updates.default_limits;
+
       const { data, error } = await supabase
         .from('system_modules')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
