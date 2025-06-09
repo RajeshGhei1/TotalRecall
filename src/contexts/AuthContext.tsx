@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   bypassAuth: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ user: User | null; redirectPath: string }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -63,6 +63,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkUserRole = async (userId: string): Promise<string> => {
+    try {
+      // Check if user is super admin
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking user role:', error);
+        return '/'; // Default to home
+      }
+
+      if (profile?.role === 'super_admin') {
+        return '/superadmin/dashboard';
+      }
+
+      // Default to tenant admin for authenticated users
+      return '/tenant-admin/dashboard';
+    } catch (error) {
+      console.error('Error determining user role:', error);
+      return '/';
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     console.log('Attempting to sign in with:', email);
     setLoading(true);
@@ -79,6 +105,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       console.log('Sign in successful:', !!data.user);
+      
+      // Determine redirect path based on user role
+      let redirectPath = '/';
+      if (data.user) {
+        redirectPath = await checkUserRole(data.user.id);
+      }
+      
+      return { user: data.user, redirectPath };
     } catch (error) {
       throw error;
     } finally {

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,12 +26,13 @@ export const loginSchema = z.object({
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
-  onSubmit: (data: LoginFormValues) => Promise<void>;
+  onSubmit: (data: LoginFormValues) => Promise<{ user: any; redirectPath: string }>;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,7 +47,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     setError(null);
     
     try {
-      await onSubmit(data);
+      const result = await onSubmit(data);
+      console.log('Login successful, redirecting to:', result.redirectPath);
+      navigate(result.redirectPath);
     } catch (err: any) {
       console.error('Login form error:', err);
       setError(err.message || 'Login failed. Please try again.');

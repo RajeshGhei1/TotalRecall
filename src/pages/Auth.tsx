@@ -24,14 +24,6 @@ const Auth = () => {
   // Check if this is a LinkedIn OAuth callback
   const isLinkedInCallback = searchParams.get('code') && searchParams.get('state');
 
-  // Redirect authenticated users
-  useEffect(() => {
-    if (!loading && user && !bypassAuth) {
-      console.log('User is authenticated, redirecting to home');
-      navigate("/");
-    }
-  }, [user, loading, bypassAuth, navigate]);
-
   // Handle bypass auth redirect
   useEffect(() => {
     if (bypassAuth && !loading) {
@@ -71,11 +63,6 @@ const Auth = () => {
     );
   }
 
-  // Don't render if user is authenticated (will redirect)
-  if (user && !bypassAuth) {
-    return null;
-  }
-
   // Don't render if bypass auth is enabled (will redirect)
   if (bypassAuth) {
     return null;
@@ -83,11 +70,12 @@ const Auth = () => {
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     try {
-      await signIn(data.email, data.password);
+      const result = await signIn(data.email, data.password);
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
+      return result;
     } catch (error: any) {
       console.error("Login error:", error);
       throw error; // Re-throw to be handled by LoginForm
