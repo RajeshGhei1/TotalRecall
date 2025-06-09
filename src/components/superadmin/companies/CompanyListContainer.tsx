@@ -9,13 +9,15 @@ import { supabase } from '@/integrations/supabase/client';
 import CompanySearch from './CompanySearch';
 import CompanyTable from './CompanyTable';
 import CompanyDeleteDialog from './CompanyDeleteDialog';
+import CreateCompanyDialog from './CreateCompanyDialog';
 
 const CompanyListContainer: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
-  const { companies, isLoading, refetch } = useCompanies();
+  const { companies, isLoading, refetch, createCompany } = useCompanies();
   
   // Filter companies based on search term
   const filteredCompanies = companies?.filter(company => {
@@ -30,11 +32,12 @@ const CompanyListContainer: React.FC = () => {
   }) || [];
 
   const handleAddCompany = () => {
-    navigate('/superadmin/companies/add');
+    setIsCreateDialogOpen(true);
   };
 
   const handleEdit = (companyId: string) => {
-    navigate(`/superadmin/companies/edit/${companyId}`);
+    // For now, navigate to view details - edit functionality can be added later
+    navigate(`/superadmin/companies/${companyId}`);
   };
 
   const handleViewDetails = (companyId: string) => {
@@ -75,6 +78,18 @@ const CompanyListContainer: React.FC = () => {
     }
   };
 
+  const handleCreateCompany = async (data: any) => {
+    try {
+      await createCompany.mutateAsync(data);
+      setIsCreateDialogOpen(false);
+      toast.success('Company created successfully');
+      refetch();
+    } catch (error: any) {
+      console.error('Error creating company:', error);
+      toast.error(`Failed to create company: ${error.message}`);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -105,6 +120,13 @@ const CompanyListContainer: React.FC = () => {
         isOpen={!!companyToDelete}
         onClose={() => setCompanyToDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <CreateCompanyDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleCreateCompany}
+        isSubmitting={createCompany.isPending}
       />
     </>
   );
