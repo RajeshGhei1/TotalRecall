@@ -103,21 +103,27 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
 
   const onSubmit = async (data: RelationshipFormData) => {
     try {
-      const formattedData = {
-        ...data,
+      // Create properly typed data object
+      const relationshipData: Omit<CompanyRelationshipAdvanced, 'id' | 'created_at' | 'updated_at'> = {
+        parent_company_id: data.parent_company_id,
+        child_company_id: data.child_company_id,
+        relationship_type_id: data.relationship_type_id,
+        ownership_percentage: data.ownership_percentage || null,
         effective_date: format(data.effective_date, 'yyyy-MM-dd'),
         end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
-        ownership_percentage: data.ownership_percentage || null,
+        is_active: data.is_active,
+        notes: data.notes || null,
         metadata: {},
+        created_by: null,
       };
 
       if (relationship) {
         await updateRelationship.mutateAsync({
           id: relationship.id,
-          ...formattedData,
+          ...relationshipData,
         });
       } else {
-        await createRelationship.mutateAsync(formattedData);
+        await createRelationship.mutateAsync(relationshipData);
       }
       
       onSuccess();
