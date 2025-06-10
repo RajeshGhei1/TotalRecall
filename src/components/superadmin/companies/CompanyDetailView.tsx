@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -14,7 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Users, Network, BarChart3, Building2, Edit } from 'lucide-react';
+import { ArrowLeft, Building, Users, Network, BarChart3, Building2, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
@@ -24,12 +23,14 @@ import CompanyOrgChart from './charts/CompanyOrgChart';
 import { BranchOfficeManager } from './sections/BranchOfficeManager';
 import CompanyHierarchyDisplay from './sections/CompanyHierarchyDisplay';
 import { EditCompanyDialog } from './EditCompanyDialog';
+import CompanyDeleteDialog from './CompanyDeleteDialog';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const { companies, isLoading, updateCompany } = useCompanies();
   const company = companies?.find(c => c.id === companyId);
@@ -48,6 +49,12 @@ const CompanyDetailView: React.FC = () => {
         }
       );
     }
+  };
+
+  const handleDeleteSuccess = () => {
+    setIsDeleteDialogOpen(false);
+    // Navigate back to companies list after successful deletion
+    navigate('/superadmin/companies');
   };
 
   if (isLoading) {
@@ -129,6 +136,14 @@ const CompanyDetailView: React.FC = () => {
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit Company
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Company
             </Button>
             <Button 
               variant="outline" 
@@ -291,6 +306,14 @@ const CompanyDetailView: React.FC = () => {
             isSubmitting={updateCompany.isPending}
           />
         )}
+
+        {/* Delete Company Dialog */}
+        <CompanyDeleteDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          company={company}
+          allCompanies={companies || []}
+        />
       </div>
     </AdminLayout>
   );

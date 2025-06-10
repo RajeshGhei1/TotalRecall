@@ -24,6 +24,7 @@ import { Search, MoreHorizontal, Building, Users, Network, Edit, Trash2, Eye } f
 import { useCompanies } from '@/hooks/useCompanies';
 import { useNavigate } from 'react-router-dom';
 import { EditCompanyDialog } from './EditCompanyDialog';
+import CompanyDeleteDialog from './CompanyDeleteDialog';
 import { Company } from '@/hooks/useCompanies';
 
 const CompanyEnhancedListContainer: React.FC = () => {
@@ -31,6 +32,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
   const { companies, isLoading, updateCompany } = useCompanies();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
 
   // Filter companies based on search term
   const filteredCompanies = companies?.filter(company =>
@@ -145,7 +147,10 @@ const CompanyEnhancedListContainer: React.FC = () => {
                           Edit Company
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => setDeletingCompany(company)}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete Company
                         </DropdownMenuItem>
@@ -169,6 +174,14 @@ const CompanyEnhancedListContainer: React.FC = () => {
           isSubmitting={updateCompany.isPending}
         />
       )}
+
+      {/* Delete Company Dialog */}
+      <CompanyDeleteDialog
+        isOpen={!!deletingCompany}
+        onClose={() => setDeletingCompany(null)}
+        company={deletingCompany}
+        allCompanies={companies || []}
+      />
     </div>
   );
 };
