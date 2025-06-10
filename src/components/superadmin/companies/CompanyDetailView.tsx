@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Users, Network, BarChart3, Building2 } from 'lucide-react';
+import { ArrowLeft, Building, Users, Network, BarChart3, Building2, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
@@ -23,17 +23,32 @@ import PeopleSection from './sections/PeopleSection';
 import CompanyOrgChart from './charts/CompanyOrgChart';
 import { BranchOfficeManager } from './sections/BranchOfficeManager';
 import CompanyHierarchyDisplay from './sections/CompanyHierarchyDisplay';
+import { EditCompanyDialog } from './EditCompanyDialog';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  const { companies, isLoading } = useCompanies();
+  const { companies, isLoading, updateCompany } = useCompanies();
   const company = companies?.find(c => c.id === companyId);
   const parentCompany = company?.parent_company_id 
     ? companies?.find(c => c.id === company.parent_company_id)
     : null;
+
+  const handleEditSubmit = (data: any) => {
+    if (company) {
+      updateCompany.mutate(
+        { id: company.id, companyData: data },
+        {
+          onSuccess: () => {
+            setIsEditDialogOpen(false);
+          }
+        }
+      );
+    }
+  };
 
   if (isLoading) {
     return (
@@ -107,13 +122,22 @@ const CompanyDetailView: React.FC = () => {
               Company ID: {company.id.slice(0, 8)}...
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/superadmin/companies')}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Companies
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(true)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Company
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/superadmin/companies')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Companies
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -256,6 +280,17 @@ const CompanyDetailView: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Company Dialog */}
+        {company && (
+          <EditCompanyDialog
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            company={company}
+            onSubmit={handleEditSubmit}
+            isSubmitting={updateCompany.isPending}
+          />
+        )}
       </div>
     </AdminLayout>
   );

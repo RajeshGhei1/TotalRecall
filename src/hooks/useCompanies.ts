@@ -196,11 +196,110 @@ export const useCompanies = () => {
     },
   });
 
+  // Mutation for updating a company
+  const updateCompany = useMutation({
+    mutationFn: async ({ id, companyData }: { id: string; companyData: CompanyFormValues }) => {
+      // Calculate hierarchy level based on parent
+      let hierarchyLevel = 0;
+      if (companyData.parentCompanyId) {
+        const parentCompany = companies?.find(c => c.id === companyData.parentCompanyId);
+        if (parentCompany) {
+          hierarchyLevel = (parentCompany.hierarchy_level || 0) + 1;
+        }
+      }
+
+      // Extract the company data for update
+      const companyDataForUpdate = {
+        name: companyData.name,
+        domain: companyData.website,
+        industry: companyData.industry,
+        size: companyData.size,
+        description: companyData.description,
+        location: companyData.location,
+        email: companyData.email,
+        phone: companyData.phone,
+        linkedin: companyData.linkedin,
+        twitter: companyData.twitter,
+        facebook: companyData.facebook,
+        founded: companyData.founded,
+        // Add tenant-specific fields
+        cin: companyData.cin,
+        companyStatus: companyData.companyStatus,
+        registeredOfficeAddress: companyData.registeredOfficeAddress,
+        registrationDate: companyData.registrationDate,
+        registeredEmailAddress: companyData.registeredEmailAddress,
+        noOfDirectives: companyData.noOfDirectives,
+        globalRegion: companyData.globalRegion,
+        country: companyData.country,
+        region: companyData.region,
+        hoLocation: companyData.hoLocation,
+        industry1: companyData.industry1,
+        industry2: companyData.industry2,
+        industry3: companyData.industry3,
+        companySector: companyData.companySector,
+        companyType: companyData.companyType,
+        entityType: companyData.entityType,
+        noOfEmployee: companyData.noOfEmployee,
+        segmentAsPerNumberOfEmployees: companyData.segmentAsPerNumberOfEmployees,
+        turnOver: companyData.turnOver,
+        segmentAsPerTurnover: companyData.segmentAsPerTurnover,
+        turnoverYear: companyData.turnoverYear,
+        yearOfEstablishment: companyData.yearOfEstablishment,
+        paidupCapital: companyData.paidupCapital,
+        segmentAsPerPaidUpCapital: companyData.segmentAsPerPaidUpCapital,
+        areaOfSpecialize: companyData.areaOfSpecialize,
+        serviceLine: companyData.serviceLine,
+        verticles: companyData.verticles,
+        companyProfile: companyData.companyProfile,
+        endUserChannel: companyData.endUserChannel,
+        // Add parent company and group structure fields
+        parent_company_id: companyData.parentCompanyId || null,
+        company_group_name: companyData.companyGroupName || null,
+        hierarchy_level: hierarchyLevel,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('companies')
+        .update(companyDataForUpdate)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Handle custom fields if any exist
+      const customFieldValues = extractCustomFieldValues(companyData);
+      
+      if (Object.keys(customFieldValues).length > 0) {
+        await saveCustomFieldValues('company', id, customFieldValues);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      toast({
+        title: 'Company updated',
+        description: 'The company has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error updating company:", error);
+      toast({
+        title: 'Error',
+        description: `Failed to update company: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     companies,
     isLoading,
     error,
     createCompany,
+    updateCompany,
     refetch, // Return the refetch function
   };
 };

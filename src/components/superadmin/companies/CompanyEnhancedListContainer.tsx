@@ -1,170 +1,174 @@
 
 import React, { useState } from 'react';
-import { Loader2, Download } from 'lucide-react';
-import { useCompanies } from '@/hooks/useCompanies';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import CompanySearch from './CompanySearch';
-import CompanyTable from './CompanyTable';
-import CompanyDeleteDialog from './CompanyDeleteDialog';
-import CreateCompanyDialog from './CreateCompanyDialog';
-import CompanyAdvancedFilters from './filters/CompanyAdvancedFilters';
-import SavedSearchManager from './filters/SavedSearchManager';
-import EnhancedExportDialog from './EnhancedExportDialog';
-import { useCompanyFilters, CompanyFilters } from './hooks/useCompanyFilters';
-import { useCompanyActions } from './hooks/useCompanyActions';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Search, MoreHorizontal, Building, Users, Network, Edit, Trash2, Eye } from 'lucide-react';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useNavigate } from 'react-router-dom';
+import { EditCompanyDialog } from './EditCompanyDialog';
+import { Company } from '@/hooks/useCompanies';
 
 const CompanyEnhancedListContainer: React.FC = () => {
+  const navigate = useNavigate();
+  const { companies, isLoading, updateCompany } = useCompanies();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('list');
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  
-  const [filters, setFilters] = useState<CompanyFilters>({
-    search: '',
-    industries: [],
-    sizes: [],
-    locations: [],
-    companyTypes: [],
-    sectors: [],
-  });
-  
-  const { companies, isLoading, refetch, createCompany } = useCompanies();
-  const { filteredCompanies } = useCompanyFilters(companies, filters, searchTerm);
-  
-  const {
-    companyToDelete,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    setCompanyToDelete,
-    handleAddCompany,
-    handleEdit,
-    handleViewDetails,
-    handleDelete,
-    handleConfirmDelete,
-    handleCreateCompany,
-  } = useCompanyActions(refetch, createCompany);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
-  const handleResetFilters = () => {
-    setFilters({
-      search: '',
-      industries: [],
-      sizes: [],
-      locations: [],
-      companyTypes: [],
-      sectors: [],
-    });
-    setSearchTerm('');
-  };
+  // Filter companies based on search term
+  const filteredCompanies = companies?.filter(company =>
+    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.location?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
-  const getFilterSummary = () => {
-    const activeFilters = [];
-    if (searchTerm) activeFilters.push(`Search: "${searchTerm}"`);
-    if (filters.industries?.length) activeFilters.push(`${filters.industries.length} industries`);
-    if (filters.sizes?.length) activeFilters.push(`${filters.sizes.length} sizes`);
-    if (filters.locations?.length) activeFilters.push(`${filters.locations.length} locations`);
-    if (filters.companyTypes?.length) activeFilters.push(`${filters.companyTypes.length} types`);
-    if (filters.sectors?.length) activeFilters.push(`${filters.sectors.length} sectors`);
-    if (filters.foundedFrom || filters.foundedTo) activeFilters.push('Founded date range');
-    if (filters.registrationFrom || filters.registrationTo) activeFilters.push('Registration date range');
-    
-    return activeFilters.length > 0 ? activeFilters.join(', ') : 'All companies';
+  const handleEditSubmit = (data: any) => {
+    if (editingCompany) {
+      updateCompany.mutate(
+        { id: editingCompany.id, companyData: data },
+        {
+          onSuccess: () => {
+            setEditingCompany(null);
+          }
+        }
+      );
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-40">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading companies...</div>
+        </CardContent>
+      </Card>
     );
   }
 
-  // Ensure we have valid arrays for display
-  const safeCompanies = companies || [];
-  const safeFilteredCompanies = filteredCompanies || [];
-
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Showing {safeFilteredCompanies.length} of {safeCompanies.length} companies
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Results
-          </Button>
+      {/* Search and Filters */}
+      <div className="flex items-center space-x-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search companies by name, industry, or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="list">Companies List</TabsTrigger>
-          <TabsTrigger value="saved-searches">Saved Searches</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="list" className="space-y-6">
-          {/* Enhanced Search */}
-          <CompanySearch 
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            onAddCompany={handleAddCompany}
-          />
+      {/* Companies Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Companies ({filteredCompanies.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Company</TableHead>
+                <TableHead>Industry</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>Group</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCompanies.map((company) => (
+                <TableRow key={company.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{company.name}</div>
+                      {company.website && (
+                        <div className="text-sm text-gray-500">{company.website}</div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {company.industry && (
+                      <Badge variant="secondary">{company.industry}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>{company.location || '-'}</TableCell>
+                  <TableCell>{company.size || '-'}</TableCell>
+                  <TableCell>{company.company_group_name || '-'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      Level {company.hierarchy_level || 0}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/superadmin/companies/${company.id}`)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setEditingCompany(company)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Company
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Company
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-          {/* Advanced Filters */}
-          <CompanyAdvancedFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            onReset={handleResetFilters}
-            companies={safeCompanies}
-          />
-          
-          {/* Companies Table */}
-          <CompanyTable 
-            companies={safeFilteredCompanies}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onViewDetails={handleViewDetails}
-          />
-        </TabsContent>
-        
-        <TabsContent value="saved-searches">
-          <SavedSearchManager
-            currentFilters={{ ...filters, search: searchTerm }}
-            onLoadSearch={(loadedFilters) => {
-              setFilters(loadedFilters);
-              setSearchTerm(loadedFilters.search || '');
-              setActiveTab('list');
-            }}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Dialogs */}
-      <CompanyDeleteDialog
-        company={companyToDelete}
-        companyName={companyToDelete?.name || ''}
-        isOpen={!!companyToDelete}
-        onClose={() => setCompanyToDelete(null)}
-        onConfirm={handleConfirmDelete}
-      />
-
-      <CreateCompanyDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onSubmit={handleCreateCompany}
-        isSubmitting={createCompany.isPending}
-      />
-
-      <EnhancedExportDialog
-        isOpen={isExportDialogOpen}
-        onClose={() => setIsExportDialogOpen(false)}
-        companies={safeFilteredCompanies}
-        currentFilters={getFilterSummary()}
-      />
+      {/* Edit Company Dialog */}
+      {editingCompany && (
+        <EditCompanyDialog
+          isOpen={!!editingCompany}
+          onClose={() => setEditingCompany(null)}
+          company={editingCompany}
+          onSubmit={handleEditSubmit}
+          isSubmitting={updateCompany.isPending}
+        />
+      )}
     </div>
   );
 };
