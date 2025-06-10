@@ -45,23 +45,23 @@ export const useBranchOffices = (companyId?: string) => {
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data, error } = await supabase
-        .from('company_branch_offices' as any)
+      const { data, error } = await (supabase as any)
+        .from('company_branch_offices')
         .select('*')
         .eq('company_id', companyId)
         .order('is_headquarters', { ascending: false })
         .order('branch_name');
 
       if (error) throw error;
-      return (data as BranchOffice[]) || [];
+      return (data || []) as BranchOffice[];
     },
     enabled: !!companyId,
   });
 
   const createBranchOffice = useMutation({
     mutationFn: async ({ companyId, data }: { companyId: string; data: BranchOfficeFormData }) => {
-      const { data: result, error } = await supabase
-        .from('company_branch_offices' as any)
+      const { data: result, error } = await (supabase as any)
+        .from('company_branch_offices')
         .insert([{ ...data, company_id: companyId }])
         .select()
         .single();
@@ -87,8 +87,8 @@ export const useBranchOffices = (companyId?: string) => {
 
   const updateBranchOffice = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<BranchOfficeFormData> }) => {
-      const { data: result, error } = await supabase
-        .from('company_branch_offices' as any)
+      const { data: result, error } = await (supabase as any)
+        .from('company_branch_offices')
         .update(data)
         .eq('id', id)
         .select()
@@ -115,8 +115,8 @@ export const useBranchOffices = (companyId?: string) => {
 
   const deleteBranchOffice = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('company_branch_offices' as any)
+      const { error } = await (supabase as any)
+        .from('company_branch_offices')
         .delete()
         .eq('id', id);
 
