@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import {
   Dialog,
@@ -113,12 +112,12 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       'web_site': 'website',
       'web_address': 'website',
       'url': 'website',
-      'business_type': 'industry',
-      'sector': 'industry',
+      'business_type': 'industry1',
+      'sector': 'industry1',
       'company_size': 'size',
-      'employees': 'noOfEmployee',
-      'employee_count': 'noOfEmployee',
-      'staff_count': 'noOfEmployee',
+      'employees': 'noofemployee',
+      'employee_count': 'noofemployee',
+      'staff_count': 'noofemployee',
       'revenue': 'turnover',
       'annual_revenue': 'turnover',
       'sales': 'turnover',
@@ -289,10 +288,10 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
 
   const csvHeaders = csvData?.[0] || [];
   const companyFields = [
-    'name', 'email', 'website', 'domain', 'industry', 'size', 'location',
+    'name', 'email', 'website', 'domain', 'industry1', 'industry2', 'industry3', 'size', 'location',
     'phone', 'description', 'founded', 'linkedin', 'twitter', 'facebook',
-    'cin', 'registeredOfficeAddress', 'country', 'region', 'industry1',
-    'companyType', 'entityType', 'noOfEmployee', 'turnover', 'companyProfile',
+    'cin', 'registeredofficeaddress', 'country', 'region',
+    'companytype', 'entitytype', 'noofemployee', 'turnover', 'companyprofile',
     'ignore'
   ];
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -260,18 +261,18 @@ const CompanyMetricsDashboard: React.FC = () => {
         <CompanyPeopleChart />
       </div>
 
-      {/* Enhanced Analytics Section */}
+      {/* Enhanced Analytics Section - Remove companies prop from these components */}
       <div className="space-y-6">
         <h3 className="text-xl font-semibold">Advanced Analytics</h3>
         
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-          <CompanyGrowthChart companies={filteredCompanies} />
-          <GeographicDistributionChart companies={filteredCompanies} />
-          <IndustrySectorChart companies={filteredCompanies} />
-          <DataCompletenessChart companies={filteredCompanies} />
+          <CompanyGrowthChart />
+          <GeographicDistributionChart />
+          <IndustrySectorChart />
+          <DataCompletenessChart />
         </div>
 
-        <HierarchyAnalysisChart companies={filteredCompanies} />
+        <HierarchyAnalysisChart />
       </div>
 
       {/* Export Dialog */}
