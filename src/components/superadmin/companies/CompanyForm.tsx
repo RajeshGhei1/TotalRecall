@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,13 +26,15 @@ interface CompanyFormProps {
   isSubmitting: boolean;
   onCancel: () => void;
   initialData?: Partial<CompanyFormValues>;
+  isEdit?: boolean;
 }
 
 export const CompanyForm: React.FC<CompanyFormProps> = ({ 
   onSubmit, 
   isSubmitting, 
   onCancel,
-  initialData = {}
+  initialData = {},
+  isEdit = false
 }) => {
   const { customFields, isLoading: customFieldsLoading } = useCustomFields('global', {
     formContext: 'company_creation'
@@ -133,7 +136,12 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
               <h2 className="text-xl font-semibold text-foreground">Location Information</h2>
               <p className="text-sm text-muted-foreground">Geographic and regional details</p>
             </div>
-            <LocationSection form={form} />
+            <LocationSection 
+              form={form} 
+              showBranchOffices={isEdit && !!initialData.id}
+              companyId={initialData.id}
+              companyName={initialData.name || ''}
+            />
           </div>
 
           <Separator />
@@ -223,10 +231,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
               {isSubmitting ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Company...
+                  {isEdit ? 'Updating...' : 'Creating Company...'}
                 </>
               ) : (
-                'Create Company'
+                isEdit ? 'Update Company' : 'Create Company'
               )}
             </Button>
           </div>

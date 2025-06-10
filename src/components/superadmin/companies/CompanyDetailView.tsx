@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -13,13 +14,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Users, Network, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Building, Users, Network, BarChart3, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
 import RelationshipsSection from './sections/RelationshipsSection';
 import PeopleSection from './sections/PeopleSection';
 import CompanyOrgChart from './charts/CompanyOrgChart';
+import { BranchOfficeManager } from './sections/BranchOfficeManager';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -111,7 +113,7 @@ const CompanyDetailView: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Overview
@@ -119,6 +121,10 @@ const CompanyDetailView: React.FC = () => {
             <TabsTrigger value="people" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               People
+            </TabsTrigger>
+            <TabsTrigger value="branches" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Branches
             </TabsTrigger>
             <TabsTrigger value="org-chart" className="flex items-center gap-2">
               <Network className="h-4 w-4" />
@@ -172,6 +178,10 @@ const CompanyDetailView: React.FC = () => {
 
           <TabsContent value="people">
             <PeopleSection form={{ getValues: () => ({ id: company.id }) } as any} showFullView={true} />
+          </TabsContent>
+
+          <TabsContent value="branches">
+            <BranchOfficeManager companyId={company.id} companyName={company.name} />
           </TabsContent>
 
           <TabsContent value="org-chart">
