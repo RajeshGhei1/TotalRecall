@@ -37,7 +37,7 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
 
   // Update industry2 options when industry1 changes
   useEffect(() => {
-    if (industry1Value && getIndustry2OptionsForIndustry1) {
+    if (industry1Value && industry1Value !== '__add_new__' && getIndustry2OptionsForIndustry1) {
       const newIndustry2Options = getIndustry2OptionsForIndustry1(industry1Value);
       setIndustry2Options(newIndustry2Options);
       
@@ -49,14 +49,16 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
       }
     } else {
       setIndustry2Options([]);
-      form.setValue('industry2', '');
-      form.setValue('industry3', '');
+      if (industry1Value !== '__add_new__') {
+        form.setValue('industry2', '');
+        form.setValue('industry3', '');
+      }
     }
   }, [industry1Value, getIndustry2OptionsForIndustry1, form]);
 
   // Update industry3 options when industry2 changes
   useEffect(() => {
-    if (industry2Value && getIndustry3OptionsForIndustry2) {
+    if (industry2Value && industry2Value !== '__add_new__' && getIndustry3OptionsForIndustry2) {
       const newIndustry3Options = getIndustry3OptionsForIndustry2(industry2Value);
       setIndustry3Options(newIndustry3Options);
       
@@ -67,7 +69,9 @@ const IndustryDropdownSection: React.FC<IndustryDropdownSectionProps> = ({
       }
     } else {
       setIndustry3Options([]);
-      form.setValue('industry3', '');
+      if (industry2Value !== '__add_new__') {
+        form.setValue('industry3', '');
+      }
     }
   }, [industry2Value, getIndustry3OptionsForIndustry2, form]);
 

@@ -1,4 +1,3 @@
-
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { useCallback } from 'react';
 
@@ -68,46 +67,67 @@ export const useIndustryOptions = () => {
     ? formatOptions(industry1Hook, fallbackIndustryOptions) 
     : formatOptions(industryHook, fallbackIndustryOptions);
   
-  const industry2Options = industry2Hook.options && industry2Hook.options.length > 0 
-    ? formatOptions(industry2Hook, fallbackIndustryOptions) 
-    : formatOptions(industryHook, fallbackIndustryOptions);
-  
-  const industry3Options = industry3Hook.options && industry3Hook.options.length > 0 
-    ? formatOptions(industry3Hook, fallbackIndustryOptions) 
-    : formatOptions(industryHook, fallbackIndustryOptions);
+  // Define mappings for hierarchical filtering
+  const industry1ToIndustry2Map: Record<string, string[]> = {
+    'services': ['it_software', 'financial_services', 'healthcare_services', 'consulting', 'education', 'telecommunications', 'media_entertainment', 'hospitality', 'real_estate', 'professional_services'],
+    'trading': ['import_export', 'retail_trade', 'wholesale_trade', 'commodity_trading', 'e_commerce', 'distribution'],
+    'manufacturing': ['automotive', 'electronics', 'textiles', 'chemicals', 'pharmaceuticals', 'food_processing', 'machinery', 'aerospace', 'construction_materials'],
+    'government': ['central_government', 'state_government', 'local_government', 'public_sector', 'defense', 'regulatory_bodies']
+  };
+
+  const industry2ToIndustry3Map: Record<string, string[]> = {
+    'it_software': ['web_development', 'mobile_app_development', 'software_consulting', 'cloud_services', 'cybersecurity', 'data_analytics', 'ai_ml', 'enterprise_software', 'gaming', 'fintech'],
+    'financial_services': ['banking', 'insurance', 'investment_management', 'wealth_management', 'credit_services', 'payment_processing', 'microfinance', 'securities'],
+    'automotive': ['vehicle_manufacturing', 'auto_components', 'electric_vehicles', 'automotive_software', 'auto_finance', 'auto_insurance'],
+    // Add more mappings as needed
+  };
   
   // Other options
-  const industries = formatOptions(industryHook, fallbackIndustryOptions);
   const sectors = formatOptions(companySectorHook, fallbackSectorOptions);
   const companyTypes = formatOptions(companyTypeHook, fallbackCompanyTypeOptions);
   const entityTypes = formatOptions(entityTypeHook, fallbackEntityTypeOptions);
 
   // Hierarchical dropdown functions
   const getIndustry2OptionsForIndustry1 = useCallback((industry1Value: string) => {
-    // For now, return all industry2 options since we don't have hierarchical data yet
-    // This can be enhanced later with actual hierarchical mappings
-    return industry2Options.filter(option => option.value !== '__add_new__');
-  }, [industry2Options]);
+    if (!industry1Value || industry1Value === '__add_new__') {
+      return [];
+    }
+
+    const allowedValues = industry1ToIndustry2Map[industry1Value] || [];
+    const allIndustry2Options = industry2Hook.options || [];
+    
+    const filteredOptions = allIndustry2Options
+      .filter(option => allowedValues.includes(option.value))
+      .map(option => ({ value: option.value, label: option.label }));
+    
+    return [...filteredOptions, addNewOption];
+  }, [industry2Hook.options]);
 
   const getIndustry3OptionsForIndustry2 = useCallback((industry2Value: string) => {
-    // For now, return all industry3 options since we don't have hierarchical data yet
-    // This can be enhanced later with actual hierarchical mappings
-    return industry3Options.filter(option => option.value !== '__add_new__');
-  }, [industry3Options]);
+    if (!industry2Value || industry2Value === '__add_new__') {
+      return [];
+    }
+
+    const allowedValues = industry2ToIndustry3Map[industry2Value] || [];
+    const allIndustry3Options = industry3Hook.options || [];
+    
+    const filteredOptions = allIndustry3Options
+      .filter(option => allowedValues.includes(option.value))
+      .map(option => ({ value: option.value, label: option.label }));
+    
+    return [...filteredOptions, addNewOption];
+  }, [industry3Hook.options]);
 
   // Get category ID by name
   const getCategoryIdByName = async (name: string) => {
     console.log(`Getting category ID for: ${name}`);
     switch (name) {
       case 'industry1':
-        return await industry1Hook.getCategoryIdByName('industry1', true) || 
-               await industryHook.getCategoryIdByName('industries', true);
+        return await industry1Hook.getCategoryIdByName('industry1', true);
       case 'industry2':
-        return await industry2Hook.getCategoryIdByName('industry2', true) || 
-               await industryHook.getCategoryIdByName('industries', true);
+        return await industry2Hook.getCategoryIdByName('industry2', true);
       case 'industry3':
-        return await industry3Hook.getCategoryIdByName('industry3', true) || 
-               await industryHook.getCategoryIdByName('industries', true);
+        return await industry3Hook.getCategoryIdByName('industry3', true);
       case 'companySector': 
         return await companySectorHook.getCategoryIdByName('company_sectors', true);
       case 'companyType':
@@ -129,10 +149,10 @@ export const useIndustryOptions = () => {
     companySectorHook,
     companyTypeHook,
     entityTypeHook,
-    industries,
+    industries: [], // Not used anymore
     industry1Options,
-    industry2Options,
-    industry3Options,
+    industry2Options: [], // Will be filtered dynamically
+    industry3Options: [], // Will be filtered dynamically
     sectors,
     companyTypes,
     entityTypes,
