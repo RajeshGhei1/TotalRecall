@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +19,6 @@ import { useCustomFields } from '@/hooks/useCustomFields';
 import LocationSection from '@/components/superadmin/tenant-form/LocationSection';
 import IndustrySection from '@/components/superadmin/tenant-form/IndustrySection';
 import CompanyMetricsSection from '@/components/superadmin/tenant-form/CompanyMetricsSection';
-import AdditionalInfoSection from '@/components/superadmin/tenant-form/AdditionalInfoSection';
 
 interface CompanyFormProps {
   onSubmit: (data: CompanyFormValues) => void;
@@ -191,17 +189,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
               <p className="text-sm text-muted-foreground">Key personnel and relationships</p>
             </div>
             <PeopleSection form={form} />
-          </div>
-
-          <Separator />
-
-          {/* Additional Information Section */}
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Additional Information</h2>
-              <p className="text-sm text-muted-foreground">Specialized areas and business details</p>
-            </div>
-            <AdditionalInfoSection form={form} />
           </div>
 
           {/* Custom Fields Section */}
