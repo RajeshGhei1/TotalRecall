@@ -127,8 +127,8 @@ const AnalyticsExportDialog: React.FC<AnalyticsExportDialogProps> = ({
           industry1: company.industry1,
           industry2: company.industry2,
           industry3: company.industry3,
-          company_sector: company.companysector,
-          company_type: company.companytype
+          company_sector: company.companySector,
+          company_type: company.companyType
         }));
       }
 
