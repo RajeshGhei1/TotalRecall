@@ -1,4 +1,3 @@
-
 import { Company } from '@/hooks/useCompanies';
 import Papa from 'papaparse';
 
@@ -46,11 +45,40 @@ export interface CSVRow {
   parent_company_id?: string;
   company_group_name?: string;
   hierarchy_level?: string;
+  // Branch office fields (up to 5 branch offices)
+  branch_office_1_name?: string;
+  branch_office_1_type?: string;
+  branch_office_1_address?: string;
+  branch_office_1_city?: string;
+  branch_office_1_state?: string;
+  branch_office_1_country?: string;
+  branch_office_1_postal_code?: string;
+  branch_office_1_phone?: string;
+  branch_office_1_email?: string;
+  branch_office_1_gst_number?: string;
+  branch_office_1_is_headquarters?: string;
+  branch_office_1_is_active?: string;
   [key: string]: any;
+}
+
+export interface BranchOfficeData {
+  branch_name: string;
+  branch_type: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  phone?: string;
+  email?: string;
+  gst_number?: string;
+  is_headquarters?: boolean;
+  is_active?: boolean;
 }
 
 export interface CSVProcessingResult {
   validRows: Partial<Company>[];
+  branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>;
   errors: Array<{ row: number; message: string; data?: any; field?: string; value?: string }>;
   duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }>;
   summary: {
@@ -58,6 +86,7 @@ export interface CSVProcessingResult {
     validRows: number;
     errorRows: number;
     duplicateRows: number;
+    totalBranchOffices: number;
   };
 }
 
@@ -281,6 +310,67 @@ export function normalizeHeader(header: string): string {
   return header.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
 }
 
+export function extractBranchOfficesFromRow(csvRow: any): BranchOfficeData[] {
+  const branchOffices: BranchOfficeData[] = [];
+  
+  // Support up to 5 branch offices per company
+  for (let i = 1; i <= 5; i++) {
+    const branchName = csvRow[`branch_office_${i}_name`] || csvRow[`branch_${i}_name`] || csvRow[`office_${i}_name`];
+    const branchType = csvRow[`branch_office_${i}_type`] || csvRow[`branch_${i}_type`] || csvRow[`office_${i}_type`];
+    
+    if (branchName && branchType) {
+      const branchOffice: BranchOfficeData = {
+        branch_name: branchName.toString().trim(),
+        branch_type: branchType.toString().trim(),
+        address: csvRow[`branch_office_${i}_address`] || csvRow[`branch_${i}_address`] || csvRow[`office_${i}_address`] || '',
+        city: csvRow[`branch_office_${i}_city`] || csvRow[`branch_${i}_city`] || csvRow[`office_${i}_city`] || '',
+        state: csvRow[`branch_office_${i}_state`] || csvRow[`branch_${i}_state`] || csvRow[`office_${i}_state`] || '',
+        country: csvRow[`branch_office_${i}_country`] || csvRow[`branch_${i}_country`] || csvRow[`office_${i}_country`] || '',
+        postal_code: csvRow[`branch_office_${i}_postal_code`] || csvRow[`branch_${i}_postal_code`] || csvRow[`office_${i}_postal_code`] || '',
+        phone: csvRow[`branch_office_${i}_phone`] || csvRow[`branch_${i}_phone`] || csvRow[`office_${i}_phone`] || '',
+        email: csvRow[`branch_office_${i}_email`] || csvRow[`branch_${i}_email`] || csvRow[`office_${i}_email`] || '',
+        gst_number: csvRow[`branch_office_${i}_gst_number`] || csvRow[`branch_${i}_gst_number`] || csvRow[`office_${i}_gst_number`] || '',
+        is_headquarters: (csvRow[`branch_office_${i}_is_headquarters`] || csvRow[`branch_${i}_is_headquarters`] || csvRow[`office_${i}_is_headquarters`] || 'false').toString().toLowerCase() === 'true',
+        is_active: (csvRow[`branch_office_${i}_is_active`] || csvRow[`branch_${i}_is_active`] || csvRow[`office_${i}_is_active`] || 'true').toString().toLowerCase() === 'true'
+      };
+      
+      branchOffices.push(branchOffice);
+    }
+  }
+  
+  return branchOffices;
+}
+
+export function validateBranchOfficeData(branchOffice: BranchOfficeData): string[] {
+  const errors: string[] = [];
+  
+  if (!branchOffice.branch_name || branchOffice.branch_name.trim().length === 0) {
+    errors.push('Branch office name is required');
+  }
+  
+  if (!branchOffice.branch_type || branchOffice.branch_type.trim().length === 0) {
+    errors.push('Branch office type is required');
+  }
+  
+  // Email validation for branch office
+  if (branchOffice.email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(branchOffice.email)) {
+      errors.push('Invalid branch office email format');
+    }
+  }
+  
+  // Phone validation for branch office
+  if (branchOffice.phone) {
+    const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)\.]{7,}$/;
+    if (!phoneRegex.test(branchOffice.phone.replace(/\s/g, ''))) {
+      errors.push('Invalid branch office phone number format');
+    }
+  }
+  
+  return errors;
+}
+
 export function mapCSVRowToCompany(csvRow: any, mappings: CSVFieldMapping[]): Partial<Company> | null {
   const company: Partial<Company> = {};
   let hasRequiredField = false;
@@ -427,15 +517,18 @@ export function validateCSVData(
   existingCompanies: Company[]
 ): CSVProcessingResult {
   const validRows: Partial<Company>[] = [];
+  const branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }> = [];
   const errors: Array<{ row: number; message: string; data?: any; field?: string; value?: string }> = [];
   const duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }> = [];
+  let totalBranchOffices = 0;
   
   if (csvData.length === 0) {
     return {
       validRows: [],
+      branchOfficesData: [],
       errors: [{ row: 0, message: 'No data found in CSV file' }],
       duplicates: [],
-      summary: { totalRows: 0, validRows: 0, errorRows: 1, duplicateRows: 0 }
+      summary: { totalRows: 0, validRows: 0, errorRows: 1, duplicateRows: 0, totalBranchOffices: 0 }
     };
   }
 
@@ -462,10 +555,24 @@ export function validateCSVData(
       }
 
       const validationErrors = validateCompanyData(company);
-      if (validationErrors.length > 0) {
+      
+      // Extract and validate branch offices
+      const branchOffices = extractBranchOfficesFromRow(csvRowObject);
+      const branchOfficeErrors: string[] = [];
+      
+      branchOffices.forEach((branchOffice, branchIndex) => {
+        const branchErrors = validateBranchOfficeData(branchOffice);
+        branchErrors.forEach(error => {
+          branchOfficeErrors.push(`Branch office ${branchIndex + 1}: ${error}`);
+        });
+      });
+      
+      const allErrors = [...validationErrors, ...branchOfficeErrors];
+      
+      if (allErrors.length > 0) {
         errors.push({
           row: index + 2,
-          message: validationErrors.join(', '),
+          message: allErrors.join(', '),
           data: csvRowObject
         });
         return;
@@ -491,7 +598,23 @@ export function validateCSVData(
         }
       }
 
+      // If we have branch offices, ensure at least one is marked as headquarters
+      if (branchOffices.length > 0) {
+        const hasHeadquarters = branchOffices.some(bo => bo.is_headquarters);
+        if (!hasHeadquarters) {
+          // Mark the first branch office as headquarters
+          branchOffices[0].is_headquarters = true;
+        }
+      }
+
       validRows.push(company);
+      if (branchOffices.length > 0) {
+        branchOfficesData.push({
+          companyIndex: validRows.length - 1,
+          branchOffices
+        });
+        totalBranchOffices += branchOffices.length;
+      }
     } catch (error) {
       errors.push({
         row: index + 2,
@@ -503,13 +626,15 @@ export function validateCSVData(
 
   return {
     validRows,
+    branchOfficesData,
     errors,
     duplicates,
     summary: {
       totalRows: dataRows.length,
       validRows: validRows.length,
       errorRows: errors.length,
-      duplicateRows: duplicates.length
+      duplicateRows: duplicates.length,
+      totalBranchOffices
     }
   };
 }
@@ -573,7 +698,23 @@ export function generateCSVTemplate(): string {
     // Hierarchy
     'parent_company_id',
     'company_group_name',
-    'hierarchy_level'
+    'hierarchy_level',
+    
+    // Branch Offices (5 sets)
+    ...Array.from({ length: 5 }, (_, i) => [
+      `branch_office_${i + 1}_name`,
+      `branch_office_${i + 1}_type`,
+      `branch_office_${i + 1}_address`,
+      `branch_office_${i + 1}_city`,
+      `branch_office_${i + 1}_state`,
+      `branch_office_${i + 1}_country`,
+      `branch_office_${i + 1}_postal_code`,
+      `branch_office_${i + 1}_phone`,
+      `branch_office_${i + 1}_email`,
+      `branch_office_${i + 1}_gst_number`,
+      `branch_office_${i + 1}_is_headquarters`,
+      `branch_office_${i + 1}_is_active`
+    ]).flat()
   ];
 
   const sampleRows = [
@@ -635,7 +776,55 @@ export function generateCSVTemplate(): string {
       // Hierarchy
       '',
       'TechCorp Group',
-      '0'
+      '0',
+      
+      // Branch Office 1 (Headquarters)
+      'Head Office',
+      'Headquarters',
+      '123 Tech Tower, Sector 62',
+      'Noida',
+      'Uttar Pradesh',
+      'India',
+      '201301',
+      '+91-11-12345678',
+      'hq@techcorp.com',
+      '09ABCDE1234F2Z5',
+      'true',
+      'true',
+      
+      // Branch Office 2
+      'Mumbai Branch',
+      'Branch Office',
+      '456 Business Park, Andheri East',
+      'Mumbai',
+      'Maharashtra',
+      'India',
+      '400069',
+      '+91-22-87654321',
+      'mumbai@techcorp.com',
+      '27ABCDE1234F2Z5',
+      'false',
+      'true',
+      
+      // Branch Office 3
+      'Bangalore Development Center',
+      'Development Center',
+      '789 IT Park, Whitefield',
+      'Bangalore',
+      'Karnataka',
+      'India',
+      '560066',
+      '+91-80-11223344',
+      'bangalore@techcorp.com',
+      '29ABCDE1234F2Z5',
+      'false',
+      'true',
+      
+      // Branch Office 4 (empty)
+      '', '', '', '', '', '', '', '', '', '', '', '',
+      
+      // Branch Office 5 (empty)
+      '', '', '', '', '', '', '', '', '', '', '', ''
     ]
   ];
 

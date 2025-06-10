@@ -22,7 +22,9 @@ import EnhancedExportDialog from '@/components/superadmin/companies/EnhancedExpo
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
 import ImportHistoryDialog from '@/components/superadmin/companies/ImportHistoryDialog';
 import { useCompanies } from '@/hooks/useCompanies';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
 
 const Companies = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -34,11 +36,16 @@ const Companies = () => {
   
   const { companies, isLoading, createCompany, refetch } = useCompanies();
 
-  const handleBulkImport = async (companiesToImport: Partial<any>[], options: { skipDuplicates: boolean }) => {
+  const handleBulkImport = async (
+    companiesToImport: Partial<any>[], 
+    options: { skipDuplicates: boolean },
+    branchOfficesData?: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>
+  ) => {
     try {
       let importedCount = 0;
       let skippedCount = 0;
       let errorCount = 0;
+      let branchOfficesCreated = 0;
 
       console.log(`Starting bulk import of ${companiesToImport.length} companies...`);
 
@@ -49,8 +56,10 @@ const Companies = () => {
         batches.push(companiesToImport.slice(i, i + batchSize));
       }
 
+      const importedCompanies: any[] = [];
+
       for (const batch of batches) {
-        const batchPromises = batch.map(async (companyData) => {
+        const batchPromises = batch.map(async (companyData, batchIndex) => {
           try {
             // Check for duplicates if skipDuplicates is enabled
             if (options.skipDuplicates) {
@@ -65,9 +74,10 @@ const Companies = () => {
               }
             }
 
-            await createCompany.mutateAsync(companyData);
+            const newCompany = await createCompany.mutateAsync(companyData);
+            importedCompanies.push({ company: newCompany, originalIndex: batchIndex });
             importedCount++;
-            return { success: true };
+            return { success: true, company: newCompany };
           } catch (error) {
             console.error('Failed to import company:', companyData.name, error);
             errorCount++;
@@ -79,18 +89,65 @@ const Companies = () => {
         await Promise.all(batchPromises);
       }
 
+      // Create branch offices for imported companies
+      if (branchOfficesData && branchOfficesData.length > 0) {
+        console.log(`Creating branch offices for ${branchOfficesData.length} companies...`);
+        
+        for (const branchData of branchOfficesData) {
+          const importedCompany = importedCompanies.find(ic => ic.originalIndex === branchData.companyIndex);
+          
+          if (importedCompany && importedCompany.company) {
+            try {
+              for (const branchOffice of branchData.branchOffices) {
+                const { error } = await supabase
+                  .from('company_branch_offices')
+                  .insert({
+                    company_id: importedCompany.company.id,
+                    branch_name: branchOffice.branch_name,
+                    branch_type: branchOffice.branch_type,
+                    address: branchOffice.address || null,
+                    city: branchOffice.city || null,
+                    state: branchOffice.state || null,
+                    country: branchOffice.country || null,
+                    postal_code: branchOffice.postal_code || null,
+                    phone: branchOffice.phone || null,
+                    email: branchOffice.email || null,
+                    gst_number: branchOffice.gst_number || null,
+                    is_headquarters: branchOffice.is_headquarters,
+                    is_active: branchOffice.is_active
+                  });
+
+                if (error) {
+                  console.error('Failed to create branch office:', error);
+                } else {
+                  branchOfficesCreated++;
+                }
+              }
+            } catch (error) {
+              console.error('Error creating branch offices for company:', importedCompany.company.name, error);
+            }
+          }
+        }
+      }
+
       await refetch();
       
       // Show comprehensive results
+      let message = `Import completed: ${importedCount} companies imported`;
+      if (branchOfficesCreated > 0) {
+        message += `, ${branchOfficesCreated} branch offices created`;
+      }
+      if (skippedCount > 0) {
+        message += `, ${skippedCount} skipped (duplicates)`;
+      }
       if (errorCount > 0) {
-        toast.error(`Import completed with errors: ${importedCount} imported, ${skippedCount} skipped, ${errorCount} failed`);
-      } else if (skippedCount > 0) {
-        toast.success(`Import completed: ${importedCount} imported, ${skippedCount} skipped (duplicates)`);
+        message += `, ${errorCount} failed`;
+        toast.error(message);
       } else {
-        toast.success(`Successfully imported ${importedCount} companies`);
+        toast.success(message);
       }
 
-      console.log(`Bulk import completed: ${importedCount} imported, ${skippedCount} skipped, ${errorCount} errors`);
+      console.log(`Bulk import completed: ${importedCount} imported, ${branchOfficesCreated} branch offices, ${skippedCount} skipped, ${errorCount} errors`);
       
     } catch (error) {
       console.error('Bulk import error:', error);

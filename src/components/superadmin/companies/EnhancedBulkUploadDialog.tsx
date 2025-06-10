@@ -29,7 +29,8 @@ import {
   MapPin,
   FileText,
   AlertCircle,
-  Info
+  Info,
+  Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Company } from '@/hooks/useCompanies';
@@ -42,14 +43,19 @@ import {
   BulkImportProgress,
   defaultFieldMappings,
   categorizeErrors,
-  createProgressTracker
+  createProgressTracker,
+  type BranchOfficeData
 } from './utils/csvProcessor';
 
 interface EnhancedBulkUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
   existingCompanies: Company[];
-  onImport: (companies: Partial<Company>[], options: { skipDuplicates: boolean }) => Promise<void>;
+  onImport: (
+    companies: Partial<Company>[], 
+    options: { skipDuplicates: boolean },
+    branchOfficesData?: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>
+  ) => Promise<void>;
 }
 
 const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
@@ -125,7 +131,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   const autoDetectFieldMappings = (headers: string[]): CSVFieldMapping[] => {
     const mappings = [...defaultFieldMappings];
     
-    // Enhanced auto-mapping with comprehensive field variations
+    // Enhanced auto-mapping with comprehensive field variations including branch offices
     const commonMappings: Record<string, string> = {
       'company': 'name',
       'company_name': 'name',
@@ -296,7 +302,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
         setProgress({ 
           stage: 'validating', 
           progress: 100, 
-          message: `Validation complete: ${result.summary.validRows} valid rows, ${result.summary.errorRows} errors` 
+          message: `Validation complete: ${result.summary.validRows} valid rows, ${result.summary.errorRows} errors, ${result.summary.totalBranchOffices} branch offices` 
         });
         
         if (result.summary.errorRows > 0) {
@@ -352,15 +358,15 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
         await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      await onImport(validationResult.validRows, { skipDuplicates });
+      await onImport(validationResult.validRows, { skipDuplicates }, validationResult.branchOfficesData);
       
       setProgress({ 
         stage: 'complete', 
         progress: 100, 
-        message: `Successfully imported ${validationResult.validRows.length} companies` 
+        message: `Successfully imported ${validationResult.validRows.length} companies${validationResult.summary.totalBranchOffices > 0 ? ` with ${validationResult.summary.totalBranchOffices} branch offices` : ''}` 
       });
       
-      toast.success(`Successfully imported ${validationResult.validRows.length} companies`);
+      toast.success(`Successfully imported ${validationResult.validRows.length} companies${validationResult.summary.totalBranchOffices > 0 ? ` with ${validationResult.summary.totalBranchOffices} branch offices` : ''}`);
       setTimeout(() => onClose(), 2000);
     } catch (error) {
       toast.error('Import failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
@@ -438,7 +444,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
           <DialogTitle>Enhanced Bulk Import Companies</DialogTitle>
           <DialogDescription>
             Import multiple companies from a CSV or Excel file with comprehensive field mapping, validation, and progress tracking.
-            All fields are optional except Company Name and CIN.
+            Now supports branch office import - each company can have up to 5 branch offices.
           </DialogDescription>
         </DialogHeader>
 
@@ -539,8 +545,8 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Supported formats: CSV and Excel files (.xlsx, .xls) with headers. The system will auto-detect common field mappings. 
-                For best results, use column names like 'name', 'email', 'website', 'industry', etc.
+                Enhanced template now includes branch office fields. Each company can have up to 5 branch offices with fields like name, type, address, contact details, and GST number.
+                For best results, use column names like 'branch_office_1_name', 'branch_1_name', or 'office_1_name'.
               </AlertDescription>
             </Alert>
           </TabsContent>
@@ -632,8 +638,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Map your CSV columns to company fields. At least one field mapping is required. 
-                  The 'name' field is typically required for successful import.
+                  Map your CSV columns to company fields. Branch office columns are automatically detected using patterns like 'branch_office_1_name', 'branch_1_name', or 'office_1_name'.
                 </AlertDescription>
               </Alert>
             </div>
@@ -642,7 +647,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
           <TabsContent value="validation" className="space-y-4">
             {validationResult && (
               <div className="space-y-4">
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-5 gap-4">
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center">
@@ -688,6 +693,18 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                     </CardHeader>
                     <CardContent>
                       <p className="text-2xl font-bold text-yellow-600">{validationResult.summary.duplicateRows}</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center text-blue-600">
+                        <Building2 className="mr-2 h-4 w-4" />
+                        Branch Offices
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-2xl font-bold text-blue-600">{validationResult.summary.totalBranchOffices}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -754,7 +771,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                   <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Ready to import {validationResult.summary.validRows} companies. 
+                      Ready to import {validationResult.summary.validRows} companies{validationResult.summary.totalBranchOffices > 0 && ` with ${validationResult.summary.totalBranchOffices} branch offices`}. 
                       {validationResult.summary.errorRows > 0 && ` ${validationResult.summary.errorRows} rows with errors will be skipped.`}
                       {validationResult.summary.duplicateRows > 0 && skipDuplicates && ` ${validationResult.summary.duplicateRows} duplicates will be skipped.`}
                     </AlertDescription>
@@ -783,7 +800,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                     <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
                     <p className="text-lg font-semibold text-green-600">Import Completed Successfully!</p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      All companies have been imported and are now available in your system.
+                      All companies and branch offices have been imported and are now available in your system.
                     </p>
                   </div>
                 )}
@@ -805,7 +822,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                   Importing...
                 </>
               ) : (
-                `Import ${validationResult.summary.validRows} Companies`
+                `Import ${validationResult.summary.validRows} Companies${validationResult.summary.totalBranchOffices > 0 ? ` + ${validationResult.summary.totalBranchOffices} Branch Offices` : ''}`
               )}
             </Button>
           )}
