@@ -1,5 +1,6 @@
 
 import { Routes, Route, Navigate } from 'react-router-dom';
+import Dashboard from '@/pages/superadmin/Dashboard';
 import AnalyticsBusinessIntelligence from '@/pages/superadmin/AnalyticsBusinessIntelligence';
 import Tenants from '@/pages/superadmin/Tenants';
 import Users from '@/pages/superadmin/Users';
@@ -21,7 +22,8 @@ const SuperAdminRoutes = () => {
       <Route index element={<Navigate to="dashboard" replace />} />
       
       {/* Core Admin Pages */}
-      <Route path="dashboard" element={<AnalyticsBusinessIntelligence />} />
+      <Route path="dashboard" element={<Dashboard />} />
+      <Route path="analytics" element={<AnalyticsBusinessIntelligence />} />
       <Route path="tenants" element={<Tenants />} />
       <Route path="users" element={<Users />} />
       <Route path="companies" element={<Companies />} />
