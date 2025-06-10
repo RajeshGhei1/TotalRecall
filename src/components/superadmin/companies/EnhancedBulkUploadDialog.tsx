@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Upload, 
   Download, 
@@ -27,7 +28,9 @@ import {
   AlertTriangle,
   Loader2,
   MapPin,
-  FileText
+  FileText,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Company } from '@/hooks/useCompanies';
@@ -38,7 +41,9 @@ import {
   CSVFieldMapping,
   CSVProcessingResult,
   BulkImportProgress,
-  defaultFieldMappings
+  defaultFieldMappings,
+  categorizeErrors,
+  createProgressTracker
 } from './utils/csvProcessor';
 
 interface EnhancedBulkUploadDialogProps {
@@ -62,17 +67,14 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'import'>('upload');
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    if (!selectedFile.name.toLowerCase().endsWith('.csv')) {
-      toast.error('Please select a CSV file');
-      return;
-    }
-
     setFile(selectedFile);
+    setParseError(null);
     setIsProcessing(true);
     setProgress({ stage: 'parsing', progress: 0, message: 'Parsing CSV file...' });
 
@@ -80,15 +82,77 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       const rows = await parseCSV(selectedFile);
       setCsvData(rows);
       setCurrentStep('mapping');
-      setProgress({ stage: 'parsing', progress: 100, message: 'CSV parsed successfully' });
+      setProgress({ stage: 'parsing', progress: 100, message: `CSV parsed successfully: ${rows.length - 1} data rows found` });
+      
+      // Auto-detect field mappings based on headers
+      const headers = rows[0]?.map(h => h.toLowerCase().trim()) || [];
+      const detectedMappings = autoDetectFieldMappings(headers);
+      setFieldMappings(detectedMappings);
+      
       toast.success(`CSV loaded: ${rows.length - 1} data rows found`);
     } catch (error) {
-      toast.error('Failed to parse CSV file');
-      console.error('CSV parsing error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setParseError(errorMessage);
+      toast.error(`Failed to parse CSV: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
   }, []);
+
+  const autoDetectFieldMappings = (headers: string[]): CSVFieldMapping[] => {
+    const mappings = [...defaultFieldMappings];
+    
+    // Auto-map common variations
+    const commonMappings: Record<string, string> = {
+      'company': 'name',
+      'company_name': 'name',
+      'business_name': 'name',
+      'organization': 'name',
+      'email_address': 'email',
+      'contact_email': 'email',
+      'web_site': 'website',
+      'web_address': 'website',
+      'url': 'website',
+      'business_type': 'industry',
+      'sector': 'industry',
+      'company_size': 'size',
+      'employees': 'noOfEmployee',
+      'employee_count': 'noOfEmployee',
+      'staff_count': 'noOfEmployee',
+      'revenue': 'turnover',
+      'annual_revenue': 'turnover',
+      'sales': 'turnover',
+      'address': 'location',
+      'city': 'location',
+      'headquarters': 'location',
+      'phone_number': 'phone',
+      'telephone': 'phone',
+      'contact_number': 'phone',
+      'year_founded': 'founded',
+      'established': 'founded',
+      'inception_year': 'founded'
+    };
+
+    headers.forEach(header => {
+      const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const mappedField = commonMappings[normalizedHeader] || commonMappings[header];
+      
+      if (mappedField) {
+        const existingMapping = mappings.find(m => m.companyField === mappedField);
+        if (existingMapping) {
+          existingMapping.csvColumn = header;
+        } else {
+          mappings.push({
+            csvColumn: header,
+            companyField: mappedField as keyof Company,
+            isRequired: mappedField === 'name',
+          });
+        }
+      }
+    });
+
+    return mappings.filter(m => headers.includes(m.csvColumn) || m.isRequired);
+  };
 
   const handleFieldMappingChange = (index: number, field: 'csvColumn' | 'companyField' | 'isRequired', value: any) => {
     const newMappings = [...fieldMappings];
@@ -110,26 +174,40 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     setIsProcessing(true);
     setProgress({ stage: 'validating', progress: 0, message: 'Validating data...' });
 
+    // Use setTimeout to allow UI to update
     setTimeout(() => {
-      const result = validateCSVData(csvData, fieldMappings, existingCompanies);
-      setValidationResult(result);
-      setCurrentStep('validation');
-      setProgress({ 
-        stage: 'validating', 
-        progress: 100, 
-        message: `Validation complete: ${result.summary.validRows} valid rows` 
-      });
-      setIsProcessing(false);
-    }, 500);
+      try {
+        const result = validateCSVData(csvData, fieldMappings, existingCompanies);
+        setValidationResult(result);
+        setCurrentStep('validation');
+        setProgress({ 
+          stage: 'validating', 
+          progress: 100, 
+          message: `Validation complete: ${result.summary.validRows} valid rows, ${result.summary.errorRows} errors` 
+        });
+        
+        if (result.summary.errorRows > 0) {
+          toast.warning(`Validation completed with ${result.summary.errorRows} errors. Please review before importing.`);
+        } else {
+          toast.success('All data validated successfully!');
+        }
+      } catch (error) {
+        toast.error('Validation failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 100);
   }, [csvData, fieldMappings, existingCompanies]);
 
   const handleImport = async () => {
-    if (!validationResult) return;
+    if (!validationResult || validationResult.validRows.length === 0) return;
 
     setIsProcessing(true);
     setCurrentStep('import');
     
     try {
+      const progressTracker = createProgressTracker(validationResult.validRows.length);
+      
       setProgress({ 
         stage: 'importing', 
         progress: 0, 
@@ -137,19 +215,28 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
         message: 'Starting import...' 
       });
 
-      // Simulate progress for UI feedback
-      for (let i = 0; i <= validationResult.validRows.length; i++) {
+      // Process in smaller batches for better progress feedback
+      const batchSize = 10;
+      const batches = [];
+      for (let i = 0; i < validationResult.validRows.length; i += batchSize) {
+        batches.push(validationResult.validRows.slice(i, i + batchSize));
+      }
+
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        const startRow = batchIndex * batchSize + 1;
+        const endRow = Math.min(startRow + batchSize - 1, validationResult.validRows.length);
+        
         setProgress({
           stage: 'importing',
-          progress: (i / validationResult.validRows.length) * 100,
-          currentRow: i,
+          progress: (batchIndex / batches.length) * 100,
+          currentRow: endRow,
           totalRows: validationResult.validRows.length,
-          message: `Importing company ${i} of ${validationResult.validRows.length}...`
+          message: `Importing companies ${startRow}-${endRow} of ${validationResult.validRows.length}...`
         });
         
-        if (i < validationResult.validRows.length) {
-          await new Promise(resolve => setTimeout(resolve, 50)); // Small delay for UI
-        }
+        // Small delay to show progress
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
       await onImport(validationResult.validRows, { skipDuplicates });
@@ -163,8 +250,8 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       toast.success(`Successfully imported ${validationResult.validRows.length} companies`);
       setTimeout(() => onClose(), 2000);
     } catch (error) {
-      toast.error('Import failed');
-      console.error('Import error:', error);
+      toast.error('Import failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setProgress(null);
     } finally {
       setIsProcessing(false);
     }
@@ -192,6 +279,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     setCurrentStep('upload');
     setFieldMappings(defaultFieldMappings);
     setIsProcessing(false);
+    setParseError(null);
   };
 
   const handleClose = () => {
@@ -202,16 +290,19 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   const csvHeaders = csvData?.[0] || [];
   const companyFields = [
     'name', 'email', 'website', 'domain', 'industry', 'size', 'location',
-    'phone', 'description', 'founded', 'linkedin', 'twitter', 'facebook', 'ignore'
+    'phone', 'description', 'founded', 'linkedin', 'twitter', 'facebook',
+    'cin', 'registeredOfficeAddress', 'country', 'region', 'industry1',
+    'companyType', 'entityType', 'noOfEmployee', 'turnover', 'companyProfile',
+    'ignore'
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Bulk Import Companies</DialogTitle>
+          <DialogTitle>Enhanced Bulk Import Companies</DialogTitle>
           <DialogDescription>
-            Import multiple companies from a CSV file with field mapping and validation
+            Import multiple companies from a CSV file with advanced field mapping, validation, and progress tracking
           </DialogDescription>
         </DialogHeader>
 
@@ -240,6 +331,13 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
               </Button>
             </div>
 
+            {parseError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{parseError}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               {file ? (
                 <div className="space-y-4">
@@ -263,7 +361,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
                   <p>Drag and drop your CSV file here, or click to browse</p>
                   <p className="text-sm text-muted-foreground">
-                    Only CSV files are supported
+                    Maximum file size: 50MB. Only CSV files are supported.
                   </p>
                 </div>
               )}
@@ -280,9 +378,18 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                 htmlFor="file-upload"
                 className={`inline-flex items-center justify-center mt-4 rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 cursor-pointer ${
                   file ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }`}
+                } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {file ? 'Change File' : 'Select File'}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : file ? (
+                  'Change File'
+                ) : (
+                  'Select File'
+                )}
               </Label>
             </div>
 
@@ -292,11 +399,19 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                 <p className="text-sm text-muted-foreground">{progress.message}</p>
               </div>
             )}
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Supported formats: CSV files with headers. The system will auto-detect common field mappings. 
+                For best results, use column names like 'name', 'email', 'website', 'industry', etc.
+              </AlertDescription>
+            </Alert>
           </TabsContent>
 
           <TabsContent value="mapping" className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label>Field Mapping</Label>
+              <Label>Field Mapping ({fieldMappings.filter(m => m.csvColumn && m.companyField !== 'ignore').length} mapped)</Label>
               <Button variant="outline" size="sm" onClick={addFieldMapping}>
                 Add Mapping
               </Button>
@@ -305,7 +420,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
             <ScrollArea className="h-64 border rounded-md p-4">
               <div className="space-y-3">
                 {fieldMappings.map((mapping, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-2 border rounded">
+                  <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg bg-gray-50">
                     <Select
                       value={mapping.csvColumn}
                       onValueChange={(value) => handleFieldMappingChange(index, 'csvColumn', value)}
@@ -315,7 +430,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         {csvHeaders.map((header) => (
-                          <SelectItem key={header} value={header.toLowerCase()}>
+                          <SelectItem key={header} value={header}>
                             {header}
                           </SelectItem>
                         ))}
@@ -366,16 +481,26 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
               </div>
             </ScrollArea>
 
-            <Button onClick={validateData} disabled={isProcessing}>
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Validating...
-                </>
-              ) : (
-                'Validate Data'
-              )}
-            </Button>
+            <div className="space-y-2">
+              <Button onClick={validateData} disabled={isProcessing || fieldMappings.filter(m => m.csvColumn && m.companyField !== 'ignore').length === 0}>
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Validating...
+                  </>
+                ) : (
+                  'Validate Data'
+                )}
+              </Button>
+              
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Map your CSV columns to company fields. At least one field mapping is required. 
+                  The 'name' field is typically required for successful import.
+                </AlertDescription>
+              </Alert>
+            </div>
           </TabsContent>
 
           <TabsContent value="validation" className="space-y-4">
@@ -437,16 +562,18 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       <CardTitle className="text-red-600">Validation Errors</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="h-32">
+                      <ScrollArea className="h-40">
                         <div className="space-y-1">
-                          {validationResult.errors.slice(0, 10).map((error, index) => (
-                            <p key={index} className="text-sm">
-                              Row {error.row}: {error.error} (Field: {error.field})
+                          {validationResult.errors.slice(0, 15).map((error, index) => (
+                            <p key={index} className="text-sm font-mono">
+                              <span className="text-red-600">Row {error.row}:</span> {error.error} 
+                              <span className="text-muted-foreground"> (Field: {error.field})</span>
+                              {error.value && <span className="text-blue-600"> Value: "{error.value}"</span>}
                             </p>
                           ))}
-                          {validationResult.errors.length > 10 && (
+                          {validationResult.errors.length > 15 && (
                             <p className="text-sm text-muted-foreground">
-                              ...and {validationResult.errors.length - 10} more errors
+                              ...and {validationResult.errors.length - 15} more errors
                             </p>
                           )}
                         </div>
@@ -471,20 +598,31 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-1">
-                          {validationResult.duplicates.slice(0, 5).map((duplicate, index) => (
+                          {validationResult.duplicates.slice(0, 10).map((duplicate, index) => (
                             <p key={index} className="text-sm">
                               Row {duplicate.row}: Matches existing company "{duplicate.existingCompany.name}" by {duplicate.duplicateField}
                             </p>
                           ))}
-                          {validationResult.duplicates.length > 5 && (
+                          {validationResult.duplicates.length > 10 && (
                             <p className="text-sm text-muted-foreground">
-                              ...and {validationResult.duplicates.length - 5} more duplicates
+                              ...and {validationResult.duplicates.length - 10} more duplicates
                             </p>
                           )}
                         </div>
                       </ScrollArea>
                     </CardContent>
                   </Card>
+                )}
+
+                {validationResult.summary.validRows > 0 && (
+                  <Alert>
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Ready to import {validationResult.summary.validRows} companies. 
+                      {validationResult.summary.errorRows > 0 && ` ${validationResult.summary.errorRows} rows with errors will be skipped.`}
+                      {validationResult.summary.duplicateRows > 0 && skipDuplicates && ` ${validationResult.summary.duplicateRows} duplicates will be skipped.`}
+                    </AlertDescription>
+                  </Alert>
                 )}
               </div>
             )}
@@ -494,7 +632,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
             {progress && (
               <div className="space-y-4">
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Import Progress</h3>
+                  <h3 className="text-lg font-semibold mb-4">Import Progress</h3>
                   <Progress value={progress.progress} className="w-full" />
                   <p className="text-sm text-muted-foreground mt-2">{progress.message}</p>
                   {progress.currentRow && progress.totalRows && (
@@ -508,6 +646,9 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                   <div className="text-center">
                     <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
                     <p className="text-lg font-semibold text-green-600">Import Completed Successfully!</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      All companies have been imported and are now available in your system.
+                    </p>
                   </div>
                 )}
               </div>
