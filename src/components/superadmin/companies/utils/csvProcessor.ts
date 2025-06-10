@@ -503,11 +503,9 @@ export function validateCSVData(
 
 export function generateCSVTemplate(): string {
   const headers = [
-    // Required Fields
+    // Basic Information
     'name',
     'cin',
-    
-    // Basic Information
     'email',
     'website',
     'domain',
@@ -567,11 +565,9 @@ export function generateCSVTemplate(): string {
 
   const sampleRows = [
     [
-      // Required Fields
+      // Basic Information
       'TechCorp Solutions Pvt Ltd',
       'U72900DL2015PTC123456',
-      
-      // Basic Information
       'contact@techcorp.com',
       'https://techcorp.com',
       'techcorp.com',
