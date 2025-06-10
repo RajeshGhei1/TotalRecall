@@ -79,12 +79,16 @@ const CompanyEnhancedListContainer: React.FC = () => {
     );
   }
 
+  // Ensure we have valid arrays for display
+  const safeCompanies = companies || [];
+  const safeFilteredCompanies = filteredCompanies || [];
+
   return (
     <div className="space-y-6">
       {/* Action Bar */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          Showing {filteredCompanies.length} of {companies?.length || 0} companies
+          Showing {safeFilteredCompanies.length} of {safeCompanies.length} companies
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setIsExportDialogOpen(true)}>
@@ -114,12 +118,12 @@ const CompanyEnhancedListContainer: React.FC = () => {
             filters={filters}
             onFiltersChange={setFilters}
             onReset={handleResetFilters}
-            companies={companies || []}
+            companies={safeCompanies}
           />
           
           {/* Companies Table */}
           <CompanyTable 
-            companies={filteredCompanies}
+            companies={safeFilteredCompanies}
             isLoading={isLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -158,7 +162,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
       <EnhancedExportDialog
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
-        companies={filteredCompanies}
+        companies={safeFilteredCompanies}
         currentFilters={getFilterSummary()}
       />
     </div>

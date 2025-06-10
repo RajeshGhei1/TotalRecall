@@ -1,7 +1,19 @@
 
 import { useMemo } from 'react';
 import { Company } from '@/hooks/useCompanies';
-import { CompanyFilters } from '../filters/CompanyAdvancedFilters';
+
+export interface CompanyFilters {
+  search: string;
+  industries: string[];
+  sizes: string[];
+  locations: string[];
+  companyTypes: string[];
+  sectors: string[];
+  foundedFrom?: number;
+  foundedTo?: number;
+  registrationFrom?: string;
+  registrationTo?: string;
+}
 
 export const useCompanyFilters = (
   companies: Company[] | undefined,
@@ -9,74 +21,85 @@ export const useCompanyFilters = (
   searchTerm: string
 ) => {
   const filteredCompanies = useMemo(() => {
-    if (!companies) return [];
-    
-    return companies.filter(company => {
-      // Text search filter
-      if (filters.search || searchTerm) {
-        const searchText = (filters.search || searchTerm).toLowerCase();
-        const searchableText = [
-          company.name,
-          company.industry,
-          company.location,
-          company.description,
-          company.website,
-          company.email,
-        ].filter(Boolean).join(' ').toLowerCase();
-        
-        if (!searchableText.includes(searchText)) return false;
-      }
-      
-      // Industry filter
-      if (filters.industries?.length && company.industry) {
-        if (!filters.industries.includes(company.industry)) return false;
-      }
-      
-      // Size filter
-      if (filters.sizes?.length && company.size) {
-        if (!filters.sizes.includes(company.size)) return false;
-      }
-      
-      // Location filter
-      if (filters.locations?.length && company.location) {
-        if (!filters.locations.includes(company.location)) return false;
-      }
-      
-      // Company Type filter
-      if (filters.companyTypes?.length && company.companyType) {
-        if (!filters.companyTypes.includes(company.companyType)) return false;
-      }
-      
-      // Sector filter
-      if (filters.sectors?.length && company.companySector) {
-        if (!filters.sectors.includes(company.companySector)) return false;
-      }
-      
-      // Founded date range filter
-      if (filters.foundedFrom || filters.foundedTo) {
-        if (company.founded) {
-          const foundedYear = company.founded;
-          if (filters.foundedFrom && foundedYear < filters.foundedFrom.getFullYear()) return false;
-          if (filters.foundedTo && foundedYear > filters.foundedTo.getFullYear()) return false;
-        } else if (filters.foundedFrom || filters.foundedTo) {
-          return false;
-        }
-      }
-      
-      // Registration date range filter
-      if (filters.registrationFrom || filters.registrationTo) {
-        if (company.registrationDate) {
-          const regDate = new Date(company.registrationDate);
-          if (filters.registrationFrom && regDate < filters.registrationFrom) return false;
-          if (filters.registrationTo && regDate > filters.registrationTo) return false;
-        } else if (filters.registrationFrom || filters.registrationTo) {
-          return false;
-        }
-      }
-      
-      return true;
-    });
+    // Ensure companies is defined and is an array before filtering
+    if (!companies || !Array.isArray(companies)) {
+      return [];
+    }
+
+    let filtered = [...companies];
+
+    // Apply search filter
+    if (searchTerm?.trim()) {
+      const search = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(company => 
+        company.name?.toLowerCase().includes(search) ||
+        company.domain?.toLowerCase().includes(search) ||
+        company.email?.toLowerCase().includes(search) ||
+        company.industry?.toLowerCase().includes(search) ||
+        company.location?.toLowerCase().includes(search)
+      );
+    }
+
+    // Apply industry filter
+    if (filters.industries && filters.industries.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry && filters.industries.includes(company.industry)
+      );
+    }
+
+    // Apply size filter
+    if (filters.sizes && filters.sizes.length > 0) {
+      filtered = filtered.filter(company => 
+        company.size && filters.sizes.includes(company.size)
+      );
+    }
+
+    // Apply location filter
+    if (filters.locations && filters.locations.length > 0) {
+      filtered = filtered.filter(company => 
+        company.location && filters.locations.includes(company.location)
+      );
+    }
+
+    // Apply company type filter
+    if (filters.companyTypes && filters.companyTypes.length > 0) {
+      filtered = filtered.filter(company => 
+        company.companyType && filters.companyTypes.includes(company.companyType)
+      );
+    }
+
+    // Apply sector filter
+    if (filters.sectors && filters.sectors.length > 0) {
+      filtered = filtered.filter(company => 
+        company.companySector && filters.sectors.includes(company.companySector)
+      );
+    }
+
+    // Apply founded date range filter
+    if (filters.foundedFrom || filters.foundedTo) {
+      filtered = filtered.filter(company => {
+        if (!company.founded) return false;
+        if (filters.foundedFrom && company.founded < filters.foundedFrom) return false;
+        if (filters.foundedTo && company.founded > filters.foundedTo) return false;
+        return true;
+      });
+    }
+
+    // Apply registration date range filter
+    if (filters.registrationFrom || filters.registrationTo) {
+      filtered = filtered.filter(company => {
+        if (!company.registrationDate) return false;
+        const regDate = new Date(company.registrationDate);
+        if (filters.registrationFrom && regDate < new Date(filters.registrationFrom)) return false;
+        if (filters.registrationTo && regDate > new Date(filters.registrationTo)) return false;
+        return true;
+      });
+    }
+
+    return filtered;
   }, [companies, filters, searchTerm]);
 
-  return { filteredCompanies };
+  return {
+    filteredCompanies
+  };
 };

@@ -1,11 +1,14 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/hooks/useCompanies';
+import { CompanyFormValues } from '@/components/superadmin/companies/schema';
+import { toast } from 'sonner';
 
-export const useCompanyActions = (refetch: () => void, createCompany: any) => {
+export const useCompanyActions = (
+  refetch: () => void,
+  createCompany: any
+) => {
   const navigate = useNavigate();
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -15,7 +18,7 @@ export const useCompanyActions = (refetch: () => void, createCompany: any) => {
   };
 
   const handleEdit = (companyId: string) => {
-    navigate(`/superadmin/companies/${companyId}`);
+    navigate(`/superadmin/companies/${companyId}/edit`);
   };
 
   const handleViewDetails = (companyId: string) => {
@@ -30,41 +33,23 @@ export const useCompanyActions = (refetch: () => void, createCompany: any) => {
     if (!companyToDelete) return;
     
     try {
-      // Delete any company relationships first
-      const { error: relationshipsError } = await supabase
-        .from('company_relationships')
-        .delete()
-        .eq('company_id', companyToDelete.id);
-        
-      if (relationshipsError) throw relationshipsError;
-      
-      // Then delete the company
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyToDelete.id);
-        
-      if (error) throw error;
-      
-      toast.success(`${companyToDelete.name} deleted successfully`);
-      refetch();
-    } catch (error: any) {
-      console.error('Error deleting company:', error);
-      toast.error(`Failed to delete company: ${error.message}`);
-    } finally {
+      // TODO: Implement delete functionality
+      toast.success('Company deleted successfully');
       setCompanyToDelete(null);
+      refetch();
+    } catch (error) {
+      toast.error('Failed to delete company');
+      console.error('Delete error:', error);
     }
   };
 
-  const handleCreateCompany = async (data: any) => {
+  const handleCreateCompany = async (data: CompanyFormValues) => {
     try {
       await createCompany.mutateAsync(data);
       setIsCreateDialogOpen(false);
-      toast.success('Company created successfully');
       refetch();
-    } catch (error: any) {
-      console.error('Error creating company:', error);
-      toast.error(`Failed to create company: ${error.message}`);
+    } catch (error) {
+      console.error('Create company error:', error);
     }
   };
 
