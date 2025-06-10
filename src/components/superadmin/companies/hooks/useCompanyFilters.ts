@@ -9,10 +9,10 @@ export interface CompanyFilters {
   locations: string[];
   companyTypes: string[];
   sectors: string[];
-  foundedFrom?: number;
-  foundedTo?: number;
-  registrationFrom?: string;
-  registrationTo?: string;
+  foundedFrom?: Date;
+  foundedTo?: Date;
+  registrationFrom?: Date;
+  registrationTo?: Date;
 }
 
 export const useCompanyFilters = (
@@ -79,8 +79,8 @@ export const useCompanyFilters = (
     if (filters.foundedFrom || filters.foundedTo) {
       filtered = filtered.filter(company => {
         if (!company.founded) return false;
-        if (filters.foundedFrom && company.founded < filters.foundedFrom) return false;
-        if (filters.foundedTo && company.founded > filters.foundedTo) return false;
+        if (filters.foundedFrom && company.founded < filters.foundedFrom.getFullYear()) return false;
+        if (filters.foundedTo && company.founded > filters.foundedTo.getFullYear()) return false;
         return true;
       });
     }
@@ -90,8 +90,8 @@ export const useCompanyFilters = (
       filtered = filtered.filter(company => {
         if (!company.registrationDate) return false;
         const regDate = new Date(company.registrationDate);
-        if (filters.registrationFrom && regDate < new Date(filters.registrationFrom)) return false;
-        if (filters.registrationTo && regDate > new Date(filters.registrationTo)) return false;
+        if (filters.registrationFrom && regDate < filters.registrationFrom) return false;
+        if (filters.registrationTo && regDate > filters.registrationTo) return false;
         return true;
       });
     }

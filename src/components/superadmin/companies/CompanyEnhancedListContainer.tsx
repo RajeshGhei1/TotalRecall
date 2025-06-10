@@ -9,10 +9,10 @@ import CompanySearch from './CompanySearch';
 import CompanyTable from './CompanyTable';
 import CompanyDeleteDialog from './CompanyDeleteDialog';
 import CreateCompanyDialog from './CreateCompanyDialog';
-import CompanyAdvancedFilters, { CompanyFilters } from './filters/CompanyAdvancedFilters';
+import CompanyAdvancedFilters from './filters/CompanyAdvancedFilters';
 import SavedSearchManager from './filters/SavedSearchManager';
 import EnhancedExportDialog from './EnhancedExportDialog';
-import { useCompanyFilters } from './hooks/useCompanyFilters';
+import { useCompanyFilters, CompanyFilters } from './hooks/useCompanyFilters';
 import { useCompanyActions } from './hooks/useCompanyActions';
 
 const CompanyEnhancedListContainer: React.FC = () => {
