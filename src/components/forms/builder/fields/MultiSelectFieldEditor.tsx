@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { FormField } from '@/types/form-builder';
-import { EnhancedFormField } from '@/types/enhanced-form-builder';
+import { FormField, EnhancedFieldOptions } from '@/types/form-builder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -26,6 +25,11 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
 }) => {
   const [newOption, setNewOption] = useState('');
   
+  // Type guard to check if options is enhanced format
+  const isEnhancedOptions = (options: any): options is EnhancedFieldOptions => {
+    return options && typeof options === 'object' && !Array.isArray(options);
+  };
+
   // Parse options safely with type checking
   const getOptionsFromField = (): OptionItem[] => {
     if (!field.options) return [];
@@ -41,7 +45,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     }
     
     // Enhanced options format
-    if (typeof field.options === 'object' && field.options.options && Array.isArray(field.options.options)) {
+    if (isEnhancedOptions(field.options) && field.options.options && Array.isArray(field.options.options)) {
       return field.options.options;
     }
     
@@ -49,6 +53,17 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
   };
 
   const options = getOptionsFromField();
+
+  const getEnhancedOptions = (): EnhancedFieldOptions => {
+    if (isEnhancedOptions(field.options)) {
+      return field.options;
+    }
+    return { 
+      options: [], 
+      multiSelect: false, 
+      maxSelections: 0 
+    };
+  };
 
   const addOption = () => {
     if (!newOption.trim()) return;
@@ -58,13 +73,15 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
       { value: newOption.trim(), label: newOption.trim() }
     ];
     
+    const enhancedOptions: EnhancedFieldOptions = {
+      ...getEnhancedOptions(),
+      options: updatedOptions,
+      multiSelect: true
+    };
+    
     onUpdate({
       ...field,
-      options: {
-        ...(typeof field.options === 'object' ? field.options : {}),
-        options: updatedOptions,
-        multiSelect: true
-      }
+      options: enhancedOptions
     });
     
     setNewOption('');
@@ -72,12 +89,14 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
 
   const removeOption = (index: number) => {
     const updatedOptions = options.filter((_, i) => i !== index);
+    const enhancedOptions: EnhancedFieldOptions = {
+      ...getEnhancedOptions(),
+      options: updatedOptions
+    };
+    
     onUpdate({
       ...field,
-      options: {
-        ...(typeof field.options === 'object' ? field.options : {}),
-        options: updatedOptions
-      }
+      options: enhancedOptions
     });
   };
 
@@ -85,42 +104,46 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     const updatedOptions = options.map((option, i) => 
       i === index ? { ...option, value, label: value } : option
     );
+    
+    const enhancedOptions: EnhancedFieldOptions = {
+      ...getEnhancedOptions(),
+      options: updatedOptions
+    };
+    
     onUpdate({
       ...field,
-      options: {
-        ...(typeof field.options === 'object' ? field.options : {}),
-        options: updatedOptions
-      }
+      options: enhancedOptions
     });
   };
 
   const toggleMultiSelect = (enabled: boolean) => {
+    const enhancedOptions: EnhancedFieldOptions = {
+      ...getEnhancedOptions(),
+      multiSelect: enabled
+    };
+    
     onUpdate({
       ...field,
       field_type: enabled ? 'multiselect' : 'dropdown',
-      options: {
-        ...(typeof field.options === 'object' ? field.options : {}),
-        multiSelect: enabled
-      }
+      options: enhancedOptions
     });
   };
 
   const updateMaxSelections = (max: number) => {
+    const enhancedOptions: EnhancedFieldOptions = {
+      ...getEnhancedOptions(),
+      maxSelections: max
+    };
+    
     onUpdate({
       ...field,
-      options: {
-        ...(typeof field.options === 'object' ? field.options : {}),
-        maxSelections: max
-      }
+      options: enhancedOptions
     });
   };
 
-  const isMultiSelect = field.field_type === 'multiselect' || 
-    (typeof field.options === 'object' && field.options && 'multiSelect' in field.options && field.options.multiSelect);
-
-  const maxSelections = typeof field.options === 'object' && field.options && 'maxSelections' in field.options 
-    ? (field.options.maxSelections as number) || 0 
-    : 0;
+  const currentOptions = getEnhancedOptions();
+  const isMultiSelect = field.field_type === 'multiselect' || currentOptions.multiSelect === true;
+  const maxSelections = currentOptions.maxSelections || 0;
 
   return (
     <Card>

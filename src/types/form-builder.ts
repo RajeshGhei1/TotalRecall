@@ -27,6 +27,16 @@ export interface FormDefinitionInsert {
   required_modules?: string[];
 }
 
+// Enhanced options interface for multi-select fields
+export interface EnhancedFieldOptions {
+  options?: Array<{ value: string; label: string; }>;
+  multiSelect?: boolean;
+  maxSelections?: number;
+  minSelections?: number;
+  allowCustomValues?: boolean;
+  searchable?: boolean;
+}
+
 export interface FormField {
   id: string;
   name: string;
@@ -34,7 +44,7 @@ export interface FormField {
   field_key?: string;
   required: boolean;
   validation_rules?: any;
-  options?: string[];
+  options?: string[] | EnhancedFieldOptions;
   placeholder?: string;
   help_text?: string;
   order_index?: number;
