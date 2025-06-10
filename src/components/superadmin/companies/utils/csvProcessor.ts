@@ -13,9 +13,9 @@ export interface CSVRow {
   industry1?: string;
   industry2?: string;
   industry3?: string;
-  companySector?: string;
-  companyType?: string;
-  entityType?: string;
+  companysector?: string;
+  companytype?: string;
+  entitytype?: string;
   founded?: string; // Keep as string for CSV compatibility
   linkedin?: string;
   twitter?: string;
