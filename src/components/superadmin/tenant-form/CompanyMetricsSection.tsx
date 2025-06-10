@@ -6,7 +6,7 @@ import { useMetricsOptions } from './metrics/useMetricsOptions';
 import AddOptionDialog from './metrics/AddOptionDialog';
 import EmployeeSection from './metrics/EmployeeSection';
 import TurnoverSection from './metrics/TurnoverSection';
-import EstablishmentSection from './metrics/EstablishmentSection';
+import CapitalSection from './metrics/CapitalSection';
 
 interface CompanyMetricsSectionProps {
   form: UseFormReturn<TenantFormValues>;
@@ -49,37 +49,45 @@ const CompanyMetricsSection: React.FC<CompanyMetricsSectionProps> = ({ form }) =
   
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Employee Section */}
-        <div className="space-y-6">
-          <EmployeeSection 
-            form={form}
-            employeeOptions={employeeOptions}
-            onSelectOption={handleSelectOption}
-            onAddNewClick={setAddingType}
-          />
+      <div className="space-y-8">
+        {/* Employee Metrics Section */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">Employee Metrics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <EmployeeSection 
+              form={form}
+              employeeOptions={employeeOptions}
+              onSelectOption={handleSelectOption}
+              onAddNewClick={setAddingType}
+            />
+          </div>
         </div>
         
-        {/* Turnover Section */}
-        <div className="space-y-6">
-          <TurnoverSection
-            form={form}
-            turnoverOptions={turnoverOptions}
-            yearOptions={years}
-            onSelectOption={handleSelectOption}
-            onAddNewClick={setAddingType}
-          />
+        {/* Financial Metrics Section */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">Financial Metrics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TurnoverSection
+              form={form}
+              turnoverOptions={turnoverOptions}
+              yearOptions={years}
+              onSelectOption={handleSelectOption}
+              onAddNewClick={setAddingType}
+            />
+          </div>
         </div>
         
-        {/* Establishment & Capital Section */}
-        <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EstablishmentSection
-            form={form}
-            yearOptions={years}
-            segmentOptions={segments}
-            onSelectOption={handleSelectOption}
-            onAddNewClick={setAddingType}
-          />
+        {/* Capital Information Section */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">Capital Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CapitalSection
+              form={form}
+              segmentOptions={segments}
+              onSelectOption={handleSelectOption}
+              onAddNewClick={setAddingType}
+            />
+          </div>
         </div>
       </div>
 

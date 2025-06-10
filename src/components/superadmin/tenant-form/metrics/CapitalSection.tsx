@@ -4,15 +4,14 @@ import { UseFormReturn } from 'react-hook-form';
 import { TenantFormValues } from '../schema';
 import { FormInput, FormSelect } from '../fields';
 
-interface EstablishmentSectionProps {
+interface CapitalSectionProps {
   form: UseFormReturn<TenantFormValues>;
-  yearOptions: { value: string; label: string }[];
   segmentOptions: { value: string; label: string }[];
   onSelectOption: (field: string, value: string) => void;
   onAddNewClick: (type: string) => void;
 }
 
-const EstablishmentSection: React.FC<EstablishmentSectionProps> = ({
+const CapitalSection: React.FC<CapitalSectionProps> = ({
   form,
   segmentOptions,
   onSelectOption,
@@ -47,4 +46,4 @@ const EstablishmentSection: React.FC<EstablishmentSectionProps> = ({
   );
 };
 
-export default EstablishmentSection;
+export default CapitalSection;

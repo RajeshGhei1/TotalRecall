@@ -44,6 +44,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options, read
       
       <FormInput
         form={form}
+        name="yearOfEstablishment"
+        label="Year of Establishment"
+        placeholder="e.g., 2020"
+        readOnly={readOnly}
+      />
+      
+      <FormInput
+        form={form}
         name="registeredOfficeAddress" 
         label="Registered Office Address"
         required
