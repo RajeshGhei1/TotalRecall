@@ -9,6 +9,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Edit, Trash, ExternalLink } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -25,7 +26,7 @@ interface CompanyTableProps {
   onEdit: (companyId: string) => void;
   onDelete: (company: Company) => void;
   onViewDetails: (companyId: string) => void;
-  isLoading?: boolean; // Added isLoading prop
+  isLoading?: boolean;
 }
 
 const CompanyTable: React.FC<CompanyTableProps> = ({ 
@@ -33,7 +34,7 @@ const CompanyTable: React.FC<CompanyTableProps> = ({
   onEdit, 
   onDelete, 
   onViewDetails,
-  isLoading = false, // Added default value
+  isLoading = false,
 }) => {
   if (isLoading) {
     return (
@@ -95,7 +96,21 @@ const CompanyTable: React.FC<CompanyTableProps> = ({
                     </a>
                   )}
                 </TableCell>
-                <TableCell>{company.industry || '-'}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    {company.industry1 && (
+                      <Badge variant="secondary" className="text-xs w-fit">
+                        {company.industry1}
+                      </Badge>
+                    )}
+                    {company.industry2 && (
+                      <Badge variant="outline" className="text-xs w-fit">
+                        {company.industry2}
+                      </Badge>
+                    )}
+                  </div>
+                  {!company.industry1 && !company.industry2 && '-'}
+                </TableCell>
                 <TableCell>{company.location || '-'}</TableCell>
                 <TableCell>{company.size || '-'}</TableCell>
                 <TableCell className="text-right">

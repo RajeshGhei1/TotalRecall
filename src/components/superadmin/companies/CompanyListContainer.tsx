@@ -26,7 +26,9 @@ const CompanyListContainer: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       company.name?.toLowerCase().includes(searchLower) ||
-      company.industry?.toLowerCase().includes(searchLower) ||
+      company.industry1?.toLowerCase().includes(searchLower) ||
+      company.industry2?.toLowerCase().includes(searchLower) ||
+      company.industry3?.toLowerCase().includes(searchLower) ||
       company.location?.toLowerCase().includes(searchLower)
     );
   }) || [];

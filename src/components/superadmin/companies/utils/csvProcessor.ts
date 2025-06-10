@@ -1,437 +1,332 @@
 
 import { Company } from '@/hooks/useCompanies';
-import { toast } from 'sonner';
+import Papa from 'papaparse';
 
-export interface CSVFieldMapping {
-  csvColumn: string;
-  companyField: keyof Company | 'ignore';
-  isRequired: boolean;
-  transform?: (value: string) => any;
+export interface CSVRow {
+  name: string;
+  email?: string;
+  website?: string;
+  phone?: string;
+  location?: string;
+  size?: string;
+  description?: string;
+  industry1?: string;
+  industry2?: string;
+  industry3?: string;
+  companySector?: string;
+  companyType?: string;
+  entityType?: string;
+  founded?: string;
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  [key: string]: any;
 }
 
-export interface CSVValidationError {
-  row: number;
-  field: string;
-  value: string;
-  error: string;
-}
-
-export interface CSVProcessingResult {
-  validRows: Partial<Company>[];
-  errors: CSVValidationError[];
-  duplicates: { row: number; existingCompany: Company; duplicateField: string }[];
+export interface CSVParseResult {
+  validRows: CSVRow[];
+  errors: Array<{ row: number; message: string; data?: any }>;
+  duplicates: CSVRow[];
   summary: {
     totalRows: number;
     validRows: number;
-    errorRows: number;
-    duplicateRows: number;
+    errors: number;
+    duplicates: number;
   };
 }
 
-export interface BulkImportProgress {
-  stage: 'parsing' | 'validating' | 'checking-duplicates' | 'importing' | 'complete';
-  progress: number;
-  currentRow?: number;
-  totalRows?: number;
-  message: string;
-}
-
-export const defaultFieldMappings: CSVFieldMapping[] = [
-  { csvColumn: 'name', companyField: 'name', isRequired: true },
-  { csvColumn: 'company_name', companyField: 'name', isRequired: true },
-  { csvColumn: 'email', companyField: 'email', isRequired: false },
-  { csvColumn: 'website', companyField: 'website', isRequired: false },
-  { csvColumn: 'domain', companyField: 'domain', isRequired: false },
-  { csvColumn: 'industry', companyField: 'industry', isRequired: false },
-  { csvColumn: 'size', companyField: 'size', isRequired: false },
-  { csvColumn: 'location', companyField: 'location', isRequired: false },
-  { csvColumn: 'phone', companyField: 'phone', isRequired: false },
-  { csvColumn: 'description', companyField: 'description', isRequired: false },
-  { csvColumn: 'founded', companyField: 'founded', isRequired: false, transform: (value) => value ? parseInt(value) : null },
-  // Extended fields for tenant-specific data
-  { csvColumn: 'cin', companyField: 'cin', isRequired: false },
-  { csvColumn: 'registered_office_address', companyField: 'registeredOfficeAddress', isRequired: false },
-  { csvColumn: 'country', companyField: 'country', isRequired: false },
-  { csvColumn: 'region', companyField: 'region', isRequired: false },
-  { csvColumn: 'industry1', companyField: 'industry1', isRequired: false },
-  { csvColumn: 'company_type', companyField: 'companyType', isRequired: false },
-  { csvColumn: 'entity_type', companyField: 'entityType', isRequired: false },
-  { csvColumn: 'no_of_employees', companyField: 'noOfEmployee', isRequired: false },
-  { csvColumn: 'turnover', companyField: 'turnover', isRequired: false },
-  { csvColumn: 'company_profile', companyField: 'companyProfile', isRequired: false },
-];
-
-// Enhanced CSV parsing with better error handling
-export const parseCSV = async (file: File): Promise<string[][]> => {
-  return new Promise((resolve, reject) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      reject(new Error('File must be a CSV file'));
-      return;
-    }
-
-    if (file.size > 50 * 1024 * 1024) { // 50MB limit
-      reject(new Error('File size too large. Maximum size is 50MB'));
-      return;
-    }
-
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        if (!text.trim()) {
-          reject(new Error('File is empty'));
-          return;
-        }
-
-        const lines = text.split('\n').filter(line => line.trim() !== '');
-        if (lines.length < 2) {
-          reject(new Error('CSV must have at least a header row and one data row'));
-          return;
-        }
-
-        const rows = lines.map((line, lineIndex) => {
-          const cells: string[] = [];
-          let current = '';
-          let inQuotes = false;
-          let quoteCount = 0;
-          
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            
-            if (char === '"') {
-              quoteCount++;
-              if (inQuotes && line[i + 1] === '"') {
-                // Escaped quote
-                current += '"';
-                i++; // Skip next quote
-              } else {
-                inQuotes = !inQuotes;
-              }
-            } else if (char === ',' && !inQuotes) {
-              cells.push(current.trim());
-              current = '';
-            } else {
-              current += char;
-            }
-          }
-          
-          // Add the last cell
-          cells.push(current.trim());
-          
-          // Validate quote matching
-          if (quoteCount % 2 !== 0) {
-            throw new Error(`Unmatched quotes in line ${lineIndex + 1}`);
-          }
-          
-          return cells;
-        });
-
-        // Validate header row
-        const headers = rows[0];
-        if (headers.length === 0 || headers.every(h => !h.trim())) {
-          reject(new Error('CSV header row is empty or invalid'));
-          return;
-        }
-
-        resolve(rows);
-      } catch (error) {
-        reject(new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`));
-      }
-    };
-    
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsText(file, 'utf-8');
-  });
+// Field mapping for CSV headers to company properties
+export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
+  'company name': 'name',
+  'name': 'name',
+  'company': 'name',
+  'email': 'email',
+  'business email': 'email',
+  'company email': 'email',
+  'website': 'website',
+  'domain': 'website',
+  'url': 'website',
+  'phone': 'phone',
+  'telephone': 'phone',
+  'contact number': 'phone',
+  'location': 'location',
+  'address': 'location',
+  'city': 'location',
+  'size': 'size',
+  'company size': 'size',
+  'employees': 'size',
+  'description': 'description',
+  'about': 'description',
+  'industry': 'industry1',
+  'industry1': 'industry1',
+  'primary industry': 'industry1',
+  'industry2': 'industry2',
+  'secondary industry': 'industry2',
+  'industry3': 'industry3',
+  'tertiary industry': 'industry3',
+  'sector': 'companySector',
+  'company sector': 'companySector',
+  'type': 'companyType',
+  'company type': 'companyType',
+  'entity type': 'entityType',
+  'legal entity': 'entityType',
+  'founded': 'founded',
+  'established': 'founded',
+  'year founded': 'founded',
+  'linkedin': 'linkedin',
+  'linkedin url': 'linkedin',
+  'twitter': 'twitter',
+  'twitter url': 'twitter',
+  'facebook': 'facebook',
+  'facebook url': 'facebook',
+  'cin': 'cin',
+  'company identification': 'cin',
+  'status': 'companyStatus',
+  'company status': 'companyStatus'
 };
 
-// Enhanced validation with business rules
-export const validateCSVData = (
-  rows: string[][],
-  mappings: CSVFieldMapping[],
-  existingCompanies: Company[]
-): CSVProcessingResult => {
-  const validRows: Partial<Company>[] = [];
-  const errors: CSVValidationError[] = [];
-  const duplicates: { row: number; existingCompany: Company; duplicateField: string }[] = [];
-  
-  if (rows.length === 0) {
-    return {
-      validRows: [],
-      errors: [{ row: 0, field: 'file', value: '', error: 'CSV file is empty' }],
-      duplicates: [],
-      summary: { totalRows: 0, validRows: 0, errorRows: 1, duplicateRows: 0 }
-    };
-  }
+export function normalizeHeader(header: string): string {
+  return header.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+}
 
-  const headers = rows[0]?.map(h => h.toLowerCase().trim()) || [];
-  const dataRows = rows.slice(1);
-  
-  if (headers.length === 0) {
-    return {
-      validRows: [],
-      errors: [{ row: 1, field: 'headers', value: '', error: 'No headers found in CSV' }],
-      duplicates: [],
-      summary: { totalRows: 0, validRows: 0, errorRows: 1, duplicateRows: 0 }
-    };
-  }
+export function mapCSVRowToCompany(csvRow: any, headers: string[]): Partial<Company> | null {
+  const company: Partial<Company> = {};
+  let hasRequiredField = false;
 
-  // Track names within the CSV for internal duplicates
-  const csvNames = new Map<string, number>();
-  const csvEmails = new Map<string, number>();
-  
-  dataRows.forEach((row, index) => {
-    const rowIndex = index + 2; // +2 because we skip header and arrays are 0-indexed
-    const companyData: Partial<Company> = {};
-    let hasRequiredFields = true;
-    let hasAnyData = false;
+  headers.forEach(header => {
+    const normalizedHeader = normalizeHeader(header);
+    const mappedField = fieldMappings[normalizedHeader];
     
-    // Check if row has any data
-    if (row.every(cell => !cell.trim())) {
-      errors.push({
-        row: rowIndex,
-        field: 'row',
-        value: '',
-        error: 'Empty row - skipping'
-      });
-      return;
-    }
-    
-    // Apply field mappings
-    mappings.forEach(mapping => {
-      if (mapping.companyField === 'ignore') return;
-      
-      const csvIndex = headers.findIndex(h => h === mapping.csvColumn.toLowerCase());
-      if (csvIndex === -1) {
-        if (mapping.isRequired) {
-          errors.push({
-            row: rowIndex,
-            field: mapping.companyField,
-            value: '',
-            error: `Required column '${mapping.csvColumn}' not found in CSV headers`
-          });
-          hasRequiredFields = false;
+    if (mappedField && mappedField !== 'ignore') {
+      const value = csvRow[header];
+      if (value && value.toString().trim()) {
+        (company as any)[mappedField] = value.toString().trim();
+        if (mappedField === 'name') {
+          hasRequiredField = true;
         }
-        return;
       }
-      
-      let value = row[csvIndex]?.trim() || '';
-      
-      // Check required fields
-      if (mapping.isRequired && !value) {
-        errors.push({
-          row: rowIndex,
-          field: mapping.companyField,
-          value,
-          error: `Required field '${mapping.companyField}' is empty`
-        });
-        hasRequiredFields = false;
-        return;
+    }
+  });
+
+  // Convert founded year to number if present
+  if (company.founded) {
+    const foundedYear = parseInt(company.founded.toString());
+    if (!isNaN(foundedYear) && foundedYear > 1800 && foundedYear <= new Date().getFullYear()) {
+      company.founded = foundedYear;
+    } else {
+      delete company.founded;
+    }
+  }
+
+  return hasRequiredField ? company : null;
+}
+
+export function validateCompanyData(company: Partial<Company>): string[] {
+  const errors: string[] = [];
+
+  // Required field validation
+  if (!company.name || company.name.trim().length === 0) {
+    errors.push('Company name is required');
+  }
+
+  // Email validation
+  if (company.email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(company.email)) {
+      errors.push('Invalid email format');
+    }
+  }
+
+  // Website validation
+  if (company.website) {
+    try {
+      new URL(company.website);
+    } catch {
+      // Try adding protocol if missing
+      try {
+        new URL(`https://${company.website}`);
+        company.website = `https://${company.website}`;
+      } catch {
+        errors.push('Invalid website URL');
       }
-      
-      if (value) {
-        hasAnyData = true;
-        
-        // Apply transformations
-        if (mapping.transform) {
+    }
+  }
+
+  // Phone validation (basic)
+  if (company.phone) {
+    const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)\.]{7,}$/;
+    if (!phoneRegex.test(company.phone.replace(/\s/g, ''))) {
+      errors.push('Invalid phone number format');
+    }
+  }
+
+  return errors;
+}
+
+export function parseCSVFile(file: File): Promise<CSVParseResult> {
+  return new Promise((resolve) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header: string) => header.trim(),
+      complete: (results) => {
+        const validRows: CSVRow[] = [];
+        const errors: Array<{ row: number; message: string; data?: any }> = [];
+        const duplicates: CSVRow[] = [];
+        const seenCompanies = new Set<string>();
+
+        results.data.forEach((row: any, index: number) => {
           try {
-            value = mapping.transform(value);
+            const headers = Object.keys(row);
+            const company = mapCSVRowToCompany(row, headers);
+
+            if (!company) {
+              errors.push({
+                row: index + 1,
+                message: 'Missing required field: Company name',
+                data: row
+              });
+              return;
+            }
+
+            const validationErrors = validateCompanyData(company);
+            if (validationErrors.length > 0) {
+              errors.push({
+                row: index + 1,
+                message: validationErrors.join(', '),
+                data: row
+              });
+              return;
+            }
+
+            // Check for duplicates based on name
+            const companyKey = company.name!.toLowerCase().trim();
+            if (seenCompanies.has(companyKey)) {
+              duplicates.push(company as CSVRow);
+              return;
+            }
+
+            seenCompanies.add(companyKey);
+            validRows.push(company as CSVRow);
+
           } catch (error) {
             errors.push({
-              row: rowIndex,
-              field: mapping.companyField,
-              value,
-              error: `Invalid value format for '${mapping.companyField}': ${error instanceof Error ? error.message : 'transformation failed'}`
+              row: index + 1,
+              message: `Processing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              data: row
             });
-            return;
           }
-        }
-        
-        // Business rule validations
-        if (mapping.companyField === 'email' && value) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            errors.push({
-              row: rowIndex,
-              field: mapping.companyField,
-              value,
-              error: 'Invalid email format'
-            });
-            return;
+        });
+
+        resolve({
+          validRows,
+          errors,
+          duplicates,
+          summary: {
+            totalRows: results.data.length,
+            validRows: validRows.length,
+            errors: errors.length,
+            duplicates: duplicates.length
           }
-        }
-        
-        if (mapping.companyField === 'website' && value) {
-          try {
-            new URL(value.startsWith('http') ? value : `https://${value}`);
-          } catch {
-            errors.push({
-              row: rowIndex,
-              field: mapping.companyField,
-              value,
-              error: 'Invalid website URL format'
-            });
-            return;
+        });
+      },
+      error: (error) => {
+        resolve({
+          validRows: [],
+          errors: [{ row: 0, message: `CSV parsing error: ${error.message}` }],
+          duplicates: [],
+          summary: {
+            totalRows: 0,
+            validRows: 0,
+            errors: 1,
+            duplicates: 0
           }
-        }
-        
-        if (mapping.companyField === 'founded' && value) {
-          const year = parseInt(value);
-          const currentYear = new Date().getFullYear();
-          if (isNaN(year) || year < 1800 || year > currentYear) {
-            errors.push({
-              row: rowIndex,
-              field: mapping.companyField,
-              value,
-              error: `Invalid founding year. Must be between 1800 and ${currentYear}`
-            });
-            return;
-          }
-        }
-        
-        (companyData as any)[mapping.companyField] = value;
+        });
       }
     });
-    
-    if (!hasAnyData) {
-      return; // Skip completely empty rows
-    }
-    
-    // Check for duplicates within CSV
-    if (companyData.name) {
-      const nameKey = companyData.name.toLowerCase();
-      if (csvNames.has(nameKey)) {
-        errors.push({
-          row: rowIndex,
-          field: 'name',
-          value: companyData.name,
-          error: `Duplicate company name found in CSV at row ${csvNames.get(nameKey)}`
-        });
-      } else {
-        csvNames.set(nameKey, rowIndex);
-      }
-    }
-    
-    if (companyData.email) {
-      const emailKey = companyData.email.toLowerCase();
-      if (csvEmails.has(emailKey)) {
-        errors.push({
-          row: rowIndex,
-          field: 'email',
-          value: companyData.email,
-          error: `Duplicate email found in CSV at row ${csvEmails.get(emailKey)}`
-        });
-      } else {
-        csvEmails.set(emailKey, rowIndex);
-      }
-    }
-    
-    // Check for duplicates against existing companies
-    if (hasRequiredFields && companyData.name) {
-      const duplicateByName = existingCompanies.find(
-        c => c.name.toLowerCase() === companyData.name?.toLowerCase()
-      );
-      if (duplicateByName) {
-        duplicates.push({
-          row: rowIndex,
-          existingCompany: duplicateByName,
-          duplicateField: 'name'
-        });
-      }
-      
-      if (companyData.email) {
-        const duplicateByEmail = existingCompanies.find(
-          c => c.email?.toLowerCase() === companyData.email?.toLowerCase()
-        );
-        if (duplicateByEmail && duplicateByEmail.id !== duplicateByName?.id) {
-          duplicates.push({
-            row: rowIndex,
-            existingCompany: duplicateByEmail,
-            duplicateField: 'email'
-          });
-        }
-      }
-    }
-    
-    if (hasRequiredFields && hasAnyData) {
-      validRows.push(companyData);
+  });
+}
+
+export function detectDuplicatesWithExisting(
+  csvRows: CSVRow[],
+  existingCompanies: Company[]
+): { duplicateRows: CSVRow[]; uniqueRows: CSVRow[] } {
+  const existingNames = new Set(
+    existingCompanies.map(company => company.name.toLowerCase().trim())
+  );
+  
+  const existingEmails = new Set(
+    existingCompanies
+      .filter(company => company.email)
+      .map(company => company.email!.toLowerCase().trim())
+  );
+
+  const duplicateRows: CSVRow[] = [];
+  const uniqueRows: CSVRow[] = [];
+
+  csvRows.forEach(row => {
+    const isDuplicateName = existingNames.has(row.name.toLowerCase().trim());
+    const isDuplicateEmail = row.email && existingEmails.has(row.email.toLowerCase().trim());
+
+    if (isDuplicateName || isDuplicateEmail) {
+      duplicateRows.push(row);
+    } else {
+      uniqueRows.push(row);
     }
   });
-  
-  return {
-    validRows,
-    errors,
-    duplicates,
-    summary: {
-      totalRows: dataRows.length,
-      validRows: validRows.length,
-      errorRows: errors.filter(e => e.field !== 'row').length, // Exclude empty row errors
-      duplicateRows: duplicates.length
-    }
-  };
-};
 
-export const generateCSVTemplate = (): string => {
+  return { duplicateRows, uniqueRows };
+}
+
+export function generateSampleCSV(): string {
   const headers = [
-    'name',
-    'email',
-    'website',
-    'industry',
-    'size',
-    'location',
-    'phone',
-    'description',
-    'founded',
-    'cin',
-    'registered_office_address',
-    'country',
-    'region',
-    'industry1',
-    'company_type',
-    'entity_type',
-    'no_of_employees',
-    'turnover',
-    'company_profile'
+    'Company Name',
+    'Email',
+    'Website',
+    'Phone',
+    'Location',
+    'Size',
+    'Primary Industry',
+    'Secondary Industry',
+    'Company Sector',
+    'Company Type',
+    'Founded',
+    'LinkedIn',
+    'Description'
   ];
-  
-  const sampleData = [
-    'Acme Corporation,contact@acme.com,https://acme.com,Technology,51-200,New York,+1-555-0123,Leading technology solutions provider,2010,U12345ABC2010PLC123456,123 Tech Street New York NY 10001,United States,North America,Information Technology,Private Limited,Private,150,5000000,Technology consulting and software development',
-    'Global Industries,info@global.com,https://global.com,Manufacturing,201-500,California,+1-555-0456,International manufacturing company,2005,U67890DEF2005PLC789012,456 Industrial Ave Los Angeles CA 90001,United States,North America,Manufacturing,Public Limited,Public,350,25000000,Industrial equipment and machinery manufacturing'
+
+  const sampleRows = [
+    [
+      'Tech Innovations Ltd',
+      'contact@techinnovations.com',
+      'https://techinnovations.com',
+      '+1-555-0123',
+      'San Francisco, CA',
+      'Medium',
+      'Technology',
+      'Software Development',
+      'Private',
+      'Corporation',
+      '2015',
+      'https://linkedin.com/company/tech-innovations',
+      'Leading provider of innovative software solutions'
+    ],
+    [
+      'Global Manufacturing Corp',
+      'info@globalmanufacturing.com',
+      'https://globalmanufacturing.com',
+      '+1-555-0456',
+      'Detroit, MI',
+      'Large',
+      'Manufacturing',
+      'Automotive',
+      'Public',
+      'Corporation',
+      '1987',
+      'https://linkedin.com/company/global-manufacturing',
+      'Automotive parts manufacturer serving global markets'
+    ]
   ];
-  
-  return [headers.join(','), ...sampleData].join('\n');
-};
 
-// Enhanced error categorization
-export const categorizeErrors = (errors: CSVValidationError[]) => {
-  const categories = {
-    required: errors.filter(e => e.error.includes('Required')),
-    format: errors.filter(e => e.error.includes('Invalid') || e.error.includes('format')),
-    duplicate: errors.filter(e => e.error.includes('Duplicate')),
-    business: errors.filter(e => e.error.includes('year') || e.error.includes('rule')),
-    other: errors.filter(e => !e.error.includes('Required') && !e.error.includes('Invalid') && !e.error.includes('Duplicate') && !e.error.includes('year'))
-  };
-  
-  return categories;
-};
-
-// Export progress tracking utility
-export const createProgressTracker = (totalItems: number) => {
-  let completed = 0;
-  
-  return {
-    increment: () => {
-      completed++;
-      return {
-        completed,
-        total: totalItems,
-        percentage: Math.round((completed / totalItems) * 100)
-      };
-    },
-    getProgress: () => ({
-      completed,
-      total: totalItems,
-      percentage: Math.round((completed / totalItems) * 100)
-    })
-  };
-};
+  return Papa.unparse([headers, ...sampleRows]);
+}

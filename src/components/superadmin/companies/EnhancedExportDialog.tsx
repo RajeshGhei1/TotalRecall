@@ -41,7 +41,9 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     { key: 'name', label: 'Company Name', selected: true },
     { key: 'email', label: 'Email', selected: true },
     { key: 'website', label: 'Website', selected: true },
-    { key: 'industry', label: 'Industry', selected: true },
+    { key: 'industry1', label: 'Primary Industry', selected: true },
+    { key: 'industry2', label: 'Secondary Industry', selected: false },
+    { key: 'industry3', label: 'Tertiary Industry', selected: false },
     { key: 'size', label: 'Company Size', selected: true },
     { key: 'location', label: 'Location', selected: true },
     { key: 'phone', label: 'Phone', selected: false },
@@ -79,7 +81,7 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     setExportFields(prev =>
       prev.map(field => ({
         ...field,
-        selected: ['name', 'email', 'website', 'industry', 'location'].includes(field.key)
+        selected: ['name', 'email', 'website', 'industry1', 'location'].includes(field.key as string)
       }))
     );
   };

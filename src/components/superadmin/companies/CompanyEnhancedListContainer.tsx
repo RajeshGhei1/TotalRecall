@@ -37,7 +37,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
   // Filter companies based on search term
   const filteredCompanies = companies?.filter(company =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.industry1?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.industry2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.industry3?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     company.location?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
@@ -112,9 +114,14 @@ const CompanyEnhancedListContainer: React.FC = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {company.industry && (
-                      <Badge variant="secondary">{company.industry}</Badge>
-                    )}
+                    <div className="flex flex-col gap-1">
+                      {company.industry1 && (
+                        <Badge variant="secondary" className="text-xs">{company.industry1}</Badge>
+                      )}
+                      {company.industry2 && (
+                        <Badge variant="outline" className="text-xs">{company.industry2}</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>{company.location || '-'}</TableCell>
                   <TableCell>{company.size || '-'}</TableCell>

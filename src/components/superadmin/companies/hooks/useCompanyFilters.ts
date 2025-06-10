@@ -35,15 +35,19 @@ export const useCompanyFilters = (
         company.name?.toLowerCase().includes(search) ||
         company.domain?.toLowerCase().includes(search) ||
         company.email?.toLowerCase().includes(search) ||
-        company.industry?.toLowerCase().includes(search) ||
+        company.industry1?.toLowerCase().includes(search) ||
+        company.industry2?.toLowerCase().includes(search) ||
+        company.industry3?.toLowerCase().includes(search) ||
         company.location?.toLowerCase().includes(search)
       );
     }
 
-    // Apply industry filter
+    // Apply industry filter (check all industry fields)
     if (filters.industries && filters.industries.length > 0) {
       filtered = filtered.filter(company => 
-        company.industry && filters.industries.includes(company.industry)
+        (company.industry1 && filters.industries.includes(company.industry1)) ||
+        (company.industry2 && filters.industries.includes(company.industry2)) ||
+        (company.industry3 && filters.industries.includes(company.industry3))
       );
     }
 

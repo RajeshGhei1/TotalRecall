@@ -103,8 +103,11 @@ const CompanyMetricsDashboard: React.FC = () => {
         return false;
       }
 
-      // Industry filter
-      if (filters.industry && company.industry !== filters.industry) {
+      // Industry filter - check all industry fields
+      if (filters.industry && 
+          company.industry1 !== filters.industry && 
+          company.industry2 !== filters.industry && 
+          company.industry3 !== filters.industry) {
         return false;
       }
 
@@ -140,8 +143,15 @@ const CompanyMetricsDashboard: React.FC = () => {
 
   // Get unique values for filter options
   const filterOptions = useMemo(() => {
+    const allIndustries = new Set<string>();
+    companies.forEach(c => {
+      if (c.industry1) allIndustries.add(c.industry1);
+      if (c.industry2) allIndustries.add(c.industry2);
+      if (c.industry3) allIndustries.add(c.industry3);
+    });
+
     return {
-      industries: Array.from(new Set(companies.map(c => c.industry).filter(Boolean))).sort(),
+      industries: Array.from(allIndustries).sort(),
       locations: Array.from(new Set(companies.map(c => c.location).filter(Boolean))).sort(),
       sizes: Array.from(new Set(companies.map(c => c.size).filter(Boolean))).sort(),
     };
@@ -211,7 +221,9 @@ const CompanyMetricsDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{withWebsite}</div>
-            <p className="text-xs text-muted-foreground">{Math.round((withWebsite / totalCompanies) * 100) || 0}% have website info</p>
+            <p className="text-xs text-muted-foreground">
+              {totalCompanies > 0 && `${Math.round((withWebsite / totalCompanies) * 100)}% coverage`}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -221,45 +233,45 @@ const CompanyMetricsDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{withDescription}</div>
-            <p className="text-xs text-muted-foreground">{Math.round((withDescription / totalCompanies) * 100) || 0}% have description</p>
+            <p className="text-xs text-muted-foreground">
+              {totalCompanies > 0 && `${Math.round((withDescription / totalCompanies) * 100)}% coverage`}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Connected People</CardTitle>
+            <CardTitle className="text-sm font-medium">People Relationships</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{relationshipStats.people_count}</div>
-            <p className="text-xs text-muted-foreground">{relationshipStats.relationship_count} total relationships</p>
+            <div className="text-2xl font-bold">{relationshipStats.relationship_count}</div>
+            <p className="text-xs text-muted-foreground">
+              {relationshipStats.company_count} companies, {relationshipStats.people_count} people
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Enhanced Analytics Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <CompanyGrowthChart />
-        <GeographicDistributionChart />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <IndustrySectorChart />
-        <HierarchyAnalysisChart />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-1">
-        <DataCompletenessChart />
-      </div>
-
-      {/* Legacy Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Charts Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         <CompanyIndustryChart />
+        <CompanySizeChart />
         <CompanyLocationChart />
+        <CompanyPeopleChart />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <CompanyPeopleChart />
-        <CompanySizeChart />
+      {/* Enhanced Analytics Section */}
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold">Advanced Analytics</h3>
+        
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+          <CompanyGrowthChart companies={filteredCompanies} />
+          <GeographicDistributionChart companies={filteredCompanies} />
+          <IndustrySectorChart companies={filteredCompanies} />
+          <DataCompletenessChart companies={filteredCompanies} />
+        </div>
+
+        <HierarchyAnalysisChart companies={filteredCompanies} />
       </div>
 
       {/* Export Dialog */}

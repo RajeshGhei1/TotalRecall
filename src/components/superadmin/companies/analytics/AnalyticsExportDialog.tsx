@@ -92,7 +92,9 @@ const AnalyticsExportDialog: React.FC<AnalyticsExportDialogProps> = ({
       if (selectedOptions.includes('basic_info')) {
         exportData.basic_info = companies.map(company => ({
           name: company.name,
-          industry: company.industry,
+          industry1: company.industry1,
+          industry2: company.industry2,
+          industry3: company.industry3,
           location: company.location,
           size: company.size,
           website: company.website,
@@ -123,7 +125,6 @@ const AnalyticsExportDialog: React.FC<AnalyticsExportDialogProps> = ({
       if (selectedOptions.includes('industry_data')) {
         exportData.industry_data = companies.map(company => ({
           name: company.name,
-          industry: company.industry,
           industry1: company.industry1,
           industry2: company.industry2,
           industry3: company.industry3,
@@ -142,7 +143,7 @@ const AnalyticsExportDialog: React.FC<AnalyticsExportDialogProps> = ({
       }
 
       if (selectedOptions.includes('completeness_data')) {
-        const fieldsToCheck = ['email', 'phone', 'website', 'description', 'industry', 'size', 'location'];
+        const fieldsToCheck = ['email', 'phone', 'website', 'description', 'industry1', 'size', 'location'];
         exportData.completeness_data = companies.map(company => {
           const completeness: any = { name: company.name };
           fieldsToCheck.forEach(field => {
