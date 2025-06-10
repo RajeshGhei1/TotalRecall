@@ -6,7 +6,6 @@ import { FormInput, FormSelect } from '../fields';
 
 interface EstablishmentSectionProps {
   form: UseFormReturn<TenantFormValues>;
-  yearOptions: { value: string; label: string }[];
   segmentOptions: { value: string; label: string }[];
   onSelectOption: (field: string, value: string) => void;
   onAddNewClick: (type: string) => void;
@@ -35,7 +34,7 @@ const EstablishmentSection: React.FC<EstablishmentSectionProps> = ({
           ...segmentOptions,
           { value: '__add_new__', label: '[+ Add New]' }
         ]}
-        onValueChange={(value) => {
+        onChange={(value) => {
           if (value === '__add_new__') {
             onAddNewClick('segmentAsPerPaidUpCapital');
           } else {

@@ -34,7 +34,7 @@ const CapitalSection: React.FC<CapitalSectionProps> = ({
           ...segmentOptions,
           { value: '__add_new__', label: '[+ Add New]' }
         ]}
-        onValueChange={(value) => {
+        onChange={(value) => {
           if (value === '__add_new__') {
             onAddNewClick('segmentAsPerPaidUpCapital');
           } else {
