@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // General application styles
 import Auth from '@/pages/Auth';
 import SuperAdminRoutes from '@/routes/SuperAdminRoutes';
@@ -24,10 +24,17 @@ function App() {
             } 
           />
           
-          {/* Default route redirects to superadmin dashboard for now */}
+          {/* Default route redirects to superadmin dashboard */}
           <Route path="/" element={
             <AuthGuard requiresSuperAdmin={true}>
-              <SuperAdminRoutes />
+              <Navigate to="/superadmin/dashboard" replace />
+            </AuthGuard>
+          } />
+
+          {/* Catch all other routes and redirect to superadmin */}
+          <Route path="*" element={
+            <AuthGuard requiresSuperAdmin={true}>
+              <Navigate to="/superadmin/dashboard" replace />
             </AuthGuard>
           } />
         </Routes>
