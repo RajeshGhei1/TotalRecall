@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -21,35 +20,35 @@ export interface Company {
   linkedin?: string;
   twitter?: string;
   facebook?: string;
-  // Tenant-specific properties
+  // Tenant-specific properties - using lowercase to match database
   cin?: string;
-  companyStatus?: string;
-  registeredOfficeAddress?: string;
-  registrationDate?: string;
-  registeredEmailAddress?: string;
-  noOfDirectives?: string;
-  globalRegion?: string;
+  companystatus?: string;
+  registeredofficeaddress?: string;
+  registrationdate?: string;
+  registeredemailaddress?: string;
+  noofdirectives?: string;
+  globalregion?: string;
   country?: string;
   region?: string;
-  hoLocation?: string;
-  noOfEmployee?: string;
+  holocation?: string;
+  noofemployee?: string;
   turnover?: string;
   industry1?: string;
   industry2?: string;
   industry3?: string;
-  companySector?: string;
-  companyType?: string;
-  entityType?: string;
-  segmentAsPerNumberOfEmployees?: string;
-  segmentAsPerTurnover?: string;
-  turnoverYear?: string;
-  yearOfEstablishment?: string;
-  paidupCapital?: string;
-  segmentAsPerPaidUpCapital?: string;
-  areaOfSpecialize?: string;
-  serviceLine?: string;
+  companysector?: string;
+  companytype?: string;
+  entitytype?: string;
+  segmentaspernumberofemployees?: string;
+  segmentasperturnover?: string;
+  turnoveryear?: string;
+  yearofestablishment?: string;
+  paidupcapital?: string;
+  segmentasperpaidupcapital?: string;
+  areaofspecialize?: string;
+  serviceline?: string;
   verticles?: string;
-  companyProfile?: string;
+  companyprofile?: string;
   // Add parent company and group structure fields
   parent_company_id?: string;
   company_group_name?: string;
@@ -122,35 +121,35 @@ export const useCompanies = () => {
         twitter: companyData.twitter,
         facebook: companyData.facebook,
         founded: companyData.founded,
-        // Add tenant-specific fields
+        // Add tenant-specific fields - using lowercase to match database
         cin: companyData.cin,
-        companyStatus: companyData.companyStatus,
-        registeredOfficeAddress: companyData.registeredOfficeAddress,
-        registrationDate: companyData.registrationDate,
-        registeredEmailAddress: companyData.registeredEmailAddress,
-        noOfDirectives: companyData.noOfDirectives,
-        globalRegion: companyData.globalRegion,
+        companystatus: companyData.companyStatus,
+        registeredofficeaddress: companyData.registeredOfficeAddress,
+        registrationdate: companyData.registrationDate,
+        registeredemailaddress: companyData.registeredEmailAddress,
+        noofdirectives: companyData.noOfDirectives,
+        globalregion: companyData.globalRegion,
         country: companyData.country,
         region: companyData.region,
-        hoLocation: companyData.hoLocation,
+        holocation: companyData.hoLocation,
         industry1: companyData.industry1,
         industry2: companyData.industry2,
         industry3: companyData.industry3,
-        companySector: companyData.companySector,
-        companyType: companyData.companyType,
-        entityType: companyData.entityType,
-        noOfEmployee: companyData.noOfEmployee,
-        segmentAsPerNumberOfEmployees: companyData.segmentAsPerNumberOfEmployees,
-        turnOver: companyData.turnOver,
-        segmentAsPerTurnover: companyData.segmentAsPerTurnover,
-        turnoverYear: companyData.turnoverYear,
-        yearOfEstablishment: companyData.yearOfEstablishment,
-        paidupCapital: companyData.paidupCapital,
-        segmentAsPerPaidUpCapital: companyData.segmentAsPerPaidUpCapital,
-        areaOfSpecialize: companyData.areaOfSpecialize,
-        serviceLine: companyData.serviceLine,
+        companysector: companyData.companySector,
+        companytype: companyData.companyType,
+        entitytype: companyData.entityType,
+        noofemployee: companyData.noOfEmployee,
+        segmentaspernumberofemployees: companyData.segmentAsPerNumberOfEmployees,
+        turnover: companyData.turnOver,
+        segmentasperturnover: companyData.segmentAsPerTurnover,
+        turnoveryear: companyData.turnoverYear,
+        yearofestablishment: companyData.yearOfEstablishment,
+        paidupcapital: companyData.paidupCapital,
+        segmentasperpaidupcapital: companyData.segmentAsPerPaidUpCapital,
+        areaofspecialize: companyData.areaOfSpecialize,
+        serviceline: companyData.serviceLine,
         verticles: companyData.verticles,
-        companyProfile: companyData.companyProfile,
+        companyprofile: companyData.companyProfile,
         // Add parent company and group structure fields
         parent_company_id: companyData.parentCompanyId || null,
         company_group_name: companyData.companyGroupName || null,
@@ -217,35 +216,35 @@ export const useCompanies = () => {
         twitter: companyData.twitter,
         facebook: companyData.facebook,
         founded: companyData.founded,
-        // Add tenant-specific fields
+        // Add tenant-specific fields - using lowercase to match database
         cin: companyData.cin,
-        companyStatus: companyData.companyStatus,
-        registeredOfficeAddress: companyData.registeredOfficeAddress,
-        registrationDate: companyData.registrationDate,
-        registeredEmailAddress: companyData.registeredEmailAddress,
-        noOfDirectives: companyData.noOfDirectives,
-        globalRegion: companyData.globalRegion,
+        companystatus: companyData.companyStatus,
+        registeredofficeaddress: companyData.registeredOfficeAddress,
+        registrationdate: companyData.registrationDate,
+        registeredemailaddress: companyData.registeredEmailAddress,
+        noofdirectives: companyData.noOfDirectives,
+        globalregion: companyData.globalRegion,
         country: companyData.country,
         region: companyData.region,
-        hoLocation: companyData.hoLocation,
+        holocation: companyData.hoLocation,
         industry1: companyData.industry1,
         industry2: companyData.industry2,
         industry3: companyData.industry3,
-        companySector: companyData.companySector,
-        companyType: companyData.companyType,
-        entityType: companyData.entityType,
-        noOfEmployee: companyData.noOfEmployee,
-        segmentAsPerNumberOfEmployees: companyData.segmentAsPerNumberOfEmployees,
-        turnOver: companyData.turnOver,
-        segmentAsPerTurnover: companyData.segmentAsPerTurnover,
-        turnoverYear: companyData.turnoverYear,
-        yearOfEstablishment: companyData.yearOfEstablishment,
-        paidupCapital: companyData.paidupCapital,
-        segmentAsPerPaidUpCapital: companyData.segmentAsPerPaidUpCapital,
-        areaOfSpecialize: companyData.areaOfSpecialize,
-        serviceLine: companyData.serviceLine,
+        companysector: companyData.companySector,
+        companytype: companyData.companyType,
+        entitytype: companyData.entityType,
+        noofemployee: companyData.noOfEmployee,
+        segmentaspernumberofemployees: companyData.segmentAsPerNumberOfEmployees,
+        turnover: companyData.turnOver,
+        segmentasperturnover: companyData.segmentAsPerTurnover,
+        turnoveryear: companyData.turnoverYear,
+        yearofestablishment: companyData.yearOfEstablishment,
+        paidupcapital: companyData.paidupCapital,
+        segmentasperpaidupcapital: companyData.segmentAsPerPaidUpCapital,
+        areaofspecialize: companyData.areaOfSpecialize,
+        serviceline: companyData.serviceLine,
         verticles: companyData.verticles,
-        companyProfile: companyData.companyProfile,
+        companyprofile: companyData.companyProfile,
         // Add parent company and group structure fields
         parent_company_id: companyData.parentCompanyId || null,
         company_group_name: companyData.companyGroupName || null,

@@ -1,4 +1,3 @@
-
 import { Company } from '@/hooks/useCompanies';
 import Papa from 'papaparse';
 
