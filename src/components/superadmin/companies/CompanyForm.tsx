@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 import { companyFormSchema, CompanyFormValues, formOptions } from './schema';
 import BasicInfoSection from './sections/BasicInfoSection';
@@ -35,7 +35,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   onCancel,
   initialData = {}
 }) => {
-  // Update formContext to use the correct identifier
   const { customFields, isLoading: customFieldsLoading } = useCustomFields('global', {
     formContext: 'company_creation'
   });
@@ -43,7 +42,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      id: initialData.id || undefined, // Add id field for existing companies
+      id: initialData.id || undefined,
       name: initialData.name || '',
       website: initialData.website || '',
       industry: initialData.industry || '',
@@ -56,7 +55,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
       linkedin: initialData.linkedin || '',
       twitter: initialData.twitter || '',
       facebook: initialData.facebook || '',
-      // Add tenant-specific fields
       cin: initialData.cin || '',
       companyStatus: initialData.companyStatus || '',
       registeredOfficeAddress: initialData.registeredOfficeAddress || '',
@@ -86,7 +84,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
       verticles: initialData.verticles || '',
       companyProfile: initialData.companyProfile || '',
       endUserChannel: initialData.endUserChannel || '',
-      // Add parent company fields
       parentCompanyId: initialData.parentCompanyId || '',
       companyGroupName: initialData.companyGroupName || '',
       hierarchyLevel: initialData.hierarchyLevel || 0,
@@ -95,7 +92,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   });
 
   useEffect(() => {
-    // This ensures the form knows about any custom fields that might be added
     if (customFields && customFields.length > 0) {
       const currentValues = form.getValues();
       form.reset(currentValues);
@@ -107,103 +103,149 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="w-full grid grid-cols-8 mb-6">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="group">Group Structure</TabsTrigger>
-            <TabsTrigger value="location">Location</TabsTrigger>
-            <TabsTrigger value="industry">Industry & Type</TabsTrigger>
-            <TabsTrigger value="metrics">Metrics</TabsTrigger>
-            <TabsTrigger value="people">People</TabsTrigger>
-            <TabsTrigger value="additional">Additional</TabsTrigger>
-            <TabsTrigger value="custom" className="relative">
-              Custom Fields
-              {!customFieldsLoading && customFields.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {customFields.length}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="basic" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Basic Information</h3>
+    <div className="max-w-5xl mx-auto p-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
+          
+          {/* Basic Information Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+              <p className="text-sm text-muted-foreground">Core company details and registration information</p>
+            </div>
             <BasicInfoSection form={form} options={formOptions} />
-          </TabsContent>
-          
-          <TabsContent value="group" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Group Structure</h3>
-            <GroupStructureSection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="location" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Location</h3>
-            <LocationSection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="industry" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Industry & Company Type</h3>
-            <IndustrySection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="metrics" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Company Metrics</h3>
-            <CompanyMetricsSection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="people" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Associated People</h3>
-            <PeopleSection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="additional" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Additional Information</h3>
-            <AdditionalInfoSection form={form} />
-          </TabsContent>
-          
-          <TabsContent value="custom" className="space-y-4">
-            <h3 className="text-lg font-medium border-b pb-2">Custom Fields</h3>
-            {customFieldsLoading ? (
-              <div className="flex items-center justify-center p-8 border rounded-md">
-                <Loader className="h-5 w-5 animate-spin mr-2" />
-                <span>Loading custom fields...</span>
-              </div>
-            ) : customFields.length === 0 ? (
-              <div className="p-8 text-center border rounded-md">
-                <p className="text-muted-foreground">No custom fields have been defined yet.</p>
-                <p className="text-sm mt-2">
-                  You can define global custom fields in the Settings page.
-                </p>
-              </div>
-            ) : (
-              <CustomFieldsForm
-                formContext="company_creation"
-                entityType="company"
-                form={form}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
 
-        <div className="flex justify-end space-x-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Create Company'
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          <Separator />
+
+          {/* Group Structure Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Group Structure</h2>
+              <p className="text-sm text-muted-foreground">Parent company and organizational hierarchy</p>
+            </div>
+            <GroupStructureSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Location Information Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Location Information</h2>
+              <p className="text-sm text-muted-foreground">Geographic and regional details</p>
+            </div>
+            <LocationSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Industry & Company Type Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Industry & Company Type</h2>
+              <p className="text-sm text-muted-foreground">Business sector and classification details</p>
+            </div>
+            <IndustrySection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Company Metrics Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Company Metrics</h2>
+              <p className="text-sm text-muted-foreground">Financial and operational metrics</p>
+            </div>
+            <CompanyMetricsSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Contact Details Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Contact Details</h2>
+              <p className="text-sm text-muted-foreground">Business contact information</p>
+            </div>
+            <ContactDetailsSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Social Media & Online Presence Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Online Presence</h2>
+              <p className="text-sm text-muted-foreground">Social media and web presence</p>
+            </div>
+            <SocialMediaSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Associated People Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Associated People</h2>
+              <p className="text-sm text-muted-foreground">Key personnel and relationships</p>
+            </div>
+            <PeopleSection form={form} />
+          </div>
+
+          <Separator />
+
+          {/* Additional Information Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Additional Information</h2>
+              <p className="text-sm text-muted-foreground">Specialized areas and business details</p>
+            </div>
+            <AdditionalInfoSection form={form} />
+          </div>
+
+          {/* Custom Fields Section */}
+          {!customFieldsLoading && customFields.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">Custom Fields</h2>
+                    <p className="text-sm text-muted-foreground">Additional custom information</p>
+                  </div>
+                  <div className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-1">
+                    {customFields.length} fields
+                  </div>
+                </div>
+                <CustomFieldsForm
+                  formContext="company_creation"
+                  entityType="company"
+                  form={form}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-4 pt-6 border-t">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Company...
+                </>
+              ) : (
+                'Create Company'
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 
