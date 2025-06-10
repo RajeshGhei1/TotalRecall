@@ -43,7 +43,7 @@ export const EditCompanyDialog: React.FC<EditCompanyDialogProps> = ({
     cin: company.cin || '',
     companyStatus: company.companyStatus || '',
     registeredOfficeAddress: company.registeredOfficeAddress || '',
-    registrationDate: company.registrationDate || undefined,
+    registrationDate: company.registrationDate ? new Date(company.registrationDate) : undefined,
     registeredEmailAddress: company.registeredEmailAddress || '',
     noOfDirectives: company.noOfDirectives || '',
     globalRegion: company.globalRegion || '',
