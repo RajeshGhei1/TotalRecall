@@ -1,3 +1,4 @@
+
 import { Company } from '@/hooks/useCompanies';
 import Papa from 'papaparse';
 
@@ -81,11 +82,9 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   'name': 'name',
   'company': 'name',
   'organization': 'name',
-  'business name': 'name',
   'email': 'email',
-  'business email': 'email',
-  'company email': 'email',
   'contact email': 'email',
+  'company email': 'email',
   'registered email': 'registeredemailaddress',
   'website': 'website',
   'web site': 'website',
@@ -124,17 +123,14 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   'industry1': 'industry1',
   'primary industry': 'industry1',
   'main industry': 'industry1',
-  'business type': 'industry1',
   'industry2': 'industry2',
   'secondary industry': 'industry2',
   'industry3': 'industry3',
   'tertiary industry': 'industry3',
   'sector': 'companysector',
   'company sector': 'companysector',
-  'business sector': 'companysector',
   'type': 'companytype',
   'company type': 'companytype',
-  'business type': 'companytype',
   'entity type': 'entitytype',
   'legal entity': 'entitytype',
   'entity': 'entitytype',
@@ -142,7 +138,6 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   // Business Details
   'size': 'size',
   'company size': 'size',
-  'business size': 'size',
   'employees': 'noofemployee',
   'no of employees': 'noofemployee',
   'employee count': 'noofemployee',
@@ -181,7 +176,6 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   'company number': 'cin',
   'status': 'companystatus',
   'company status': 'companystatus',
-  'business status': 'companystatus',
   'legal status': 'companystatus',
   'no of directors': 'noofdirectives',
   'directors count': 'noofdirectives',
@@ -189,7 +183,6 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   
   // Business Profile
   'company profile': 'companyprofile',
-  'business profile': 'companyprofile',
   'profile': 'companyprofile',
   'area of specialization': 'areaofspecialize',
   'specialization': 'areaofspecialize',
@@ -198,7 +191,6 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   'services': 'serviceline',
   'offerings': 'serviceline',
   'verticals': 'verticles',
-  'business verticals': 'verticles',
   'markets': 'verticles',
   
   // Social Media
@@ -218,7 +210,6 @@ export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
   'holding company': 'parent_company_id',
   'company group': 'company_group_name',
   'group name': 'company_group_name',
-  'business group': 'company_group_name',
   'hierarchy level': 'hierarchy_level',
   'level': 'hierarchy_level'
 };
@@ -395,6 +386,28 @@ export function validateCompanyData(company: Partial<Company>): string[] {
 
 export function parseCSV(file: File): Promise<string[][]> {
   return new Promise((resolve, reject) => {
+    // Check file type - support both CSV and Excel files
+    const fileType = file.type;
+    const fileName = file.name.toLowerCase();
+    
+    const isCSV = fileType === 'text/csv' || fileName.endsWith('.csv');
+    const isExcel = fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                   fileType === 'application/vnd.ms-excel' || 
+                   fileName.endsWith('.xlsx') || 
+                   fileName.endsWith('.xls');
+
+    if (!isCSV && !isExcel) {
+      reject(new Error('Unsupported file format. Please upload a CSV or Excel file.'));
+      return;
+    }
+
+    if (isExcel) {
+      // For Excel files, we'll need to convert them to CSV format first
+      // This is a simplified approach - in production, you might want to use a library like xlsx
+      reject(new Error('Excel file support requires additional setup. Please convert your Excel file to CSV format for now.'));
+      return;
+    }
+
     Papa.parse(file, {
       header: false,
       skipEmptyLines: true,
@@ -402,7 +415,7 @@ export function parseCSV(file: File): Promise<string[][]> {
         resolve(results.data as string[][]);
       },
       error: (error) => {
-        reject(new Error(`CSV parsing error: ${error.message}`));
+        reject(new Error(`File parsing error: ${error.message}`));
       }
     });
   });

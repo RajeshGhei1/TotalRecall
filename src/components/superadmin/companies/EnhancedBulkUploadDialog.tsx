@@ -72,27 +72,51 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
+    // Check file size - now supporting up to 500MB
+    const maxSize = 500 * 1024 * 1024; // 500MB in bytes
+    if (selectedFile.size > maxSize) {
+      setParseError('File size exceeds 500MB limit. Please select a smaller file.');
+      toast.error('File size exceeds 500MB limit');
+      return;
+    }
+
+    // Check file type
+    const fileType = selectedFile.type;
+    const fileName = selectedFile.name.toLowerCase();
+    
+    const isCSV = fileType === 'text/csv' || fileName.endsWith('.csv');
+    const isExcel = fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                   fileType === 'application/vnd.ms-excel' || 
+                   fileName.endsWith('.xlsx') || 
+                   fileName.endsWith('.xls');
+
+    if (!isCSV && !isExcel) {
+      setParseError('Unsupported file format. Please upload a CSV or Excel (.xlsx, .xls) file.');
+      toast.error('Unsupported file format');
+      return;
+    }
+
     setFile(selectedFile);
     setParseError(null);
     setIsProcessing(true);
-    setProgress({ stage: 'parsing', progress: 0, message: 'Parsing CSV file...' });
+    setProgress({ stage: 'parsing', progress: 0, message: 'Parsing file...' });
 
     try {
       const rows = await parseCSV(selectedFile);
       setCsvData(rows);
       setCurrentStep('mapping');
-      setProgress({ stage: 'parsing', progress: 100, message: `CSV parsed successfully: ${rows.length - 1} data rows found` });
+      setProgress({ stage: 'parsing', progress: 100, message: `File parsed successfully: ${rows.length - 1} data rows found` });
       
       // Auto-detect field mappings based on headers
       const headers = rows[0]?.map(h => h.toLowerCase().trim()) || [];
       const detectedMappings = autoDetectFieldMappings(headers);
       setFieldMappings(detectedMappings);
       
-      toast.success(`CSV loaded: ${rows.length - 1} data rows found`);
+      toast.success(`File loaded: ${rows.length - 1} data rows found`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setParseError(errorMessage);
-      toast.error(`Failed to parse CSV: ${errorMessage}`);
+      toast.error(`Failed to parse file: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -413,7 +437,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Enhanced Bulk Import Companies</DialogTitle>
           <DialogDescription>
-            Import multiple companies from a CSV file with comprehensive field mapping, validation, and progress tracking.
+            Import multiple companies from a CSV or Excel file with comprehensive field mapping, validation, and progress tracking.
             All fields are optional except Company Name and CIN.
           </DialogDescription>
         </DialogHeader>
@@ -436,7 +460,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
 
           <TabsContent value="upload" className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label>CSV File Upload</Label>
+              <Label>File Upload</Label>
               <Button variant="outline" size="sm" onClick={downloadTemplate}>
                 <Download className="mr-2 h-4 w-4" />
                 Download Template
@@ -458,7 +482,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                     <div className="text-left">
                       <p className="font-medium">{file.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {(file.size / 1024).toFixed(2)} KB
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
@@ -471,9 +495,9 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
               ) : (
                 <div className="space-y-2">
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <p>Drag and drop your CSV file here, or click to browse</p>
+                  <p>Drag and drop your file here, or click to browse</p>
                   <p className="text-sm text-muted-foreground">
-                    Maximum file size: 50MB. Only CSV files are supported.
+                    Maximum file size: 500MB. CSV and Excel files (.xlsx, .xls) are supported.
                   </p>
                 </div>
               )}
@@ -481,7 +505,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
               <Input
                 id="file-upload"
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx,.xls"
                 className="hidden"
                 onChange={handleFileChange}
                 disabled={isProcessing}
@@ -515,7 +539,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Supported formats: CSV files with headers. The system will auto-detect common field mappings. 
+                Supported formats: CSV and Excel files (.xlsx, .xls) with headers. The system will auto-detect common field mappings. 
                 For best results, use column names like 'name', 'email', 'website', 'industry', etc.
               </AlertDescription>
             </Alert>
