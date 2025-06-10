@@ -565,7 +565,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                         <div className="space-y-1">
                           {validationResult.errors.slice(0, 15).map((error, index) => (
                             <p key={index} className="text-sm font-mono">
-                              <span className="text-red-600">Row {error.row}:</span> {error.error} 
+                              <span className="text-red-600">Row {error.row}:</span> {error.message} 
                               <span className="text-muted-foreground"> (Field: {error.field})</span>
                               {error.value && <span className="text-blue-600"> Value: "{error.value}"</span>}
                             </p>
