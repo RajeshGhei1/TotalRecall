@@ -62,10 +62,10 @@ export function MultiSelect({
     }
   }, [value])
 
-  const handleInputKeyDown = (event: React.KeyboardEvent) => {
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       setIsPopoverOpen(true)
-    } else if (event.key === "Backspace" && !event.currentTarget.value) {
+    } else if (event.key === "Backspace" && !(event.target as HTMLInputElement).value) {
       const newSelectedValues = [...selectedValues]
       newSelectedValues.pop()
       setSelectedValues(newSelectedValues)
@@ -155,7 +155,7 @@ export function MultiSelect({
                           )}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                              handleInputKeyDown(e)
+                              handleInputKeyDown(e as any)
                             }
                           }}
                           onMouseDown={(e) => {
@@ -191,7 +191,7 @@ export function MultiSelect({
                         )}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            handleInputKeyDown(e)
+                            handleInputKeyDown(e as any)
                           }
                         }}
                         onMouseDown={(e) => {
@@ -227,7 +227,7 @@ export function MultiSelect({
                     )}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleInputKeyDown(e)
+                        handleInputKeyDown(e as any)
                       }
                     }}
                     onMouseDown={(e) => {

@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import { FormField } from '@/types/form-builder';
+import { EnhancedFormField } from '@/types/enhanced-form-builder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -7,11 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Plus, X, GripVertical } from 'lucide-react';
-import { FormInput } from '@/components/superadmin/tenant-form/fields';
 
 interface MultiSelectFieldEditorProps {
   field: FormField;
   onUpdate: (field: FormField) => void;
+}
+
+interface OptionItem {
+  value: string;
+  label: string;
 }
 
 const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
@@ -20,9 +26,29 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
 }) => {
   const [newOption, setNewOption] = useState('');
   
-  const options = (field.options && typeof field.options === 'object' && 'options' in field.options) 
-    ? field.options.options || [] 
-    : [];
+  // Parse options safely with type checking
+  const getOptionsFromField = (): OptionItem[] => {
+    if (!field.options) return [];
+    
+    // Handle different option formats
+    if (Array.isArray(field.options)) {
+      // Legacy string array format
+      return field.options.map(opt => 
+        typeof opt === 'string' 
+          ? { value: opt, label: opt }
+          : opt
+      );
+    }
+    
+    // Enhanced options format
+    if (typeof field.options === 'object' && field.options.options && Array.isArray(field.options.options)) {
+      return field.options.options;
+    }
+    
+    return [];
+  };
+
+  const options = getOptionsFromField();
 
   const addOption = () => {
     if (!newOption.trim()) return;
@@ -35,7 +61,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     onUpdate({
       ...field,
       options: {
-        ...field.options,
+        ...(typeof field.options === 'object' ? field.options : {}),
         options: updatedOptions,
         multiSelect: true
       }
@@ -49,7 +75,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     onUpdate({
       ...field,
       options: {
-        ...field.options,
+        ...(typeof field.options === 'object' ? field.options : {}),
         options: updatedOptions
       }
     });
@@ -62,7 +88,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     onUpdate({
       ...field,
       options: {
-        ...field.options,
+        ...(typeof field.options === 'object' ? field.options : {}),
         options: updatedOptions
       }
     });
@@ -73,7 +99,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
       ...field,
       field_type: enabled ? 'multiselect' : 'dropdown',
       options: {
-        ...field.options,
+        ...(typeof field.options === 'object' ? field.options : {}),
         multiSelect: enabled
       }
     });
@@ -83,17 +109,17 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
     onUpdate({
       ...field,
       options: {
-        ...field.options,
+        ...(typeof field.options === 'object' ? field.options : {}),
         maxSelections: max
       }
     });
   };
 
   const isMultiSelect = field.field_type === 'multiselect' || 
-    (field.options && typeof field.options === 'object' && 'multiSelect' in field.options && field.options.multiSelect);
+    (typeof field.options === 'object' && field.options && 'multiSelect' in field.options && field.options.multiSelect);
 
-  const maxSelections = field.options && typeof field.options === 'object' && 'maxSelections' in field.options 
-    ? field.options.maxSelections || 0 
+  const maxSelections = typeof field.options === 'object' && field.options && 'maxSelections' in field.options 
+    ? (field.options.maxSelections as number) || 0 
     : 0;
 
   return (

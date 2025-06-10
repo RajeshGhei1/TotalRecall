@@ -76,6 +76,21 @@ const fieldDefinitions: FieldDefinition[] = [
     }
   },
   {
+    type: 'multiselect',
+    label: 'Multi-Select',
+    icon: 'Grid3X3',
+    description: 'Multiple selections from options',
+    defaultOptions: { 
+      options: [
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' },
+        { value: 'option3', label: 'Option 3' }
+      ],
+      multiSelect: true,
+      maxSelections: 0
+    }
+  },
+  {
     type: 'checkbox',
     label: 'Checkbox',
     icon: 'CheckSquare',

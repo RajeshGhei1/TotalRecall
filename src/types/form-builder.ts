@@ -1,4 +1,3 @@
-
 export interface FormDefinition {
   id: string;
   name: string;
@@ -279,4 +278,4 @@ export interface FieldDefinition {
   defaultOptions?: any;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'email' | 'date' | 'dropdown' | 'checkbox' | 'radio' | 'boolean' | 'rating';
+export type FieldType = 'text' | 'textarea' | 'number' | 'email' | 'date' | 'dropdown' | 'multiselect' | 'checkbox' | 'radio' | 'boolean' | 'rating';
