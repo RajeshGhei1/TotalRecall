@@ -21,12 +21,6 @@ import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
 const defaultNavItems: NavItem[] = [
   { 
-    id: 'dashboard',
-    label: 'Overview', 
-    icon: LayoutDashboard, 
-    href: '/superadmin/dashboard'
-  },
-  { 
     id: 'analytics',
     label: 'BI Dashboard', 
     icon: BarChart2, 
