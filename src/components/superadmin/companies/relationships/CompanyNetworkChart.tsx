@@ -11,24 +11,19 @@ import ReactFlow, {
   Background,
   MiniMap,
   ReactFlowProvider,
+  BackgroundVariant,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building, Target, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Building, Target, RotateCcw } from 'lucide-react';
 import { useCompanyNetwork } from '@/hooks/useCompanyRelationships';
 
 interface CompanyNodeData {
   label: string;
   company: any;
   isRoot: boolean;
-}
-
-interface RelationshipEdgeData {
-  relationship: any;
-  label: string;
-  percentage?: number;
 }
 
 const CompanyNode = ({ data }: { data: CompanyNodeData }) => {
@@ -55,23 +50,8 @@ const CompanyNode = ({ data }: { data: CompanyNodeData }) => {
   );
 };
 
-const RelationshipEdge = ({ data }: { data: RelationshipEdgeData }) => {
-  return (
-    <div className="bg-white px-2 py-1 rounded shadow-sm border text-xs">
-      <div className="font-medium">{data.label}</div>
-      {data.percentage && (
-        <div className="text-gray-500">{data.percentage}%</div>
-      )}
-    </div>
-  );
-};
-
 const nodeTypes = {
   companyNode: CompanyNode,
-};
-
-const edgeTypes = {
-  relationshipEdge: RelationshipEdge,
 };
 
 interface CompanyNetworkChartProps {
@@ -202,13 +182,12 @@ const CompanyNetworkChart: React.FC<CompanyNetworkChartProps> = ({
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
             fitView
             attributionPosition="top-right"
           >
             <Controls />
             <MiniMap />
-            <Background variant="dots" gap={12} size={1} />
+            <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           </ReactFlow>
         </div>
         

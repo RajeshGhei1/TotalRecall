@@ -18,11 +18,6 @@ import { ArrowLeft, Building, Users, Network, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
-import BasicInfoSection from './sections/BasicInfoSection';
-import ContactDetailsSection from './sections/ContactDetailsSection';
-import SocialMediaSection from './sections/SocialMediaSection';
-import GroupStructureSection from './sections/GroupStructureSection';
-import PeopleSection from './sections/PeopleSection';
 import RelationshipsSection from './sections/RelationshipsSection';
 
 const CompanyDetailView: React.FC = () => {
@@ -115,7 +110,7 @@ const CompanyDetailView: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Overview
@@ -132,25 +127,57 @@ const CompanyDetailView: React.FC = () => {
               <BarChart3 className="h-4 w-4" />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <BasicInfoSection company={company} readOnly />
-              <ContactDetailsSection company={company} readOnly />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SocialMediaSection company={company} readOnly />
-              <GroupStructureSection company={company} readOnly />
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Company Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Name</label>
+                    <p className="text-sm text-gray-900">{company.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Industry</label>
+                    <p className="text-sm text-gray-900">{company.industry || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Location</label>
+                    <p className="text-sm text-gray-900">{company.location || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Size</label>
+                    <p className="text-sm text-gray-900">{company.size || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Website</label>
+                    <p className="text-sm text-gray-900">{company.website || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Email</label>
+                    <p className="text-sm text-gray-900">{company.email || 'Not specified'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="people">
-            <PeopleSection companyId={company.id} />
+            <Card>
+              <CardHeader>
+                <CardTitle>Company People</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-12 w-12 mx-auto mb-4" />
+                  <p>People management coming soon...</p>
+                  <p className="text-sm mt-2">This will show all people associated with this company.</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="relationships">
@@ -167,21 +194,6 @@ const CompanyDetailView: React.FC = () => {
                   <BarChart3 className="h-12 w-12 mx-auto mb-4" />
                   <p>Advanced analytics dashboard coming soon...</p>
                   <p className="text-sm mt-2">This will include relationship analytics, people metrics, and business insights.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Building className="h-12 w-12 mx-auto mb-4" />
-                  <p>Company settings and preferences coming soon...</p>
-                  <p className="text-sm mt-2">This will include edit capabilities, custom fields, and advanced configurations.</p>
                 </div>
               </CardContent>
             </Card>

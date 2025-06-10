@@ -53,7 +53,7 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
   relationship,
   onSuccess,
 }) => {
-  const { data: companies = [] } = useCompanies();
+  const { companies = [] } = useCompanies();
   const { data: relationshipTypes = [] } = useCompanyRelationshipTypes();
   const { createRelationship, updateRelationship } = useCompanyRelationshipMutations();
 
@@ -108,6 +108,7 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
         effective_date: format(data.effective_date, 'yyyy-MM-dd'),
         end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
         ownership_percentage: data.ownership_percentage || null,
+        metadata: {},
       };
 
       if (relationship) {

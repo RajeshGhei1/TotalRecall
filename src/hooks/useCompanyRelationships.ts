@@ -1,9 +1,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { CompanyRelationshipType, CompanyRelationshipAdvanced, CompanyRelationshipHistory } from '@/types/company-relationships';
+import { CompanyRelationshipAdvanced, CompanyRelationshipType } from '@/types/company-relationships';
 
+// Hook for fetching relationship types
 export const useCompanyRelationshipTypes = () => {
   return useQuery({
     queryKey: ['company-relationship-types'],
@@ -19,25 +19,22 @@ export const useCompanyRelationshipTypes = () => {
   });
 };
 
-export const useCompanyRelationshipsAdvanced = (companyId?: string) => {
+// Hook for fetching company relationships
+export const useCompanyRelationshipsAdvanced = (companyId: string) => {
   return useQuery({
     queryKey: ['company-relationships-advanced', companyId],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('company_relationships_advanced')
         .select(`
           *,
-          parent_company:companies!parent_company_id(id, name),
-          child_company:companies!child_company_id(id, name),
+          parent_company:companies!parent_company_id(id, name, industry, size, location),
+          child_company:companies!child_company_id(id, name, industry, size, location),
           relationship_type:company_relationship_types(*)
         `)
-        .eq('is_active', true);
-      
-      if (companyId) {
-        query = query.or(`parent_company_id.eq.${companyId},child_company_id.eq.${companyId}`);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .or(`parent_company_id.eq.${companyId},child_company_id.eq.${companyId}`)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as CompanyRelationshipAdvanced[];
@@ -46,143 +43,119 @@ export const useCompanyRelationshipsAdvanced = (companyId?: string) => {
   });
 };
 
-export const useCompanyNetwork = (companyId?: string, depth: number = 2) => {
+// Hook for fetching company network data
+export const useCompanyNetwork = (companyId: string, depth: number = 2) => {
   return useQuery({
     queryKey: ['company-network', companyId, depth],
     queryFn: async () => {
-      if (!companyId) return { nodes: [], edges: [] };
+      // For now, we'll use the basic relationships query
+      // until we implement the recursive network function
+      const { data: relationships, error } = await supabase
+        .from('company_relationships_advanced')
+        .select(`
+          *,
+          parent_company:companies!parent_company_id(id, name, industry, size, location),
+          child_company:companies!child_company_id(id, name, industry, size, location),
+          relationship_type:company_relationship_types(*)
+        `)
+        .or(`parent_company_id.eq.${companyId},child_company_id.eq.${companyId}`)
+        .eq('is_active', true);
       
-      // Get all relationships within specified depth using recursive query
-      const { data: relationships, error } = await supabase.rpc(
-        'get_company_network',
-        { 
-          root_company_id: companyId, 
-          max_depth: depth 
-        }
-      );
-      
-      if (error) {
-        console.warn('Network RPC failed, falling back to basic query:', error);
-        // Fallback to basic query
-        const { data: basicData, error: basicError } = await supabase
-          .from('company_relationships_advanced')
-          .select(`
-            *,
-            parent_company:companies!parent_company_id(id, name, industry, size, location),
-            child_company:companies!child_company_id(id, name, industry, size, location),
-            relationship_type:company_relationship_types(*)
-          `)
-          .or(`parent_company_id.eq.${companyId},child_company_id.eq.${companyId}`)
-          .eq('is_active', true);
-        
-        if (basicError) throw basicError;
-        return transformToNetworkData(basicData as CompanyRelationshipAdvanced[], companyId);
+      if (error) throw error;
+
+      // Transform data for React Flow
+      const nodes = [];
+      const edges = [];
+      const processedCompanies = new Set();
+
+      // Add the root company node
+      const { data: rootCompany } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', companyId)
+        .single();
+
+      if (rootCompany) {
+        nodes.push({
+          id: companyId,
+          type: 'companyNode',
+          position: { x: 0, y: 0 },
+          data: {
+            label: rootCompany.name,
+            company: rootCompany,
+            isRoot: true,
+          },
+        });
+        processedCompanies.add(companyId);
       }
-      
-      return transformToNetworkData(relationships, companyId);
+
+      // Add related company nodes and edges
+      relationships?.forEach((rel, index) => {
+        const isParent = rel.parent_company_id === companyId;
+        const relatedCompany = isParent ? rel.child_company : rel.parent_company;
+        
+        if (relatedCompany && !processedCompanies.has(relatedCompany.id)) {
+          nodes.push({
+            id: relatedCompany.id,
+            type: 'companyNode',
+            position: { x: (index + 1) * 200, y: 100 },
+            data: {
+              label: relatedCompany.name,
+              company: relatedCompany,
+              isRoot: false,
+            },
+          });
+          processedCompanies.add(relatedCompany.id);
+        }
+
+        // Add edge
+        edges.push({
+          id: rel.id,
+          source: rel.parent_company_id,
+          target: rel.child_company_id,
+          type: 'smoothstep',
+          label: rel.relationship_type?.name || 'Related',
+          data: {
+            relationship: rel,
+            label: rel.relationship_type?.name || 'Related',
+            percentage: rel.ownership_percentage,
+          },
+        });
+      });
+
+      return { nodes, edges };
     },
     enabled: !!companyId,
   });
 };
 
-const transformToNetworkData = (relationships: CompanyRelationshipAdvanced[], rootCompanyId: string) => {
-  const nodeMap = new Map();
-  const edges: any[] = [];
-  
-  // Add root company if not already present
-  relationships.forEach(rel => {
-    if (rel.parent_company && !nodeMap.has(rel.parent_company.id)) {
-      nodeMap.set(rel.parent_company.id, {
-        id: rel.parent_company.id,
-        data: { 
-          label: rel.parent_company.name,
-          company: rel.parent_company,
-          isRoot: rel.parent_company.id === rootCompanyId
-        },
-        position: { x: 0, y: 0 },
-        type: 'companyNode'
-      });
-    }
-    
-    if (rel.child_company && !nodeMap.has(rel.child_company.id)) {
-      nodeMap.set(rel.child_company.id, {
-        id: rel.child_company.id,
-        data: { 
-          label: rel.child_company.name,
-          company: rel.child_company,
-          isRoot: rel.child_company.id === rootCompanyId
-        },
-        position: { x: 0, y: 0 },
-        type: 'companyNode'
-      });
-    }
-    
-    // Create edge
-    edges.push({
-      id: rel.id,
-      source: rel.parent_company_id,
-      target: rel.child_company_id,
-      data: {
-        relationship: rel,
-        label: rel.relationship_type?.name || 'Relationship',
-        percentage: rel.ownership_percentage
-      },
-      type: 'relationshipEdge',
-      animated: rel.relationship_type?.is_hierarchical || false
-    });
-  });
-  
-  return {
-    nodes: Array.from(nodeMap.values()),
-    edges
-  };
-};
-
-export const useCompanyRelationshipHistory = (relationshipId?: string) => {
-  return useQuery({
-    queryKey: ['company-relationship-history', relationshipId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('company_relationship_history')
-        .select('*')
-        .eq('relationship_id', relationshipId)
-        .order('changed_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as CompanyRelationshipHistory[];
-    },
-    enabled: !!relationshipId,
-  });
-};
-
+// Mutation hooks for relationship management
 export const useCompanyRelationshipMutations = () => {
   const queryClient = useQueryClient();
-  
+
   const createRelationship = useMutation({
     mutationFn: async (data: Omit<CompanyRelationshipAdvanced, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data: relationship, error } = await supabase
+      const { data: result, error } = await supabase
         .from('company_relationships_advanced')
-        .insert([data])
+        .insert([{
+          ...data,
+          metadata: data.metadata || {}
+        }])
         .select()
         .single();
       
       if (error) throw error;
-      return relationship;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
       queryClient.invalidateQueries({ queryKey: ['company-network'] });
-      toast.success('Relationship created successfully');
     },
-    onError: (error: any) => {
-      console.error('Error creating relationship:', error);
-      toast.error(`Failed to create relationship: ${error.message}`);
-    }
   });
-  
+
   const updateRelationship = useMutation({
     mutationFn: async ({ id, ...data }: Partial<CompanyRelationshipAdvanced> & { id: string }) => {
-      const { data: relationship, error } = await supabase
+      const { data: result, error } = await supabase
         .from('company_relationships_advanced')
         .update(data)
         .eq('id', id)
@@ -190,19 +163,14 @@ export const useCompanyRelationshipMutations = () => {
         .single();
       
       if (error) throw error;
-      return relationship;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
       queryClient.invalidateQueries({ queryKey: ['company-network'] });
-      toast.success('Relationship updated successfully');
     },
-    onError: (error: any) => {
-      console.error('Error updating relationship:', error);
-      toast.error(`Failed to update relationship: ${error.message}`);
-    }
   });
-  
+
   const deleteRelationship = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -215,17 +183,12 @@ export const useCompanyRelationshipMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
       queryClient.invalidateQueries({ queryKey: ['company-network'] });
-      toast.success('Relationship deleted successfully');
     },
-    onError: (error: any) => {
-      console.error('Error deleting relationship:', error);
-      toast.error(`Failed to delete relationship: ${error.message}`);
-    }
   });
-  
+
   return {
     createRelationship,
     updateRelationship,
-    deleteRelationship
+    deleteRelationship,
   };
 };
