@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +40,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
     sizes: [],
     locations: [],
     countries: [],
+    globalRegions: [],
+    regions: [],
+    hoLocations: [],
     companyTypes: [],
     entityTypes: [],
     sectors: [],
@@ -89,6 +91,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
       sizes: [],
       locations: [],
       countries: [],
+      globalRegions: [],
+      regions: [],
+      hoLocations: [],
       companyTypes: [],
       entityTypes: [],
       sectors: [],
