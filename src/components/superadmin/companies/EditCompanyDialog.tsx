@@ -68,7 +68,6 @@ export const EditCompanyDialog: React.FC<EditCompanyDialogProps> = ({
     serviceLine: company.serviceLine || '',
     verticles: company.verticles || '',
     companyProfile: company.companyProfile || '',
-    endUserChannel: company.endUserChannel || '',
     parentCompanyId: company.parent_company_id || '',
     companyGroupName: company.company_group_name || '',
     hierarchyLevel: company.hierarchy_level || 0,

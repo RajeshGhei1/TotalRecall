@@ -51,7 +51,6 @@ export interface Company {
   serviceLine?: string;
   verticles?: string;
   companyProfile?: string;
-  endUserChannel?: string;
   // Add parent company and group structure fields
   parent_company_id?: string;
   company_group_name?: string;
@@ -154,7 +153,6 @@ export const useCompanies = () => {
         serviceLine: companyData.serviceLine,
         verticles: companyData.verticles,
         companyProfile: companyData.companyProfile,
-        endUserChannel: companyData.endUserChannel,
         // Add parent company and group structure fields
         parent_company_id: companyData.parentCompanyId || null,
         company_group_name: companyData.companyGroupName || null,
@@ -251,7 +249,6 @@ export const useCompanies = () => {
         serviceLine: companyData.serviceLine,
         verticles: companyData.verticles,
         companyProfile: companyData.companyProfile,
-        endUserChannel: companyData.endUserChannel,
         // Add parent company and group structure fields
         parent_company_id: companyData.parentCompanyId || null,
         company_group_name: companyData.companyGroupName || null,

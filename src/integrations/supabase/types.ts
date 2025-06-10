@@ -814,7 +814,6 @@ export type Database = {
           description: string | null
           domain: string | null
           email: string | null
-          enduserchannel: string | null
           entitytype: string | null
           facebook: string | null
           founded: number | null
@@ -864,7 +863,6 @@ export type Database = {
           description?: string | null
           domain?: string | null
           email?: string | null
-          enduserchannel?: string | null
           entitytype?: string | null
           facebook?: string | null
           founded?: number | null
@@ -914,7 +912,6 @@ export type Database = {
           description?: string | null
           domain?: string | null
           email?: string | null
-          enduserchannel?: string | null
           entitytype?: string | null
           facebook?: string | null
           founded?: number | null

@@ -84,7 +84,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
       serviceLine: initialData.serviceLine || '',
       verticles: initialData.verticles || '',
       companyProfile: initialData.companyProfile || '',
-      endUserChannel: initialData.endUserChannel || '',
       parentCompanyId: initialData.parentCompanyId || '',
       companyGroupName: initialData.companyGroupName || '',
       hierarchyLevel: initialData.hierarchyLevel || 0,

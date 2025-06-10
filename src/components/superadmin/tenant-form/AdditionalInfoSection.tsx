@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormInput, FormTextarea, FormSelect } from './fields';
@@ -27,7 +28,6 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
   // Get dropdown options from our hook
   const specializationHook = useDropdownOptions('specializations');
   const serviceLineHook = useDropdownOptions('service_lines');
-  const endUserHook = useDropdownOptions('end_user_channels');
 
   // Use the new dialog helpers
   const { getDialogTitle, getDialogPlaceholder } = createDialogHelpers({
@@ -38,10 +38,6 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
     'serviceLine': {
       title: 'Add New Service Line',
       placeholder: 'Enter new service line name'
-    },
-    'endUserChannel': {
-      title: 'Add New End User/Channel',
-      placeholder: 'Enter new end user type'
     }
   });
 
@@ -58,13 +54,6 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
   const serviceLineOptions = serviceLineHook.isLoading 
     ? [{ value: 'loading', label: 'Loading...' }] 
     : [...serviceLineHook.options.map(o => ({ 
-        value: o.value || 'unknown', 
-        label: o.label || o.value || 'Unknown' 
-      })), addNewOption];
-  
-  const endUserOptions = endUserHook.isLoading 
-    ? [{ value: 'loading', label: 'Loading...' }] 
-    : [...endUserHook.options.map(o => ({ 
         value: o.value || 'unknown', 
         label: o.label || o.value || 'Unknown' 
       })), addNewOption];
@@ -89,9 +78,6 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
         break;
       case 'serviceLine': 
         categoryName = 'service_lines';
-        break;
-      case 'endUserChannel':
-        categoryName = 'end_user_channels';
         break;
     }
 
@@ -183,28 +169,6 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
         label="Company Profile"
         required
       />
-      
-      <div className="space-y-1">
-        <FormSelect 
-          form={form}
-          name="endUserChannel"
-          label="EndUser/Channel"
-          options={endUserOptions}
-          required
-          onChange={(value) => handleSelectOption('endUserChannel', value)}
-        />
-        {form.watch('endUserChannel') === '__add_new__' && (
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            className="mt-1"
-            onClick={() => setAddingType('endUserChannel')}
-          >
-            <Plus className="h-4 w-4 mr-1" /> Add New End User Type
-          </Button>
-        )}
-      </div>
 
       {/* Dialog for adding new options */}
       <Dialog open={!!addingType} onOpenChange={(open) => !open && setAddingType(null)}>

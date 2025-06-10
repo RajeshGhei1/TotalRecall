@@ -36,7 +36,6 @@ export const tenantFormSchema = z.object({
   verticles: z.string().optional(),
   webSite: z.string().optional(),
   companyProfile: z.string().min(1, "Company profile is required"),
-  endUserChannel: z.string().min(1, "End user/channel is required"),
 });
 
 export type TenantFormValues = z.infer<typeof tenantFormSchema>;
@@ -50,7 +49,6 @@ export const formOptions = {
   entityTypeOptions: [] as any[],
   segmentOptions: [] as any[],
   companyStatusOptions: [] as any[],
-  endUserOptions: [] as any[],
   localRegionOptions: [] as any[],
   locationOptions: [] as any[],
   companySectorOptions: [] as any[],
