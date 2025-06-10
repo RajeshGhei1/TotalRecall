@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -14,7 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Users, Network, BarChart3, Sitemap } from 'lucide-react';
+import { ArrowLeft, Building, Users, Network, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
@@ -122,7 +121,7 @@ const CompanyDetailView: React.FC = () => {
               People
             </TabsTrigger>
             <TabsTrigger value="org-chart" className="flex items-center gap-2">
-              <Sitemap className="h-4 w-4" />
+              <Network className="h-4 w-4" />
               Org Chart
             </TabsTrigger>
             <TabsTrigger value="relationships" className="flex items-center gap-2">

@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -158,7 +157,7 @@ export const useCompanyOrgChart = (companyId?: string) => {
     },
     enabled: !!companyId,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    cacheTime: 1000 * 60 * 10, // 10 minutes
+    
   });
   
   return { 
