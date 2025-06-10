@@ -3,8 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Company } from '@/hooks/useCompanies';
-import { useBranchOffices } from '@/hooks/useBranchOffices';
-import { useCompanyPeopleRelationship } from '@/hooks/useCompanyPeopleRelationship';
 
 interface DeletionInfo {
   hasChildCompanies: boolean;
@@ -32,8 +30,8 @@ export const useCompanyDeletion = () => {
       warnings.push(`This company has ${childCompanies.length} child companies that will become orphaned.`);
     }
 
-    // Check branch offices
-    const { data: branchOffices } = await supabase
+    // Check branch offices - using type assertion since table is newly created
+    const { data: branchOffices } = await (supabase as any)
       .from('company_branch_offices')
       .select('id')
       .eq('company_id', company.id);
@@ -87,8 +85,8 @@ export const useCompanyDeletion = () => {
         throw new Error('Failed to delete custom field values');
       }
 
-      // 2. Delete branch offices
-      const { error: branchError } = await supabase
+      // 2. Delete branch offices - using type assertion
+      const { error: branchError } = await (supabase as any)
         .from('company_branch_offices')
         .delete()
         .eq('company_id', company.id);

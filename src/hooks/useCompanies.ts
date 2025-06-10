@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -293,97 +294,12 @@ export const useCompanies = () => {
     },
   });
 
-  // Mutation for deleting a company
-  const deleteCompany = useMutation({
-    mutationFn: async (companyId: string) => {
-      // Start transaction by deleting related data first
-      
-      // 1. Delete custom field values
-      const { error: customFieldError } = await supabase
-        .from('custom_field_values')
-        .delete()
-        .eq('entity_type', 'company')
-        .eq('entity_id', companyId);
-
-      if (customFieldError) {
-        console.error('Error deleting custom field values:', customFieldError);
-        throw new Error('Failed to delete custom field values');
-      }
-
-      // 2. Delete branch offices
-      const { error: branchError } = await supabase
-        .from('company_branch_offices')
-        .delete()
-        .eq('company_id', companyId);
-
-      if (branchError && branchError.code !== 'PGRST116') { // PGRST116 = no rows to delete
-        console.error('Error deleting branch offices:', branchError);
-        throw new Error('Failed to delete branch offices');
-      }
-
-      // 3. Delete company relationships (people)
-      const { error: relationshipError } = await supabase
-        .from('company_relationships')
-        .delete()
-        .eq('company_id', companyId);
-
-      if (relationshipError && relationshipError.code !== 'PGRST116') {
-        console.error('Error deleting company relationships:', relationshipError);
-        throw new Error('Failed to delete company relationships');
-      }
-
-      // 4. Update child companies to remove parent reference
-      const { error: childUpdateError } = await supabase
-        .from('companies')
-        .update({ 
-          parent_company_id: null,
-          hierarchy_level: 0 
-        })
-        .eq('parent_company_id', companyId);
-
-      if (childUpdateError) {
-        console.error('Error updating child companies:', childUpdateError);
-        throw new Error('Failed to update child companies');
-      }
-
-      // 5. Finally delete the company itself
-      const { error: companyError } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyId);
-
-      if (companyError) {
-        console.error('Error deleting company:', companyError);
-        throw new Error('Failed to delete company');
-      }
-
-      return { success: true };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      queryClient.invalidateQueries({ queryKey: ['branch-offices'] });
-      toast({
-        title: 'Company deleted',
-        description: 'The company and all related data have been deleted successfully',
-      });
-    },
-    onError: (error: any) => {
-      console.error("Error deleting company:", error);
-      toast({
-        title: 'Error',
-        description: `Failed to delete company: ${error.message}`,
-        variant: 'destructive',
-      });
-    },
-  });
-
   return {
     companies,
     isLoading,
     error,
     createCompany,
     updateCompany,
-    deleteCompany,
     refetch, // Return the refetch function
   };
 };

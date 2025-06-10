@@ -45,6 +45,7 @@ export const useBranchOffices = (companyId?: string) => {
     queryFn: async () => {
       if (!companyId) return [];
       
+      // Using type assertion since table is newly created
       const { data, error } = await (supabase as any)
         .from('company_branch_offices')
         .select('*')

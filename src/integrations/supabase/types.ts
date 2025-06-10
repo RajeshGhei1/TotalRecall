@@ -961,6 +961,71 @@ export type Database = {
           },
         ]
       }
+      company_branch_offices: {
+        Row: {
+          address: string | null
+          branch_name: string
+          branch_type: string
+          city: string | null
+          company_id: string
+          country: string | null
+          created_at: string
+          email: string | null
+          gst_number: string | null
+          id: string
+          is_active: boolean
+          is_headquarters: boolean
+          phone: string | null
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          branch_name: string
+          branch_type: string
+          city?: string | null
+          company_id: string
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          gst_number?: string | null
+          id?: string
+          is_active?: boolean
+          is_headquarters?: boolean
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          branch_name?: string
+          branch_type?: string
+          city?: string | null
+          company_id?: string
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          gst_number?: string | null
+          id?: string
+          is_active?: boolean
+          is_headquarters?: boolean
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_branch_offices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_relationship_history: {
         Row: {
           change_reason: string | null

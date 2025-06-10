@@ -48,36 +48,6 @@ const CompanyListContainer: React.FC = () => {
     setCompanyToDelete(company);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!companyToDelete) return;
-    
-    try {
-      // Delete any company relationships first
-      const { error: relationshipsError } = await supabase
-        .from('company_relationships')
-        .delete()
-        .eq('company_id', companyToDelete.id);
-        
-      if (relationshipsError) throw relationshipsError;
-      
-      // Then delete the company
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyToDelete.id);
-        
-      if (error) throw error;
-      
-      toast.success(`${companyToDelete.name} deleted successfully`);
-      refetch();
-    } catch (error: any) {
-      console.error('Error deleting company:', error);
-      toast.error(`Failed to delete company: ${error.message}`);
-    } finally {
-      setCompanyToDelete(null);
-    }
-  };
-
   const handleCreateCompany = async (data: any) => {
     try {
       await createCompany.mutateAsync(data);
@@ -115,11 +85,10 @@ const CompanyListContainer: React.FC = () => {
       />
       
       <CompanyDeleteDialog
-        company={companyToDelete}
-        companyName={companyToDelete?.name || ''}
         isOpen={!!companyToDelete}
         onClose={() => setCompanyToDelete(null)}
-        onConfirm={handleConfirmDelete}
+        company={companyToDelete}
+        allCompanies={companies || []}
       />
 
       <CreateCompanyDialog
