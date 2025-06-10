@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, 'Session:', !!session);
+      console.log('Auth state changed:', event, 'Session:', !!session, 'User:', !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -47,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.error('Error getting session:', error);
         } else {
-          console.log('Initial session check:', !!session);
+          console.log('Initial session check:', !!session, 'User:', !!session?.user);
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -65,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = async (userId: string): Promise<string> => {
     try {
+      console.log('Checking user role for:', userId);
       // Check if user is super admin
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -77,11 +77,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return '/'; // Default to home
       }
 
+      console.log('User profile:', profile);
       if (profile?.role === 'super_admin') {
+        console.log('User is super admin, redirecting to superadmin dashboard');
         return '/superadmin/dashboard';
       }
 
       // Default to tenant admin for authenticated users
+      console.log('User is not super admin, redirecting to tenant admin dashboard');
       return '/tenant-admin/dashboard';
     } catch (error) {
       console.error('Error determining user role:', error);
@@ -104,12 +107,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
       
-      console.log('Sign in successful:', !!data.user);
+      console.log('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
       
       // Determine redirect path based on user role
       let redirectPath = '/';
       if (data.user) {
         redirectPath = await checkUserRole(data.user.id);
+        console.log('Determined redirect path:', redirectPath);
       }
       
       return { user: data.user, redirectPath };

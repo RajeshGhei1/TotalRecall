@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -77,6 +78,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
 
   // Show loading while checking authentication or role
   if (loading || checkingRole) {
+    console.log('AuthGuard: Showing loading state');
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

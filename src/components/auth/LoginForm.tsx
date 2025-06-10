@@ -43,15 +43,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = async (data: LoginFormValues) => {
+    console.log('LoginForm: Starting login process');
     setIsLoading(true);
     setError(null);
     
     try {
       const result = await onSubmit(data);
-      console.log('Login successful, redirecting to:', result.redirectPath);
-      navigate(result.redirectPath);
+      console.log('LoginForm: Login successful, redirecting to:', result.redirectPath);
+      
+      // Add a small delay to ensure auth state is updated
+      setTimeout(() => {
+        navigate(result.redirectPath, { replace: true });
+      }, 100);
     } catch (err: any) {
-      console.error('Login form error:', err);
+      console.error('LoginForm: Login error:', err);
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
