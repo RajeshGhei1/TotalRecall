@@ -27,7 +27,7 @@ const SuperAdminRoutes = () => {
       <Route path="tenants" element={<Tenants />} />
       <Route path="users" element={<Users />} />
       <Route path="companies" element={<Companies />} />
-      <Route path="companies/:id" element={<CompanyDetailView />} />
+      <Route path="companies/:companyId" element={<CompanyDetailView />} />
       <Route path="people" element={<People />} />
       
       {/* AI & Analytics */}
