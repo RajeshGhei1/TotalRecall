@@ -1,53 +1,49 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { TenantProvider } from "@/contexts/TenantContext";
-import AuthGuard from "@/components/AuthGuard";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import SuperAdminRoutes from "./routes/SuperAdminRoutes";
-import TenantAdminRoutes from "./routes/TenantAdminRoutes";
-import Pricing from "./pages/Pricing";
-
-const queryClient = new QueryClient();
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import './App.css'; // General application styles
+import Dashboard from '@/pages/Dashboard';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import Profile from '@/pages/Profile';
+import People from '@/pages/People';
+import PersonDetail from '@/pages/PersonDetail';
+import Settings from '@/pages/Settings';
+import SuperAdminDashboard from '@/pages/superadmin/SuperAdminDashboard';
+import Tenants from '@/pages/superadmin/Tenants';
+import Companies from '@/pages/superadmin/Companies';
+import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <TenantProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/pricing" element={<Pricing />} />
-                
-                {/* Super Admin Routes */}
-                <Route path="/superadmin/*" element={
-                  <AuthGuard requiresSuperAdmin={true}>
-                    <SuperAdminRoutes />
-                  </AuthGuard>
-                } />
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-                {/* Tenant Admin Routes */}
-                <Route path="/tenant-admin/*" element={
-                  <AuthGuard>
-                    <TenantAdminRoutes />
-                  </AuthGuard>
-                } />
-              </Routes>
-            </TenantProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+          {/* Protected Routes (requires authentication) */}
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/people" element={<People />} />
+          <Route path="/people/:personId" element={<PersonDetail />} />
+          <Route path="/settings" element={<Settings />} />
+          
+          {/* Superadmin Routes */}
+          <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/superadmin/tenants" element={<Tenants />} />
+          <Route path="/superadmin/companies" element={<Companies />} />
+          <Route path="/superadmin/companies/:companyId" element={<CompanyDetailView />} />
+          
+          {/* Add more routes as needed */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

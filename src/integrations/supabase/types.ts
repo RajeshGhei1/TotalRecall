@@ -961,6 +961,90 @@ export type Database = {
           },
         ]
       }
+      company_relationship_history: {
+        Row: {
+          change_reason: string | null
+          change_type: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          relationship_id: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          change_type: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          relationship_id?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          change_type?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          relationship_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_relationship_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_relationship_history_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "company_relationships_advanced"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_relationship_types: {
+        Row: {
+          allows_percentage: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_hierarchical: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          allows_percentage?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_hierarchical?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          allows_percentage?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_hierarchical?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       company_relationships: {
         Row: {
           company_id: string
@@ -1014,6 +1098,83 @@ export type Database = {
             columns: ["reports_to"]
             isOneToOne: false
             referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_relationships_advanced: {
+        Row: {
+          child_company_id: string | null
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          notes: string | null
+          ownership_percentage: number | null
+          parent_company_id: string | null
+          relationship_type_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          child_company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          notes?: string | null
+          ownership_percentage?: number | null
+          parent_company_id?: string | null
+          relationship_type_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          child_company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          notes?: string | null
+          ownership_percentage?: number | null
+          parent_company_id?: string | null
+          relationship_type_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_relationships_advanced_child_company_id_fkey"
+            columns: ["child_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_relationships_advanced_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_relationships_advanced_parent_company_id_fkey"
+            columns: ["parent_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_relationships_advanced_relationship_type_id_fkey"
+            columns: ["relationship_type_id"]
+            isOneToOne: false
+            referencedRelation: "company_relationship_types"
             referencedColumns: ["id"]
           },
         ]
