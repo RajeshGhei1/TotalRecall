@@ -4,12 +4,16 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css'; // General application styles
 import Companies from '@/pages/superadmin/Companies';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
+import Auth from '@/pages/Auth';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Routes>
+          {/* Auth Route */}
+          <Route path="/auth" element={<Auth />} />
+          
           {/* Superadmin Routes */}
           <Route path="/superadmin/companies" element={<Companies />} />
           <Route path="/superadmin/companies/:companyId" element={<CompanyDetailView />} />
