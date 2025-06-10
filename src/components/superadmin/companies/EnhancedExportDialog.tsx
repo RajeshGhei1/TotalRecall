@@ -53,7 +53,7 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     { key: 'twitter', label: 'Twitter', selected: false },
     { key: 'facebook', label: 'Facebook', selected: false },
     { key: 'cin', label: 'CIN', selected: false },
-    { key: 'companyStatus', label: 'Company Status', selected: false },
+    { key: 'companystatus', label: 'Company Status', selected: false },
   ]);
   
   const [exportFormat, setExportFormat] = useState<'csv' | 'xlsx'>('csv');

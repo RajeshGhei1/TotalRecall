@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -108,7 +109,7 @@ export const useCompanies = () => {
         }
       }
 
-      // Extract the company data
+      // Extract the company data and convert Date to string
       const companyDataForInsert = {
         name: companyData.name,
         domain: companyData.website,
@@ -125,7 +126,7 @@ export const useCompanies = () => {
         cin: companyData.cin,
         companystatus: companyData.companyStatus,
         registeredofficeaddress: companyData.registeredOfficeAddress,
-        registrationdate: companyData.registrationDate,
+        registrationdate: companyData.registrationDate ? companyData.registrationDate.toISOString() : null,
         registeredemailaddress: companyData.registeredEmailAddress,
         noofdirectives: companyData.noOfDirectives,
         globalregion: companyData.globalRegion,
@@ -158,7 +159,7 @@ export const useCompanies = () => {
 
       const { data, error } = await supabase
         .from('companies')
-        .insert([companyDataForInsert])
+        .insert(companyDataForInsert)
         .select()
         .single();
 
@@ -203,7 +204,7 @@ export const useCompanies = () => {
         }
       }
 
-      // Extract the company data for update
+      // Extract the company data for update and convert Date to string
       const companyDataForUpdate = {
         name: companyData.name,
         domain: companyData.website,
@@ -220,7 +221,7 @@ export const useCompanies = () => {
         cin: companyData.cin,
         companystatus: companyData.companyStatus,
         registeredofficeaddress: companyData.registeredOfficeAddress,
-        registrationdate: companyData.registrationDate,
+        registrationdate: companyData.registrationDate ? companyData.registrationDate.toISOString() : null,
         registeredemailaddress: companyData.registeredEmailAddress,
         noofdirectives: companyData.noOfDirectives,
         globalregion: companyData.globalRegion,
