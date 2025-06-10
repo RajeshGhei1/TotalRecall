@@ -22,13 +22,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreHorizontal, Building, Users, Network, Edit, Trash2, Eye, ArrowUpDown } from 'lucide-react';
-import { useCompanies } from '@/hooks/useCompanies';
+import { useCompanies, Company } from '@/hooks/useCompanies';
 import { useCompanyCompleteness } from '@/hooks/useCompanyCompleteness';
 import { useNavigate } from 'react-router-dom';
 import { EditCompanyDialog } from './EditCompanyDialog';
 import CompanyDeleteDialog from './CompanyDeleteDialog';
 import CompletenessScore from './Completeness/CompletenessScore';
-import { Company } from '@/hooks/useCompanies';
 
 type SortField = 'name' | 'industry' | 'location' | 'completeness';
 type SortDirection = 'asc' | 'desc';
