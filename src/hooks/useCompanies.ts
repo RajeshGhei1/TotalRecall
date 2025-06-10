@@ -12,7 +12,6 @@ export interface Company {
   website?: string;
   description?: string;
   created_at: string;
-  industry?: string;
   size?: string;
   location?: string;
   // Add missing properties to match the schema
@@ -114,7 +113,6 @@ export const useCompanies = () => {
       const companyDataForInsert = {
         name: companyData.name,
         domain: companyData.website,
-        industry: companyData.industry,
         size: companyData.size,
         description: companyData.description,
         location: companyData.location,
@@ -210,7 +208,6 @@ export const useCompanies = () => {
       const companyDataForUpdate = {
         name: companyData.name,
         domain: companyData.website,
-        industry: companyData.industry,
         size: companyData.size,
         description: companyData.description,
         location: companyData.location,

@@ -46,7 +46,6 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
       id: initialData.id || undefined,
       name: initialData.name || '',
       website: initialData.website || '',
-      industry: initialData.industry || '',
       size: initialData.size || '',
       description: initialData.description || '',
       location: initialData.location || '',

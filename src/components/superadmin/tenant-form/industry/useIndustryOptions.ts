@@ -1,3 +1,4 @@
+
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { useCallback } from 'react';
 
@@ -81,6 +82,19 @@ export const useIndustryOptions = () => {
   const companyTypes = formatOptions(companyTypeHook, fallbackCompanyTypeOptions);
   const entityTypes = formatOptions(entityTypeHook, fallbackEntityTypeOptions);
 
+  // Hierarchical dropdown functions
+  const getIndustry2OptionsForIndustry1 = useCallback((industry1Value: string) => {
+    // For now, return all industry2 options since we don't have hierarchical data yet
+    // This can be enhanced later with actual hierarchical mappings
+    return industry2Options.filter(option => option.value !== '__add_new__');
+  }, [industry2Options]);
+
+  const getIndustry3OptionsForIndustry2 = useCallback((industry2Value: string) => {
+    // For now, return all industry3 options since we don't have hierarchical data yet
+    // This can be enhanced later with actual hierarchical mappings
+    return industry3Options.filter(option => option.value !== '__add_new__');
+  }, [industry3Options]);
+
   // Get category ID by name
   const getCategoryIdByName = async (name: string) => {
     console.log(`Getting category ID for: ${name}`);
@@ -122,6 +136,8 @@ export const useIndustryOptions = () => {
     sectors,
     companyTypes,
     entityTypes,
+    getIndustry2OptionsForIndustry1,
+    getIndustry3OptionsForIndustry2,
     getCategoryIdByName
   };
 };

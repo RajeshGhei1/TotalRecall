@@ -13,9 +13,9 @@ const CompanyIndustryChart: React.FC = () => {
 
   // Process data for the chart
   const getIndustryData = () => {
-    // Group companies by industry
+    // Group companies by primary industry (industry1)
     const industryGroups = companies.reduce((acc, company) => {
-      const industry = company.industry || 'Undefined';
+      const industry = company.industry1 || 'Undefined';
       
       if (!acc[industry]) {
         acc[industry] = 0;
@@ -46,7 +46,7 @@ const CompanyIndustryChart: React.FC = () => {
   return (
     <Card className="h-full">
       <CardContent className="p-6">
-        <h3 className="text-lg font-medium mb-4">Companies by Industry</h3>
+        <h3 className="text-lg font-medium mb-4">Companies by Primary Industry</h3>
         
         {data.length > 0 ? (
           <div className="h-[300px]">

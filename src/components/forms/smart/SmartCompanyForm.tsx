@@ -124,12 +124,12 @@ export const SmartCompanyForm: React.FC<SmartCompanyFormProps> = ({
 
             <FormField
               control={form.control}
-              name="industry"
+              name="industry1"
               render={({ field }) => (
                 <FormItem>
                   <SmartInput
-                    name="industry"
-                    label="Industry"
+                    name="industry1"
+                    label="Primary Industry"
                     value={field.value || ''}
                     onChange={field.onChange}
                     fieldType="industry"
@@ -245,7 +245,7 @@ export const SmartCompanyForm: React.FC<SmartCompanyFormProps> = ({
                     formType="company_creation"
                     userId={userId}
                     placeholder="e.g., Startup, Small, Medium, Large"
-                    context={{ industry: form.watch('industry') }}
+                    context={{ industry1: form.watch('industry1') }}
                   />
                   <FormMessage />
                 </FormItem>
@@ -260,7 +260,7 @@ export const SmartCompanyForm: React.FC<SmartCompanyFormProps> = ({
                   <SmartInput
                     name="founded"
                     label="Year Founded"
-                    value={field.value?.toString() || ''}
+                    value={field.value ? field.value.toString() : ''}
                     onChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
                     fieldType="year"
                     formType="company_creation"
