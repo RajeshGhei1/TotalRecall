@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Building, Users, Briefcase, Users as UsersIcon } from 'lucide-react';
+import { Building, Users, Users as UsersIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -65,14 +65,9 @@ const Dashboard = () => {
 
       if (tenantError) throw tenantError;
 
-      // Note: This is a placeholder as we don't have a jobs table yet
-      // Would be replaced with actual jobs count when implemented
-      const jobCount = 256;
-
       return {
         userCount: userCount || 0,
-        tenantCount: tenantCount || 0,
-        jobCount
+        tenantCount: tenantCount || 0
       };
     }
   });
@@ -100,13 +95,13 @@ const Dashboard = () => {
         {/* Header - responsive text sizing */}
         <div className="space-y-1 md:space-y-2">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Superadmin Dashboard</h1>
-          <p className="text-muted-foreground text-sm md:text-base">Overview of the JobMojo.ai platform.</p>
+          <p className="text-muted-foreground text-sm md:text-base">Overview of TotalRecall.ai Platform.</p>
         </div>
 
         {/* Dashboard cards - enhanced responsive grid */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 auto-rows-fr">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
           {/* Users Card - responsive column span */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-1 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
               <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
                 <UsersIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -124,7 +119,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Tenants Card */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-1 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
               <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
                 <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -141,26 +136,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Jobs Card */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-              <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="truncate">Jobs Posted</span>
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm">In the last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-              {isLoading ? (
-                <Skeleton className="h-6 sm:h-7 md:h-8 w-16 sm:w-20" />
-              ) : (
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold">{platformMetrics?.jobCount}</div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Companies Card */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-1 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
               <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
                 <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -177,26 +154,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Talent Card */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
-              <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="truncate">Talent</span>
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm">Candidate pool</CardDescription>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
-              {isLoading ? (
-                <Skeleton className="h-6 sm:h-7 md:h-8 w-16 sm:w-20" />
-              ) : (
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold">{peopleData?.talentCount || 0}</div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Contacts Card */}
-          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-2 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="sm:col-span-1 lg:col-span-1 xl:col-span-1 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
               <CardTitle className="flex text-sm sm:text-base md:text-lg items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
