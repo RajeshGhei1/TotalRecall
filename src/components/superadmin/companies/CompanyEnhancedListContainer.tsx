@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -20,28 +19,51 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, MoreHorizontal, Building, Users, Network, Edit, Trash2, Eye } from 'lucide-react';
+import { MoreHorizontal, Building, Edit, Trash2, Eye } from 'lucide-react';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useNavigate } from 'react-router-dom';
 import { EditCompanyDialog } from './EditCompanyDialog';
 import CompanyDeleteDialog from './CompanyDeleteDialog';
+import EnhancedCompanyFilters from './filters/EnhancedCompanyFilters';
+import { useCompanyFilters, CompanyFilters } from './hooks/useCompanyFilters';
 import { Company } from '@/hooks/useCompanies';
 
 const CompanyEnhancedListContainer: React.FC = () => {
   const navigate = useNavigate();
   const { companies, isLoading, updateCompany } = useCompanies();
-  const [searchTerm, setSearchTerm] = useState('');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
 
-  // Filter companies based on search term
-  const filteredCompanies = companies?.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry1?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry3?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.location?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // Enhanced filter state
+  const [filters, setFilters] = useState<CompanyFilters>({
+    search: '',
+    industries: [],
+    sizes: [],
+    locations: [],
+    countries: [],
+    companyTypes: [],
+    entityTypes: [],
+    sectors: [],
+    statuses: [],
+    employeeSegments: [],
+    turnoverSegments: [],
+    capitalSegments: [],
+    turnoverYears: [],
+    specializations: [],
+    serviceLines: [],
+    verticals: [],
+    companyGroups: [],
+    hasParent: [],
+    hasEmail: [],
+    hasPhone: [],
+    hasWebsite: [],
+    hasLinkedin: [],
+    hasTwitter: [],
+    hasFacebook: [],
+  });
+
+  // Use the enhanced filtering hook
+  const { filteredCompanies } = useCompanyFilters(companies, filters, filters.search);
 
   const handleEditSubmit = (data: any) => {
     if (editingCompany) {
@@ -56,6 +78,39 @@ const CompanyEnhancedListContainer: React.FC = () => {
     }
   };
 
+  const handleFiltersChange = (newFilters: CompanyFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleFiltersReset = () => {
+    setFilters({
+      search: '',
+      industries: [],
+      sizes: [],
+      locations: [],
+      countries: [],
+      companyTypes: [],
+      entityTypes: [],
+      sectors: [],
+      statuses: [],
+      employeeSegments: [],
+      turnoverSegments: [],
+      capitalSegments: [],
+      turnoverYears: [],
+      specializations: [],
+      serviceLines: [],
+      verticals: [],
+      companyGroups: [],
+      hasParent: [],
+      hasEmail: [],
+      hasPhone: [],
+      hasWebsite: [],
+      hasLinkedin: [],
+      hasTwitter: [],
+      hasFacebook: [],
+    });
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -68,18 +123,13 @@ const CompanyEnhancedListContainer: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search companies by name, industry, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      {/* Enhanced Filters */}
+      <EnhancedCompanyFilters
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onReset={handleFiltersReset}
+        companies={companies || []}
+      />
 
       {/* Companies Table */}
       <Card>
