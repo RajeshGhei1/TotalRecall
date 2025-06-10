@@ -225,22 +225,22 @@ const CompanyDetailView: React.FC = () => {
                     <Badge variant="outline" className="mt-1">{company.industry3}</Badge>
                   </div>
                 )}
-                {company.companySector && (
+                {company.companysector && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Company Sector</label>
-                    <Badge variant="outline" className="mt-1">{company.companySector}</Badge>
+                    <Badge variant="outline" className="mt-1">{company.companysector}</Badge>
                   </div>
                 )}
-                {company.companyType && (
+                {company.companytype && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Company Type</label>
-                    <Badge variant="outline" className="mt-1">{company.companyType}</Badge>
+                    <Badge variant="outline" className="mt-1">{company.companytype}</Badge>
                   </div>
                 )}
-                {company.entityType && (
+                {company.entitytype && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Entity Type</label>
-                    <Badge variant="outline" className="mt-1">{company.entityType}</Badge>
+                    <Badge variant="outline" className="mt-1">{company.entitytype}</Badge>
                   </div>
                 )}
               </div>
@@ -314,17 +314,17 @@ const CompanyDetailView: React.FC = () => {
                 </div>
               )}
               
-              {company.companyStatus && (
+              {company.companystatus && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <Badge variant="outline">{company.companyStatus}</Badge>
+                  <Badge variant="outline">{company.companystatus}</Badge>
                 </div>
               )}
               
-              {company.registeredOfficeAddress && (
+              {company.registeredofficeaddress && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Registered Address</label>
-                  <p className="text-sm">{company.registeredOfficeAddress}</p>
+                  <p className="text-sm">{company.registeredofficeaddress}</p>
                 </div>
               )}
               

@@ -68,14 +68,14 @@ export const useCompanyFilters = (
     // Apply company type filter
     if (filters.companyTypes && filters.companyTypes.length > 0) {
       filtered = filtered.filter(company => 
-        company.companyType && filters.companyTypes.includes(company.companyType)
+        company.companytype && filters.companyTypes.includes(company.companytype)
       );
     }
 
     // Apply sector filter
     if (filters.sectors && filters.sectors.length > 0) {
       filtered = filtered.filter(company => 
-        company.companySector && filters.sectors.includes(company.companySector)
+        company.companysector && filters.sectors.includes(company.companysector)
       );
     }
 
@@ -92,8 +92,8 @@ export const useCompanyFilters = (
     // Apply registration date range filter
     if (filters.registrationFrom || filters.registrationTo) {
       filtered = filtered.filter(company => {
-        if (!company.registrationDate) return false;
-        const regDate = new Date(company.registrationDate);
+        if (!company.registrationdate) return false;
+        const regDate = new Date(company.registrationdate);
         if (filters.registrationFrom && regDate < filters.registrationFrom) return false;
         if (filters.registrationTo && regDate > filters.registrationTo) return false;
         return true;
