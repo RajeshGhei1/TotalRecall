@@ -101,40 +101,139 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   const autoDetectFieldMappings = (headers: string[]): CSVFieldMapping[] => {
     const mappings = [...defaultFieldMappings];
     
-    // Auto-map common variations
+    // Enhanced auto-mapping with comprehensive field variations
     const commonMappings: Record<string, string> = {
       'company': 'name',
       'company_name': 'name',
       'business_name': 'name',
       'organization': 'name',
+      'firm_name': 'name',
+      'entity_name': 'name',
       'email_address': 'email',
       'contact_email': 'email',
+      'business_email': 'email',
+      'registered_email': 'registeredemailaddress',
       'web_site': 'website',
       'web_address': 'website',
       'url': 'website',
+      'homepage': 'website',
+      'web_domain': 'domain',
       'business_type': 'industry1',
-      'sector': 'industry1',
+      'sector': 'companysector',
+      'primary_industry': 'industry1',
+      'secondary_industry': 'industry2',
+      'tertiary_industry': 'industry3',
       'company_size': 'size',
+      'business_size': 'size',
       'employees': 'noofemployee',
       'employee_count': 'noofemployee',
       'staff_count': 'noofemployee',
+      'workforce': 'noofemployee',
+      'no_of_employees': 'noofemployee',
+      'employee_segment': 'segmentaspernumberofemployees',
       'revenue': 'turnover',
       'annual_revenue': 'turnover',
       'sales': 'turnover',
+      'income': 'turnover',
+      'turnover_amount': 'turnover',
+      'revenue_segment': 'segmentasperturnover',
+      'turnover_segment': 'segmentasperturnover',
       'address': 'location',
       'city': 'location',
       'headquarters': 'location',
+      'hq': 'location',
+      'registered_office': 'registeredofficeaddress',
+      'registered_address': 'registeredofficeaddress',
+      'office_address': 'registeredofficeaddress',
+      'head_office': 'registeredofficeaddress',
       'phone_number': 'phone',
       'telephone': 'phone',
       'contact_number': 'phone',
+      'mobile': 'phone',
+      'contact_phone': 'phone',
       'year_founded': 'founded',
       'established': 'founded',
-      'inception_year': 'founded'
+      'inception_year': 'founded',
+      'incorporation_date': 'founded',
+      'year_of_establishment': 'yearofestablishment',
+      'establishment_year': 'yearofestablishment',
+      'registration_date': 'registrationdate',
+      'incorporated_date': 'registrationdate',
+      'company_identification': 'cin',
+      'corporate_identification': 'cin',
+      'registration_number': 'cin',
+      'company_number': 'cin',
+      'incorporation_number': 'cin',
+      'status': 'companystatus',
+      'company_status': 'companystatus',
+      'business_status': 'companystatus',
+      'legal_status': 'companystatus',
+      'operational_status': 'companystatus',
+      'entity_type': 'entitytype',
+      'legal_entity': 'entitytype',
+      'entity_form': 'entitytype',
+      'company_type': 'companytype',
+      'business_type': 'companytype',
+      'entity_category': 'companytype',
+      'paid_up_capital': 'paidupcapital',
+      'share_capital': 'paidupcapital',
+      'capital': 'paidupcapital',
+      'authorized_capital': 'paidupcapital',
+      'capital_segment': 'segmentasperpaidupcapital',
+      'no_of_directors': 'noofdirectives',
+      'directors_count': 'noofdirectives',
+      'board_size': 'noofdirectives',
+      'number_of_directors': 'noofdirectives',
+      'company_profile': 'companyprofile',
+      'business_profile': 'companyprofile',
+      'profile': 'companyprofile',
+      'about_company': 'companyprofile',
+      'area_of_specialization': 'areaofspecialize',
+      'specialization': 'areaofspecialize',
+      'expertise': 'areaofspecialize',
+      'core_competency': 'areaofspecialize',
+      'service_line': 'serviceline',
+      'services': 'serviceline',
+      'offerings': 'serviceline',
+      'products_services': 'serviceline',
+      'business_verticals': 'verticles',
+      'verticals': 'verticles',
+      'markets': 'verticles',
+      'sectors_served': 'verticles',
+      'target_markets': 'verticles',
+      'linkedin_url': 'linkedin',
+      'linkedin_profile': 'linkedin',
+      'twitter_url': 'twitter',
+      'twitter_handle': 'twitter',
+      'facebook_url': 'facebook',
+      'facebook_page': 'facebook',
+      'parent_company': 'parent_company_id',
+      'parent': 'parent_company_id',
+      'holding_company': 'parent_company_id',
+      'mother_company': 'parent_company_id',
+      'company_group': 'company_group_name',
+      'group_name': 'company_group_name',
+      'business_group': 'company_group_name',
+      'corporate_group': 'company_group_name',
+      'hierarchy_level': 'hierarchy_level',
+      'level': 'hierarchy_level',
+      'organizational_level': 'hierarchy_level',
+      'global_region': 'globalregion',
+      'geo_region': 'globalregion',
+      'region': 'region',
+      'state': 'region',
+      'province': 'region',
+      'ho_location': 'holocation',
+      'head_office_location': 'holocation',
+      'hq_location': 'holocation',
+      'turnover_year': 'turnoveryear',
+      'revenue_year': 'turnoveryear',
+      'financial_year': 'turnoveryear'
     };
 
     headers.forEach(header => {
       const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
-      const mappedField = commonMappings[normalizedHeader] || commonMappings[header];
+      const mappedField = commonMappings[normalizedHeader] || commonMappings[header.toLowerCase()];
       
       if (mappedField) {
         const existingMapping = mappings.find(m => m.companyField === mappedField);
@@ -144,7 +243,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
           mappings.push({
             csvColumn: header,
             companyField: mappedField as keyof Company,
-            isRequired: mappedField === 'name',
+            isRequired: mappedField === 'name' || mappedField === 'cin',
           });
         }
       }
@@ -288,10 +387,35 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
 
   const csvHeaders = csvData?.[0] || [];
   const companyFields = [
-    'name', 'email', 'website', 'domain', 'industry1', 'industry2', 'industry3', 'size', 'location',
-    'phone', 'description', 'founded', 'linkedin', 'twitter', 'facebook',
-    'cin', 'registeredofficeaddress', 'country', 'region',
-    'companytype', 'entitytype', 'noofemployee', 'turnover', 'companyprofile',
+    // Required Fields
+    'name', 'cin',
+    
+    // Basic Information
+    'email', 'website', 'domain', 'phone', 'description', 'founded',
+    
+    // Location & Address
+    'location', 'registeredofficeaddress', 'country', 'globalregion', 'region', 'holocation',
+    
+    // Industry & Classification
+    'industry1', 'industry2', 'industry3', 'companysector', 'companytype', 'entitytype',
+    
+    // Business Details
+    'size', 'noofemployee', 'segmentaspernumberofemployees', 'turnover', 'segmentasperturnover', 
+    'turnoveryear', 'yearofestablishment', 'paidupcapital', 'segmentasperpaidupcapital',
+    
+    // Legal & Registration
+    'companystatus', 'registrationdate', 'registeredemailaddress', 'noofdirectives',
+    
+    // Business Profile
+    'companyprofile', 'areaofspecialize', 'serviceline', 'verticles',
+    
+    // Social Media
+    'linkedin', 'twitter', 'facebook',
+    
+    // Hierarchy
+    'parent_company_id', 'company_group_name', 'hierarchy_level',
+    
+    // Special option
     'ignore'
   ];
 
@@ -301,7 +425,8 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Enhanced Bulk Import Companies</DialogTitle>
           <DialogDescription>
-            Import multiple companies from a CSV file with advanced field mapping, validation, and progress tracking
+            Import multiple companies from a CSV file with comprehensive field mapping, validation, and progress tracking.
+            All fields are optional except Company Name and CIN.
           </DialogDescription>
         </DialogHeader>
 

@@ -5,6 +5,7 @@ export interface CSVRow {
   name: string;
   email?: string;
   website?: string;
+  domain?: string;
   phone?: string;
   location?: string;
   size?: string;
@@ -15,10 +16,35 @@ export interface CSVRow {
   companysector?: string;
   companytype?: string;
   entitytype?: string;
-  founded?: string; // Keep as string for CSV compatibility
+  founded?: string;
   linkedin?: string;
   twitter?: string;
   facebook?: string;
+  cin?: string;
+  registeredofficeaddress?: string;
+  country?: string;
+  globalregion?: string;
+  region?: string;
+  holocation?: string;
+  noofemployee?: string;
+  segmentaspernumberofemployees?: string;
+  turnover?: string;
+  segmentasperturnover?: string;
+  turnoveryear?: string;
+  yearofestablishment?: string;
+  paidupcapital?: string;
+  segmentasperpaidupcapital?: string;
+  companyprofile?: string;
+  areaofspecialize?: string;
+  serviceline?: string;
+  verticles?: string;
+  registrationdate?: string;
+  registeredemailaddress?: string;
+  noofdirectives?: string;
+  companystatus?: string;
+  parent_company_id?: string;
+  company_group_name?: string;
+  hierarchy_level?: string;
   [key: string]: any;
 }
 
@@ -48,67 +74,216 @@ export interface BulkImportProgress {
   totalRows?: number;
 }
 
-// Field mapping for CSV headers to company properties
+// Comprehensive field mapping for CSV headers to company properties
 export const fieldMappings: Record<string, keyof Company | 'ignore'> = {
+  // Basic Information
   'company name': 'name',
   'name': 'name',
   'company': 'name',
+  'organization': 'name',
+  'business name': 'name',
   'email': 'email',
   'business email': 'email',
   'company email': 'email',
+  'contact email': 'email',
+  'registered email': 'registeredemailaddress',
   'website': 'website',
-  'domain': 'website',
+  'web site': 'website',
+  'domain': 'domain',
+  'web domain': 'domain',
   'url': 'website',
+  'web address': 'website',
   'phone': 'phone',
   'telephone': 'phone',
   'contact number': 'phone',
+  'mobile': 'phone',
+  'description': 'description',
+  'about': 'description',
+  'company description': 'description',
+  'overview': 'description',
+  
+  // Location & Address
   'location': 'location',
   'address': 'location',
   'city': 'location',
-  'size': 'size',
-  'company size': 'size',
-  'employees': 'size',
-  'description': 'description',
-  'about': 'description',
+  'headquarters': 'location',
+  'hq': 'location',
+  'registered office': 'registeredofficeaddress',
+  'registered address': 'registeredofficeaddress',
+  'office address': 'registeredofficeaddress',
+  'country': 'country',
+  'nation': 'country',
+  'global region': 'globalregion',
+  'region': 'region',
+  'state': 'region',
+  'ho location': 'holocation',
+  'head office location': 'holocation',
+  
+  // Industry & Classification
   'industry': 'industry1',
   'industry1': 'industry1',
   'primary industry': 'industry1',
+  'main industry': 'industry1',
+  'business type': 'industry1',
   'industry2': 'industry2',
   'secondary industry': 'industry2',
   'industry3': 'industry3',
   'tertiary industry': 'industry3',
   'sector': 'companysector',
   'company sector': 'companysector',
+  'business sector': 'companysector',
   'type': 'companytype',
   'company type': 'companytype',
+  'business type': 'companytype',
   'entity type': 'entitytype',
   'legal entity': 'entitytype',
+  'entity': 'entitytype',
+  
+  // Business Details
+  'size': 'size',
+  'company size': 'size',
+  'business size': 'size',
+  'employees': 'noofemployee',
+  'no of employees': 'noofemployee',
+  'employee count': 'noofemployee',
+  'staff count': 'noofemployee',
+  'workforce': 'noofemployee',
+  'employee segment': 'segmentaspernumberofemployees',
+  'revenue': 'turnover',
+  'turnover': 'turnover',
+  'annual revenue': 'turnover',
+  'sales': 'turnover',
+  'income': 'turnover',
+  'revenue segment': 'segmentasperturnover',
+  'turnover segment': 'segmentasperturnover',
+  'turnover year': 'turnoveryear',
+  'revenue year': 'turnoveryear',
+  'paid up capital': 'paidupcapital',
+  'capital': 'paidupcapital',
+  'share capital': 'paidupcapital',
+  'capital segment': 'segmentasperpaidupcapital',
+  
+  // Dates & Establishment
   'founded': 'founded',
   'established': 'founded',
   'year founded': 'founded',
-  'linkedin': 'linkedin',
-  'linkedin url': 'linkedin',
-  'twitter': 'twitter',
-  'twitter url': 'twitter',
-  'facebook': 'facebook',
-  'facebook url': 'facebook',
+  'inception': 'founded',
+  'year of establishment': 'yearofestablishment',
+  'establishment year': 'yearofestablishment',
+  'registration date': 'registrationdate',
+  'incorporated': 'registrationdate',
+  
+  // Legal & Registration
   'cin': 'cin',
   'company identification': 'cin',
+  'corporate identification': 'cin',
+  'registration number': 'cin',
+  'company number': 'cin',
   'status': 'companystatus',
-  'company status': 'companystatus'
+  'company status': 'companystatus',
+  'business status': 'companystatus',
+  'legal status': 'companystatus',
+  'no of directors': 'noofdirectives',
+  'directors count': 'noofdirectives',
+  'board size': 'noofdirectives',
+  
+  // Business Profile
+  'company profile': 'companyprofile',
+  'business profile': 'companyprofile',
+  'profile': 'companyprofile',
+  'area of specialization': 'areaofspecialize',
+  'specialization': 'areaofspecialize',
+  'expertise': 'areaofspecialize',
+  'service line': 'serviceline',
+  'services': 'serviceline',
+  'offerings': 'serviceline',
+  'verticals': 'verticles',
+  'business verticals': 'verticles',
+  'markets': 'verticles',
+  
+  // Social Media
+  'linkedin': 'linkedin',
+  'linkedin url': 'linkedin',
+  'linkedin profile': 'linkedin',
+  'twitter': 'twitter',
+  'twitter url': 'twitter',
+  'twitter handle': 'twitter',
+  'facebook': 'facebook',
+  'facebook url': 'facebook',
+  'facebook page': 'facebook',
+  
+  // Hierarchy
+  'parent company': 'parent_company_id',
+  'parent': 'parent_company_id',
+  'holding company': 'parent_company_id',
+  'company group': 'company_group_name',
+  'group name': 'company_group_name',
+  'business group': 'company_group_name',
+  'hierarchy level': 'hierarchy_level',
+  'level': 'hierarchy_level'
 };
 
 export const defaultFieldMappings: CSVFieldMapping[] = [
+  // Required fields
   { csvColumn: 'name', companyField: 'name', isRequired: true },
+  { csvColumn: 'cin', companyField: 'cin', isRequired: true },
+  
+  // Basic Information (optional)
   { csvColumn: 'email', companyField: 'email', isRequired: false },
   { csvColumn: 'website', companyField: 'website', isRequired: false },
+  { csvColumn: 'domain', companyField: 'domain', isRequired: false },
   { csvColumn: 'phone', companyField: 'phone', isRequired: false },
-  { csvColumn: 'location', companyField: 'location', isRequired: false },
-  { csvColumn: 'size', companyField: 'size', isRequired: false },
   { csvColumn: 'description', companyField: 'description', isRequired: false },
+  { csvColumn: 'founded', companyField: 'founded', isRequired: false },
+  
+  // Location & Address
+  { csvColumn: 'location', companyField: 'location', isRequired: false },
+  { csvColumn: 'registeredofficeaddress', companyField: 'registeredofficeaddress', isRequired: false },
+  { csvColumn: 'country', companyField: 'country', isRequired: false },
+  { csvColumn: 'globalregion', companyField: 'globalregion', isRequired: false },
+  { csvColumn: 'region', companyField: 'region', isRequired: false },
+  { csvColumn: 'holocation', companyField: 'holocation', isRequired: false },
+  
+  // Industry & Classification
   { csvColumn: 'industry1', companyField: 'industry1', isRequired: false },
   { csvColumn: 'industry2', companyField: 'industry2', isRequired: false },
   { csvColumn: 'industry3', companyField: 'industry3', isRequired: false },
+  { csvColumn: 'companysector', companyField: 'companysector', isRequired: false },
+  { csvColumn: 'companytype', companyField: 'companytype', isRequired: false },
+  { csvColumn: 'entitytype', companyField: 'entitytype', isRequired: false },
+  
+  // Business Details
+  { csvColumn: 'size', companyField: 'size', isRequired: false },
+  { csvColumn: 'noofemployee', companyField: 'noofemployee', isRequired: false },
+  { csvColumn: 'segmentaspernumberofemployees', companyField: 'segmentaspernumberofemployees', isRequired: false },
+  { csvColumn: 'turnover', companyField: 'turnover', isRequired: false },
+  { csvColumn: 'segmentasperturnover', companyField: 'segmentasperturnover', isRequired: false },
+  { csvColumn: 'turnoveryear', companyField: 'turnoveryear', isRequired: false },
+  { csvColumn: 'yearofestablishment', companyField: 'yearofestablishment', isRequired: false },
+  { csvColumn: 'paidupcapital', companyField: 'paidupcapital', isRequired: false },
+  { csvColumn: 'segmentasperpaidupcapital', companyField: 'segmentasperpaidupcapital', isRequired: false },
+  
+  // Legal & Registration
+  { csvColumn: 'companystatus', companyField: 'companystatus', isRequired: false },
+  { csvColumn: 'registrationdate', companyField: 'registrationdate', isRequired: false },
+  { csvColumn: 'registeredemailaddress', companyField: 'registeredemailaddress', isRequired: false },
+  { csvColumn: 'noofdirectives', companyField: 'noofdirectives', isRequired: false },
+  
+  // Business Profile
+  { csvColumn: 'companyprofile', companyField: 'companyprofile', isRequired: false },
+  { csvColumn: 'areaofspecialize', companyField: 'areaofspecialize', isRequired: false },
+  { csvColumn: 'serviceline', companyField: 'serviceline', isRequired: false },
+  { csvColumn: 'verticles', companyField: 'verticles', isRequired: false },
+  
+  // Social Media
+  { csvColumn: 'linkedin', companyField: 'linkedin', isRequired: false },
+  { csvColumn: 'twitter', companyField: 'twitter', isRequired: false },
+  { csvColumn: 'facebook', companyField: 'facebook', isRequired: false },
+  
+  // Hierarchy
+  { csvColumn: 'parent_company_id', companyField: 'parent_company_id', isRequired: false },
+  { csvColumn: 'company_group_name', companyField: 'company_group_name', isRequired: false },
+  { csvColumn: 'hierarchy_level', companyField: 'hierarchy_level', isRequired: false }
 ];
 
 export function normalizeHeader(header: string): string {
@@ -132,6 +307,12 @@ export function mapCSVRowToCompany(csvRow: any, mappings: CSVFieldMapping[]): Pa
         if (!isNaN(foundedYear) && foundedYear > 1800 && foundedYear <= new Date().getFullYear()) {
           (company as any)[mapping.companyField] = foundedYear;
         }
+      } else if (mapping.companyField === 'hierarchy_level') {
+        // Handle hierarchy level as integer
+        const level = parseInt(trimmedValue);
+        if (!isNaN(level) && level >= 0) {
+          (company as any)[mapping.companyField] = level;
+        }
       } else {
         (company as any)[mapping.companyField] = trimmedValue;
       }
@@ -148,7 +329,7 @@ export function mapCSVRowToCompany(csvRow: any, mappings: CSVFieldMapping[]): Pa
 export function validateCompanyData(company: Partial<Company>): string[] {
   const errors: string[] = [];
 
-  // Required field validation
+  // Required field validation - only name is truly required now (CIN optional but recommended)
   if (!company.name || company.name.trim().length === 0) {
     errors.push('Company name is required');
   }
@@ -158,6 +339,14 @@ export function validateCompanyData(company: Partial<Company>): string[] {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(company.email)) {
       errors.push('Invalid email format');
+    }
+  }
+
+  // Registered email validation
+  if (company.registeredemailaddress) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(company.registeredemailaddress)) {
+      errors.push('Invalid registered email format');
     }
   }
 
@@ -183,6 +372,23 @@ export function validateCompanyData(company: Partial<Company>): string[] {
       errors.push('Invalid phone number format');
     }
   }
+
+  // Social media URL validation
+  ['linkedin', 'twitter', 'facebook'].forEach(field => {
+    const url = (company as any)[field];
+    if (url) {
+      try {
+        new URL(url);
+      } catch {
+        try {
+          new URL(`https://${url}`);
+          (company as any)[field] = `https://${url}`;
+        } catch {
+          errors.push(`Invalid ${field} URL`);
+        }
+      }
+    }
+  });
 
   return errors;
 }
@@ -297,38 +503,130 @@ export function validateCSVData(
 
 export function generateCSVTemplate(): string {
   const headers = [
+    // Required Fields
     'name',
+    'cin',
+    
+    // Basic Information
     'email',
     'website',
+    'domain',
     'phone',
+    'description',
+    'founded',
+    
+    // Location & Address
     'location',
-    'size',
+    'registeredofficeaddress',
+    'country',
+    'globalregion',
+    'region',
+    'holocation',
+    
+    // Industry & Classification
     'industry1',
     'industry2',
     'industry3',
-    'description',
-    'founded',
+    'companysector',
+    'companytype',
+    'entitytype',
+    
+    // Business Details
+    'size',
+    'noofemployee',
+    'segmentaspernumberofemployees',
+    'turnover',
+    'segmentasperturnover',
+    'turnoveryear',
+    'yearofestablishment',
+    'paidupcapital',
+    'segmentasperpaidupcapital',
+    
+    // Legal & Registration
+    'companystatus',
+    'registrationdate',
+    'registeredemailaddress',
+    'noofdirectives',
+    
+    // Business Profile
+    'companyprofile',
+    'areaofspecialize',
+    'serviceline',
+    'verticles',
+    
+    // Social Media
     'linkedin',
     'twitter',
-    'facebook'
+    'facebook',
+    
+    // Hierarchy
+    'parent_company_id',
+    'company_group_name',
+    'hierarchy_level'
   ];
 
   const sampleRows = [
     [
-      'Tech Innovations Ltd',
-      'contact@techinnovations.com',
-      'https://techinnovations.com',
-      '+1-555-0123',
-      'San Francisco, CA',
-      'Medium',
+      // Required Fields
+      'TechCorp Solutions Pvt Ltd',
+      'U72900DL2015PTC123456',
+      
+      // Basic Information
+      'contact@techcorp.com',
+      'https://techcorp.com',
+      'techcorp.com',
+      '+91-11-12345678',
+      'Leading provider of enterprise software solutions',
+      '2015',
+      
+      // Location & Address
+      'New Delhi, India',
+      '123 Tech Tower, Sector 62, Noida, UP 201301',
+      'India',
+      'Asia Pacific',
+      'North India',
+      'Noida, UP',
+      
+      // Industry & Classification
       'Technology',
       'Software Development',
-      'Enterprise Software',
-      'Leading provider of innovative software solutions',
+      'Enterprise Solutions',
+      'IT Services',
+      'Private Limited',
+      'Company',
+      
+      // Business Details
+      'Medium',
+      '250',
+      'Medium (100-500)',
+      '50000000',
+      'Medium (10-100 Cr)',
+      '2023',
       '2015',
-      'https://linkedin.com/company/tech-innovations',
-      'https://twitter.com/techinnovations',
-      'https://facebook.com/techinnovations'
+      '10000000',
+      'Medium (1-10 Cr)',
+      
+      // Legal & Registration
+      'Active',
+      '2015-03-15',
+      'legal@techcorp.com',
+      '5',
+      
+      // Business Profile
+      'Enterprise software development company specializing in digital transformation',
+      'Cloud Computing, AI/ML, Enterprise Software',
+      'Software Development, Consulting, Support',
+      'Healthcare, Finance, Manufacturing',
+      
+      // Social Media
+      'https://linkedin.com/company/techcorp',
+      'https://twitter.com/techcorp',
+      'https://facebook.com/techcorp',
+      
+      // Hierarchy
+      '',
+      'TechCorp Group',
+      '0'
     ]
   ];
 
