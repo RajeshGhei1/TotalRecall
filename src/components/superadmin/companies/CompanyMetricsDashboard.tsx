@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -279,6 +278,11 @@ const CompanyMetricsDashboard: React.FC = () => {
       <AnalyticsExportDialog
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
+        companies={filteredCompanies}
+        currentFilters={Object.entries(filters)
+          .filter(([_, value]) => value && value !== '')
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ')}
       />
     </div>
   );
