@@ -14,11 +14,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Users, Network, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Building, Users, Network, BarChart3, Sitemap } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import sections
 import RelationshipsSection from './sections/RelationshipsSection';
+import PeopleSection from './sections/PeopleSection';
+import CompanyOrgChart from './charts/CompanyOrgChart';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -110,7 +112,7 @@ const CompanyDetailView: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Overview
@@ -118,6 +120,10 @@ const CompanyDetailView: React.FC = () => {
             <TabsTrigger value="people" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               People
+            </TabsTrigger>
+            <TabsTrigger value="org-chart" className="flex items-center gap-2">
+              <Sitemap className="h-4 w-4" />
+              Org Chart
             </TabsTrigger>
             <TabsTrigger value="relationships" className="flex items-center gap-2">
               <Network className="h-4 w-4" />
@@ -166,18 +172,11 @@ const CompanyDetailView: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="people">
-            <Card>
-              <CardHeader>
-                <CardTitle>Company People</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4" />
-                  <p>People management coming soon...</p>
-                  <p className="text-sm mt-2">This will show all people associated with this company.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <PeopleSection form={{ getValues: () => ({ id: company.id }) } as any} showFullView={true} />
+          </TabsContent>
+
+          <TabsContent value="org-chart">
+            <CompanyOrgChart companyId={company.id} />
           </TabsContent>
 
           <TabsContent value="relationships">

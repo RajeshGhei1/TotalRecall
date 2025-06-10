@@ -13,12 +13,14 @@ interface OrgChartNode {
 }
 
 export const useCompanyOrgChart = (companyId?: string) => {
-  const { data: orgChartData, isLoading } = useQuery({
+  const { data: orgChartData, isLoading, error, refetch } = useQuery({
     queryKey: ['company-org-chart', companyId],
     queryFn: async () => {
       if (!companyId) return null;
       
       try {
+        console.log(`Fetching org chart for company: ${companyId}`);
+        
         // Fetch all current relationships for this company
         const { data: relationships, error } = await supabase
           .from('company_relationships')
@@ -35,11 +37,13 @@ export const useCompanyOrgChart = (companyId?: string) => {
           
         if (error) {
           console.error('Error fetching company relationships:', error);
-          return null;
+          throw error;
         }
         
+        console.log(`Found ${relationships?.length || 0} relationships`);
+        
         if (!relationships || relationships.length === 0) {
-          return null;
+          return { rootNodes: [], allNodes: {} };
         }
         
         // Process relationships using reports_to field
@@ -53,16 +57,18 @@ export const useCompanyOrgChart = (companyId?: string) => {
           
           const node: OrgChartNode = {
             id: person.id,
-            name: person.full_name,
-            role: rel.role,
+            name: person.full_name || 'Unknown',
+            role: rel.role || 'No role specified',
             email: person.email,
             children: [],
-            type: person.type,
+            type: person.type || 'contact',
             isManager: isManagerRole(rel.role)
           };
           
           allNodes[person.id] = node;
         });
+        
+        console.log(`Created ${Object.keys(allNodes).length} nodes`);
         
         // Second pass - build the hierarchy based on reports_to
         relationships.forEach((rel: any) => {
@@ -75,15 +81,18 @@ export const useCompanyOrgChart = (companyId?: string) => {
             // This person reports to someone, add as child
             const managerNode = allNodes[rel.reports_to];
             managerNode.children.push(node);
+            managerNode.isManager = true; // Mark as manager since they have reports
           } else {
             // This person doesn't report to anyone in the company, add to root
             rootNodes.push(node);
           }
         });
         
+        console.log(`Built hierarchy with ${rootNodes.length} root nodes`);
+        
         // If no explicit hierarchy is defined, fall back to inferring based on roles
         if (rootNodes.length === 0 && Object.keys(allNodes).length > 0) {
-          // Fall back to inferring hierarchy based on roles
+          console.log('No explicit hierarchy found, inferring from roles...');
           const departments = groupByDepartment(relationships);
           
           Object.entries(departments).forEach(([dept, people]) => {
@@ -119,16 +128,45 @@ export const useCompanyOrgChart = (companyId?: string) => {
           });
         }
         
-        return { rootNodes, allNodes };
+        // Sort root nodes by manager status and name
+        rootNodes.sort((a, b) => {
+          if (a.isManager && !b.isManager) return -1;
+          if (!a.isManager && b.isManager) return 1;
+          return a.name.localeCompare(b.name);
+        });
+        
+        // Sort children for each node
+        const sortChildren = (node: OrgChartNode) => {
+          node.children.sort((a, b) => {
+            if (a.isManager && !b.isManager) return -1;
+            if (!a.isManager && b.isManager) return 1;
+            return a.name.localeCompare(b.name);
+          });
+          node.children.forEach(sortChildren);
+        };
+        
+        rootNodes.forEach(sortChildren);
+        
+        const result = { rootNodes, allNodes };
+        console.log('Org chart data processed successfully:', result);
+        return result;
+        
       } catch (error) {
         console.error('Error in useCompanyOrgChart:', error);
-        return null;
+        throw error;
       }
     },
-    enabled: !!companyId
+    enabled: !!companyId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
   });
   
-  return { orgChartData, isLoading };
+  return { 
+    orgChartData, 
+    isLoading, 
+    error,
+    refetch: () => refetch()
+  };
 };
 
 // Helper functions for organization chart building
@@ -142,7 +180,10 @@ const isManagerRole = (role?: string): boolean => {
          lowerRole.includes('ceo') ||
          lowerRole.includes('cto') ||
          lowerRole.includes('cfo') ||
-         lowerRole.includes('chief');
+         lowerRole.includes('chief') ||
+         lowerRole.includes('supervisor') ||
+         lowerRole.includes('team lead') ||
+         lowerRole.includes('senior');
 };
 
 const isCEORole = (role?: string): boolean => {
@@ -163,6 +204,7 @@ const groupByDepartment = (relationships: any[]): Record<string, any[]> => {
     'Sales': [],
     'Operations': [],
     'Finance': [],
+    'HR': [],
     'Other': []
   };
   
@@ -176,24 +218,28 @@ const groupByDepartment = (relationships: any[]): Record<string, any[]> => {
     
     if (lowerRole.includes('ceo') || lowerRole.includes('coo') || lowerRole.includes('cto') || 
         lowerRole.includes('chief') || lowerRole.includes('president') || 
-        lowerRole.includes('founder') || lowerRole.includes('director')) {
+        lowerRole.includes('founder') || lowerRole.includes('executive')) {
       departments['Executive'].push(rel);
     } else if (lowerRole.includes('engineer') || lowerRole.includes('developer') || 
               lowerRole.includes('programmer') || lowerRole.includes('tech') || 
-              lowerRole.includes('architect')) {
+              lowerRole.includes('architect') || lowerRole.includes('dev')) {
       departments['Engineering'].push(rel);
     } else if (lowerRole.includes('market') || lowerRole.includes('content') || 
-              lowerRole.includes('brand') || lowerRole.includes('communication')) {
+              lowerRole.includes('brand') || lowerRole.includes('communication') ||
+              lowerRole.includes('social') || lowerRole.includes('digital')) {
       departments['Marketing'].push(rel);
     } else if (lowerRole.includes('sale') || lowerRole.includes('account') || 
-              lowerRole.includes('business development')) {
+              lowerRole.includes('business development') || lowerRole.includes('client')) {
       departments['Sales'].push(rel);
     } else if (lowerRole.includes('operation') || lowerRole.includes('product') || 
-              lowerRole.includes('project')) {
+              lowerRole.includes('project') || lowerRole.includes('quality')) {
       departments['Operations'].push(rel);
     } else if (lowerRole.includes('financ') || lowerRole.includes('account') || 
-              lowerRole.includes('tax')) {
+              lowerRole.includes('tax') || lowerRole.includes('audit')) {
       departments['Finance'].push(rel);
+    } else if (lowerRole.includes('hr') || lowerRole.includes('human resource') || 
+              lowerRole.includes('recruit') || lowerRole.includes('talent')) {
+      departments['HR'].push(rel);
     } else {
       departments['Other'].push(rel);
     }
