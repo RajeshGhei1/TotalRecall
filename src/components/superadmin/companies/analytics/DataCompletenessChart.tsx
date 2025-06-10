@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, AlertTriangle } from 'lucide-react';
@@ -63,6 +63,13 @@ const DataCompletenessChart: React.FC = () => {
   const overallScore = completenessData.length > 0 
     ? Math.round(completenessData.reduce((sum, item) => sum + item.percentage, 0) / completenessData.length)
     : 0;
+
+  // Function to get color based on percentage
+  const getBarColor = (percentage: number) => {
+    if (percentage > 80) return '#22c55e';
+    if (percentage > 60) return '#eab308';
+    return '#ef4444';
+  };
 
   if (isLoading) {
     return (
@@ -132,10 +139,11 @@ const DataCompletenessChart: React.FC = () => {
                 formatter={(value: any) => [`${value}%`, 'Completeness']}
                 labelFormatter={(label) => `Field: ${label}`}
               />
-              <Bar 
-                dataKey="percentage" 
-                fill={(entry: any) => entry.percentage > 80 ? '#22c55e' : entry.percentage > 60 ? '#eab308' : '#ef4444'}
-              />
+              <Bar dataKey="percentage">
+                {completenessData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getBarColor(entry.percentage)} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
