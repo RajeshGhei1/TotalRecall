@@ -74,7 +74,6 @@ const EditTenantDialog = ({
               serviceLine: '',
               verticles: '',
               webSite: '',
-              endUserChannel: '',
             }}
           />
         )}
