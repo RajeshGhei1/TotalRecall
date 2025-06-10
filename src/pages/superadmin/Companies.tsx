@@ -145,7 +145,7 @@ const Companies = () => {
             <TabsTrigger value="companies">Companies List</TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-1">
               <BarChart className="h-4 w-4" />
-              <span>Analytics Dashboard</span>
+              <span>Enhanced Analytics</span>
             </TabsTrigger>
           </TabsList>
           
@@ -166,9 +166,9 @@ const Companies = () => {
           <TabsContent value="dashboard">
             <Card>
               <CardHeader>
-                <CardTitle>Companies Analytics Dashboard</CardTitle>
+                <CardTitle>Enhanced Analytics Dashboard</CardTitle>
                 <CardDescription>
-                  Comprehensive overview, metrics, and insights for all companies in your system
+                  Interactive analytics with advanced filtering, export capabilities, and comprehensive company insights
                 </CardDescription>
               </CardHeader>
               <CardContent>
