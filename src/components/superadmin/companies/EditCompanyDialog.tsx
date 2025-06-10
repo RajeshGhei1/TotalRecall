@@ -30,7 +30,6 @@ export const EditCompanyDialog: React.FC<EditCompanyDialogProps> = ({
     id: company.id,
     name: company.name,
     website: company.website || '',
-    industry: company.industry || '',
     size: company.size || '',
     description: company.description || '',
     location: company.location || '',

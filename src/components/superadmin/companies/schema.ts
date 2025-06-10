@@ -6,7 +6,6 @@ export const companyFormSchema = z.object({
   id: z.string().optional(), // Add id field for existing companies
   name: z.string().min(1, "Company name is required"),
   website: z.string().url("Invalid website URL").optional().or(z.literal('')),
-  industry: z.string().min(1, "Industry is required"),
   size: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
@@ -57,15 +56,6 @@ export type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
 // Define form options for dropdowns
 export const formOptions = {
-  industryOptions: [
-    { value: "technology", label: "Technology" },
-    { value: "healthcare", label: "Healthcare" },
-    { value: "finance", label: "Finance" },
-    { value: "education", label: "Education" },
-    { value: "manufacturing", label: "Manufacturing" },
-    { value: "retail", label: "Retail" },
-    { value: "other", label: "Other" },
-  ],
   sizeOptions: [
     { value: "1-10", label: "1-10 employees" },
     { value: "11-50", label: "11-50 employees" },

@@ -21,9 +21,8 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
   const { 
     industryHook,
     industry1Options,
-    industry2Options,
-    industry3Options,
-    industries, 
+    getIndustry2OptionsForIndustry1,
+    getIndustry3OptionsForIndustry2,
     sectors, 
     companyTypes, 
     entityTypes,
@@ -114,14 +113,14 @@ const IndustrySection: React.FC<IndustrySectionProps> = ({ form }) => {
     <>
       <IndustryDropdownSection
         form={form}
-        industryOptions={industries}
+        industryOptions={[]} // Not used anymore
         industry1Options={industry1Options}
-        industry2Options={industry2Options}
-        industry3Options={industry3Options}
         companySectorOptions={sectors}
         companyTypeOptions={companyTypes}
         entityTypeOptions={entityTypes}
         onSelectAddNew={handleSelectOption}
+        getIndustry2OptionsForIndustry1={getIndustry2OptionsForIndustry1}
+        getIndustry3OptionsForIndustry2={getIndustry3OptionsForIndustry2}
       />
 
       {/* Dialog for adding new options */}

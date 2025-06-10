@@ -10,10 +10,9 @@ import { FormDatePicker } from '@/components/superadmin/tenant-form/fields';
 interface BasicInfoSectionProps {
   form: UseFormReturn<CompanyFormValues>;
   options?: {
-    industryOptions: { value: string; label: string }[];
     sizeOptions: { value: string; label: string }[];
   };
-  readOnly?: boolean; // Added missing prop
+  readOnly?: boolean;
 }
 
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options, readOnly = false }) => {
@@ -87,6 +86,16 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, options, read
         required
         readOnly={readOnly}
       />
+
+      {options?.sizeOptions && (
+        <FormSelect
+          form={form}
+          name="size"
+          label="Company Size"
+          options={options.sizeOptions}
+          disabled={readOnly}
+        />
+      )}
       
       <div className="col-span-1 md:col-span-2">
         <FormTextarea
