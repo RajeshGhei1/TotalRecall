@@ -22,6 +22,7 @@ import RelationshipsSection from './sections/RelationshipsSection';
 import PeopleSection from './sections/PeopleSection';
 import CompanyOrgChart from './charts/CompanyOrgChart';
 import { BranchOfficeManager } from './sections/BranchOfficeManager';
+import CompanyHierarchyDisplay from './sections/CompanyHierarchyDisplay';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -30,6 +31,9 @@ const CompanyDetailView: React.FC = () => {
   
   const { companies, isLoading } = useCompanies();
   const company = companies?.find(c => c.id === companyId);
+  const parentCompany = company?.parent_company_id 
+    ? companies?.find(c => c.id === company.parent_company_id)
+    : null;
 
   if (isLoading) {
     return (
@@ -141,39 +145,84 @@ const CompanyDetailView: React.FC = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Name</label>
-                    <p className="text-sm text-gray-900">{company.name}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Company Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Name</label>
+                      <p className="text-sm text-gray-900">{company.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Industry</label>
+                      <p className="text-sm text-gray-900">{company.industry || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Location</label>
+                      <p className="text-sm text-gray-900">{company.location || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Size</label>
+                      <p className="text-sm text-gray-900">{company.size || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Website</label>
+                      <p className="text-sm text-gray-900">{company.website || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Email</label>
+                      <p className="text-sm text-gray-900">{company.email || 'Not specified'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Industry</label>
-                    <p className="text-sm text-gray-900">{company.industry || 'Not specified'}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Network className="h-5 w-5" />
+                    Group Structure
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Parent Company</label>
+                      <p className="text-sm text-gray-900">
+                        {parentCompany ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto text-sm"
+                            onClick={() => navigate(`/superadmin/companies/${parentCompany.id}`)}
+                          >
+                            {parentCompany.name}
+                          </Button>
+                        ) : (
+                          'None (Root Company)'
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Company Group</label>
+                      <p className="text-sm text-gray-900">{company.company_group_name || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Hierarchy Level</label>
+                      <p className="text-sm text-gray-900">Level {company.hierarchy_level || 0}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Location</label>
-                    <p className="text-sm text-gray-900">{company.location || 'Not specified'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Size</label>
-                    <p className="text-sm text-gray-900">{company.size || 'Not specified'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Website</label>
-                    <p className="text-sm text-gray-900">{company.website || 'Not specified'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-sm text-gray-900">{company.email || 'Not specified'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Company Hierarchy Visualization */}
+            <CompanyHierarchyDisplay 
+              companyId={company.id} 
+              currentCompanyId={company.id}
+            />
           </TabsContent>
 
           <TabsContent value="people">
