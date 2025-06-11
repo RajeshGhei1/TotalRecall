@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,23 +22,25 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
-  BarChart3
+  BarChart3,
+  Zap
 } from 'lucide-react';
 
 interface DocumentItem {
   id: string;
   title: string;
   description: string;
-  category: 'architecture' | 'security' | 'development' | 'api' | 'enterprise' | 'collaboration' | 'operations' | 'compliance';
+  category: 'architecture' | 'security' | 'development' | 'api' | 'enterprise' | 'collaboration' | 'operations' | 'compliance' | 'ai';
   filePath: string;
   lastModified: string;
   size: string;
   tags: string[];
-  status: 'published' | 'draft' | 'outdated';
+  status: 'published' | 'draft' | 'updated';
   importance: 'critical' | 'high' | 'medium' | 'low';
 }
 
 const documentCategories = {
+  ai: { label: 'AI & Intelligence', icon: Zap, color: 'bg-yellow-100 text-yellow-800' },
   architecture: { label: 'Architecture', icon: Code, color: 'bg-blue-100 text-blue-800' },
   security: { label: 'Security', icon: Shield, color: 'bg-red-100 text-red-800' },
   development: { label: 'Development', icon: FileText, color: 'bg-green-100 text-green-800' },
@@ -50,126 +51,78 @@ const documentCategories = {
   compliance: { label: 'Compliance', icon: CheckCircle, color: 'bg-emerald-100 text-emerald-800' }
 };
 
-const mockDocuments: DocumentItem[] = [
+const totalRecallDocuments: DocumentItem[] = [
   {
     id: '1',
-    title: 'AI Roadmap - Enterprise Implementation',
-    description: 'Comprehensive 18-month AI strategy with $2.3M investment plan and detailed implementation phases',
-    category: 'architecture',
+    title: 'AI Implementation Roadmap',
+    description: 'Comprehensive AI strategy with current infrastructure status, implementation phases, and business impact projections',
+    category: 'ai',
     filePath: 'docs/AI_ROADMAP.md',
-    lastModified: '2024-12-11T10:30:00Z',
-    size: '125.8 KB',
-    tags: ['AI', 'strategy', 'roadmap', 'enterprise', 'investment'],
-    status: 'published',
+    lastModified: new Date().toISOString(),
+    size: '95.2 KB',
+    tags: ['AI', 'strategy', 'roadmap', 'implementation', 'cognitive-assistance'],
+    status: 'updated',
     importance: 'critical'
   },
   {
     id: '2',
-    title: 'API Reference - Enterprise Edition',
-    description: 'Complete enterprise API documentation with 500+ endpoints, authentication, and integration guides',
+    title: 'API Reference Guide',
+    description: 'Complete API documentation for Total Recall\'s Supabase-based backend with real endpoints and authentication',
     category: 'api',
     filePath: 'docs/API_REFERENCE.md',
-    lastModified: '2024-12-10T15:45:00Z',
-    size: '187.3 KB',
-    tags: ['API', 'endpoints', 'authentication', 'integration', 'enterprise'],
-    status: 'published',
+    lastModified: new Date().toISOString(),
+    size: '142.7 KB',
+    tags: ['API', 'endpoints', 'supabase', 'authentication', 'real-time'],
+    status: 'updated',
     importance: 'critical'
   },
   {
     id: '3',
-    title: 'Enterprise System Architecture',
-    description: 'Comprehensive system architecture supporting 100,000+ users with 99.99% availability',
+    title: 'System Architecture Overview',
+    description: 'Total Recall\'s React + TypeScript + Supabase architecture with multi-tenant design and AI integration',
     category: 'architecture',
     filePath: 'docs/ARCHITECTURE.md',
-    lastModified: '2024-12-09T09:20:00Z',
-    size: '156.7 KB',
-    tags: ['architecture', 'scalability', 'microservices', 'kubernetes', 'AWS'],
-    status: 'published',
+    lastModified: new Date().toISOString(),
+    size: '118.5 KB',
+    tags: ['architecture', 'react', 'supabase', 'multi-tenant', 'real-time'],
+    status: 'updated',
     importance: 'critical'
   },
   {
     id: '4',
     title: 'Enterprise Security Framework',
-    description: 'Comprehensive security framework with zero-trust architecture and SOC 2 Type II compliance',
+    description: 'Comprehensive security implementation with RLS policies, tenant isolation, and compliance features',
     category: 'security',
     filePath: 'docs/SECURITY.md',
-    lastModified: '2024-12-08T14:15:00Z',
-    size: '143.2 KB',
-    tags: ['security', 'zero-trust', 'compliance', 'SOC2', 'ISO27001'],
-    status: 'published',
+    lastModified: new Date().toISOString(),
+    size: '156.8 KB',
+    tags: ['security', 'RLS', 'compliance', 'encryption', 'audit-logging'],
+    status: 'updated',
     importance: 'critical'
   },
   {
     id: '5',
-    title: 'Development Guide & Standards',
-    description: 'Comprehensive development standards with TypeScript, testing frameworks, and CI/CD pipelines',
-    category: 'development',
-    filePath: 'docs/DEVELOPMENT.md',
-    lastModified: '2024-12-07T11:30:00Z',
-    size: '98.4 KB',
-    tags: ['development', 'typescript', 'testing', 'ci-cd', 'standards'],
-    status: 'published',
+    title: 'Enterprise Features Specification',
+    description: 'Complete enterprise feature documentation including real-time collaboration, version control, and advanced workflows',
+    category: 'enterprise',
+    filePath: 'docs/ENTERPRISE_FEATURES.md',
+    lastModified: new Date().toISOString(),
+    size: '134.3 KB',
+    tags: ['enterprise', 'collaboration', 'version-control', 'workflows', 'multi-tenant'],
+    status: 'updated',
     importance: 'high'
   },
   {
     id: '6',
-    title: 'Enterprise Features Specification',
-    description: 'Complete enterprise feature documentation with real-time collaboration and advanced analytics',
-    category: 'enterprise',
-    filePath: 'docs/ENTERPRISE_FEATURES.md',
-    lastModified: '2024-12-06T16:45:00Z',
-    size: '89.1 KB',
-    tags: ['enterprise', 'features', 'collaboration', 'analytics', 'multi-tenant'],
-    status: 'published',
-    importance: 'high'
-  },
-  {
-    id: '7',
-    title: 'Collaboration Guidelines',
-    description: 'Team collaboration practices with real-time editing and version control workflows',
-    category: 'collaboration',
-    filePath: 'docs/COLLABORATION.md',
-    lastModified: '2024-12-05T13:20:00Z',
-    size: '34.6 KB',
-    tags: ['collaboration', 'workflow', 'version-control', 'team'],
-    status: 'published',
-    importance: 'medium'
-  },
-  {
-    id: '8',
-    title: 'Database Schema Documentation',
-    description: 'Complete database schema with relationships, indexing strategies, and performance optimization',
+    title: 'Module Specifications',
+    description: 'Detailed specifications for all Total Recall modules including People Management, Forms, ATS, and AI components',
     category: 'development',
-    filePath: 'docs/DATABASE_SCHEMA.md',
-    lastModified: '2024-12-04T10:15:00Z',
-    size: '67.3 KB',
-    tags: ['database', 'schema', 'postgresql', 'performance', 'optimization'],
-    status: 'published',
+    filePath: 'docs/MODULE_SPECIFICATIONS.md',
+    lastModified: new Date().toISOString(),
+    size: '167.9 KB',
+    tags: ['modules', 'specifications', 'people-management', 'forms', 'ATS'],
+    status: 'updated',
     importance: 'high'
-  },
-  {
-    id: '9',
-    title: 'Disaster Recovery Plan',
-    description: 'Comprehensive disaster recovery procedures with <1 hour RTO and <15 minutes RPO',
-    category: 'operations',
-    filePath: 'docs/DISASTER_RECOVERY.md',
-    lastModified: '2024-12-03T16:30:00Z',
-    size: '112.8 KB',
-    tags: ['disaster-recovery', 'business-continuity', 'RTO', 'RPO', 'operations'],
-    status: 'published',
-    importance: 'critical'
-  },
-  {
-    id: '10',
-    title: 'Compliance & Audit Framework',
-    description: 'Complete compliance program with SOC 2, ISO 27001, GDPR, and HIPAA readiness',
-    category: 'compliance',
-    filePath: 'docs/COMPLIANCE_AUDIT.md',
-    lastModified: '2024-12-02T14:45:00Z',
-    size: '134.5 KB',
-    tags: ['compliance', 'audit', 'SOC2', 'GDPR', 'HIPAA', 'ISO27001'],
-    status: 'published',
-    importance: 'critical'
   }
 ];
 
@@ -184,7 +137,7 @@ const Documentation: React.FC = () => {
   const { toast } = useToast();
 
   const filteredDocuments = useMemo(() => {
-    return mockDocuments.filter(doc => {
+    return totalRecallDocuments.filter(doc => {
       const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -221,8 +174,8 @@ const Documentation: React.FC = () => {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'published': return 'default';
-      case 'draft': return 'secondary';
-      case 'outdated': return 'destructive';
+      case 'updated': return 'secondary';
+      case 'draft': return 'outline';
       default: return 'outline';
     }
   };
@@ -298,7 +251,7 @@ const Documentation: React.FC = () => {
       );
       toast({
         title: "Download started",
-        description: "All documents are being downloaded as a single file."
+        description: "All Total Recall documentation is being downloaded as a single file."
       });
     } catch (error) {
       toast({
@@ -316,9 +269,9 @@ const Documentation: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Enterprise Documentation Center</h1>
+          <h1 className="text-2xl font-bold">Total Recall Documentation Center</h1>
           <p className="text-muted-foreground">
-            Comprehensive technical documentation and enterprise standards
+            Comprehensive technical documentation for Total Recall's enterprise platform
           </p>
         </div>
         
@@ -353,9 +306,9 @@ const Documentation: React.FC = () => {
           {/* Enhanced Search and Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Search & Filter Documents</CardTitle>
+              <CardTitle>Search & Filter Documentation</CardTitle>
               <CardDescription>
-                Filter by category, importance level, or search across all content
+                Browse Total Recall's comprehensive technical documentation and implementation guides
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -364,7 +317,7 @@ const Documentation: React.FC = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by title, description, or tags..."
+                      placeholder="Search documentation by title, description, or tags..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -379,10 +332,10 @@ const Documentation: React.FC = () => {
                       size="sm"
                       onClick={() => setSelectedCategory('all')}
                     >
-                      All Categories ({mockDocuments.length})
+                      All Categories ({totalRecallDocuments.length})
                     </Button>
                     {Object.entries(documentCategories).map(([key, category]) => {
-                      const count = mockDocuments.filter(doc => doc.category === key).length;
+                      const count = totalRecallDocuments.filter(doc => doc.category === key).length;
                       return (
                         <Button
                           key={key}
@@ -407,7 +360,7 @@ const Documentation: React.FC = () => {
                     All Levels
                   </Button>
                   {['critical', 'high', 'medium', 'low'].map((level) => {
-                    const count = mockDocuments.filter(doc => doc.importance === level).length;
+                    const count = totalRecallDocuments.filter(doc => doc.importance === level).length;
                     return (
                       <Button
                         key={level}
@@ -576,14 +529,16 @@ const Documentation: React.FC = () => {
               <CardContent>
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="ml-2">Loading document...</span>
+                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                    <span>Loading document...</span>
                   </div>
                 ) : documentContent ? (
-                  <MarkdownRenderer content={documentContent.content} />
+                  <div className="prose prose-sm max-w-none">
+                    <MarkdownRenderer content={documentContent.content} />
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    Failed to load document content.
+                    Select a document to view its content
                   </div>
                 )}
               </CardContent>
