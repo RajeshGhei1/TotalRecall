@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   ArrowLeft,
@@ -49,6 +49,7 @@ const navigationItems = [
 
 export function DocumentationSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
@@ -62,11 +63,14 @@ export function DocumentationSidebar() {
 
       {/* Back Navigation */}
       <div className="p-4 border-b border-gray-100">
-        <Button variant="ghost" size="sm" asChild className="w-full justify-start">
-          <Link to="/superadmin" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Link>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full justify-start"
+          onClick={() => navigate('/superadmin')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
         </Button>
       </div>
 
