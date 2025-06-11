@@ -1,321 +1,216 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { documentService, type DocumentContent } from '@/services/documentService';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { documentService, DocumentContent } from '@/services/documentService';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  BookOpen, 
-  Search, 
-  FileText, 
-  Shield, 
-  Code, 
-  Settings, 
-  Download,
-  ExternalLink,
-  Clock,
-  Tag,
-  ArrowLeft,
-  Loader2,
-  AlertTriangle,
-  CheckCircle,
-  BarChart3,
-  Zap
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Download, Search, FileText, Zap, Shield, Building, Code, Users } from 'lucide-react';
+import { DocumentationSidebar } from '@/components/documentation/DocumentationSidebar';
 
-interface DocumentItem {
+interface DocumentCategory {
   id: string;
-  title: string;
-  description: string;
-  category: 'architecture' | 'security' | 'development' | 'api' | 'enterprise' | 'collaboration' | 'operations' | 'compliance' | 'ai';
-  filePath: string;
-  lastModified: string;
-  size: string;
-  tags: string[];
-  status: 'published' | 'draft' | 'updated';
-  importance: 'critical' | 'high' | 'medium' | 'low';
+  label: string;
+  count: number;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
-const documentCategories = {
-  ai: { label: 'AI & Intelligence', icon: Zap, color: 'bg-yellow-100 text-yellow-800' },
-  architecture: { label: 'Architecture', icon: Code, color: 'bg-blue-100 text-blue-800' },
-  security: { label: 'Security', icon: Shield, color: 'bg-red-100 text-red-800' },
-  development: { label: 'Development', icon: FileText, color: 'bg-green-100 text-green-800' },
-  api: { label: 'API Reference', icon: BookOpen, color: 'bg-purple-100 text-purple-800' },
-  enterprise: { label: 'Enterprise', icon: Settings, color: 'bg-orange-100 text-orange-800' },
-  collaboration: { label: 'Collaboration', icon: ExternalLink, color: 'bg-teal-100 text-teal-800' },
-  operations: { label: 'Operations', icon: BarChart3, color: 'bg-indigo-100 text-indigo-800' },
-  compliance: { label: 'Compliance', icon: CheckCircle, color: 'bg-emerald-100 text-emerald-800' }
-};
+interface PriorityLevel {
+  id: string;
+  label: string;
+  count?: number;
+}
 
-const totalRecallDocuments: DocumentItem[] = [
+const documentCategories = [
+  { id: 'all', label: 'All Categories', count: 6 },
+  { id: 'ai', label: 'AI & Intelligence', count: 1, icon: Zap },
+  { id: 'architecture', label: 'Architecture', count: 1, icon: Code },
+  { id: 'security', label: 'Security', count: 1, icon: Shield },
+  { id: 'development', label: 'Development', count: 1, icon: FileText },
+  { id: 'api', label: 'API Reference', count: 1, icon: Code },
+  { id: 'enterprise', label: 'Enterprise', count: 1, icon: Building },
+  { id: 'collaboration', label: 'Collaboration', count: 0, icon: Users },
+  { id: 'operations', label: 'Operations', count: 0, icon: Building },
+  { id: 'compliance', label: 'Compliance', count: 0, icon: Shield }
+];
+
+const priorityLevels = [
+  { id: 'all', label: 'All Levels' },
+  { id: 'critical', label: 'Critical', count: 4 },
+  { id: 'high', label: 'High', count: 2 },
+  { id: 'medium', label: 'Medium', count: 0 },
+  { id: 'low', label: 'Low', count: 0 }
+];
+
+const availableDocuments = [
   {
-    id: '1',
-    title: 'AI Implementation Roadmap',
-    description: 'Comprehensive AI strategy with current infrastructure status, implementation phases, and business impact projections',
-    category: 'ai',
     filePath: 'docs/AI_ROADMAP.md',
-    lastModified: new Date().toISOString(),
-    size: '95.2 KB',
-    tags: ['AI', 'strategy', 'roadmap', 'implementation', 'cognitive-assistance'],
-    status: 'updated',
-    importance: 'critical'
+    title: 'AI Implementation Roadmap',
+    description: 'Comprehensive AI strategy with current implementation status and planned enhancements',
+    category: 'ai',
+    priority: 'critical',
+    tags: ['updated'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '8 min'
   },
   {
-    id: '2',
-    title: 'API Reference Guide',
-    description: 'Complete API documentation for Total Recall\'s Supabase-based backend with real endpoints and authentication',
-    category: 'api',
     filePath: 'docs/API_REFERENCE.md',
-    lastModified: new Date().toISOString(),
-    size: '142.7 KB',
-    tags: ['API', 'endpoints', 'supabase', 'authentication', 'real-time'],
-    status: 'updated',
-    importance: 'critical'
+    title: 'Total Recall API Reference',
+    description: 'Complete API documentation covering all endpoints, authentication, and real-time features',
+    category: 'api',
+    priority: 'critical',
+    tags: ['essential'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '12 min'
   },
   {
-    id: '3',
-    title: 'System Architecture Overview',
-    description: 'Total Recall\'s React + TypeScript + Supabase architecture with multi-tenant design and AI integration',
-    category: 'architecture',
     filePath: 'docs/ARCHITECTURE.md',
-    lastModified: new Date().toISOString(),
-    size: '118.5 KB',
-    tags: ['architecture', 'react', 'supabase', 'multi-tenant', 'real-time'],
-    status: 'updated',
-    importance: 'critical'
+    title: 'System Architecture Overview',
+    description: 'Detailed technical architecture including security, collaboration, and AI integration',
+    category: 'architecture',
+    priority: 'critical',
+    tags: ['technical'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '10 min'
   },
   {
-    id: '4',
-    title: 'Enterprise Security Framework',
-    description: 'Comprehensive security implementation with RLS policies, tenant isolation, and compliance features',
-    category: 'security',
     filePath: 'docs/SECURITY.md',
-    lastModified: new Date().toISOString(),
-    size: '156.8 KB',
-    tags: ['security', 'RLS', 'compliance', 'encryption', 'audit-logging'],
-    status: 'updated',
-    importance: 'critical'
+    title: 'Security Framework',
+    description: 'Enterprise security implementation with RLS policies, audit logging, and compliance',
+    category: 'security',
+    priority: 'critical',
+    tags: ['compliance'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '15 min'
   },
   {
-    id: '5',
-    title: 'Enterprise Features Specification',
-    description: 'Complete enterprise feature documentation including real-time collaboration, version control, and advanced workflows',
-    category: 'enterprise',
     filePath: 'docs/ENTERPRISE_FEATURES.md',
-    lastModified: new Date().toISOString(),
-    size: '134.3 KB',
-    tags: ['enterprise', 'collaboration', 'version-control', 'workflows', 'multi-tenant'],
-    status: 'updated',
-    importance: 'high'
+    title: 'Enterprise Features Guide',
+    description: 'Comprehensive guide to enterprise capabilities including collaboration and version control',
+    category: 'enterprise',
+    priority: 'high',
+    tags: ['features'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '12 min'
   },
   {
-    id: '6',
-    title: 'Module Specifications',
-    description: 'Detailed specifications for all Total Recall modules including People Management, Forms, ATS, and AI components',
-    category: 'development',
     filePath: 'docs/MODULE_SPECIFICATIONS.md',
-    lastModified: new Date().toISOString(),
-    size: '167.9 KB',
-    tags: ['modules', 'specifications', 'people-management', 'forms', 'ATS'],
-    status: 'updated',
-    importance: 'high'
+    title: 'Module Specifications',
+    description: 'Detailed specifications for all Total Recall modules and their integration patterns',
+    category: 'development',
+    priority: 'high',
+    tags: ['technical'],
+    lastModified: '2024-01-15',
+    estimatedReadTime: '14 min'
   }
 ];
 
-const Documentation: React.FC = () => {
+export default function Documentation() {
+  const [selectedDocument, setSelectedDocument] = useState<DocumentContent | null>(null);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedImportance, setSelectedImportance] = useState<string>('all');
-  const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
-  const [documentContent, setDocumentContent] = useState<DocumentContent | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const { toast } = useToast();
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPriority, setSelectedPriority] = useState('all');
 
-  const filteredDocuments = useMemo(() => {
-    return totalRecallDocuments.filter(doc => {
-      const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
-      const matchesImportance = selectedImportance === 'all' || doc.importance === selectedImportance;
-      
-      return matchesSearch && matchesCategory && matchesImportance;
-    });
-  }, [searchTerm, selectedCategory, selectedImportance]);
-
-  const documentsByCategory = useMemo(() => {
-    const grouped = filteredDocuments.reduce((acc, doc) => {
-      if (!acc[doc.category]) {
-        acc[doc.category] = [];
-      }
-      acc[doc.category].push(doc);
-      return acc;
-    }, {} as Record<string, DocumentItem[]>);
-    
-    return grouped;
-  }, [filteredDocuments]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'published': return 'default';
-      case 'updated': return 'secondary';
-      case 'draft': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  const getImportanceBadgeVariant = (importance: string) => {
-    switch (importance) {
-      case 'critical': return 'destructive';
-      case 'high': return 'default';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  const getImportanceIcon = (importance: string) => {
-    switch (importance) {
-      case 'critical': return <AlertTriangle className="h-3 w-3" />;
-      case 'high': return <ExternalLink className="h-3 w-3" />;
-      case 'medium': return <FileText className="h-3 w-3" />;
-      case 'low': return <CheckCircle className="h-3 w-3" />;
-      default: return <FileText className="h-3 w-3" />;
-    }
-  };
-
-  const handleDocumentSelect = async (doc: DocumentItem) => {
-    setSelectedDocument(doc);
-    setIsLoading(true);
-    setDocumentContent(null);
-
+  const loadDocument = async (filePath: string) => {
+    setLoading(true);
     try {
-      const content = await documentService.loadDocument(doc.filePath);
-      setDocumentContent(content);
+      const document = await documentService.loadDocument(filePath);
+      setSelectedDocument(document);
     } catch (error) {
-      toast({
-        title: "Error loading document",
-        description: "Failed to load the document content. Please try again.",
-        variant: "destructive"
-      });
       console.error('Error loading document:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleDownloadDocument = async (doc: DocumentItem) => {
-    setIsDownloading(true);
+  const downloadDocument = async (filePath: string, title: string) => {
     try {
-      await documentService.downloadDocument(doc.filePath, `${doc.title}.md`);
-      toast({
-        title: "Download started",
-        description: `${doc.title} is being downloaded.`
-      });
+      const filename = `${title.toLowerCase().replace(/\s+/g, '-')}.md`;
+      await documentService.downloadDocument(filePath, filename);
     } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "Failed to download the document. Please try again.",
-        variant: "destructive"
-      });
       console.error('Error downloading document:', error);
-    } finally {
-      setIsDownloading(false);
     }
   };
 
-  const handleDownloadAll = async () => {
-    setIsDownloading(true);
+  const downloadAllDocuments = async () => {
     try {
-      await documentService.downloadAllDocuments(
-        filteredDocuments.map(doc => ({
-          filePath: doc.filePath,
-          title: doc.title
-        }))
-      );
-      toast({
-        title: "Download started",
-        description: "All Total Recall documentation is being downloaded as a single file."
-      });
+      await documentService.downloadAllDocuments(availableDocuments);
     } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "Failed to download all documents. Please try again.",
-        variant: "destructive"
-      });
       console.error('Error downloading all documents:', error);
-    } finally {
-      setIsDownloading(false);
+    }
+  };
+
+  const filteredDocuments = availableDocuments.filter(doc => {
+    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
+    const matchesPriority = selectedPriority === 'all' || doc.priority === selectedPriority;
+    
+    return matchesSearch && matchesCategory && matchesPriority;
+  });
+
+  const getCategoryIcon = (category: string) => {
+    const categoryData = documentCategories.find(cat => cat.id === category);
+    if (categoryData?.icon) {
+      const Icon = categoryData.icon;
+      return <Icon className="h-4 w-4" />;
+    }
+    return <FileText className="h-4 w-4" />;
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical': return 'bg-red-100 text-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Total Recall Documentation Center</h1>
-          <p className="text-muted-foreground">
-            Comprehensive technical documentation for Total Recall's enterprise platform
-          </p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar Navigation */}
+      <DocumentationSidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Total Recall Documentation Center</h1>
+              <p className="text-gray-600">Comprehensive technical documentation for Total Recall's enterprise platform</p>
+            </div>
+            <Button onClick={downloadAllDocuments} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export All ({availableDocuments.length})
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleDownloadAll}
-            disabled={isDownloading || filteredDocuments.length === 0}
-          >
-            {isDownloading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
-            Export All ({filteredDocuments.length})
-          </Button>
-        </div>
-      </div>
 
-      <Tabs value={selectedDocument ? 'viewer' : 'browser'} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="browser" onClick={() => setSelectedDocument(null)}>
-            Document Browser
-          </TabsTrigger>
-          <TabsTrigger value="viewer" disabled={!selectedDocument}>
-            Document Viewer
-          </TabsTrigger>
-        </TabsList>
+        {/* Content Area */}
+        <div className="flex-1 p-6">
+          <Tabs defaultValue="browser" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="browser">Document Browser</TabsTrigger>
+              <TabsTrigger value="viewer">Document Viewer</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="browser" className="space-y-6">
-          {/* Enhanced Search and Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Search & Filter Documentation</CardTitle>
-              <CardDescription>
-                Browse Total Recall's comprehensive technical documentation and implementation guides
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex-1">
+            <TabsContent value="browser" className="space-y-6">
+              {/* Search and Filter Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Search & Filter Documentation</CardTitle>
+                  <CardDescription>
+                    Browse Total Recall's comprehensive technical documentation and implementation guides
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Search Bar */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search documentation by title, description, or tags..."
                       value={searchTerm}
@@ -323,231 +218,178 @@ const Documentation: React.FC = () => {
                       className="pl-10"
                     />
                   </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedCategory('all')}
-                    >
-                      All Categories ({totalRecallDocuments.length})
-                    </Button>
-                    {Object.entries(documentCategories).map(([key, category]) => {
-                      const count = totalRecallDocuments.filter(doc => doc.category === key).length;
-                      return (
-                        <Button
-                          key={key}
-                          variant={selectedCategory === key ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setSelectedCategory(key)}
-                        >
-                          <category.icon className="h-4 w-4 mr-1" />
-                          {category.label} ({count})
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
 
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant={selectedImportance === 'all' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedImportance('all')}
-                  >
-                    All Levels
-                  </Button>
-                  {['critical', 'high', 'medium', 'low'].map((level) => {
-                    const count = totalRecallDocuments.filter(doc => doc.importance === level).length;
+                  {/* Category Filters */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-700">Categories</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {documentCategories.map((category) => {
+                        const Icon = category.icon;
+                        return (
+                          <Button
+                            key={category.id}
+                            variant={selectedCategory === category.id ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedCategory(category.id)}
+                            className="flex items-center gap-2"
+                          >
+                            {Icon && <Icon className="h-4 w-4" />}
+                            {category.label} ({category.count})
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Priority Filters */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-700">Priority Level</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {priorityLevels.map((priority) => (
+                        <Button
+                          key={priority.id}
+                          variant={selectedPriority === priority.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedPriority(priority.id)}
+                        >
+                          {priority.label} {priority.count !== undefined && `(${priority.count})`}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Documents Grid */}
+              <div className="space-y-4">
+                {documentCategories
+                  .filter(cat => cat.id !== 'all' && filteredDocuments.some(doc => doc.category === cat.id))
+                  .map((category) => {
+                    const categoryDocs = filteredDocuments.filter(doc => doc.category === category.id);
+                    const Icon = category.icon;
+                    
                     return (
-                      <Button
-                        key={level}
-                        variant={selectedImportance === level ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setSelectedImportance(level)}
-                      >
-                        {getImportanceIcon(level)}
-                        <span className="ml-1 capitalize">{level} ({count})</span>
-                      </Button>
+                      <div key={category.id} className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          {Icon && <Icon className="h-5 w-5" />}
+                          <h2 className="text-lg font-semibold text-gray-900">
+                            {category.label} <span className="text-gray-500">({categoryDocs.length})</span>
+                          </h2>
+                        </div>
+                        
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {categoryDocs.map((doc) => (
+                            <Card key={doc.filePath} className="cursor-pointer hover:shadow-md transition-shadow">
+                              <CardHeader>
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {getCategoryIcon(doc.category)}
+                                    <CardTitle className="text-sm">{doc.title}</CardTitle>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <Badge className={getPriorityColor(doc.priority)}>
+                                      {doc.priority}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <CardDescription className="text-xs">
+                                  {doc.description}
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex flex-wrap gap-1">
+                                    {doc.tags.map((tag) => (
+                                      <Badge key={tag} variant="secondary" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => loadDocument(doc.filePath)}
+                                    >
+                                      View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => downloadDocument(doc.filePath, doc.title)}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="mt-2 text-xs text-gray-500">
+                                  {doc.estimatedReadTime} • Updated {doc.lastModified}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
                     );
                   })}
-                </div>
               </div>
-            </CardContent>
-          </Card>
+            </TabsContent>
 
-          {/* Document Grid */}
-          <div className="space-y-6">
-            {Object.entries(documentsByCategory).map(([categoryKey, documents]) => {
-              const category = documentCategories[categoryKey as keyof typeof documentCategories];
-              if (!category || documents.length === 0) return null;
-
-              return (
-                <div key={categoryKey} className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <category.icon className="h-5 w-5" />
-                    <h2 className="text-lg font-semibold">{category.label}</h2>
-                    <Badge variant="outline">{documents.length}</Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {documents.map((doc) => (
-                      <Card 
-                        key={doc.id} 
-                        className="cursor-pointer hover:shadow-md transition-shadow h-full flex flex-col"
-                      >
-                        <CardHeader className="flex-grow">
-                          <div className="flex justify-between items-start mb-2">
-                            <CardTitle className="text-base line-clamp-2">{doc.title}</CardTitle>
-                            <div className="flex gap-1 ml-2 flex-shrink-0">
-                              <Badge variant={getImportanceBadgeVariant(doc.importance)} className="text-xs">
-                                {getImportanceIcon(doc.importance)}
-                                <span className="ml-1 capitalize">{doc.importance}</span>
-                              </Badge>
-                              <Badge variant={getStatusBadgeVariant(doc.status)} className="text-xs">
-                                {doc.status}
-                              </Badge>
-                            </div>
-                          </div>
-                          <CardDescription className="text-sm line-clamp-3">
-                            {doc.description}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="h-4 w-4" />
-                              {formatDate(doc.lastModified)}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <FileText className="h-4 w-4" />
-                              {doc.size}
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {doc.tags.slice(0, 3).map((tag) => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  <Tag className="h-3 w-3 mr-1" />
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {doc.tags.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{doc.tags.length - 3} more
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                              <Button 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => handleDocumentSelect(doc)}
-                              >
-                                <BookOpen className="h-4 w-4 mr-1" />
-                                View
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleDownloadDocument(doc)}
-                                disabled={isDownloading}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {filteredDocuments.length === 0 && (
-            <Card>
-              <CardContent className="text-center py-8">
-                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No documents found</h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search terms, category, or importance level filters
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="viewer" className="space-y-6">
-          {selectedDocument && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedDocument(null)}
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Browser
-                      </Button>
+            <TabsContent value="viewer">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Document Viewer</CardTitle>
+                  <CardDescription>
+                    {selectedDocument ? selectedDocument.title : 'Select a document from the browser to view its content'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-gray-500">Loading document...</div>
                     </div>
-                    <CardTitle className="text-xl">{selectedDocument.title}</CardTitle>
-                    <CardDescription className="mt-2">{selectedDocument.description}</CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDownloadDocument(selectedDocument)}
-                      disabled={isDownloading}
-                    >
-                      {isDownloading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Download className="h-4 w-4 mr-2" />
-                      )}
-                      Download
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                  <span>Last modified: {formatDate(selectedDocument.lastModified)}</span>
-                  <span>Size: {selectedDocument.size}</span>
-                  <Badge variant={getImportanceBadgeVariant(selectedDocument.importance)}>
-                    {getImportanceIcon(selectedDocument.importance)}
-                    <span className="ml-1 capitalize">{selectedDocument.importance}</span>
-                  </Badge>
-                  <Badge variant={getStatusBadgeVariant(selectedDocument.status)}>
-                    {selectedDocument.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
-                    <span>Loading document...</span>
-                  </div>
-                ) : documentContent ? (
-                  <div className="prose prose-sm max-w-none">
-                    <MarkdownRenderer content={documentContent.content} />
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Select a document to view its content
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+                  ) : selectedDocument ? (
+                    <div className="prose prose-gray max-w-none">
+                      <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                              {selectedDocument.title}
+                            </h2>
+                            <div className="text-sm text-gray-600">
+                              Last modified: {new Date(selectedDocument.lastModified).toLocaleDateString()} • 
+                              {selectedDocument.wordCount} words
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => downloadDocument('', selectedDocument.title)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {selectedDocument.content}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Document Selected</h3>
+                      <p className="text-gray-600">
+                        Choose a document from the browser tab to view its content here.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Documentation;
+}
