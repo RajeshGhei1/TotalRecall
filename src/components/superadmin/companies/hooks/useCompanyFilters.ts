@@ -66,6 +66,7 @@ export const useCompanyFilters = (
   searchTerm: string
 ) => {
   const filteredCompanies = useMemo(() => {
+    // Return empty array if companies is not available or not an array
     if (!companies || !Array.isArray(companies)) {
       return [];
     }
@@ -92,7 +93,7 @@ export const useCompanyFilters = (
     }
 
     // Apply industry filter (check all industry fields)
-    if (filters.industries && filters.industries.length > 0) {
+    if (filters.industries && Array.isArray(filters.industries) && filters.industries.length > 0) {
       filtered = filtered.filter(company => 
         (company.industry1 && filters.industries.includes(company.industry1)) ||
         (company.industry2 && filters.industries.includes(company.industry2)) ||
@@ -101,70 +102,70 @@ export const useCompanyFilters = (
     }
 
     // Apply size filter
-    if (filters.sizes && filters.sizes.length > 0) {
+    if (filters.sizes && Array.isArray(filters.sizes) && filters.sizes.length > 0) {
       filtered = filtered.filter(company => 
         company.size && filters.sizes.includes(company.size)
       );
     }
 
     // Apply company type filter
-    if (filters.companyTypes && filters.companyTypes.length > 0) {
+    if (filters.companyTypes && Array.isArray(filters.companyTypes) && filters.companyTypes.length > 0) {
       filtered = filtered.filter(company => 
         company.companytype && filters.companyTypes.includes(company.companytype)
       );
     }
 
     // Apply entity type filter
-    if (filters.entityTypes && filters.entityTypes.length > 0) {
+    if (filters.entityTypes && Array.isArray(filters.entityTypes) && filters.entityTypes.length > 0) {
       filtered = filtered.filter(company => 
         company.entitytype && filters.entityTypes.includes(company.entitytype)
       );
     }
 
     // Apply sector filter
-    if (filters.sectors && filters.sectors.length > 0) {
+    if (filters.sectors && Array.isArray(filters.sectors) && filters.sectors.length > 0) {
       filtered = filtered.filter(company => 
         company.companysector && filters.sectors.includes(company.companysector)
       );
     }
 
     // Apply status filter
-    if (filters.statuses && filters.statuses.length > 0) {
+    if (filters.statuses && Array.isArray(filters.statuses) && filters.statuses.length > 0) {
       filtered = filtered.filter(company => 
         company.companystatus && filters.statuses.includes(company.companystatus)
       );
     }
 
     // Apply location filter
-    if (filters.locations && filters.locations.length > 0) {
+    if (filters.locations && Array.isArray(filters.locations) && filters.locations.length > 0) {
       filtered = filtered.filter(company => 
         company.location && filters.locations.includes(company.location)
       );
     }
 
     // Apply country filter
-    if (filters.countries && filters.countries.length > 0) {
+    if (filters.countries && Array.isArray(filters.countries) && filters.countries.length > 0) {
       filtered = filtered.filter(company => 
         company.country && filters.countries.includes(company.country)
       );
     }
 
     // Apply global region filter
-    if (filters.globalRegions && filters.globalRegions.length > 0) {
+    if (filters.globalRegions && Array.isArray(filters.globalRegions) && filters.globalRegions.length > 0) {
       filtered = filtered.filter(company => 
         company.globalregion && filters.globalRegions.includes(company.globalregion)
       );
     }
 
     // Apply region filter
-    if (filters.regions && filters.regions.length > 0) {
+    if (filters.regions && Array.isArray(filters.regions) && filters.regions.length > 0) {
       filtered = filtered.filter(company => 
         company.region && filters.regions.includes(company.region)
       );
     }
 
     // Apply HO location filter
-    if (filters.hoLocations && filters.hoLocations.length > 0) {
+    if (filters.hoLocations && Array.isArray(filters.hoLocations) && filters.hoLocations.length > 0) {
       filtered = filtered.filter(company => 
         company.holocation && filters.hoLocations.includes(company.holocation)
       );
@@ -213,28 +214,28 @@ export const useCompanyFilters = (
     }
 
     // Apply employee segment filter
-    if (filters.employeeSegments && filters.employeeSegments.length > 0) {
+    if (filters.employeeSegments && Array.isArray(filters.employeeSegments) && filters.employeeSegments.length > 0) {
       filtered = filtered.filter(company => 
         company.segmentaspernumberofemployees && filters.employeeSegments.includes(company.segmentaspernumberofemployees)
       );
     }
 
     // Apply turnover segment filter
-    if (filters.turnoverSegments && filters.turnoverSegments.length > 0) {
+    if (filters.turnoverSegments && Array.isArray(filters.turnoverSegments) && filters.turnoverSegments.length > 0) {
       filtered = filtered.filter(company => 
         company.segmentasperturnover && filters.turnoverSegments.includes(company.segmentasperturnover)
       );
     }
 
     // Apply capital segment filter
-    if (filters.capitalSegments && filters.capitalSegments.length > 0) {
+    if (filters.capitalSegments && Array.isArray(filters.capitalSegments) && filters.capitalSegments.length > 0) {
       filtered = filtered.filter(company => 
         company.segmentasperpaidupcapital && filters.capitalSegments.includes(company.segmentasperpaidupcapital)
       );
     }
 
     // Apply turnover year filter
-    if (filters.turnoverYears && filters.turnoverYears.length > 0) {
+    if (filters.turnoverYears && Array.isArray(filters.turnoverYears) && filters.turnoverYears.length > 0) {
       filtered = filtered.filter(company => 
         company.turnoveryear && filters.turnoverYears.includes(company.turnoveryear)
       );
@@ -274,28 +275,28 @@ export const useCompanyFilters = (
     }
 
     // Apply specialization filter
-    if (filters.specializations && filters.specializations.length > 0) {
+    if (filters.specializations && Array.isArray(filters.specializations) && filters.specializations.length > 0) {
       filtered = filtered.filter(company => 
         company.areaofspecialize && filters.specializations.includes(company.areaofspecialize)
       );
     }
 
     // Apply service line filter
-    if (filters.serviceLines && filters.serviceLines.length > 0) {
+    if (filters.serviceLines && Array.isArray(filters.serviceLines) && filters.serviceLines.length > 0) {
       filtered = filtered.filter(company => 
         company.serviceline && filters.serviceLines.includes(company.serviceline)
       );
     }
 
     // Apply verticals filter
-    if (filters.verticals && filters.verticals.length > 0) {
+    if (filters.verticals && Array.isArray(filters.verticals) && filters.verticals.length > 0) {
       filtered = filtered.filter(company => 
         company.verticles && filters.verticals.includes(company.verticles)
       );
     }
 
     // Apply company group filter
-    if (filters.companyGroups && filters.companyGroups.length > 0) {
+    if (filters.companyGroups && Array.isArray(filters.companyGroups) && filters.companyGroups.length > 0) {
       filtered = filtered.filter(company => 
         company.company_group_name && filters.companyGroups.includes(company.company_group_name)
       );
@@ -313,7 +314,7 @@ export const useCompanyFilters = (
     }
 
     // Apply has parent filter
-    if (filters.hasParent && filters.hasParent.length > 0) {
+    if (filters.hasParent && Array.isArray(filters.hasParent) && filters.hasParent.length > 0) {
       filtered = filtered.filter(company => {
         const hasParent = !!company.parent_company_id;
         return filters.hasParent.includes(hasParent.toString());
@@ -321,42 +322,42 @@ export const useCompanyFilters = (
     }
 
     // Apply contact and social media filters
-    if (filters.hasEmail && filters.hasEmail.length > 0) {
+    if (filters.hasEmail && Array.isArray(filters.hasEmail) && filters.hasEmail.length > 0) {
       filtered = filtered.filter(company => {
         const hasEmail = !!company.email;
         return filters.hasEmail.includes(hasEmail.toString());
       });
     }
 
-    if (filters.hasPhone && filters.hasPhone.length > 0) {
+    if (filters.hasPhone && Array.isArray(filters.hasPhone) && filters.hasPhone.length > 0) {
       filtered = filtered.filter(company => {
         const hasPhone = !!company.phone;
         return filters.hasPhone.includes(hasPhone.toString());
       });
     }
 
-    if (filters.hasWebsite && filters.hasWebsite.length > 0) {
+    if (filters.hasWebsite && Array.isArray(filters.hasWebsite) && filters.hasWebsite.length > 0) {
       filtered = filtered.filter(company => {
         const hasWebsite = !!company.website;
         return filters.hasWebsite.includes(hasWebsite.toString());
       });
     }
 
-    if (filters.hasLinkedin && filters.hasLinkedin.length > 0) {
+    if (filters.hasLinkedin && Array.isArray(filters.hasLinkedin) && filters.hasLinkedin.length > 0) {
       filtered = filtered.filter(company => {
         const hasLinkedin = !!company.linkedin;
         return filters.hasLinkedin.includes(hasLinkedin.toString());
       });
     }
 
-    if (filters.hasTwitter && filters.hasTwitter.length > 0) {
+    if (filters.hasTwitter && Array.isArray(filters.hasTwitter) && filters.hasTwitter.length > 0) {
       filtered = filtered.filter(company => {
         const hasTwitter = !!company.twitter;
         return filters.hasTwitter.includes(hasTwitter.toString());
       });
     }
 
-    if (filters.hasFacebook && filters.hasFacebook.length > 0) {
+    if (filters.hasFacebook && Array.isArray(filters.hasFacebook) && filters.hasFacebook.length > 0) {
       filtered = filtered.filter(company => {
         const hasFacebook = !!company.facebook;
         return filters.hasFacebook.includes(hasFacebook.toString());
