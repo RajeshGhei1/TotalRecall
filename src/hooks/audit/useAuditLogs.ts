@@ -3,10 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { AuditLog, AuditLogFilters } from '@/types/audit';
+import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { useCacheInvalidation } from '@/hooks/security/useCacheInvalidation';
 
 export const useAuditLogs = (filters: AuditLogFilters = {}, page = 1, pageSize = 50) => {
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useQuery({
-    queryKey: ['audit-logs', filters, page, pageSize],
+    queryKey: createSecureKey('audit-logs', [filters, page, pageSize]),
     queryFn: async () => {
       let query = supabase
         .from('audit_logs')
@@ -72,8 +76,10 @@ export const useAuditLogs = (filters: AuditLogFilters = {}, page = 1, pageSize =
 };
 
 export const useAuditLogStats = (tenantId?: string) => {
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useQuery({
-    queryKey: ['audit-log-stats', tenantId],
+    queryKey: createSecureKey('audit-log-stats', [tenantId]),
     queryFn: async () => {
       // Get stats for the last 7 days
       const sevenDaysAgo = new Date();
@@ -132,6 +138,8 @@ export const useAuditLogStats = (tenantId?: string) => {
 
 export const useLogAuditEvent = () => {
   const queryClient = useQueryClient();
+  const { createSecureKey } = useSecureQueryKey();
+  const { clearSecurityCaches } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: async (logData: {
@@ -152,8 +160,10 @@ export const useLogAuditEvent = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
-      queryClient.invalidateQueries({ queryKey: ['audit-log-stats'] });
+      // Invalidate all audit-related caches
+      queryClient.invalidateQueries({ queryKey: createSecureKey('audit-logs') });
+      queryClient.invalidateQueries({ queryKey: createSecureKey('audit-log-stats') });
+      clearSecurityCaches();
     },
     onError: (error) => {
       console.error('Failed to log audit event:', error);

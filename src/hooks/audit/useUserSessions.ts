@@ -3,10 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { UserSession, UserSessionFilters, SessionStats } from '@/types/user-sessions';
+import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { useCacheInvalidation } from '@/hooks/security/useCacheInvalidation';
 
 export const useUserSessions = (filters: UserSessionFilters = {}, page = 1, pageSize = 50) => {
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useQuery({
-    queryKey: ['user-sessions', filters, page, pageSize],
+    queryKey: createSecureKey('user-sessions', [filters, page, pageSize]),
     queryFn: async () => {
       let query = supabase
         .from('user_sessions')
@@ -66,8 +70,10 @@ export const useUserSessions = (filters: UserSessionFilters = {}, page = 1, page
 };
 
 export const useUserSessionStats = (tenantId?: string) => {
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useQuery({
-    queryKey: ['user-session-stats', tenantId],
+    queryKey: createSecureKey('user-session-stats', [tenantId]),
     queryFn: async () => {
       // Get stats for the last 7 days
       const sevenDaysAgo = new Date();
@@ -154,6 +160,8 @@ export const useUserSessionStats = (tenantId?: string) => {
 
 export const useTerminateSession = () => {
   const queryClient = useQueryClient();
+  const { createSecureKey } = useSecureQueryKey();
+  const { clearSecurityCaches } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
@@ -169,8 +177,10 @@ export const useTerminateSession = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['user-session-stats'] });
+      queryClient.invalidateQueries({ queryKey: createSecureKey('user-sessions') });
+      queryClient.invalidateQueries({ queryKey: createSecureKey('user-session-stats') });
+      clearSecurityCaches();
+      
       toast({
         title: 'Session Terminated',
         description: 'User session has been successfully terminated',

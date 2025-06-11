@@ -1,18 +1,30 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { SavedReport, Filter } from '@/services/reportingService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTenantContext } from '@/contexts/TenantContext';
+import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { useCacheInvalidation } from '@/hooks/security/useCacheInvalidation';
 
-export const useSecureSavedReports = (tenantId?: string) => {
+export const useSecureSavedReports = () => {
+  const { user } = useAuth();
+  const { selectedTenantId } = useTenantContext();
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useQuery({
-    queryKey: ['secure-saved-reports', tenantId],
+    queryKey: createSecureKey('secure-saved-reports', [selectedTenantId]),
     queryFn: async () => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       let query = supabase
         .from('saved_reports')
         .select('*')
         .order('created_at', { ascending: false });
 
-      // The RLS policies will automatically filter by tenant
       const { data, error } = await query;
       
       if (error) {
@@ -30,23 +42,26 @@ export const useSecureSavedReports = (tenantId?: string) => {
       
       return parsedData || [];
     },
+    enabled: !!user,
   });
 };
 
 export const useSecureSaveReport = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { selectedTenantId } = useTenantContext();
+  const { createSecureKey } = useSecureQueryKey();
+  const { clearCachePattern } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: async (report: Omit<SavedReport, 'id' | 'created_at' | 'updated_at'>) => {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const reportData = {
         ...report,
-        created_by: user.id,
-        tenant_id: null, // Remove tenant_id reference for now
+        // Use proper tenant context instead of null
+        tenant_id: selectedTenantId,
         columns: JSON.stringify(report.columns),
         filters: JSON.stringify(report.filters),
         aggregation: JSON.stringify(report.aggregation)
@@ -71,7 +86,12 @@ export const useSecureSaveReport = () => {
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['secure-saved-reports'] });
+      // Invalidate all secure report caches
+      queryClient.invalidateQueries({ 
+        queryKey: createSecureKey('secure-saved-reports') 
+      });
+      clearCachePattern('secure-saved-reports');
+      
       toast({
         title: 'Success',
         description: 'Report saved successfully',
@@ -91,6 +111,8 @@ export const useSecureSaveReport = () => {
 export const useSecureDeleteReport = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { createSecureKey } = useSecureQueryKey();
+  const { clearCachePattern } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: async (reportId: string) => {
@@ -105,7 +127,12 @@ export const useSecureDeleteReport = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['secure-saved-reports'] });
+      // Invalidate all secure report caches
+      queryClient.invalidateQueries({ 
+        queryKey: createSecureKey('secure-saved-reports') 
+      });
+      clearCachePattern('secure-saved-reports');
+      
       toast({
         title: 'Success',
         description: 'Report deleted successfully',
@@ -123,6 +150,8 @@ export const useSecureDeleteReport = () => {
 };
 
 export const useSecureRunDynamicReport = () => {
+  const { createSecureKey } = useSecureQueryKey();
+  
   return useMutation({
     mutationFn: async (params: {
       entity: string;
