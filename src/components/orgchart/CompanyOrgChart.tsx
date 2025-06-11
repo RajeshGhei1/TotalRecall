@@ -79,7 +79,7 @@ const OrgNode: React.FC<OrgNodeProps> = ({ node, level }) => {
 };
 
 const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
-  const { orgChartData, isLoading, error } = useCompanyOrgChart(companyId);
+  const { data: orgChartData, isLoading, error } = useCompanyOrgChart(companyId);
 
   if (isLoading) {
     return (

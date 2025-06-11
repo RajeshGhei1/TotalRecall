@@ -26,7 +26,7 @@ interface CompanyOrgChartProps {
 }
 
 const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
-  const { orgChartData, isLoading, refetch } = useCompanyOrgChart(companyId);
+  const { data: orgChartData, isLoading, refetch } = useCompanyOrgChart(companyId);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandAll, setExpandAll] = useState(false);
