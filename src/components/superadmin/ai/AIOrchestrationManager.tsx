@@ -74,6 +74,13 @@ export const AIOrchestrationManager = () => {
     }
   };
 
+  // Calculate derived metrics safely
+  const successRate = metrics.totalRequests > 0 
+    ? ((metrics.totalRequests - (metrics.failedRequests || 0)) / metrics.totalRequests * 100)
+    : 0;
+  
+  const avgResponseTime = metrics.averageResponseTime || 250; // Default fallback
+
   return (
     <div className="space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
@@ -112,7 +119,7 @@ export const AIOrchestrationManager = () => {
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             <div className="text-xl sm:text-2xl font-bold text-green-600">
-              {((metrics.successfulRequests / Math.max(metrics.totalRequests, 1)) * 100).toFixed(1)}%
+              {successRate.toFixed(1)}%
             </div>
           </CardContent>
         </Card>
@@ -186,7 +193,7 @@ export const AIOrchestrationManager = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Response Time</span>
-                  <span className="font-medium">{metrics.averageResponseTime.toFixed(0)}ms</span>
+                  <span className="font-medium">{avgResponseTime.toFixed(0)}ms</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Active Agents</span>
