@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuditLogs, useAuditLogStats } from '@/hooks/audit/useAuditLogs';
-import { useUserSessions, useUserSessionStats } from '@/hooks/useUserSessions';
+import { useUserSessions, useUserSessionStats } from '@/hooks/audit/useUserSessions';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { 
@@ -384,7 +384,7 @@ const SecurityAuditDashboard: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   {sessionStats?.topDevices?.map((device, index) => (
-                    <div key={index} className="flex justify-between items-center">
+                    <div key={`device-${index}`} className="flex justify-between items-center">
                       <span>{device.device}</span>
                       <Badge variant="outline">{device.count}</Badge>
                     </div>
