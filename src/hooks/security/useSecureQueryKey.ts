@@ -1,16 +1,14 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenantContext } from '@/contexts/TenantContext';
-import { useSession } from '@supabase/auth-helpers-react';
 
 /**
  * Hook to generate secure query keys that include user_id, session_id, and tenant_id
  * This prevents cache pollution between different users and sessions
  */
 export const useSecureQueryKey = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { selectedTenantId } = useTenantContext();
-  const session = useSession();
 
   const createSecureKey = (baseKey: string | string[], additionalKeys: (string | number | undefined)[] = []) => {
     const keyArray = Array.isArray(baseKey) ? baseKey : [baseKey];

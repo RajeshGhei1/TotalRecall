@@ -10,7 +10,7 @@ export const useAuditLogs = (filters: AuditLogFilters = {}, page = 1, pageSize =
   const { createSecureKey } = useSecureQueryKey();
   
   return useQuery({
-    queryKey: createSecureKey('audit-logs', [filters, page, pageSize]),
+    queryKey: createSecureKey('audit-logs', [JSON.stringify(filters), page, pageSize]),
     queryFn: async () => {
       let query = supabase
         .from('audit_logs')

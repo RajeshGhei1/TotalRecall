@@ -1,37 +1,19 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { FormChangeHistory, ReportChangeHistory } from '@/types/form-change-history';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
 
+// Since the new tables don't exist yet, let's create placeholder hooks that will work once the database is updated
 export const useFormChangeHistory = (formId?: string) => {
   const { createSecureKey } = useSecureQueryKey();
   
   return useQuery({
     queryKey: createSecureKey('form-change-history', [formId]),
     queryFn: async () => {
-      let query = supabase
-        .from('form_change_history')
-        .select(`
-          *,
-          profiles:changed_by (
-            id,
-            email,
-            full_name
-          )
-        `)
-        .order('changed_at', { ascending: false });
-
-      if (formId) {
-        query = query.eq('form_id', formId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return data as FormChangeHistory[];
+      // Placeholder implementation - will work once form_change_history table is created
+      console.log('Form change history not yet available - waiting for database migration');
+      return [];
     },
-    enabled: !!formId,
+    enabled: false, // Disable until table exists
   });
 };
 
@@ -41,28 +23,11 @@ export const useReportChangeHistory = (reportId?: string) => {
   return useQuery({
     queryKey: createSecureKey('report-change-history', [reportId]),
     queryFn: async () => {
-      let query = supabase
-        .from('report_change_history')
-        .select(`
-          *,
-          profiles:changed_by (
-            id,
-            email,
-            full_name
-          )
-        `)
-        .order('changed_at', { ascending: false });
-
-      if (reportId) {
-        query = query.eq('report_id', reportId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return data as ReportChangeHistory[];
+      // Placeholder implementation - will work once report_change_history table is created
+      console.log('Report change history not yet available - waiting for database migration');
+      return [];
     },
-    enabled: !!reportId,
+    enabled: false, // Disable until table exists
   });
 };
 
@@ -72,45 +37,10 @@ export const useAllChangeHistory = () => {
   return useQuery({
     queryKey: createSecureKey('all-change-history'),
     queryFn: async () => {
-      // Get form changes
-      const { data: formChanges, error: formError } = await supabase
-        .from('form_change_history')
-        .select(`
-          *,
-          profiles:changed_by (
-            id,
-            email,
-            full_name
-          )
-        `)
-        .order('changed_at', { ascending: false })
-        .limit(100);
-
-      if (formError) throw formError;
-
-      // Get report changes
-      const { data: reportChanges, error: reportError } = await supabase
-        .from('report_change_history')
-        .select(`
-          *,
-          profiles:changed_by (
-            id,
-            email,
-            full_name
-          )
-        `)
-        .order('changed_at', { ascending: false })
-        .limit(100);
-
-      if (reportError) throw reportError;
-
-      // Combine and sort by date
-      const allChanges = [
-        ...(formChanges || []).map(change => ({ ...change, entity_type: 'form' })),
-        ...(reportChanges || []).map(change => ({ ...change, entity_type: 'report' }))
-      ].sort((a, b) => new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime());
-
-      return allChanges;
+      // Placeholder implementation - will work once tables are created
+      console.log('Change history not yet available - waiting for database migration');
+      return [];
     },
+    enabled: false, // Disable until tables exist
   });
 };

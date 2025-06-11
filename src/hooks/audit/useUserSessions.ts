@@ -10,7 +10,7 @@ export const useUserSessions = (filters: UserSessionFilters = {}, page = 1, page
   const { createSecureKey } = useSecureQueryKey();
   
   return useQuery({
-    queryKey: createSecureKey('user-sessions', [filters, page, pageSize]),
+    queryKey: createSecureKey('user-sessions', [JSON.stringify(filters), page, pageSize]),
     queryFn: async () => {
       let query = supabase
         .from('user_sessions')
