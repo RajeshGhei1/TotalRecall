@@ -97,8 +97,8 @@ export const useAtomicTransactions = () => {
               // Store rollback operation with proper null checks
               if (insertData && insertData.length > 0) {
                 const firstRecord = insertData[0];
-                // Use a more explicit approach to satisfy TypeScript
-                if (firstRecord && typeof firstRecord === 'object' && 'id' in firstRecord) {
+                // Add explicit null check for firstRecord
+                if (firstRecord != null && typeof firstRecord === 'object' && 'id' in firstRecord) {
                   const recordWithId = firstRecord as { id: any };
                   if (recordWithId.id != null) {
                     rollbackOperations.push({
