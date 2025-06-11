@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,17 +43,10 @@ export const useSecureSaveReport = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's tenant from profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
-
       const reportData = {
         ...report,
         created_by: user.id,
-        tenant_id: profile?.tenant_id,
+        tenant_id: null, // Remove tenant_id reference for now
         columns: JSON.stringify(report.columns),
         filters: JSON.stringify(report.filters),
         aggregation: JSON.stringify(report.aggregation)

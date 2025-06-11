@@ -57,7 +57,7 @@ const SecurityAuditDashboard: React.FC = () => {
     title: string;
     value: string | number;
     subtitle?: string;
-    icon: any;
+    icon: React.ComponentType<any>;
     trend?: number;
     color?: 'default' | 'success' | 'warning' | 'destructive';
   }) => (

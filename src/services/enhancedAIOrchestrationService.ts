@@ -78,6 +78,18 @@ class EnhancedAIOrchestrationService {
     result: AIResult
   ): Promise<void> {
     try {
+      // Convert options to proper JSON format
+      const contextData = {
+        module: context.module,
+        entity_type: context.entity_type,
+        session_data: context.session_data || {},
+        options: {
+          model_type: options.model_type || '',
+          analysis_depth: options.analysis_depth || 'basic',
+          confidence_threshold: options.confidence_threshold || 0.5
+        }
+      };
+
       const { error } = await supabase
         .from('ai_request_logs')
         .insert({
@@ -85,12 +97,7 @@ class EnhancedAIOrchestrationService {
           user_id: context.user_id,
           tenant_id: context.tenant_id,
           request_type: context.action,
-          context: {
-            module: context.module,
-            entity_type: context.entity_type,
-            session_data: context.session_data,
-            options
-          },
+          context: contextData,
           status: 'completed',
           response_time_ms: result.execution_time_ms || 0,
           input_tokens: 100, // Mock value
