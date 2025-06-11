@@ -1548,6 +1548,69 @@ export type Database = {
           },
         ]
       }
+      entity_versions: {
+        Row: {
+          approval_notes: string | null
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          change_summary: string | null
+          created_at: string
+          created_by: string | null
+          data_snapshot: Json
+          entity_id: string
+          entity_type: string
+          id: string
+          is_published: boolean
+          version_number: number
+        }
+        Insert: {
+          approval_notes?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          change_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_snapshot: Json
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_published?: boolean
+          version_number: number
+        }
+        Update: {
+          approval_notes?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          change_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_snapshot?: Json
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_published?: boolean
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_versions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_change_history: {
         Row: {
           change_reason: string | null
@@ -2673,6 +2736,119 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      real_time_notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          entity_id: string
+          entity_type: string
+          expires_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          priority: string | null
+          recipient_id: string
+          sender_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          entity_id: string
+          entity_type: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type: string
+          priority?: string | null
+          recipient_id: string
+          sender_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          priority?: string | null
+          recipient_id?: string
+          sender_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "real_time_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "real_time_notifications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      real_time_sessions: {
+        Row: {
+          current_section: string | null
+          cursor_position: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          joined_at: string
+          last_seen: string
+          metadata: Json | null
+          session_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          current_section?: string | null
+          cursor_position?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          joined_at?: string
+          last_seen?: string
+          metadata?: Json | null
+          session_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          current_section?: string | null
+          cursor_position?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          joined_at?: string
+          last_seen?: string
+          metadata?: Json | null
+          session_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "real_time_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_change_history: {
         Row: {
@@ -3898,6 +4074,76 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_approvals: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          requested_at: string
+          requested_by: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          version_id: string
+          workflow_config: Json | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          requested_at?: string
+          requested_by: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          version_id: string
+          workflow_config?: Json | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          requested_at?: string
+          requested_by?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          version_id?: string
+          workflow_config?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_approvals_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_approvals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_approvals_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "entity_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_execution_logs: {
         Row: {
           completed_at: string | null
@@ -3960,12 +4206,20 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_entity: {
+        Args: { p_entity_type: string; p_entity_id: string }
+        Returns: boolean
+      }
       check_password_policy_compliance: {
         Args: { user_password_hash: string; user_id: string }
         Returns: boolean
       }
       cleanup_old_audit_logs: {
         Args: { retention_days?: number }
+        Returns: number
+      }
+      cleanup_old_sessions: {
+        Args: Record<PropertyKey, never>
         Returns: number
       }
       create_user_profile: {
@@ -3979,6 +4233,10 @@ export type Database = {
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_next_version_number: {
+        Args: { p_entity_type: string; p_entity_id: string }
+        Returns: number
       }
       is_current_user_super_admin: {
         Args: Record<PropertyKey, never>
@@ -4005,6 +4263,10 @@ export type Database = {
           p_additional_context?: Json
         }
         Returns: string
+      }
+      publish_version: {
+        Args: { p_version_id: string }
+        Returns: boolean
       }
       resolve_user_subscription: {
         Args: { p_user_id: string; p_tenant_id: string }
