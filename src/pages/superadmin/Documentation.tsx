@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { documentService, DocumentContent } from '@/services/documentService';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BookOpen, 
   Search, 
@@ -15,7 +18,9 @@ import {
   Download,
   ExternalLink,
   Clock,
-  Tag
+  Tag,
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
 
 interface DocumentItem {
@@ -134,6 +139,10 @@ const Documentation: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null);
+  const [documentContent, setDocumentContent] = useState<DocumentContent | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
 
   const filteredDocuments = useMemo(() => {
     return mockDocuments.filter(doc => {
@@ -178,6 +187,71 @@ const Documentation: React.FC = () => {
     }
   };
 
+  const handleDocumentSelect = async (doc: DocumentItem) => {
+    setSelectedDocument(doc);
+    setIsLoading(true);
+    setDocumentContent(null);
+
+    try {
+      const content = await documentService.loadDocument(doc.filePath);
+      setDocumentContent(content);
+    } catch (error) {
+      toast({
+        title: "Error loading document",
+        description: "Failed to load the document content. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Error loading document:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: DocumentItem) => {
+    setIsDownloading(true);
+    try {
+      await documentService.downloadDocument(doc.filePath, `${doc.title}.md`);
+      toast({
+        title: "Download started",
+        description: `${doc.title} is being downloaded.`
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "Failed to download the document. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Error downloading document:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    setIsDownloading(true);
+    try {
+      await documentService.downloadAllDocuments(
+        filteredDocuments.map(doc => ({
+          filePath: doc.filePath,
+          title: doc.title
+        }))
+      );
+      toast({
+        title: "Download started",
+        description: "All documents are being downloaded as a single file."
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "Failed to download all documents. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Error downloading all documents:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -189,8 +263,17 @@ const Documentation: React.FC = () => {
         </div>
         
         <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleDownloadAll}
+            disabled={isDownloading || filteredDocuments.length === 0}
+          >
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Export All
           </Button>
         </div>
@@ -268,7 +351,6 @@ const Documentation: React.FC = () => {
                       <Card 
                         key={doc.id} 
                         className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => setSelectedDocument(doc)}
                       >
                         <CardHeader>
                           <div className="flex justify-between items-start">
@@ -299,6 +381,24 @@ const Documentation: React.FC = () => {
                                 </Badge>
                               ))}
                             </div>
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => handleDocumentSelect(doc)}
+                              >
+                                <BookOpen className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleDownloadDocument(doc)}
+                                disabled={isDownloading}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -327,21 +427,33 @@ const Documentation: React.FC = () => {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setSelectedDocument(null)}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Browser
+                      </Button>
+                    </div>
                     <CardTitle className="text-xl">{selectedDocument.title}</CardTitle>
                     <CardDescription>{selectedDocument.description}</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => setSelectedDocument(null)}
+                      onClick={() => handleDownloadDocument(selectedDocument)}
+                      disabled={isDownloading}
                     >
-                      Back to Browser
+                      {isDownloading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-2" />
+                      )}
+                      Download
                     </Button>
                   </div>
                 </div>
@@ -354,17 +466,18 @@ const Documentation: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none">
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      <strong>File Path:</strong> {selectedDocument.filePath}
-                    </p>
-                    <p className="text-sm">
-                      This is a preview of the document. In a real implementation, 
-                      this would render the actual markdown content from the file.
-                    </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <span className="ml-2">Loading document...</span>
                   </div>
-                </div>
+                ) : documentContent ? (
+                  <MarkdownRenderer content={documentContent.content} />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Failed to load document content.
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
