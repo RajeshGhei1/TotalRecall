@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,18 +65,30 @@ export const useVersionControl = () => {
     entityType: 'form' | 'report',
     entityId: string
   ): Promise<number> => {
-    const table = entityType === 'form' ? 'form_definitions' : 'saved_reports';
-    
-    const { data, error } = await supabase
-      .from(table as any)
-      .select('updated_at')
-      .eq('id', entityId)
-      .single();
+    try {
+      if (entityType === 'form') {
+        const { data, error } = await supabase
+          .from('form_definitions')
+          .select('updated_at')
+          .eq('id', entityId)
+          .single();
 
-    if (error) throw error;
+        if (error) throw error;
+        return data?.updated_at ? new Date(data.updated_at).getTime() : 0;
+      } else {
+        const { data, error } = await supabase
+          .from('saved_reports')
+          .select('updated_at')
+          .eq('id', entityId)
+          .single();
 
-    // Use timestamp as version for now - could be enhanced with dedicated version column
-    return data && data.updated_at ? new Date(data.updated_at).getTime() : 0;
+        if (error) throw error;
+        return data?.updated_at ? new Date(data.updated_at).getTime() : 0;
+      }
+    } catch (error) {
+      console.error('Error getting current version:', error);
+      return 0;
+    }
   }, []);
 
   // Check for version conflicts before update
@@ -97,24 +110,48 @@ export const useVersionControl = () => {
 
       if (hasConflict) {
         // Get info about who last modified
-        const table = entityType === 'form' ? 'form_definitions' : 'saved_reports';
-        const { data } = await supabase
-          .from(table as any)
-          .select(`
-            updated_at,
-            profiles:created_by (
-              full_name,
-              email
-            )
-          `)
-          .eq('id', entityId)
-          .single();
+        try {
+          if (entityType === 'form') {
+            const { data } = await supabase
+              .from('form_definitions')
+              .select(`
+                updated_at,
+                profiles:created_by (
+                  full_name,
+                  email
+                )
+              `)
+              .eq('id', entityId)
+              .single();
 
-        if (data && data.updated_at) {
-          conflictInfo.lastModifiedAt = data.updated_at;
-          if (data.profiles && typeof data.profiles === 'object' && 'full_name' in data.profiles) {
-            conflictInfo.lastModifiedBy = data.profiles.full_name || data.profiles.email;
+            if (data?.updated_at) {
+              conflictInfo.lastModifiedAt = data.updated_at;
+              if (data.profiles && typeof data.profiles === 'object' && 'full_name' in data.profiles) {
+                conflictInfo.lastModifiedBy = data.profiles.full_name || data.profiles.email;
+              }
+            }
+          } else {
+            const { data } = await supabase
+              .from('saved_reports')
+              .select(`
+                updated_at,
+                profiles:created_by (
+                  full_name,
+                  email
+                )
+              `)
+              .eq('id', entityId)
+              .single();
+
+            if (data?.updated_at) {
+              conflictInfo.lastModifiedAt = data.updated_at;
+              if (data.profiles && typeof data.profiles === 'object' && 'full_name' in data.profiles) {
+                conflictInfo.lastModifiedBy = data.profiles.full_name || data.profiles.email;
+              }
+            }
           }
+        } catch (profileError) {
+          console.error('Error getting profile data:', profileError);
         }
 
         // Store conflict info
