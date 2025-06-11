@@ -1,9 +1,9 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CompanyFormValues } from '@/components/superadmin/companies/schema';
 import { useCustomFields } from '@/hooks/useCustomFields';
+import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
 
 export interface Company {
   id: string;
@@ -59,6 +59,7 @@ export interface Company {
 export const useCompanies = () => {
   const queryClient = useQueryClient();
   const { saveCustomFieldValues } = useCustomFields();
+  const { createSecureKey } = useSecureQueryKey();
 
   // Extract custom field values from form data
   const extractCustomFieldValues = (formData: CompanyFormValues) => {
@@ -80,11 +81,10 @@ export const useCompanies = () => {
     data: companies = [],
     isLoading,
     error,
-    refetch, // Explicitly expose the refetch function
+    refetch,
   } = useQuery({
-    queryKey: ['companies'],
+    queryKey: createSecureKey(['companies']),
     queryFn: async () => {
-      // Fix the type issue by explicitly casting the data
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -92,7 +92,6 @@ export const useCompanies = () => {
 
       if (error) throw error;
       
-      // Explicitly cast the result to Company[] to fix the TypeScript error
       return (data as unknown) as Company[];
     },
   });
@@ -169,14 +168,13 @@ export const useCompanies = () => {
       const customFieldValues = extractCustomFieldValues(companyData);
       
       if (Object.keys(customFieldValues).length > 0) {
-        // Fix the TypeScript error by using a type assertion for data.id
         await saveCustomFieldValues('company', (data as any).id, customFieldValues);
       }
       
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
       toast({
         title: 'Company created',
         description: 'The company has been created successfully',
@@ -272,7 +270,7 @@ export const useCompanies = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
       toast({
         title: 'Company updated',
         description: 'The company has been updated successfully',
@@ -294,6 +292,6 @@ export const useCompanies = () => {
     error,
     createCompany,
     updateCompany,
-    refetch, // Return the refetch function
+    refetch,
   };
 };

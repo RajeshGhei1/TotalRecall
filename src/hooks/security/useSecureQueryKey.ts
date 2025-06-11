@@ -11,15 +11,19 @@ export const useSecureQueryKey = () => {
   const { selectedTenantId } = useTenantContext();
 
   const createSecureKey = (baseKey: string | string[], additionalKeys: (string | number | undefined)[] = []) => {
+    // Ensure baseKey is always an array
     const keyArray = Array.isArray(baseKey) ? baseKey : [baseKey];
+    
+    // Filter out undefined values from additionalKeys and ensure it's an array
+    const filteredAdditionalKeys = (additionalKeys || []).filter(key => key !== undefined);
     
     // Always include user and session info for security isolation
     const secureKey = [
       ...keyArray,
       user?.id || 'anonymous',
-      session?.access_token?.substring(0, 10) || 'no-session', // Use first 10 chars of token as session identifier
+      session?.access_token?.substring(0, 10) || 'no-session',
       selectedTenantId || 'no-tenant',
-      ...additionalKeys.filter(key => key !== undefined)
+      ...filteredAdditionalKeys
     ];
 
     return secureKey;
@@ -27,12 +31,12 @@ export const useSecureQueryKey = () => {
 
   const invalidateUserCache = () => {
     // Return a unique timestamp that can be used to invalidate all user caches
-    return `invalidate-${user?.id}-${Date.now()}`;
+    return `invalidate-${user?.id || 'anonymous'}-${Date.now()}`;
   };
 
   const invalidateSessionCache = () => {
     // Return a unique timestamp that can be used to invalidate all session caches
-    return `invalidate-session-${session?.access_token?.substring(0, 10)}-${Date.now()}`;
+    return `invalidate-session-${session?.access_token?.substring(0, 10) || 'no-session'}-${Date.now()}`;
   };
 
   return {
