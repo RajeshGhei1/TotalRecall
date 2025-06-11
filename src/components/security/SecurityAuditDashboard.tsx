@@ -146,7 +146,10 @@ const SecurityAuditDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={Object.entries(auditStats?.activityByDay || {}).map(([date, count]) => ({ date, count }))}>
+                  <LineChart data={Object.entries(auditStats?.activityByDay || {}).map(([date, count]) => ({ 
+                    date, 
+                    count: typeof count === 'number' ? count : 0 
+                  }))}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
