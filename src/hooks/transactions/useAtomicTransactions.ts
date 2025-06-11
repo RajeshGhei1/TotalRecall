@@ -21,7 +21,9 @@ interface TransactionState {
 }
 
 /**
- * Hook for atomic transactions with rollback capabilities
+ * Hook for atomic-like operations with rollback capabilities
+ * Note: This provides atomic-like behavior by managing operations sequentially
+ * but doesn't use actual database transactions due to Supabase limitations
  */
 export const useAtomicTransactions = () => {
   const queryClient = useQueryClient();
@@ -58,7 +60,7 @@ export const useAtomicTransactions = () => {
     }));
   }, []);
 
-  // Execute all operations atomically
+  // Execute all operations sequentially
   const executeTransaction = useCallback(async () => {
     if (state.operations.length === 0) {
       toast({
@@ -72,16 +74,10 @@ export const useAtomicTransactions = () => {
     setState(prev => ({ ...prev, isRunning: true }));
 
     try {
-      // Start transaction
-      const { data: transactionData, error: transactionError } = await supabase.rpc('begin_transaction');
-      
-      if (transactionError) {
-        throw new Error(`Failed to start transaction: ${transactionError.message}`);
-      }
-
       const results: any[] = [];
       const completed: string[] = [];
       const queryKeysToInvalidate = new Set<string>();
+      const rollbackOperations: any[] = [];
 
       // Execute operations sequentially
       for (const operation of state.operations) {
@@ -91,34 +87,74 @@ export const useAtomicTransactions = () => {
           switch (operation.type) {
             case 'insert':
               const { data: insertData, error: insertError } = await supabase
-                .from(operation.table)
+                .from(operation.table as any)
                 .insert(operation.data)
                 .select();
               
               if (insertError) throw insertError;
               result = insertData;
+              // Store rollback operation
+              if (insertData && insertData.length > 0) {
+                rollbackOperations.push({
+                  type: 'delete',
+                  table: operation.table,
+                  filter: { id: insertData[0].id }
+                });
+              }
               break;
 
             case 'update':
+              // Store current data for rollback
+              const { data: currentData } = await supabase
+                .from(operation.table as any)
+                .select()
+                .match(operation.filter)
+                .single();
+
               const { data: updateData, error: updateError } = await supabase
-                .from(operation.table)
+                .from(operation.table as any)
                 .update(operation.data)
                 .match(operation.filter)
                 .select();
               
               if (updateError) throw updateError;
               result = updateData;
+              
+              // Store rollback operation
+              if (currentData) {
+                rollbackOperations.push({
+                  type: 'update',
+                  table: operation.table,
+                  filter: operation.filter,
+                  data: currentData
+                });
+              }
               break;
 
             case 'delete':
+              // Store current data for rollback
+              const { data: deleteCurrentData } = await supabase
+                .from(operation.table as any)
+                .select()
+                .match(operation.filter);
+
               const { data: deleteData, error: deleteError } = await supabase
-                .from(operation.table)
+                .from(operation.table as any)
                 .delete()
                 .match(operation.filter)
                 .select();
               
               if (deleteError) throw deleteError;
               result = deleteData;
+              
+              // Store rollback operation
+              if (deleteCurrentData && deleteCurrentData.length > 0) {
+                rollbackOperations.push({
+                  type: 'insert',
+                  table: operation.table,
+                  data: deleteCurrentData
+                });
+              }
               break;
 
             default:
@@ -134,8 +170,28 @@ export const useAtomicTransactions = () => {
           }
 
         } catch (operationError: any) {
-          // Rollback transaction on any failure
-          await supabase.rpc('rollback_transaction');
+          // Attempt to rollback completed operations
+          console.log('Operation failed, attempting rollback...', operationError);
+          
+          // Perform rollback operations in reverse order
+          for (let i = rollbackOperations.length - 1; i >= 0; i--) {
+            const rollbackOp = rollbackOperations[i];
+            try {
+              switch (rollbackOp.type) {
+                case 'insert':
+                  await supabase.from(rollbackOp.table as any).insert(rollbackOp.data);
+                  break;
+                case 'update':
+                  await supabase.from(rollbackOp.table as any).update(rollbackOp.data).match(rollbackOp.filter);
+                  break;
+                case 'delete':
+                  await supabase.from(rollbackOp.table as any).delete().match(rollbackOp.filter);
+                  break;
+              }
+            } catch (rollbackError) {
+              console.error('Rollback operation failed:', rollbackError);
+            }
+          }
           
           setState(prev => ({
             ...prev,
@@ -151,13 +207,6 @@ export const useAtomicTransactions = () => {
 
           return { success: false, results, error: operationError.message };
         }
-      }
-
-      // Commit transaction
-      const { error: commitError } = await supabase.rpc('commit_transaction');
-      
-      if (commitError) {
-        throw new Error(`Failed to commit transaction: ${commitError.message}`);
       }
 
       // Invalidate affected query keys
@@ -180,13 +229,6 @@ export const useAtomicTransactions = () => {
       return { success: true, results };
 
     } catch (error: any) {
-      // Ensure rollback on any unexpected error
-      try {
-        await supabase.rpc('rollback_transaction');
-      } catch (rollbackError) {
-        console.error('Failed to rollback transaction:', rollbackError);
-      }
-
       setState(prev => ({
         ...prev,
         isRunning: false,

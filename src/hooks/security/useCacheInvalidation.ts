@@ -51,9 +51,27 @@ export const useCacheInvalidation = () => {
     });
   };
 
+  const clearSecurityCaches = () => {
+    // Clear all security-related caches
+    queryClient.invalidateQueries({
+      predicate: (query) => {
+        const key = query.queryKey;
+        return Array.isArray(key) && key.some(k => 
+          typeof k === 'string' && (
+            k.includes('audit') ||
+            k.includes('security') ||
+            k.includes('permissions') ||
+            k.includes('sessions')
+          )
+        );
+      }
+    });
+  };
+
   return {
     clearCachePattern,
     clearUserWorkspace,
     clearTenantWorkspace,
+    clearSecurityCaches,
   };
 };

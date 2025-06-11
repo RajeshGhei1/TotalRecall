@@ -68,7 +68,7 @@ export const useVersionControl = () => {
     const table = entityType === 'form' ? 'form_definitions' : 'saved_reports';
     
     const { data, error } = await supabase
-      .from(table)
+      .from(table as any)
       .select('updated_at')
       .eq('id', entityId)
       .single();
@@ -99,7 +99,7 @@ export const useVersionControl = () => {
       // Get info about who last modified
       const table = entityType === 'form' ? 'form_definitions' : 'saved_reports';
       const { data } = await supabase
-        .from(table)
+        .from(table as any)
         .select(`
           updated_at,
           profiles:created_by (
@@ -146,7 +146,7 @@ export const useVersionControl = () => {
         .eq('entity_id', entityId)
         .order('version_number', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const nextVersion = (latestVersion?.version_number || 0) + 1;
 
@@ -204,11 +204,14 @@ export const useVersionControl = () => {
 
       if (versionError) throw versionError;
 
+      // Safely cast the data snapshot for update
+      const updateData = versionData.data_snapshot as any;
+
       // Restore to main table
       const table = entityType === 'form' ? 'form_definitions' : 'saved_reports';
       const { data: restoredData, error: restoreError } = await supabase
-        .from(table)
-        .update(versionData.data_snapshot)
+        .from(table as any)
+        .update(updateData)
         .eq('id', entityId)
         .select()
         .single();

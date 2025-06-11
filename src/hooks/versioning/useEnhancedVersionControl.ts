@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { useCacheInvalidation } from '@/hooks/security/useCacheInvalidation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EntityVersion {
   id: string;
@@ -14,11 +16,8 @@ interface EntityVersion {
   created_at: string;
   created_by: string;
   change_summary?: string;
+  approval_status: string;
   is_published: boolean;
-  approval_status: 'draft' | 'pending_approval' | 'approved' | 'rejected';
-  approved_by?: string;
-  approved_at?: string;
-  approval_notes?: string;
   profiles?: {
     id: string;
     email: string;
@@ -26,31 +25,31 @@ interface EntityVersion {
   };
 }
 
-interface WorkflowApproval {
+interface ApprovalWorkflow {
   id: string;
   entity_type: 'form' | 'report';
   entity_id: string;
   version_id: string;
   requested_by: string;
-  requested_at: string;
-  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  status: string;
+  workflow_config: any;
+  review_notes?: string;
   reviewed_by?: string;
   reviewed_at?: string;
-  review_notes?: string;
-  workflow_config: any;
+  requested_at: string;
 }
 
 /**
- * Enhanced version control hook with approval workflows and publishing
+ * Enhanced version control with approval workflows
  */
 export const useEnhancedVersionControl = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { createSecureKey } = useSecureQueryKey();
-  
-  const [pendingApprovals, setPendingApprovals] = useState<Map<string, WorkflowApproval>>(new Map());
+  const { clearSecurityCaches } = useCacheInvalidation();
+  const { user } = useAuth();
 
-  // Get version history for an entity with approval status
+  // Get version history with approval status
   const useVersionHistory = (entityType: 'form' | 'report', entityId: string) => {
     return useQuery({
       queryKey: createSecureKey('enhanced-version-history', [entityType, entityId]),
@@ -76,104 +75,112 @@ export const useEnhancedVersionControl = () => {
     });
   };
 
-  // Get published version
-  const usePublishedVersion = (entityType: 'form' | 'report', entityId: string) => {
+  // Get approval workflows
+  const useApprovalWorkflows = (entityType?: 'form' | 'report', entityId?: string) => {
     return useQuery({
-      queryKey: createSecureKey('published-version', [entityType, entityId]),
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('entity_versions')
-          .select('*')
-          .eq('entity_type', entityType)
-          .eq('entity_id', entityId)
-          .eq('is_published', true)
-          .single();
-
-        if (error && error.code !== 'PGRST116') throw error;
-        return data as EntityVersion | null;
-      },
-      enabled: !!entityId,
-    });
-  };
-
-  // Get pending approvals
-  const usePendingApprovals = (entityType?: 'form' | 'report') => {
-    return useQuery({
-      queryKey: createSecureKey('pending-approvals', [entityType]),
+      queryKey: createSecureKey('approval-workflows', [entityType, entityId]),
       queryFn: async () => {
         let query = supabase
           .from('workflow_approvals')
           .select(`
             *,
-            entity_versions:version_id (
-              entity_type,
-              entity_id,
-              version_number,
-              change_summary
-            ),
-            profiles:requested_by (
+            entity_versions!version_id (*),
+            profiles!requested_by (
               id,
               email,
               full_name
             )
           `)
-          .eq('status', 'pending');
+          .order('requested_at', { ascending: false });
 
         if (entityType) {
           query = query.eq('entity_type', entityType);
         }
+        if (entityId) {
+          query = query.eq('entity_id', entityId);
+        }
 
-        const { data, error } = await query.order('requested_at', { ascending: false });
+        const { data, error } = await query;
         if (error) throw error;
-        return data as WorkflowApproval[];
+
+        return data as ApprovalWorkflow[];
       },
+      enabled: !!entityType || !!entityId,
     });
   };
 
-  // Create a new version
-  const createVersion = useMutation({
+  // Create version with approval workflow
+  const createVersionWithApproval = useMutation({
     mutationFn: async (params: {
       entityType: 'form' | 'report';
       entityId: string;
       data: any;
       changeSummary?: string;
-      isDraft?: boolean;
+      approvalRequired?: boolean;
+      workflowConfig?: any;
     }) => {
-      const { entityType, entityId, data, changeSummary, isDraft = true } = params;
+      const { entityType, entityId, data, changeSummary, approvalRequired = true, workflowConfig } = params;
       
       // Get next version number
-      const { data: nextVersionResponse, error: versionError } = await supabase
-        .rpc('get_next_version_number', {
-          p_entity_type: entityType,
-          p_entity_id: entityId
-        });
+      const { data: latestVersion } = await supabase
+        .from('entity_versions')
+        .select('version_number')
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (versionError) throw versionError;
+      const nextVersion = (latestVersion?.version_number || 0) + 1;
 
-      const { data: versionData, error } = await supabase
+      // Create version
+      const { data: versionData, error: versionError } = await supabase
         .from('entity_versions')
         .insert({
           entity_type: entityType,
           entity_id: entityId,
-          version_number: nextVersionResponse,
+          version_number: nextVersion,
           data_snapshot: data,
           change_summary: changeSummary,
-          approval_status: isDraft ? 'draft' : 'pending_approval',
+          approval_status: approvalRequired ? 'draft' : 'approved',
+          is_published: !approvalRequired,
+          created_by: user?.id,
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (versionError) throw versionError;
+
+      // Create approval workflow if required
+      if (approvalRequired && user?.id) {
+        const { error: workflowError } = await supabase
+          .from('workflow_approvals')
+          .insert({
+            entity_type: entityType,
+            entity_id: entityId,
+            version_id: versionData.id,
+            requested_by: user.id,
+            status: 'pending',
+            workflow_config: workflowConfig || {},
+          });
+
+        if (workflowError) throw workflowError;
+      }
+
       return versionData;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: createSecureKey('enhanced-version-history', [variables.entityType, variables.entityId])
       });
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('approval-workflows', [variables.entityType, variables.entityId])
+      });
+      clearSecurityCaches();
       
       toast({
         title: 'Version Created',
-        description: `Version ${data.version_number} created successfully`,
+        description: `Version ${data.version_number} created and ${variables.approvalRequired ? 'submitted for approval' : 'published'}`,
       });
     },
     onError: (error: any) => {
@@ -185,177 +192,67 @@ export const useEnhancedVersionControl = () => {
     },
   });
 
-  // Request approval for a version
-  const requestApproval = useMutation({
+  // Approve or reject version
+  const reviewVersion = useMutation({
     mutationFn: async (params: {
-      versionId: string;
-      entityType: 'form' | 'report';
-      entityId: string;
-      workflowConfig?: any;
-    }) => {
-      const { versionId, entityType, entityId, workflowConfig = {} } = params;
-      
-      const { data, error } = await supabase
-        .from('workflow_approvals')
-        .insert({
-          entity_type: entityType,
-          entity_id: entityId,
-          version_id: versionId,
-          workflow_config: workflowConfig,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: createSecureKey('pending-approvals')
-      });
-      
-      toast({
-        title: 'Approval Requested',
-        description: 'Version has been submitted for approval',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Approval Request Failed',
-        description: `Failed to request approval: ${error.message}`,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Approve/reject a version
-  const reviewApproval = useMutation({
-    mutationFn: async (params: {
-      approvalId: string;
+      workflowId: string;
       action: 'approve' | 'reject';
-      notes?: string;
-      shouldPublish?: boolean;
+      reviewNotes?: string;
     }) => {
-      const { approvalId, action, notes, shouldPublish = true } = params;
+      const { workflowId, action, reviewNotes } = params;
       
-      // Update approval status
-      const { data: approvalData, error: approvalError } = await supabase
+      const { data: workflowData, error: updateError } = await supabase
         .from('workflow_approvals')
         .update({
           status: action === 'approve' ? 'approved' : 'rejected',
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+          review_notes: reviewNotes,
+          reviewed_by: user?.id,
           reviewed_at: new Date().toISOString(),
-          review_notes: notes,
         })
-        .eq('id', approvalId)
-        .select()
+        .eq('id', workflowId)
+        .select(`
+          *,
+          entity_versions!version_id (*)
+        `)
         .single();
 
-      if (approvalError) throw approvalError;
+      if (updateError) throw updateError;
 
-      // If approved and should publish, publish the version
-      if (action === 'approve' && shouldPublish) {
+      // If approved, publish the version
+      if (action === 'approve' && workflowData.entity_versions) {
         const { error: publishError } = await supabase
-          .rpc('publish_version', { p_version_id: approvalData.version_id });
-        
+          .from('entity_versions')
+          .update({
+            approval_status: 'approved',
+            is_published: true,
+            approved_by: user?.id,
+            approved_at: new Date().toISOString(),
+          })
+          .eq('id', workflowData.version_id);
+
         if (publishError) throw publishError;
       }
 
-      return approvalData;
+      return workflowData;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: createSecureKey('pending-approvals')
+        queryKey: createSecureKey('approval-workflows')
       });
       queryClient.invalidateQueries({
         queryKey: createSecureKey('enhanced-version-history')
       });
-      queryClient.invalidateQueries({
-        queryKey: createSecureKey('published-version')
-      });
+      clearSecurityCaches();
       
       toast({
-        title: variables.action === 'approve' ? 'Version Approved' : 'Version Rejected',
-        description: `The version has been ${variables.action === 'approve' ? 'approved and published' : 'rejected'}`,
+        title: `Version ${variables.action === 'approve' ? 'Approved' : 'Rejected'}`,
+        description: `Version has been ${variables.action === 'approve' ? 'approved and published' : 'rejected'}`,
       });
     },
     onError: (error: any) => {
       toast({
         title: 'Review Failed',
-        description: `Failed to review approval: ${error.message}`,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Publish a version directly (for users with permissions)
-  const publishVersion = useMutation({
-    mutationFn: async (versionId: string) => {
-      const { data, error } = await supabase
-        .rpc('publish_version', { p_version_id: versionId });
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data, versionId) => {
-      queryClient.invalidateQueries({
-        queryKey: createSecureKey('enhanced-version-history')
-      });
-      queryClient.invalidateQueries({
-        queryKey: createSecureKey('published-version')
-      });
-      
-      toast({
-        title: 'Version Published',
-        description: 'Version has been published successfully',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Publish Failed',
-        description: `Failed to publish version: ${error.message}`,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Restore from version
-  const restoreFromVersion = useMutation({
-    mutationFn: async (params: {
-      entityType: 'form' | 'report';
-      entityId: string;
-      versionId: string;
-    }) => {
-      const { entityType, entityId, versionId } = params;
-      
-      // Get version data
-      const { data: versionData, error: versionError } = await supabase
-        .from('entity_versions')
-        .select('data_snapshot')
-        .eq('id', versionId)
-        .single();
-
-      if (versionError) throw versionError;
-
-      // Create new version from restored data
-      return createVersion.mutateAsync({
-        entityType,
-        entityId,
-        data: versionData.data_snapshot,
-        changeSummary: `Restored from version`,
-        isDraft: true,
-      });
-    },
-    onSuccess: (data, variables) => {
-      toast({
-        title: 'Version Restored',
-        description: `Successfully restored and created new draft version`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Restore Failed',
-        description: `Failed to restore version: ${error.message}`,
+        description: `Failed to ${error.action} version: ${error.message}`,
         variant: 'destructive',
       });
     },
@@ -363,18 +260,8 @@ export const useEnhancedVersionControl = () => {
 
   return {
     useVersionHistory,
-    usePublishedVersion,
-    usePendingApprovals,
-    createVersion,
-    requestApproval,
-    reviewApproval,
-    publishVersion,
-    restoreFromVersion,
-    pendingApprovals: Array.from(pendingApprovals.values()),
-    isCreatingVersion: createVersion.isPending,
-    isRequestingApproval: requestApproval.isPending,
-    isReviewingApproval: reviewApproval.isPending,
-    isPublishing: publishVersion.isPending,
-    isRestoring: restoreFromVersion.isPending,
+    useApprovalWorkflows,
+    createVersionWithApproval,
+    reviewVersion,
   };
 };

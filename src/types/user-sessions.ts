@@ -8,7 +8,7 @@ export interface UserSession {
   is_active: boolean;
   ip_address?: string;
   user_agent?: string;
-  login_method: string;
+  login_method?: string;
   device_info?: Record<string, any>;
   profiles?: {
     id: string;
