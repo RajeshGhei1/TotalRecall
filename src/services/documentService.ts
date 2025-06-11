@@ -71,11 +71,11 @@ export const documentService = {
     }
   },
 
-  private extractTitleFromPath(filePath: string): string {
+  extractTitleFromPath(filePath: string): string {
     return filePath.split('/').pop()?.replace('.md', '') || 'Unknown Document';
   },
 
-  private async getMockContent(filePath: string): Promise<string> {
+  async getMockContent(filePath: string): Promise<string> {
     // Mock content based on file path
     const filename = filePath.split('/').pop() || '';
     
