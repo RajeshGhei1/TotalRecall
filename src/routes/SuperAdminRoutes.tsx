@@ -1,53 +1,44 @@
 
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from '@/pages/superadmin/Dashboard';
-import AnalyticsBusinessIntelligence from '@/pages/superadmin/AnalyticsBusinessIntelligence';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import SuperAdminDashboard from '@/pages/superadmin/Dashboard';
+import Analytics from '@/pages/superadmin/Analytics';
+import AdvancedAnalytics from '@/pages/superadmin/AdvancedAnalytics';
 import Tenants from '@/pages/superadmin/Tenants';
 import Users from '@/pages/superadmin/Users';
 import Companies from '@/pages/superadmin/Companies';
 import People from '@/pages/superadmin/People';
+import Documentation from '@/pages/superadmin/Documentation';
 import AIOrchestration from '@/pages/superadmin/AIOrchestration';
 import AIAnalytics from '@/pages/superadmin/AIAnalytics';
+import SecurityDashboard from '@/pages/superadmin/SecurityDashboard';
 import AuditLogs from '@/pages/superadmin/AuditLogs';
 import UserActivity from '@/pages/superadmin/UserActivity';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import Settings from '@/pages/superadmin/Settings';
-import Documentation from '@/pages/superadmin/Documentation';
-import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
+import NotFound from '@/pages/NotFound';
 
-const SuperAdminRoutes = () => {
+const SuperAdminRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Default redirect to dashboard */}
-      <Route index element={<Navigate to="dashboard" replace />} />
-      
-      {/* Core Admin Pages */}
-      <Route path="dashboard" element={<Dashboard />} />
-      <Route path="analytics" element={<AnalyticsBusinessIntelligence />} />
+      <Route path="dashboard" element={<SuperAdminDashboard />} />
+      <Route path="analytics" element={<Analytics />} />
+      <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
       <Route path="tenants" element={<Tenants />} />
       <Route path="users" element={<Users />} />
       <Route path="companies" element={<Companies />} />
-      <Route path="companies/:companyId" element={<CompanyDetailView />} />
       <Route path="people" element={<People />} />
-      
-      {/* Documentation */}
       <Route path="documentation" element={<Documentation />} />
-      
-      {/* AI & Analytics */}
       <Route path="ai-orchestration" element={<AIOrchestration />} />
       <Route path="ai-analytics" element={<AIAnalytics />} />
-      
-      {/* Security & Compliance */}
+      <Route path="security-dashboard" element={<SecurityDashboard />} />
       <Route path="audit-logs" element={<AuditLogs />} />
       <Route path="user-activity" element={<UserActivity />} />
-      
-      {/* Business Management */}
       <Route path="subscription-plans" element={<SubscriptionPlans />} />
-      
-      {/* Settings */}
-      <Route path="settings" element={<Settings />} />
       <Route path="global-settings" element={<GlobalSettings />} />
+      <Route path="settings" element={<Settings />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

@@ -16,7 +16,8 @@ import {
   Zap,
   Shield,
   Activity,
-  BookOpen
+  BookOpen,
+  BarChart3
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -26,6 +27,12 @@ const defaultNavItems: NavItem[] = [
     label: 'BI Dashboard', 
     icon: BarChart2, 
     href: '/superadmin/analytics'
+  },
+  { 
+    id: 'advanced-analytics',
+    label: 'Advanced Analytics', 
+    icon: BarChart3, 
+    href: '/superadmin/advanced-analytics'
   },
   { 
     id: 'tenants',
@@ -68,6 +75,12 @@ const defaultNavItems: NavItem[] = [
     label: 'AI Analytics', 
     icon: Zap, 
     href: '/superadmin/ai-analytics'
+  },
+  { 
+    id: 'security-dashboard',
+    label: 'Security Dashboard', 
+    icon: Shield, 
+    href: '/superadmin/security-dashboard'
   },
   { 
     id: 'audit-logs',

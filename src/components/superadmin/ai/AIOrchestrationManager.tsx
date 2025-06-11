@@ -10,7 +10,8 @@ import { ModuleAIConfiguration } from './ModuleAIConfiguration';
 import { EnhancedAIMetrics } from './metrics/EnhancedAIMetrics';
 import { LearningInsightsDashboard, DecisionFeedbackInterface, ContextAnalysisVisualization } from './learning';
 import { PredictiveInsightsDashboard } from './insights';
-import { Brain, TrendingUp, AlertTriangle } from 'lucide-react';
+import { RealTimeDecisionMonitor } from './insights/RealTimeDecisionMonitor';
+import { Brain, TrendingUp, AlertTriangle, Activity, Zap } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const AIOrchestrationManager = () => {
@@ -85,8 +86,8 @@ export const AIOrchestrationManager = () => {
         </Button>
       </div>
 
-      {/* Responsive metrics grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+      {/* Enhanced metrics grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
@@ -102,6 +103,17 @@ export const AIOrchestrationManager = () => {
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
             <div className="text-xl sm:text-2xl font-bold">{metrics.totalRequests}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
+            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+          </CardHeader>
+          <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4 md:px-6 md:pb-6">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
+              {((metrics.successfulRequests / Math.max(metrics.totalRequests, 1)) * 100).toFixed(1)}%
+            </div>
           </CardContent>
         </Card>
 
@@ -128,7 +140,7 @@ export const AIOrchestrationManager = () => {
           </CardContent>
         </Card>
 
-        <Card className="sm:col-span-2 lg:col-span-3 xl:col-span-1 hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4 md:px-6 md:pt-6">
             <CardTitle className="text-sm font-medium">Queue Size</CardTitle>
           </CardHeader>
@@ -138,27 +150,108 @@ export const AIOrchestrationManager = () => {
         </Card>
       </div>
 
-      {/* Responsive tabs */}
-      <Tabs defaultValue="agents" className="space-y-4">
+      {/* Enhanced tabs with better organization */}
+      <Tabs defaultValue="overview" className="space-y-4">
         <div className="overflow-x-auto">
           <TabsList className="flex w-full lg:w-auto min-w-full lg:min-w-0">
+            <TabsTrigger value="overview" className="flex-1 lg:flex-none text-xs sm:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="agents" className="flex-1 lg:flex-none text-xs sm:text-sm">Agents</TabsTrigger>
-            <TabsTrigger value="module-config" className="flex-1 lg:flex-none text-xs sm:text-sm">Module Config</TabsTrigger>
+            <TabsTrigger value="decisions" className="flex-1 lg:flex-none text-xs sm:text-sm">
+              <Activity className="h-3 w-3 mr-1" />
+              Decisions
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex-1 lg:flex-none text-xs sm:text-sm">Insights</TabsTrigger>
+            <TabsTrigger value="learning" className="flex-1 lg:flex-none text-xs sm:text-sm">Learning</TabsTrigger>
             <TabsTrigger value="testing" className="flex-1 lg:flex-none text-xs sm:text-sm">Testing</TabsTrigger>
-            <TabsTrigger value="predictive-insights" className="flex-1 lg:flex-none text-xs sm:text-sm">Insights</TabsTrigger>
-            <TabsTrigger value="learning-dashboard" className="flex-1 lg:flex-none text-xs sm:text-sm">Learning</TabsTrigger>
-            <TabsTrigger value="feedback-interface" className="flex-1 lg:flex-none text-xs sm:text-sm">Feedback</TabsTrigger>
-            <TabsTrigger value="context-analysis" className="flex-1 lg:flex-none text-xs sm:text-sm">Context</TabsTrigger>
             <TabsTrigger value="metrics" className="flex-1 lg:flex-none text-xs sm:text-sm">Metrics</TabsTrigger>
           </TabsList>
         </div>
+
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  System Status
+                </CardTitle>
+                <CardDescription>
+                  Current AI orchestration system health
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span>System Health</span>
+                  <Badge variant="default" className="bg-green-100 text-green-800">Excellent</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Response Time</span>
+                  <span className="font-medium">{metrics.averageResponseTime.toFixed(0)}ms</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Active Agents</span>
+                  <span className="font-medium">{metrics.activeAgents}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Queue Processing</span>
+                  <Badge variant="outline">Real-time</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>
+                  Latest AI system activities and decisions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>AI model deployed successfully</span>
+                    <span className="text-muted-foreground text-xs ml-auto">2m ago</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Decision engine processed 45 requests</span>
+                    <span className="text-muted-foreground text-xs ml-auto">5m ago</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span>Cache optimization completed</span>
+                    <span className="text-muted-foreground text-xs ml-auto">8m ago</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="agents">
           <AIAgentManagement />
         </TabsContent>
 
-        <TabsContent value="module-config">
-          <ModuleAIConfiguration />
+        <TabsContent value="decisions">
+          <RealTimeDecisionMonitor />
+        </TabsContent>
+
+        <TabsContent value="insights">
+          <PredictiveInsightsDashboard />
+        </TabsContent>
+
+        <TabsContent value="learning">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <LearningInsightsDashboard />
+            <div className="space-y-6">
+              <DecisionFeedbackInterface />
+              <ContextAnalysisVisualization />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="testing">
@@ -229,22 +322,6 @@ export const AIOrchestrationManager = () => {
               </Card>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="predictive-insights">
-          <PredictiveInsightsDashboard />
-        </TabsContent>
-
-        <TabsContent value="learning-dashboard">
-          <LearningInsightsDashboard />
-        </TabsContent>
-
-        <TabsContent value="feedback-interface">
-          <DecisionFeedbackInterface />
-        </TabsContent>
-
-        <TabsContent value="context-analysis">
-          <ContextAnalysisVisualization />
         </TabsContent>
 
         <TabsContent value="metrics">
