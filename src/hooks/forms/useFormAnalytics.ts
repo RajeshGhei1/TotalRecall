@@ -1,52 +1,37 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { FormResponseAnalytics, FormResponseAnalyticsInsert } from '@/types/form-builder';
 
-// Form Response Analytics
-export const useFormAnalytics = (formId?: string, placementId?: string, dateRange?: { start: string; end: string }) => {
-  return useQuery({
-    queryKey: ['form-analytics', formId, placementId, dateRange],
-    queryFn: async () => {
-      let query = supabase
-        .from('form_response_analytics')
-        .select('*')
-        .order('created_at', { ascending: false });
+export interface FormAnalyticsSummary {
+  total_views: number;
+  total_starts: number;
+  total_submissions: number;
+  total_abandons: number;
+  conversion_rate: number;
+  completion_rate: number;
+  abandon_rate: number;
+}
 
-      if (formId) {
-        query = query.eq('form_id', formId);
-      }
+export interface FormPerformanceData {
+  date: string;
+  views: number;
+  starts: number;
+  submissions: number;
+  abandons: number;
+}
 
-      if (placementId) {
-        query = query.eq('placement_id', placementId);
-      }
-
-      if (dateRange) {
-        query = query
-          .gte('created_at', dateRange.start)
-          .lte('created_at', dateRange.end);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching form analytics:', error);
-        throw error;
-      }
-
-      return data as FormResponseAnalytics[];
-    },
-  });
-};
-
-// Form Analytics Summary
-export const useFormAnalyticsSummary = (formId: string, dateRange?: { start: string; end: string }) => {
+export const useFormAnalyticsSummary = (
+  formId: string,
+  dateRange?: { start: string; end: string }
+) => {
   return useQuery({
     queryKey: ['form-analytics-summary', formId, dateRange],
     queryFn: async () => {
+      if (!formId) return null;
+
       let query = supabase
         .from('form_response_analytics')
-        .select('event_type')
+        .select('event_type, event_data')
         .eq('form_id', formId);
 
       if (dateRange) {
@@ -56,123 +41,84 @@ export const useFormAnalyticsSummary = (formId: string, dateRange?: { start: str
       }
 
       const { data, error } = await query;
+      if (error) throw error;
 
-      if (error) {
-        console.error('Error fetching form analytics summary:', error);
-        throw error;
-      }
+      // Calculate metrics from analytics data
+      const total_views = data.filter(d => d.event_type === 'form_view').length;
+      const total_starts = data.filter(d => d.event_type === 'form_start').length;
+      const total_submissions = data.filter(d => d.event_type === 'form_submit').length;
+      const total_abandons = data.filter(d => d.event_type === 'form_abandon').length;
 
-      // Calculate summary metrics
-      const summary = {
-        total_views: data?.filter(item => item.event_type === 'form_view').length || 0,
-        total_starts: data?.filter(item => item.event_type === 'form_start').length || 0,
-        total_submissions: data?.filter(item => item.event_type === 'form_submit').length || 0,
-        total_abandons: data?.filter(item => item.event_type === 'form_abandon').length || 0,
-      };
-
-      // Calculate conversion rates
-      const conversion_rate = summary.total_views > 0 
-        ? ((summary.total_submissions / summary.total_views) * 100).toFixed(2)
-        : '0';
-
-      const completion_rate = summary.total_starts > 0
-        ? ((summary.total_submissions / summary.total_starts) * 100).toFixed(2)
-        : '0';
-
-      const abandon_rate = summary.total_starts > 0
-        ? ((summary.total_abandons / summary.total_starts) * 100).toFixed(2)
-        : '0';
+      const conversion_rate = total_views > 0 ? Math.round((total_submissions / total_views) * 100) : 0;
+      const completion_rate = total_starts > 0 ? Math.round((total_submissions / total_starts) * 100) : 0;
+      const abandon_rate = total_starts > 0 ? Math.round((total_abandons / total_starts) * 100) : 0;
 
       return {
-        ...summary,
-        conversion_rate: parseFloat(conversion_rate),
-        completion_rate: parseFloat(completion_rate),
-        abandon_rate: parseFloat(abandon_rate),
-      };
+        total_views,
+        total_starts,
+        total_submissions,
+        total_abandons,
+        conversion_rate,
+        completion_rate,
+        abandon_rate
+      } as FormAnalyticsSummary;
     },
+    enabled: !!formId,
   });
 };
 
-// Track Form Analytics Event
-export const useTrackFormEvent = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (eventData: FormResponseAnalyticsInsert) => {
-      const { data, error } = await supabase
-        .from('form_response_analytics')
-        .insert(eventData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error tracking form event:', error);
-        throw error;
-      }
-
-      return data as FormResponseAnalytics;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['form-analytics'] });
-      queryClient.invalidateQueries({ queryKey: ['form-analytics-summary'] });
-    },
-  });
-};
-
-// Form Performance Analytics by Date
-export const useFormPerformanceAnalytics = (formId: string, days: number = 30) => {
+export const useFormPerformanceAnalytics = (formId: string, days = 30) => {
   return useQuery({
     queryKey: ['form-performance-analytics', formId, days],
     queryFn: async () => {
-      const endDate = new Date();
+      if (!formId) return [];
+
       const startDate = new Date();
-      startDate.setDate(endDate.getDate() - days);
+      startDate.setDate(startDate.getDate() - days);
 
       const { data, error } = await supabase
         .from('form_response_analytics')
         .select('event_type, created_at')
         .eq('form_id', formId)
         .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching form performance analytics:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Group data by date
-      const dailyMetrics: Record<string, any> = {};
+      // Group by date and event type
+      const dailyData: Record<string, FormPerformanceData> = {};
 
-      data?.forEach(event => {
-        const date = new Date(event.created_at).toDateString();
-        if (!dailyMetrics[date]) {
-          dailyMetrics[date] = {
+      data.forEach(event => {
+        const date = new Date(event.created_at).toISOString().split('T')[0];
+        
+        if (!dailyData[date]) {
+          dailyData[date] = {
             date,
             views: 0,
             starts: 0,
             submissions: 0,
-            abandons: 0,
+            abandons: 0
           };
         }
 
         switch (event.event_type) {
           case 'form_view':
-            dailyMetrics[date].views++;
+            dailyData[date].views++;
             break;
           case 'form_start':
-            dailyMetrics[date].starts++;
+            dailyData[date].starts++;
             break;
           case 'form_submit':
-            dailyMetrics[date].submissions++;
+            dailyData[date].submissions++;
             break;
           case 'form_abandon':
-            dailyMetrics[date].abandons++;
+            dailyData[date].abandons++;
             break;
         }
       });
 
-      return Object.values(dailyMetrics);
+      return Object.values(dailyData).sort((a, b) => a.date.localeCompare(b.date));
     },
+    enabled: !!formId,
   });
 };

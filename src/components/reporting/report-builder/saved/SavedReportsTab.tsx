@@ -1,108 +1,130 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import { deleteReport } from '@/services/reportingService';
-import { SavedReportsTabProps } from '../types';
-import { EntityOption } from '../types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useSecureSavedReports, useSecureDeleteReport } from '@/hooks/useSecureReportingService';
+import { SavedReport } from '@/services/reportingService';
+import { Trash2, Play, Eye } from 'lucide-react';
+
+interface SavedReportsTabProps {
+  savedReports: SavedReport[];
+  setSavedReports: (reports: SavedReport[]) => void;
+  onLoadReport: (report: SavedReport) => void;
+}
 
 const SavedReportsTab: React.FC<SavedReportsTabProps> = ({ 
   savedReports, 
   setSavedReports, 
   onLoadReport 
 }) => {
-  const { toast } = useToast();
+  const { data: reports, isLoading } = useSecureSavedReports();
+  const deleteReportMutation = useSecureDeleteReport();
 
-  // Entity options for display labels
-  const entityOptions: EntityOption[] = [
-    { value: 'companies', label: 'Companies' },
-    { value: 'people', label: 'People' },
-    { value: 'talents', label: 'Talents' },
-    { value: 'dropdown_options', label: 'Dropdown Options' },
-  ];
+  useEffect(() => {
+    if (reports) {
+      setSavedReports(reports);
+    }
+  }, [reports, setSavedReports]);
 
-  // Delete a saved report
-  const handleDeleteReport = async (id: string) => {
-    try {
-      await deleteReport(id);
-      setSavedReports(savedReports.filter(report => report.id !== id));
-      toast({
-        title: 'Report Deleted',
-        description: 'The report has been deleted successfully.',
-      });
-    } catch (error) {
-      console.error('Error deleting report:', error);
-      toast({
-        title: 'Error Deleting Report',
-        description: 'Failed to delete the report. Please try again.',
-        variant: 'destructive',
-      });
+  const handleDeleteReport = async (reportId: string) => {
+    if (window.confirm('Are you sure you want to delete this report?')) {
+      try {
+        await deleteReportMutation.mutateAsync(reportId);
+      } catch (error) {
+        console.error('Failed to delete report:', error);
+      }
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map(i => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!savedReports || savedReports.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="text-muted-foreground">
+            <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Saved Reports</h3>
+            <p className="text-sm">Create and save reports to see them here.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Saved Reports</h3>
-      
-      {savedReports.length === 0 ? (
-        <div className="text-center p-6 bg-muted/50 rounded-md">
-          <p className="text-muted-foreground">No saved reports yet</p>
-          <Button 
-            variant="outline" 
-            className="mt-2"
-            onClick={() => onLoadReport({ 
-              id: '', 
-              name: '', 
-              entity: 'companies', 
-              columns: [], 
-              filters: [],
-              group_by: '',
-              aggregation: [],
-              visualization_type: 'table',
-              created_at: '',
-              updated_at: ''
-            })}
-          >
-            Create Your First Report
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {savedReports.map((report) => (
-            <Card key={report.id} className="p-4">
-              <div className="flex justify-between items-start gap-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Saved Reports ({savedReports.length})</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {savedReports.map((report) => (
+          <Card key={report.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">{report.name}</CardTitle>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{report.entity}</Badge>
+                <Badge variant="secondary">{report.visualization_type}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium">{report.name}</h4>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Entity: {entityOptions.find(e => e.value === report.entity)?.label || report.entity}
-                  </div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {new Date(report.created_at).toLocaleDateString()}
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Columns: {Array.isArray(report.columns) ? report.columns.join(', ') : 'N/A'}
+                  </p>
+                  {Array.isArray(report.filters) && report.filters.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Filters: {report.filters.length} applied
+                    </p>
+                  )}
                 </div>
+                
+                <div className="text-xs text-muted-foreground">
+                  Created: {new Date(report.created_at).toLocaleDateString()}
+                </div>
+                
                 <div className="flex gap-2">
                   <Button 
-                    variant="outline" 
-                    size="sm"
+                    size="sm" 
+                    variant="outline"
                     onClick={() => onLoadReport(report)}
+                    className="flex-1"
                   >
+                    <Play className="h-3 w-3 mr-1" />
                     Load
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
                     size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    variant="destructive"
                     onClick={() => handleDeleteReport(report.id)}
+                    disabled={deleteReportMutation.isPending}
                   >
-                    Delete
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
