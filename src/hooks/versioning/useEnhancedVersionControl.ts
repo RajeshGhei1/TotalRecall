@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,7 +68,7 @@ export const useEnhancedVersionControl = () => {
           .order('version_number', { ascending: false });
 
         if (error) throw error;
-        return data as EntityVersion[];
+        return data as unknown as EntityVersion[];
       },
       enabled: !!entityId,
     });
@@ -432,8 +431,27 @@ export const useEnhancedVersionControl = () => {
         reviewNotes: params.notes,
       });
     },
-    onSuccess: reviewVersion.onSuccess,
-    onError: reviewVersion.onError,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('approval-workflows')
+      });
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('enhanced-version-history')
+      });
+      clearSecurityCaches();
+      
+      toast({
+        title: 'Approval Reviewed',
+        description: 'Approval has been processed successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Review Failed',
+        description: `Failed to review approval: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
   });
 
   // Request approval placeholder
@@ -458,6 +476,8 @@ export const useEnhancedVersionControl = () => {
     restoreFromVersion,
     reviewVersion,
     reviewApproval,
-    requestApproval,
+    requestApproval: useMutation({
+      mutationFn: async () => ({ success: true }),
+    }),
   };
 };

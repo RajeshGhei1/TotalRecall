@@ -15,7 +15,8 @@ import {
   Brain,
   Zap,
   Shield,
-  Activity
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -49,6 +50,12 @@ const defaultNavItems: NavItem[] = [
     label: 'Business Contacts', 
     icon: Users2, 
     href: '/superadmin/people'
+  },
+  { 
+    id: 'documentation',
+    label: 'Documentation', 
+    icon: BookOpen, 
+    href: '/superadmin/documentation'
   },
   { 
     id: 'ai-orchestration',

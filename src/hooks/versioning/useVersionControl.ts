@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,7 +75,7 @@ export const useVersionControl = () => {
     if (error) throw error;
 
     // Use timestamp as version for now - could be enhanced with dedicated version column
-    return data ? new Date(data.updated_at).getTime() : 0;
+    return data && data.updated_at ? new Date(data.updated_at).getTime() : 0;
   }, []);
 
   // Check for version conflicts before update

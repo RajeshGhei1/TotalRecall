@@ -13,6 +13,7 @@ import UserActivity from '@/pages/superadmin/UserActivity';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import Settings from '@/pages/superadmin/Settings';
+import Documentation from '@/pages/superadmin/Documentation';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 
 const SuperAdminRoutes = () => {
@@ -29,6 +30,9 @@ const SuperAdminRoutes = () => {
       <Route path="companies" element={<Companies />} />
       <Route path="companies/:companyId" element={<CompanyDetailView />} />
       <Route path="people" element={<People />} />
+      
+      {/* Documentation */}
+      <Route path="documentation" element={<Documentation />} />
       
       {/* AI & Analytics */}
       <Route path="ai-orchestration" element={<AIOrchestration />} />
