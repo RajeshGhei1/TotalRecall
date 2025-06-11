@@ -94,19 +94,15 @@ export const useAtomicTransactions = () => {
               if (insertError) throw insertError;
               result = insertData;
               
-              // Store rollback operation with proper null checks
+              // Store rollback operation using optional chaining
               if (insertData && insertData.length > 0) {
                 const firstRecord = insertData[0];
-                // Add explicit null check for firstRecord
-                if (firstRecord != null && typeof firstRecord === 'object' && 'id' in firstRecord) {
-                  const recordWithId = firstRecord as { id: any };
-                  if (recordWithId.id != null) {
-                    rollbackOperations.push({
-                      type: 'delete',
-                      table: operation.table,
-                      filter: { id: recordWithId.id }
-                    });
-                  }
+                if (firstRecord?.id != null) {
+                  rollbackOperations.push({
+                    type: 'delete',
+                    table: operation.table,
+                    filter: { id: firstRecord.id }
+                  });
                 }
               }
               break;
