@@ -75,6 +75,26 @@ export const useEnhancedVersionControl = () => {
     });
   };
 
+  // Get published version
+  const usePublishedVersion = (entityType: 'form' | 'report', entityId: string) => {
+    return useQuery({
+      queryKey: createSecureKey('published-version', [entityType, entityId]),
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('entity_versions')
+          .select('*')
+          .eq('entity_type', entityType)
+          .eq('entity_id', entityId)
+          .eq('is_published', true)
+          .single();
+
+        if (error) throw error;
+        return data as EntityVersion;
+      },
+      enabled: !!entityId,
+    });
+  };
+
   // Get approval workflows
   const useApprovalWorkflows = (entityType?: 'form' | 'report', entityId?: string) => {
     return useQuery({
@@ -106,6 +126,37 @@ export const useEnhancedVersionControl = () => {
         return data as ApprovalWorkflow[];
       },
       enabled: !!entityType || !!entityId,
+    });
+  };
+
+  // Get pending approvals
+  const usePendingApprovals = (entityType?: 'form' | 'report') => {
+    return useQuery({
+      queryKey: createSecureKey('pending-approvals', [entityType]),
+      queryFn: async () => {
+        let query = supabase
+          .from('workflow_approvals')
+          .select(`
+            *,
+            entity_versions!version_id (*),
+            profiles!requested_by (
+              id,
+              email,
+              full_name
+            )
+          `)
+          .eq('status', 'pending')
+          .order('requested_at', { ascending: false });
+
+        if (entityType) {
+          query = query.eq('entity_type', entityType);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        return data as ApprovalWorkflow[];
+      },
     });
   };
 
@@ -192,7 +243,116 @@ export const useEnhancedVersionControl = () => {
     },
   });
 
-  // Approve or reject version
+  // Publish version
+  const publishVersion = useMutation({
+    mutationFn: async (versionId: string) => {
+      const { data, error } = await supabase
+        .from('entity_versions')
+        .update({
+          is_published: true,
+          approval_status: 'approved',
+          approved_by: user?.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', versionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('enhanced-version-history')
+      });
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('published-version')
+      });
+      clearSecurityCaches();
+      
+      toast({
+        title: 'Version Published',
+        description: 'Version has been successfully published',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Publish Failed',
+        description: `Failed to publish version: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Restore from version
+  const restoreFromVersion = useMutation({
+    mutationFn: async (params: {
+      entityType: 'form' | 'report';
+      entityId: string;
+      versionId: string;
+    }) => {
+      const { entityType, entityId, versionId } = params;
+      
+      // Get version data
+      const { data: versionData, error: versionError } = await supabase
+        .from('entity_versions')
+        .select('data_snapshot')
+        .eq('id', versionId)
+        .single();
+
+      if (versionError) throw versionError;
+
+      // Create new version from restored data
+      const { data: latestVersion } = await supabase
+        .from('entity_versions')
+        .select('version_number')
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextVersion = (latestVersion?.version_number || 0) + 1;
+
+      const { data: restoredVersion, error: restoreError } = await supabase
+        .from('entity_versions')
+        .insert({
+          entity_type: entityType,
+          entity_id: entityId,
+          version_number: nextVersion,
+          data_snapshot: versionData.data_snapshot,
+          change_summary: `Restored from version ${nextVersion - 1}`,
+          approval_status: 'approved',
+          is_published: true,
+          created_by: user?.id,
+        })
+        .select()
+        .single();
+
+      if (restoreError) throw restoreError;
+      return restoredVersion;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: createSecureKey('enhanced-version-history', [variables.entityType, variables.entityId])
+      });
+      clearSecurityCaches();
+      
+      toast({
+        title: 'Version Restored',
+        description: `Successfully restored and created new version`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Restore Failed',
+        description: `Failed to restore version: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Review approval (approve/reject)
   const reviewVersion = useMutation({
     mutationFn: async (params: {
       workflowId: string;
@@ -252,16 +412,52 @@ export const useEnhancedVersionControl = () => {
     onError: (error: any) => {
       toast({
         title: 'Review Failed',
-        description: `Failed to ${error.action} version: ${error.message}`,
+        description: `Failed to review version: ${error.message}`,
         variant: 'destructive',
       });
     },
   });
 
+  // Review approval alias for ApprovalWorkflowManager
+  const reviewApproval = useMutation({
+    mutationFn: async (params: {
+      approvalId: string;
+      action: 'approve' | 'reject';
+      notes?: string;
+      shouldPublish?: boolean;
+    }) => {
+      return reviewVersion.mutateAsync({
+        workflowId: params.approvalId,
+        action: params.action,
+        reviewNotes: params.notes,
+      });
+    },
+    onSuccess: reviewVersion.onSuccess,
+    onError: reviewVersion.onError,
+  });
+
+  // Request approval placeholder
+  const requestApproval = useMutation({
+    mutationFn: async (params: {
+      entityType: 'form' | 'report';
+      entityId: string;
+      versionId: string;
+    }) => {
+      // This would trigger an approval workflow
+      return { success: true };
+    },
+  });
+
   return {
     useVersionHistory,
+    usePublishedVersion,
     useApprovalWorkflows,
+    usePendingApprovals,
     createVersionWithApproval,
+    publishVersion,
+    restoreFromVersion,
     reviewVersion,
+    reviewApproval,
+    requestApproval,
   };
 };

@@ -37,3 +37,13 @@ export interface AuditLogFilters {
   date_to?: string;
   search?: string;
 }
+
+export interface UserSessionFilters {
+  user_id?: string;
+  tenant_id?: string;
+  is_active?: boolean;
+  login_method?: string;
+  date_from?: string;
+  date_to?: string;
+  search?: string;
+}

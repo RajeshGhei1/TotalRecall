@@ -10,6 +10,7 @@ import { useAuditLogs, useAuditLogStats } from '@/hooks/audit/useAuditLogs';
 import { useUserSessions, useUserSessionStats } from '@/hooks/audit/useUserSessions';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { AuditLogFilters, UserSessionFilters } from '@/types/audit';
 import { 
   Shield, 
   AlertTriangle, 
@@ -23,16 +24,16 @@ import {
 
 const SecurityAuditDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [auditFilters, setAuditFilters] = useState({
+  const [auditFilters, setAuditFilters] = useState<AuditLogFilters>({
     action: '',
     entity_type: '',
-    severity: '',
+    severity: undefined,
     search: '',
     date_from: '',
     date_to: ''
   });
-  const [sessionFilters, setSessionFilters] = useState({
-    is_active: undefined as boolean | undefined,
+  const [sessionFilters, setSessionFilters] = useState<UserSessionFilters>({
+    is_active: undefined,
     login_method: '',
     search: '',
     date_from: '',
@@ -109,32 +110,49 @@ const SecurityAuditDashboard: React.FC = () => {
         <TabsContent value="overview" className="space-y-6">
           {/* Overview Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <MetricCard
-              title="Total Audit Logs"
-              value={auditStats?.totalLogs || 0}
-              subtitle="Last 7 days"
-              icon={Shield}
-            />
-            <MetricCard
-              title="Critical Events"
-              value={auditStats?.criticalLogs || 0}
-              subtitle="Requires attention"
-              icon={AlertTriangle}
-              color="destructive"
-            />
-            <MetricCard
-              title="Active Sessions"
-              value={sessionStats?.activeSessions || 0}
-              subtitle="Currently active"
-              icon={Activity}
-              color="success"
-            />
-            <MetricCard
-              title="Unique Users"
-              value={sessionStats?.uniqueUsers || 0}
-              subtitle="Last 7 days"
-              icon={Users}
-            />
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Audit Logs</CardTitle>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{auditStats?.totalLogs || 0}</div>
+                <p className="text-xs text-muted-foreground">Last 7 days</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Critical Events</CardTitle>
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{auditStats?.criticalLogs || 0}</div>
+                <p className="text-xs text-muted-foreground">Requires attention</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{sessionStats?.activeSessions || 0}</div>
+                <p className="text-xs text-muted-foreground">Currently active</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{sessionStats?.uniqueUsers || 0}</div>
+                <p className="text-xs text-muted-foreground">Last 7 days</p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Activity Charts */}
@@ -192,13 +210,19 @@ const SecurityAuditDashboard: React.FC = () => {
                   <label className="text-sm font-medium mb-2 block">Search</label>
                   <Input
                     placeholder="Search actions, entities..."
-                    value={auditFilters.search}
+                    value={auditFilters.search || ''}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, search: e.target.value }))}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Severity</label>
-                  <Select value={auditFilters.severity} onValueChange={(value) => setAuditFilters(prev => ({ ...prev, severity: value }))}>
+                  <Select 
+                    value={auditFilters.severity || ''} 
+                    onValueChange={(value) => setAuditFilters(prev => ({ 
+                      ...prev, 
+                      severity: value === '' ? undefined : value as 'low' | 'medium' | 'high' | 'critical'
+                    }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All severities" />
                     </SelectTrigger>
@@ -215,7 +239,7 @@ const SecurityAuditDashboard: React.FC = () => {
                   <label className="text-sm font-medium mb-2 block">Entity Type</label>
                   <Input
                     placeholder="e.g., user, form, report"
-                    value={auditFilters.entity_type}
+                    value={auditFilters.entity_type || ''}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, entity_type: e.target.value }))}
                   />
                 </div>
@@ -223,7 +247,7 @@ const SecurityAuditDashboard: React.FC = () => {
                   <label className="text-sm font-medium mb-2 block">Action</label>
                   <Input
                     placeholder="e.g., CREATE, UPDATE, DELETE"
-                    value={auditFilters.action}
+                    value={auditFilters.action || ''}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, action: e.target.value }))}
                   />
                 </div>
