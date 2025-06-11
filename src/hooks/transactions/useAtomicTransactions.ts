@@ -8,8 +8,8 @@ interface TransactionOperation {
   id: string;
   type: 'insert' | 'update' | 'delete';
   table: string;
-  data?: any;
-  filter?: any;
+  data?: Record<string, any>;
+  filter?: Record<string, any>;
   queryKey?: any[];
 }
 
@@ -18,6 +18,13 @@ interface TransactionState {
   operations: TransactionOperation[];
   completedOperations: string[];
   failedOperations: string[];
+}
+
+interface RollbackOperation {
+  type: 'insert' | 'update' | 'delete';
+  table: string;
+  filter?: Record<string, any>;
+  data?: Record<string, any>;
 }
 
 /**
@@ -37,7 +44,7 @@ export const useAtomicTransactions = () => {
 
   // Add operation to transaction queue
   const addOperation = useCallback((operation: Omit<TransactionOperation, 'id'>) => {
-    const opWithId = {
+    const opWithId: TransactionOperation = {
       ...operation,
       id: `op-${Date.now()}-${Math.random()}`,
     };
@@ -77,27 +84,29 @@ export const useAtomicTransactions = () => {
       const results: any[] = [];
       const completed: string[] = [];
       const queryKeysToInvalidate = new Set<string>();
-      const rollbackOperations: any[] = [];
+      const rollbackOperations: RollbackOperation[] = [];
 
       // Execute operations sequentially
       for (const operation of state.operations) {
         try {
-          let result;
+          let result: any;
           
           switch (operation.type) {
             case 'insert':
-              const { data: insertData, error: insertError } = await supabase
-                .from(operation.table as any)
-                .insert(operation.data)
+              const insertQuery = supabase
+                .from(operation.table)
+                .insert(operation.data!)
                 .select('*');
+              
+              const { data: insertData, error: insertError } = await insertQuery;
               
               if (insertError) throw insertError;
               result = insertData;
               
-              // Store rollback operation with type assertion
-              if (insertData && insertData.length > 0) {
-                const firstRecord = insertData[0] as any;
-                if (firstRecord && firstRecord.id != null) {
+              // Store rollback operation with proper typing
+              if (insertData && Array.isArray(insertData) && insertData.length > 0) {
+                const firstRecord = insertData[0] as Record<string, any>;
+                if (firstRecord && 'id' in firstRecord && firstRecord.id != null) {
                   rollbackOperations.push({
                     type: 'delete',
                     table: operation.table,
@@ -109,17 +118,21 @@ export const useAtomicTransactions = () => {
 
             case 'update':
               // Store current data for rollback
-              const { data: currentData } = await supabase
-                .from(operation.table as any)
+              const currentQuery = supabase
+                .from(operation.table)
                 .select('*')
-                .match(operation.filter)
+                .match(operation.filter!)
                 .single();
+              
+              const { data: currentData } = await currentQuery;
 
-              const { data: updateData, error: updateError } = await supabase
-                .from(operation.table as any)
-                .update(operation.data)
-                .match(operation.filter)
+              const updateQuery = supabase
+                .from(operation.table)
+                .update(operation.data!)
+                .match(operation.filter!)
                 .select('*');
+              
+              const { data: updateData, error: updateError } = await updateQuery;
               
               if (updateError) throw updateError;
               result = updateData;
@@ -137,22 +150,26 @@ export const useAtomicTransactions = () => {
 
             case 'delete':
               // Store current data for rollback
-              const { data: deleteCurrentData } = await supabase
-                .from(operation.table as any)
+              const deleteCurrentQuery = supabase
+                .from(operation.table)
                 .select('*')
-                .match(operation.filter);
+                .match(operation.filter!);
+              
+              const { data: deleteCurrentData } = await deleteCurrentQuery;
 
-              const { data: deleteData, error: deleteError } = await supabase
-                .from(operation.table as any)
+              const deleteQuery = supabase
+                .from(operation.table)
                 .delete()
-                .match(operation.filter)
+                .match(operation.filter!)
                 .select('*');
+              
+              const { data: deleteData, error: deleteError } = await deleteQuery;
               
               if (deleteError) throw deleteError;
               result = deleteData;
               
               // Store rollback operation
-              if (deleteCurrentData && deleteCurrentData.length > 0) {
+              if (deleteCurrentData && Array.isArray(deleteCurrentData) && deleteCurrentData.length > 0) {
                 rollbackOperations.push({
                   type: 'insert',
                   table: operation.table,
@@ -183,13 +200,13 @@ export const useAtomicTransactions = () => {
             try {
               switch (rollbackOp.type) {
                 case 'insert':
-                  await supabase.from(rollbackOp.table as any).insert(rollbackOp.data);
+                  await supabase.from(rollbackOp.table).insert(rollbackOp.data!);
                   break;
                 case 'update':
-                  await supabase.from(rollbackOp.table as any).update(rollbackOp.data).match(rollbackOp.filter);
+                  await supabase.from(rollbackOp.table).update(rollbackOp.data!).match(rollbackOp.filter!);
                   break;
                 case 'delete':
-                  await supabase.from(rollbackOp.table as any).delete().match(rollbackOp.filter);
+                  await supabase.from(rollbackOp.table).delete().match(rollbackOp.filter!);
                   break;
               }
             } catch (rollbackError) {
