@@ -56,14 +56,7 @@ export const useEnhancedVersionControl = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from('entity_versions')
-          .select(`
-            *,
-            profiles:created_by (
-              id,
-              email,
-              full_name
-            )
-          `)
+          .select('*')
           .eq('entity_type', entityType)
           .eq('entity_id', entityId)
           .order('version_number', { ascending: false });
@@ -102,15 +95,7 @@ export const useEnhancedVersionControl = () => {
       queryFn: async () => {
         let query = supabase
           .from('workflow_approvals')
-          .select(`
-            *,
-            entity_versions!version_id (*),
-            profiles!requested_by (
-              id,
-              email,
-              full_name
-            )
-          `)
+          .select('*')
           .order('requested_at', { ascending: false });
 
         if (entityType) {
@@ -136,15 +121,7 @@ export const useEnhancedVersionControl = () => {
       queryFn: async () => {
         let query = supabase
           .from('workflow_approvals')
-          .select(`
-            *,
-            entity_versions!version_id (*),
-            profiles!requested_by (
-              id,
-              email,
-              full_name
-            )
-          `)
+          .select('*')
           .eq('status', 'pending')
           .order('requested_at', { ascending: false });
 
@@ -370,16 +347,13 @@ export const useEnhancedVersionControl = () => {
           reviewed_at: new Date().toISOString(),
         })
         .eq('id', workflowId)
-        .select(`
-          *,
-          entity_versions!version_id (*)
-        `)
+        .select('*')
         .single();
 
       if (updateError) throw updateError;
 
       // If approved, publish the version
-      if (action === 'approve' && workflowData.entity_versions) {
+      if (action === 'approve') {
         const { error: publishError } = await supabase
           .from('entity_versions')
           .update({

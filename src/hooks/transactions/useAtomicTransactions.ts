@@ -93,10 +93,13 @@ export const useAtomicTransactions = () => {
               
               if (insertError) throw insertError;
               result = insertData;
-              // Store rollback operation
+              // Store rollback operation with proper null checks
               if (insertData && insertData.length > 0) {
                 const firstRecord = insertData[0];
-                if (firstRecord && typeof firstRecord === 'object' && 'id' in firstRecord && firstRecord.id) {
+                if (firstRecord && 
+                    typeof firstRecord === 'object' && 
+                    'id' in firstRecord && 
+                    firstRecord.id != null) {
                   rollbackOperations.push({
                     type: 'delete',
                     table: operation.table,
