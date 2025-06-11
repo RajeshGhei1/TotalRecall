@@ -1,31 +1,10 @@
 
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface TransactionOperation {
-  id: string;
-  type: 'insert' | 'update' | 'delete';
-  table: string;
-  data?: Record<string, any>;
-  filter?: Record<string, any>;
-  queryKey?: any[];
-}
-
-interface TransactionState {
-  isRunning: boolean;
-  operations: TransactionOperation[];
-  completedOperations: string[];
-  failedOperations: string[];
-}
-
-interface RollbackOperation {
-  type: 'insert' | 'update' | 'delete';
-  table: string;
-  filter?: Record<string, any>;
-  data?: Record<string, any>;
-}
+import type { TransactionOperation, TransactionState, TransactionResult } from '@/types/transaction-types';
+import { executeSupabaseOperation } from '@/utils/transaction-operations';
+import { RollbackManager } from '@/utils/rollback-manager';
 
 /**
  * Hook for atomic-like operations with rollback capabilities
@@ -68,7 +47,7 @@ export const useAtomicTransactions = () => {
   }, []);
 
   // Execute all operations sequentially
-  const executeTransaction = useCallback(async () => {
+  const executeTransaction = useCallback(async (): Promise<TransactionResult> => {
     if (state.operations.length === 0) {
       toast({
         title: 'No Operations',
@@ -84,105 +63,22 @@ export const useAtomicTransactions = () => {
       const results: any[] = [];
       const completed: string[] = [];
       const queryKeysToInvalidate = new Set<string>();
-      const rollbackOperations: RollbackOperation[] = [];
+      const rollbackManager = new RollbackManager();
 
       // Execute operations sequentially
       for (const operation of state.operations) {
         try {
-          let result: any;
+          // Prepare rollback before executing operation
+          await rollbackManager.prepareRollback(operation, null);
           
-          switch (operation.type) {
-            case 'insert':
-              const insertQuery = supabase
-                .from(operation.table)
-                .insert(operation.data!)
-                .select('*');
-              
-              const { data: insertData, error: insertError } = await insertQuery;
-              
-              if (insertError) throw insertError;
-              result = insertData;
-              
-              // Store rollback operation with proper typing
-              if (insertData && Array.isArray(insertData) && insertData.length > 0) {
-                const firstRecord = insertData[0] as Record<string, any>;
-                if (firstRecord && 'id' in firstRecord && firstRecord.id != null) {
-                  rollbackOperations.push({
-                    type: 'delete',
-                    table: operation.table,
-                    filter: { id: firstRecord.id }
-                  });
-                }
-              }
-              break;
-
-            case 'update':
-              // Store current data for rollback
-              const currentQuery = supabase
-                .from(operation.table)
-                .select('*')
-                .match(operation.filter!)
-                .single();
-              
-              const { data: currentData } = await currentQuery;
-
-              const updateQuery = supabase
-                .from(operation.table)
-                .update(operation.data!)
-                .match(operation.filter!)
-                .select('*');
-              
-              const { data: updateData, error: updateError } = await updateQuery;
-              
-              if (updateError) throw updateError;
-              result = updateData;
-              
-              // Store rollback operation
-              if (currentData) {
-                rollbackOperations.push({
-                  type: 'update',
-                  table: operation.table,
-                  filter: operation.filter,
-                  data: currentData
-                });
-              }
-              break;
-
-            case 'delete':
-              // Store current data for rollback
-              const deleteCurrentQuery = supabase
-                .from(operation.table)
-                .select('*')
-                .match(operation.filter!);
-              
-              const { data: deleteCurrentData } = await deleteCurrentQuery;
-
-              const deleteQuery = supabase
-                .from(operation.table)
-                .delete()
-                .match(operation.filter!)
-                .select('*');
-              
-              const { data: deleteData, error: deleteError } = await deleteQuery;
-              
-              if (deleteError) throw deleteError;
-              result = deleteData;
-              
-              // Store rollback operation
-              if (deleteCurrentData && Array.isArray(deleteCurrentData) && deleteCurrentData.length > 0) {
-                rollbackOperations.push({
-                  type: 'insert',
-                  table: operation.table,
-                  data: deleteCurrentData
-                });
-              }
-              break;
-
-            default:
-              throw new Error(`Unknown operation type: ${operation.type}`);
+          // Execute the operation
+          const result = await executeSupabaseOperation(operation);
+          
+          if (result.error) {
+            throw result.error;
           }
 
-          results.push({ operationId: operation.id, result });
+          results.push({ operationId: operation.id, result: result.data });
           completed.push(operation.id);
 
           // Collect query keys for invalidation
@@ -190,29 +86,13 @@ export const useAtomicTransactions = () => {
             queryKeysToInvalidate.add(JSON.stringify(operation.queryKey));
           }
 
+          console.log(`Operation ${operation.id} completed successfully`);
+
         } catch (operationError: any) {
-          // Attempt to rollback completed operations
           console.log('Operation failed, attempting rollback...', operationError);
           
-          // Perform rollback operations in reverse order
-          for (let i = rollbackOperations.length - 1; i >= 0; i--) {
-            const rollbackOp = rollbackOperations[i];
-            try {
-              switch (rollbackOp.type) {
-                case 'insert':
-                  await supabase.from(rollbackOp.table).insert(rollbackOp.data!);
-                  break;
-                case 'update':
-                  await supabase.from(rollbackOp.table).update(rollbackOp.data!).match(rollbackOp.filter!);
-                  break;
-                case 'delete':
-                  await supabase.from(rollbackOp.table).delete().match(rollbackOp.filter!);
-                  break;
-              }
-            } catch (rollbackError) {
-              console.error('Rollback operation failed:', rollbackError);
-            }
-          }
+          // Attempt to rollback completed operations
+          await rollbackManager.executeRollback();
           
           setState(prev => ({
             ...prev,
@@ -222,18 +102,22 @@ export const useAtomicTransactions = () => {
 
           toast({
             title: 'Transaction Failed',
-            description: `Operation ${operation.id} failed: ${operationError.message}`,
+            description: `Operation ${operation.id} failed: ${operationError.message || 'Unknown error'}`,
             variant: 'destructive',
           });
 
-          return { success: false, results, error: operationError.message };
+          return { success: false, results, error: operationError.message || 'Unknown error' };
         }
       }
 
       // Invalidate affected query keys
       queryKeysToInvalidate.forEach(keyStr => {
-        const queryKey = JSON.parse(keyStr);
-        queryClient.invalidateQueries({ queryKey });
+        try {
+          const queryKey = JSON.parse(keyStr);
+          queryClient.invalidateQueries({ queryKey });
+        } catch (error) {
+          console.warn('Failed to invalidate query key:', keyStr, error);
+        }
       });
 
       setState(prev => ({
@@ -247,6 +131,9 @@ export const useAtomicTransactions = () => {
         description: `Successfully executed ${completed.length} operations`,
       });
 
+      // Clear rollback manager
+      rollbackManager.clear();
+
       return { success: true, results };
 
     } catch (error: any) {
@@ -258,11 +145,11 @@ export const useAtomicTransactions = () => {
 
       toast({
         title: 'Transaction Error',
-        description: `Transaction failed: ${error.message}`,
+        description: `Transaction failed: ${error.message || 'Unknown error'}`,
         variant: 'destructive',
       });
 
-      return { success: false, results: [], error: error.message };
+      return { success: false, results: [], error: error.message || 'Unknown error' };
     }
   }, [state.operations, queryClient, toast]);
 
