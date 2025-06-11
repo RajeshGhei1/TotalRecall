@@ -1548,6 +1548,66 @@ export type Database = {
           },
         ]
       }
+      form_change_history: {
+        Row: {
+          change_reason: string | null
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          form_id: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          change_type: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          form_id: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          form_id?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_change_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_change_history_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_definitions: {
         Row: {
           access_level: string | null
@@ -2614,11 +2674,72 @@ export type Database = {
         }
         Relationships: []
       }
+      report_change_history: {
+        Row: {
+          change_reason: string | null
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          report_id: string
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          change_type: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          report_id: string
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          report_id?: string
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_change_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_change_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "saved_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_reports: {
         Row: {
           aggregation: Json | null
           columns: Json
           created_at: string | null
+          created_by: string | null
           entity: string
           filters: Json
           group_by: string | null
@@ -2631,6 +2752,7 @@ export type Database = {
           aggregation?: Json | null
           columns?: Json
           created_at?: string | null
+          created_by?: string | null
           entity: string
           filters?: Json
           group_by?: string | null
@@ -2643,6 +2765,7 @@ export type Database = {
           aggregation?: Json | null
           columns?: Json
           created_at?: string | null
+          created_by?: string | null
           entity?: string
           filters?: Json
           group_by?: string | null
@@ -2651,7 +2774,15 @@ export type Database = {
           updated_at?: string | null
           visualization_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skills: {
         Row: {
@@ -3844,6 +3975,14 @@ export type Database = {
       delete_test_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_current_user_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_super_admin: {
         Args: { user_id: string }

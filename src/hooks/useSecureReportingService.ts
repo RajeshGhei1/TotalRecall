@@ -22,7 +22,14 @@ export const useSecureSavedReports = () => {
 
       let query = supabase
         .from('saved_reports')
-        .select('*')
+        .select(`
+          *,
+          profiles:created_by (
+            id,
+            email,
+            full_name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       const { data, error } = await query;
@@ -60,8 +67,9 @@ export const useSecureSaveReport = () => {
 
       const reportData = {
         ...report,
-        // Use proper tenant context instead of null
+        // Use proper tenant context and user ownership
         tenant_id: selectedTenantId,
+        created_by: user.id,
         columns: JSON.stringify(report.columns),
         filters: JSON.stringify(report.filters),
         aggregation: JSON.stringify(report.aggregation)
@@ -70,7 +78,14 @@ export const useSecureSaveReport = () => {
       const { data, error } = await supabase
         .from('saved_reports')
         .insert([reportData])
-        .select()
+        .select(`
+          *,
+          profiles:created_by (
+            id,
+            email,
+            full_name
+          )
+        `)
         .single();
         
       if (error) {
