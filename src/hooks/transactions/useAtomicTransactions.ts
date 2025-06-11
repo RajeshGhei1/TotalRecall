@@ -89,15 +89,15 @@ export const useAtomicTransactions = () => {
               const { data: insertData, error: insertError } = await supabase
                 .from(operation.table as any)
                 .insert(operation.data)
-                .select();
+                .select('*');
               
               if (insertError) throw insertError;
               result = insertData;
               
-              // Store rollback operation using optional chaining
+              // Store rollback operation with type assertion
               if (insertData && insertData.length > 0) {
-                const firstRecord = insertData[0];
-                if (firstRecord?.id != null) {
+                const firstRecord = insertData[0] as any;
+                if (firstRecord && firstRecord.id != null) {
                   rollbackOperations.push({
                     type: 'delete',
                     table: operation.table,
@@ -111,7 +111,7 @@ export const useAtomicTransactions = () => {
               // Store current data for rollback
               const { data: currentData } = await supabase
                 .from(operation.table as any)
-                .select()
+                .select('*')
                 .match(operation.filter)
                 .single();
 
@@ -119,7 +119,7 @@ export const useAtomicTransactions = () => {
                 .from(operation.table as any)
                 .update(operation.data)
                 .match(operation.filter)
-                .select();
+                .select('*');
               
               if (updateError) throw updateError;
               result = updateData;
@@ -139,14 +139,14 @@ export const useAtomicTransactions = () => {
               // Store current data for rollback
               const { data: deleteCurrentData } = await supabase
                 .from(operation.table as any)
-                .select()
+                .select('*')
                 .match(operation.filter);
 
               const { data: deleteData, error: deleteError } = await supabase
                 .from(operation.table as any)
                 .delete()
                 .match(operation.filter)
-                .select();
+                .select('*');
               
               if (deleteError) throw deleteError;
               result = deleteData;
