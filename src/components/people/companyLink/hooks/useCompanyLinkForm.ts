@@ -189,14 +189,20 @@ export const useCompanyLinkForm = ({
 
   const handleCompanyChange = (value: string) => {
     console.log('Company changed to:', value);
-    setFormData(prev => ({ ...prev, company_id: value, reports_to: undefined }));
+    setFormData(prev => ({ 
+      ...prev, 
+      company_id: value, 
+      reports_to: '' // Reset manager when company changes
+    }));
   };
 
   const handleRoleChange = (value: string) => {
+    console.log('Role changed to:', value);
     setFormData(prev => ({ ...prev, role: value }));
   };
 
   const handleStartDateChange = (date: Date | undefined) => {
+    console.log('Start date changed to:', date);
     setStartDate(date);
     setFormData(prev => ({ 
       ...prev, 
@@ -205,6 +211,7 @@ export const useCompanyLinkForm = ({
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
+    console.log('End date changed to:', date);
     setEndDate(date);
     setFormData(prev => ({ 
       ...prev, 

@@ -14,12 +14,17 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
   companies,
   onCompanyChange
 }) => {
+  console.log('CompanySelector rendering with:', { companyId, companiesCount: companies.length, companies });
+  
   return (
     <div className="space-y-2">
       <Label htmlFor="company_select">Company</Label>
       <Select
         value={companyId}
-        onValueChange={onCompanyChange}
+        onValueChange={(value) => {
+          console.log('Company selector onChange triggered with value:', value);
+          onCompanyChange(value);
+        }}
       >
         <SelectTrigger>
           <SelectValue placeholder="Select a company" />
