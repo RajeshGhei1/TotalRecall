@@ -56,23 +56,34 @@ export function MultiSelect({
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
   const [isAnimating, setIsAnimating] = React.useState(false)
 
-  // Ensure options is always an array with proper validation
+  // Ensure options is always a valid array with proper validation
   const safeOptions = React.useMemo(() => {
     if (!Array.isArray(options)) {
       console.warn('MultiSelect: options prop is not an array, defaulting to empty array');
       return [];
     }
-    return options.filter(option => option && typeof option === 'object' && option.value && option.label);
+    return options.filter(option => 
+      option && 
+      typeof option === 'object' && 
+      typeof option.value === 'string' && 
+      option.value.length > 0 &&
+      typeof option.label === 'string' && 
+      option.label.length > 0
+    );
   }, [options])
 
-  // Ensure selectedValues is always an array with proper validation
+  // Ensure selectedValues is always a valid array with proper validation
   const safeSelectedValues = React.useMemo(() => {
     if (!Array.isArray(selectedValues)) {
       console.warn('MultiSelect: selectedValues is not an array, defaulting to empty array');
       return [];
     }
-    return selectedValues.filter(value => typeof value === 'string' && value.length > 0);
-  }, [selectedValues])
+    return selectedValues.filter(value => 
+      typeof value === 'string' && 
+      value.length > 0 &&
+      safeOptions.some(option => option.value === value)
+    );
+  }, [selectedValues, safeOptions])
 
   React.useEffect(() => {
     if (Array.isArray(value)) {
@@ -297,63 +308,66 @@ export function MultiSelect({
         onEscapeKeyDown={() => setIsPopoverOpen(false)}
         style={{ zIndex: 10000 }}
       >
-        <Command 
-          className="bg-popover" 
-          shouldFilter={false}
-          key={`command-${safeOptions.length}-${safeSelectedValues.length}`}
-        >
-          <CommandInput
-            placeholder="Search..."
-            onKeyDown={handleInputKeyDown}
-            className="bg-popover"
-          />
-          <CommandEmpty className="bg-popover">No results found.</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto bg-popover">
-            <CommandItem
-              key="all"
-              onSelect={toggleAll}
-              className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
-            >
-              <div
-                className={cn(
-                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                  safeSelectedValues.length === safeOptions.length
-                    ? "bg-primary text-primary-foreground"
-                    : "opacity-50 [&_svg]:invisible"
-                )}
+        {/* Only render Command if we have valid options and safe data */}
+        {safeOptions.length > 0 && (
+          <Command 
+            className="bg-popover" 
+            shouldFilter={false}
+            key={`command-${safeOptions.length}-${safeSelectedValues.length}-${Date.now()}`}
+          >
+            <CommandInput
+              placeholder="Search..."
+              onKeyDown={handleInputKeyDown}
+              className="bg-popover"
+            />
+            <CommandEmpty className="bg-popover">No results found.</CommandEmpty>
+            <CommandGroup className="max-h-64 overflow-auto bg-popover">
+              <CommandItem
+                key="all"
+                onSelect={toggleAll}
+                className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
               >
-                <Check className={cn("h-4 w-4")} />
-              </div>
-              <span>(Select All)</span>
-            </CommandItem>
-            {safeOptions.map((option) => {
-              if (!option || !option.value) return null;
-              const isSelected = safeSelectedValues.includes(option.value)
-              return (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => toggleOption(option.value)}
-                  className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                      isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible"
-                    )}
-                  >
-                    <Check className={cn("h-4 w-4")} />
-                  </div>
-                  {option.icon && (
-                    <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                <div
+                  className={cn(
+                    "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                    safeSelectedValues.length === safeOptions.length
+                      ? "bg-primary text-primary-foreground"
+                      : "opacity-50 [&_svg]:invisible"
                   )}
-                  <span>{option.label}</span>
-                </CommandItem>
-              )
-            })}
-          </CommandGroup>
-        </Command>
+                >
+                  <Check className={cn("h-4 w-4")} />
+                </div>
+                <span>(Select All)</span>
+              </CommandItem>
+              {safeOptions.map((option) => {
+                if (!option || !option.value) return null;
+                const isSelected = safeSelectedValues.includes(option.value)
+                return (
+                  <CommandItem
+                    key={option.value}
+                    onSelect={() => toggleOption(option.value)}
+                    className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <div
+                      className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "opacity-50 [&_svg]:invisible"
+                      )}
+                    >
+                      <Check className={cn("h-4 w-4")} />
+                    </div>
+                    {option.icon && (
+                      <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span>{option.label}</span>
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </Command>
+        )}
       </PopoverContent>
     </Popover>
   )
