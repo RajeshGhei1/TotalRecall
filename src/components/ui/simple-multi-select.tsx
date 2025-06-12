@@ -48,15 +48,16 @@ export function SimpleMultiSelect({
   // Ensure options is always a valid array
   const safeOptions = React.useMemo(() => {
     if (!Array.isArray(options)) {
+      console.warn('SimpleMultiSelect: options is not an array, using empty array');
       return [];
     }
     return options.filter(option => 
       option && 
       typeof option === 'object' && 
       typeof option.value === 'string' && 
-      option.value.length > 0 &&
+      option.value.trim().length > 0 &&
       typeof option.label === 'string' && 
-      option.label.length > 0
+      option.label.trim().length > 0
     );
   }, [options])
 
@@ -67,7 +68,7 @@ export function SimpleMultiSelect({
     }
     return selectedValues.filter(value => 
       typeof value === 'string' && 
-      value.length > 0 &&
+      value.trim().length > 0 &&
       safeOptions.some(option => option.value === value)
     );
   }, [selectedValues, safeOptions])
@@ -80,9 +81,9 @@ export function SimpleMultiSelect({
 
   // Filter options based on search
   const filteredOptions = React.useMemo(() => {
-    if (!searchValue) return safeOptions;
+    if (!searchValue.trim()) return safeOptions;
     return safeOptions.filter(option =>
-      option.label.toLowerCase().includes(searchValue.toLowerCase())
+      option.label.toLowerCase().includes(searchValue.toLowerCase().trim())
     );
   }, [safeOptions, searchValue])
 
@@ -118,14 +119,14 @@ export function SimpleMultiSelect({
     onValueChange(newSelectedValues)
   }
 
-  // Early return if we don't have safe options
+  // Show placeholder message when no options
   if (!safeOptions || safeOptions.length === 0) {
     return (
       <Button
         className={cn(
           "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit",
           {
-            "cursor-not-allowed opacity-50": disabled,
+            "cursor-not-allowed opacity-50": true,
           },
           className
         )}
@@ -173,23 +174,17 @@ export function SimpleMultiSelect({
                           <IconComponent className="h-4 w-4 mr-2" />
                         )}
                         {option?.label}
-                        <button
+                        <X
                           className={cn(
-                            "ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                            "ml-1 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer",
                             disabled && "hidden",
                           )}
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                          }}
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
                             toggleOption(value)
                           }}
-                        >
-                          <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                        </button>
+                        />
                       </Badge>
                     )
                   })}
@@ -203,23 +198,17 @@ export function SimpleMultiSelect({
                       data-disabled={disabled}
                     >
                       {`+ ${safeSelectedValues.length - maxCount} more`}
-                      <button
+                      <X
                         className={cn(
-                          "ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          "ml-1 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer",
                           disabled && "hidden",
                         )}
-                        onMouseDown={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                        }}
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
                           clearExtraOptions()
                         }}
-                      >
-                        <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                      </button>
+                      />
                     </Badge>
                   )}
                 </div>
@@ -234,23 +223,17 @@ export function SimpleMultiSelect({
             <div className="flex items-center justify-between">
               {safeSelectedValues.length > 0 && (
                 <div className="flex items-center">
-                  <button
+                  <X
                     className={cn(
-                      "ml-2 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      "ml-2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer",
                       disabled && "hidden",
                     )}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                    }}
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       handleClear()
                     }}
-                  >
-                    <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                  </button>
+                  />
                 </div>
               )}
               <ChevronDown className="h-4 w-4 cursor-pointer text-muted-foreground mx-2" />
