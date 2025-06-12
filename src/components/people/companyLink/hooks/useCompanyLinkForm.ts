@@ -20,18 +20,6 @@ export const useCompanyLinkForm = ({
   onClose,
   isOpen
 }: UseCompanyLinkFormProps) => {
-  // Initialize form data with proper defaults
-  const getInitialFormData = (): LinkCompanyRelationshipData => ({
-    person_id: personId || '',
-    company_id: '',
-    role: '',
-    start_date: '',
-    end_date: '',
-    is_current: true,
-    relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
-  });
-
-  const [formData, setFormData] = useState<LinkCompanyRelationshipData>(getInitialFormData());
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [potentialManagers, setPotentialManagers] = useState<Array<{ person: {
@@ -42,15 +30,34 @@ export const useCompanyLinkForm = ({
     role?: string;
   } | null }>>([]);
 
+  // Initialize form data based on current props
+  const [formData, setFormData] = useState<LinkCompanyRelationshipData>(() => ({
+    person_id: personId || '',
+    company_id: '',
+    role: '',
+    start_date: '',
+    end_date: '',
+    is_current: true,
+    relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
+  }));
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Reset form when dialog opens/closes or personId changes
+  // Reset form when dialog opens/closes or personId/personType changes
   useEffect(() => {
     if (isOpen && personId) {
-      console.log('Resetting form with personId:', personId);
-      const newFormData = getInitialFormData();
-      console.log('New form data:', newFormData);
+      console.log('Resetting form with personId:', personId, 'personType:', personType);
+      const newFormData: LinkCompanyRelationshipData = {
+        person_id: personId,
+        company_id: '',
+        role: '',
+        start_date: '',
+        end_date: '',
+        is_current: true,
+        relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
+      };
+      console.log('Setting new form data:', newFormData);
       setFormData(newFormData);
       setStartDate(undefined);
       setEndDate(undefined);
@@ -61,7 +68,7 @@ export const useCompanyLinkForm = ({
   // Fetch potential managers when company changes
   useEffect(() => {
     const fetchPotentialManagers = async () => {
-      if (!personId || !formData.company_id) {
+      if (!formData.person_id || !formData.company_id) {
         setPotentialManagers([]);
         return;
       }
@@ -77,7 +84,7 @@ export const useCompanyLinkForm = ({
           `)
           .eq('company_id', formData.company_id)
           .eq('is_current', true)
-          .neq('person_id', personId);
+          .neq('person_id', formData.person_id);
           
         if (error) {
           console.error('Error fetching potential managers:', error);
@@ -108,11 +115,11 @@ export const useCompanyLinkForm = ({
     };
     
     fetchPotentialManagers();
-  }, [formData.company_id, personId, toast]);
+  }, [formData.company_id, formData.person_id, toast]);
 
   const createRelationshipMutation = useMutation({
     mutationFn: async () => {
-      if (!personId || !formData.company_id || !formData.role || !startDate) {
+      if (!formData.person_id || !formData.company_id || !formData.role || !startDate) {
         throw new Error("Missing required fields.");
       }
       
@@ -126,7 +133,7 @@ export const useCompanyLinkForm = ({
             is_current: false,
             end_date: new Date().toISOString().split('T')[0]
           })
-          .eq('person_id', personId)
+          .eq('person_id', formData.person_id)
           .eq('is_current', true);
           
         if (updateError) {
@@ -137,7 +144,6 @@ export const useCompanyLinkForm = ({
       
       const dataToSubmit = {
         ...formData,
-        person_id: personId,
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         reports_to: formData.reports_to || null
@@ -191,7 +197,7 @@ export const useCompanyLinkForm = ({
         company_id: value, 
         reports_to: '' // Reset manager when company changes
       };
-      console.log('Updated form data:', newData);
+      console.log('Updated form data after company change:', newData);
       return newData;
     });
   };
