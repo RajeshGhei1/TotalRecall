@@ -86,12 +86,12 @@ const CompanyEnhancedListContainer: React.FC = () => {
   });
 
   // Use the enhanced filtering hook
-  const { filteredCompanies } = useCompanyFilters(companies, filters, filters.search);
+  const { filteredCompanies } = useCompanyFilters(companies || [], filters, filters.search);
 
-  // Pagination logic
-  const totalItems = filteredCompanies.length;
+  // Pagination logic - ensure we have safe defaults
+  const totalItems = filteredCompanies?.length || 0;
   const showAll = itemsPerPage === -1;
-  const paginatedCompanies = showAll ? filteredCompanies : filteredCompanies.slice(
+  const paginatedCompanies = showAll ? (filteredCompanies || []) : (filteredCompanies || []).slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -159,9 +159,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
     });
   };
 
-  // Selection handlers
+  // Selection handlers with safe null checks
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
+    if (checked && paginatedCompanies && paginatedCompanies.length > 0) {
       const currentPageIds = new Set(paginatedCompanies.map(company => company.id));
       setSelectedCompanies(currentPageIds);
     } else {
@@ -179,7 +179,8 @@ const CompanyEnhancedListContainer: React.FC = () => {
     setSelectedCompanies(newSelection);
   };
 
-  const isAllSelected = paginatedCompanies.length > 0 && paginatedCompanies.every(company => selectedCompanies.has(company.id));
+  // Safe checks for selection state
+  const isAllSelected = paginatedCompanies && paginatedCompanies.length > 0 && paginatedCompanies.every(company => selectedCompanies.has(company.id));
   const isIndeterminate = selectedCompanies.size > 0 && !isAllSelected;
 
   // Bulk delete handler
@@ -300,7 +301,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedCompanies.map((company) => (
+              {paginatedCompanies && paginatedCompanies.map((company) => (
                 <TableRow key={company.id} className={selectedCompanies.has(company.id) ? 'bg-muted/50' : ''}>
                   <TableCell>
                     <Checkbox
@@ -370,7 +371,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {paginatedCompanies.length === 0 && (
+              {(!paginatedCompanies || paginatedCompanies.length === 0) && (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No companies found matching your filters.
