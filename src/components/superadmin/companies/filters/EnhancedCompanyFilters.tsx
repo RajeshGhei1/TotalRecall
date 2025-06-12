@@ -191,6 +191,96 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
         </div>
 
         <div className="space-y-4">
+          {/* Basic Information */}
+          <FilterSection title="Basic Information" sectionKey="basic">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MultiSelectFilter
+                label="Industries"
+                options={industryOptions}
+                value={filters.industries}
+                onChange={(value) => updateFilter('industries', value)}
+                placeholder="Select industries"
+              />
+              <MultiSelectFilter
+                label="Company Size"
+                options={generateOptionsFromCompanies('size')}
+                value={filters.sizes}
+                onChange={(value) => updateFilter('sizes', value)}
+                placeholder="Select sizes"
+              />
+              <MultiSelectFilter
+                label="Company Status"
+                options={generateOptionsFromCompanies('companystatus')}
+                value={filters.statuses}
+                onChange={(value) => updateFilter('statuses', value)}
+                placeholder="Select status"
+              />
+            </div>
+          </FilterSection>
+
+          {/* Group Structure */}
+          <FilterSection title="Group Structure" sectionKey="groupStructure">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MultiSelectFilter
+                label="Company Groups"
+                options={generateOptionsFromCompanies('company_group_name')}
+                value={filters.companyGroups}
+                onChange={(value) => updateFilter('companyGroups', value)}
+                placeholder="Select groups"
+              />
+              <MultiSelectFilter
+                label="Has Parent Company"
+                options={generateBooleanOptions()}
+                value={filters.hasParent}
+                onChange={(value) => updateFilter('hasParent', value)}
+                placeholder="Select option"
+              />
+            </div>
+          </FilterSection>
+
+          {/* Location Information */}
+          <FilterSection title="Location Information" sectionKey="locationInformation">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MultiSelectFilter
+                label="Locations"
+                options={generateOptionsFromCompanies('location')}
+                value={filters.locations}
+                onChange={(value) => updateFilter('locations', value)}
+                placeholder="Select locations"
+              />
+              <MultiSelectFilter
+                label="Countries"
+                options={generateOptionsFromCompanies('country')}
+                value={filters.countries}
+                onChange={(value) => updateFilter('countries', value)}
+                placeholder="Select countries"
+              />
+              <MultiSelectFilter
+                label="Global Regions"
+                options={generateOptionsFromCompanies('globalregion')}
+                value={filters.globalRegions}
+                onChange={(value) => updateFilter('globalRegions', value)}
+                placeholder="Select global regions"
+              />
+              <MultiSelectFilter
+                label="Regions"
+                options={generateOptionsFromCompanies('region')}
+                value={filters.regions}
+                onChange={(value) => updateFilter('regions', value)}
+                placeholder="Select regions"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MultiSelectFilter
+                label="HO Locations"
+                options={generateOptionsFromCompanies('holocation')}
+                value={filters.hoLocations}
+                onChange={(value) => updateFilter('hoLocations', value)}
+                placeholder="Select HO locations"
+              />
+            </div>
+          </FilterSection>
+
           {/* Industry & Company Type */}
           <FilterSection title="Industry & Company Type" sectionKey="industryCompanyType">
             <div className="space-y-4">
@@ -245,89 +335,8 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
             </div>
           </FilterSection>
 
-          {/* Basic Information */}
-          <FilterSection title="Basic Information" sectionKey="basic">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <MultiSelectFilter
-                label="Industries"
-                options={industryOptions}
-                value={filters.industries}
-                onChange={(value) => updateFilter('industries', value)}
-                placeholder="Select industries"
-              />
-              <MultiSelectFilter
-                label="Company Size"
-                options={generateOptionsFromCompanies('size')}
-                value={filters.sizes}
-                onChange={(value) => updateFilter('sizes', value)}
-                placeholder="Select sizes"
-              />
-              <MultiSelectFilter
-                label="Company Status"
-                options={generateOptionsFromCompanies('companystatus')}
-                value={filters.statuses}
-                onChange={(value) => updateFilter('statuses', value)}
-                placeholder="Select status"
-              />
-            </div>
-          </FilterSection>
-
-          {/* Geographic Information */}
-          <FilterSection title="Geographic Information" sectionKey="geographic">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MultiSelectFilter
-                label="Locations"
-                options={generateOptionsFromCompanies('location')}
-                value={filters.locations}
-                onChange={(value) => updateFilter('locations', value)}
-                placeholder="Select locations"
-              />
-              <MultiSelectFilter
-                label="Countries"
-                options={generateOptionsFromCompanies('country')}
-                value={filters.countries}
-                onChange={(value) => updateFilter('countries', value)}
-                placeholder="Select countries"
-              />
-              <MultiSelectFilter
-                label="Global Regions"
-                options={generateOptionsFromCompanies('globalregion')}
-                value={filters.globalRegions}
-                onChange={(value) => updateFilter('globalRegions', value)}
-                placeholder="Select global regions"
-              />
-              <MultiSelectFilter
-                label="Regions"
-                options={generateOptionsFromCompanies('region')}
-                value={filters.regions}
-                onChange={(value) => updateFilter('regions', value)}
-                placeholder="Select regions"
-              />
-            </div>
-          </FilterSection>
-
-          {/* Business Structure */}
-          <FilterSection title="Business Structure" sectionKey="business">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <MultiSelectFilter
-                label="Company Groups"
-                options={generateOptionsFromCompanies('company_group_name')}
-                value={filters.companyGroups}
-                onChange={(value) => updateFilter('companyGroups', value)}
-                placeholder="Select groups"
-              />
-              <MultiSelectFilter
-                label="HO Locations"
-                options={generateOptionsFromCompanies('holocation')}
-                value={filters.hoLocations}
-                onChange={(value) => updateFilter('hoLocations', value)}
-                placeholder="Select HO locations"
-              />
-            </div>
-          </FilterSection>
-
-          {/* Financial Metrics */}
-          <FilterSection title="Financial Metrics" sectionKey="financial">
+          {/* Company Metrics */}
+          <FilterSection title="Company Metrics" sectionKey="companyMetrics">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <MultiSelectFilter
                 label="Employee Segments"
@@ -380,9 +389,9 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
             </div>
           </FilterSection>
 
-          {/* Data Availability */}
-          <FilterSection title="Data Availability" sectionKey="data">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Contact Details */}
+          <FilterSection title="Contact Details" sectionKey="contactDetails">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MultiSelectFilter
                 label="Has Email"
                 options={generateBooleanOptions()}
@@ -397,6 +406,12 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
                 onChange={(value) => updateFilter('hasPhone', value)}
                 placeholder="Select option"
               />
+            </div>
+          </FilterSection>
+
+          {/* Online Presence */}
+          <FilterSection title="Online Presence" sectionKey="onlinePresence">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <MultiSelectFilter
                 label="Has Website"
                 options={generateBooleanOptions()}
@@ -409,6 +424,22 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
                 options={generateBooleanOptions()}
                 value={filters.hasLinkedin}
                 onChange={(value) => updateFilter('hasLinkedin', value)}
+                placeholder="Select option"
+              />
+              <MultiSelectFilter
+                label="Has Twitter"
+                options={generateBooleanOptions()}
+                value={filters.hasTwitter}
+                onChange={(value) => updateFilter('hasTwitter', value)}
+                placeholder="Select option"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MultiSelectFilter
+                label="Has Facebook"
+                options={generateBooleanOptions()}
+                value={filters.hasFacebook}
+                onChange={(value) => updateFilter('hasFacebook', value)}
                 placeholder="Select option"
               />
             </div>
