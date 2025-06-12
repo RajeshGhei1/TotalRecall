@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -14,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Upload, Database, BarChart, Download, History } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import CompanyList from '@/components/superadmin/companies/CompanyList';
+import CompanyEnhancedListContainer from '@/components/superadmin/companies/CompanyEnhancedListContainer';
 import CompanyMetricsDashboard from '@/components/superadmin/companies/CompanyMetricsDashboard';
 import CreateCompanyDialog from '@/components/superadmin/companies/CreateCompanyDialog';
 import EnhancedBulkUploadDialog from '@/components/superadmin/companies/EnhancedBulkUploadDialog';
@@ -215,7 +214,7 @@ const Companies = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CompanyList />
+                <CompanyEnhancedListContainer />
               </CardContent>
             </Card>
           </TabsContent>
