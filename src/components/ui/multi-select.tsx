@@ -297,61 +297,63 @@ export function MultiSelect({
         onEscapeKeyDown={() => setIsPopoverOpen(false)}
         style={{ zIndex: 10000 }}
       >
-        {safeOptions.length > 0 && (
-          <Command className="bg-popover" shouldFilter={false}>
-            <CommandInput
-              placeholder="Search..."
-              onKeyDown={handleInputKeyDown}
-              className="bg-popover"
-            />
-            <CommandEmpty className="bg-popover">No results found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto bg-popover">
-              <CommandItem
-                key="all"
-                onSelect={toggleAll}
-                className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
+        <Command 
+          className="bg-popover" 
+          shouldFilter={false}
+          key={`command-${safeOptions.length}-${safeSelectedValues.length}`}
+        >
+          <CommandInput
+            placeholder="Search..."
+            onKeyDown={handleInputKeyDown}
+            className="bg-popover"
+          />
+          <CommandEmpty className="bg-popover">No results found.</CommandEmpty>
+          <CommandGroup className="max-h-64 overflow-auto bg-popover">
+            <CommandItem
+              key="all"
+              onSelect={toggleAll}
+              className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
+            >
+              <div
+                className={cn(
+                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                  safeSelectedValues.length === safeOptions.length
+                    ? "bg-primary text-primary-foreground"
+                    : "opacity-50 [&_svg]:invisible"
+                )}
               >
-                <div
-                  className={cn(
-                    "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                    safeSelectedValues.length === safeOptions.length
-                      ? "bg-primary text-primary-foreground"
-                      : "opacity-50 [&_svg]:invisible"
-                  )}
+                <Check className={cn("h-4 w-4")} />
+              </div>
+              <span>(Select All)</span>
+            </CommandItem>
+            {safeOptions.map((option) => {
+              if (!option || !option.value) return null;
+              const isSelected = safeSelectedValues.includes(option.value)
+              return (
+                <CommandItem
+                  key={option.value}
+                  onSelect={() => toggleOption(option.value)}
+                  className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
                 >
-                  <Check className={cn("h-4 w-4")} />
-                </div>
-                <span>(Select All)</span>
-              </CommandItem>
-              {safeOptions.map((option) => {
-                if (!option || !option.value) return null;
-                const isSelected = safeSelectedValues.includes(option.value)
-                return (
-                  <CommandItem
-                    key={option.value}
-                    onSelect={() => toggleOption(option.value)}
-                    className="cursor-pointer bg-popover hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible"
-                      )}
-                    >
-                      <Check className={cn("h-4 w-4")} />
-                    </div>
-                    {option.icon && (
-                      <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <div
+                    className={cn(
+                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                      isSelected
+                        ? "bg-primary text-primary-foreground"
+                        : "opacity-50 [&_svg]:invisible"
                     )}
-                    <span>{option.label}</span>
-                  </CommandItem>
-                )
-              })}
-            </CommandGroup>
-          </Command>
-        )}
+                  >
+                    <Check className={cn("h-4 w-4")} />
+                  </div>
+                  {option.icon && (
+                    <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span>{option.label}</span>
+                </CommandItem>
+              )
+            })}
+          </CommandGroup>
+        </Command>
       </PopoverContent>
     </Popover>
   )
