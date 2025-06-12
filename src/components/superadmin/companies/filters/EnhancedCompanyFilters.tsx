@@ -49,17 +49,6 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     { label: 'No', value: 'false' }
   ];
 
-  // Industry options - use original companies array for all option generation
-  const industryOptions = React.useMemo(() => {
-    const industries = new Set<string>();
-    companies.forEach(company => {
-      if (company.industry1) industries.add(company.industry1);
-      if (company.industry2) industries.add(company.industry2);
-      if (company.industry3) industries.add(company.industry3);
-    });
-    return Array.from(industries).sort().map(value => ({ label: value, value }));
-  }, [companies]);
-
   // Industry 1 (Primary) options - always use full companies array
   const industry1Options = React.useMemo(() => {
     return generateOptionsFromCompanies('industry1');
@@ -193,14 +182,7 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
         <div className="space-y-4">
           {/* Basic Information */}
           <FilterSection title="Basic Information" sectionKey="basic">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <MultiSelectFilter
-                label="Industries"
-                options={industryOptions}
-                value={filters.industries}
-                onChange={(value) => updateFilter('industries', value)}
-                placeholder="Select industries"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MultiSelectFilter
                 label="Company Size"
                 options={generateOptionsFromCompanies('size')}
