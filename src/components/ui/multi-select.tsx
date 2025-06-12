@@ -56,19 +56,27 @@ export function MultiSelect({
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
   const [isAnimating, setIsAnimating] = React.useState(false)
 
-  // Ensure options is always an array
+  // Ensure options is always an array with proper validation
   const safeOptions = React.useMemo(() => {
-    return Array.isArray(options) ? options : []
+    if (!Array.isArray(options)) {
+      console.warn('MultiSelect: options prop is not an array, defaulting to empty array');
+      return [];
+    }
+    return options.filter(option => option && typeof option === 'object' && option.value && option.label);
   }, [options])
 
-  // Ensure selectedValues is always an array
+  // Ensure selectedValues is always an array with proper validation
   const safeSelectedValues = React.useMemo(() => {
-    return Array.isArray(selectedValues) ? selectedValues : []
+    if (!Array.isArray(selectedValues)) {
+      console.warn('MultiSelect: selectedValues is not an array, defaulting to empty array');
+      return [];
+    }
+    return selectedValues.filter(value => typeof value === 'string' && value.length > 0);
   }, [selectedValues])
 
   React.useEffect(() => {
     if (Array.isArray(value)) {
-      setSelectedValues(value)
+      setSelectedValues(value);
     }
   }, [value])
 
@@ -84,6 +92,8 @@ export function MultiSelect({
   }
 
   const toggleOption = (option: string) => {
+    if (!option || typeof option !== 'string') return;
+    
     const newSelectedValues = safeSelectedValues.includes(option)
       ? safeSelectedValues.filter((value) => value !== option)
       : [...safeSelectedValues, option]
@@ -110,10 +120,31 @@ export function MultiSelect({
     if (safeSelectedValues.length === safeOptions.length) {
       handleClear()
     } else {
-      const allValues = safeOptions.map((option) => option.value)
+      const allValues = safeOptions.map((option) => option.value).filter(Boolean)
       setSelectedValues(allValues)
       onValueChange(allValues)
     }
+  }
+
+  // Early return if we don't have safe options to prevent Command component errors
+  if (!safeOptions || safeOptions.length === 0) {
+    return (
+      <Button
+        className={cn(
+          "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit",
+          {
+            "cursor-not-allowed opacity-50": disabled,
+          },
+          className
+        )}
+        disabled={true}
+      >
+        <span className="text-sm text-muted-foreground mx-3">
+          No options available
+        </span>
+        <ChevronDown className="h-4 w-4 cursor-pointer text-muted-foreground mx-2" />
+      </Button>
+    )
   }
 
   return (
@@ -142,6 +173,7 @@ export function MultiSelect({
                 <div className="flex flex-wrap gap-1">
                   {safeSelectedValues.slice(0, maxCount).map((value) => {
                     const option = safeOptions.find((o) => o.value === value)
+                    if (!option) return null;
                     const IconComponent = option?.icon
                     return (
                       <Badge
@@ -265,7 +297,7 @@ export function MultiSelect({
         onEscapeKeyDown={() => setIsPopoverOpen(false)}
         style={{ zIndex: 10000 }}
       >
-        <Command className="bg-background">
+        <Command className="bg-background" shouldFilter={false}>
           <CommandInput
             placeholder="Search..."
             onKeyDown={handleInputKeyDown}
@@ -291,6 +323,7 @@ export function MultiSelect({
               <span>(Select All)</span>
             </CommandItem>
             {safeOptions.map((option) => {
+              if (!option || !option.value) return null;
               const isSelected = safeSelectedValues.includes(option.value)
               return (
                 <CommandItem
