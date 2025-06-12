@@ -64,12 +64,14 @@ export const useCompanyLinkForm = ({
   // Fetch potential managers when company changes
   useEffect(() => {
     const fetchPotentialManagers = async () => {
-      if (!personId || personType !== 'talent' || !formData.company_id) {
+      if (!personId || !formData.company_id) {
         setPotentialManagers([]);
         return;
       }
       
       try {
+        console.log('Fetching potential managers for company:', formData.company_id);
+        
         const { data, error } = await supabase
           .from('company_relationships')
           .select(`
@@ -80,7 +82,12 @@ export const useCompanyLinkForm = ({
           .eq('is_current', true)
           .neq('person_id', personId);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching potential managers:', error);
+          throw error;
+        }
+        
+        console.log('Raw potential managers data:', data);
         
         // Transform the data to include role information from the relationship
         const validManagers = data?.map(item => ({
@@ -90,6 +97,7 @@ export const useCompanyLinkForm = ({
           } : null
         })).filter(item => item && item.person) || [];
         
+        console.log('Processed potential managers:', validManagers);
         setPotentialManagers(validManagers);
       } catch (error) {
         console.error('Error fetching potential managers:', error);
@@ -98,16 +106,36 @@ export const useCompanyLinkForm = ({
           description: "Failed to load potential managers",
           variant: "destructive"
         });
+        setPotentialManagers([]);
       }
     };
     
     fetchPotentialManagers();
-  }, [formData.company_id, personId, personType, toast]);
+  }, [formData.company_id, personId, toast]);
 
   const createRelationshipMutation = useMutation({
     mutationFn: async () => {
       if (!personId || !formData.company_id || !formData.role || !startDate) {
         throw new Error("Missing required fields.");
+      }
+      
+      console.log('Creating relationship with data:', formData);
+      
+      // If this is a current role, make sure no other current roles exist for this person
+      if (formData.is_current) {
+        const { error: updateError } = await supabase
+          .from('company_relationships')
+          .update({ 
+            is_current: false,
+            end_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('person_id', personId)
+          .eq('is_current', true);
+          
+        if (updateError) {
+          console.error('Error updating existing relationships:', updateError);
+          throw updateError;
+        }
       }
       
       const dataToSubmit = {
@@ -118,12 +146,18 @@ export const useCompanyLinkForm = ({
         reports_to: formData.reports_to || null
       };
       
+      console.log('Submitting relationship data:', dataToSubmit);
+      
       const { data, error } = await supabase
         .from('company_relationships')
         .insert([dataToSubmit])
         .select();
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error creating relationship:', error);
+        throw new Error(error.message);
+      }
+      
       return data;
     },
     onSuccess: () => {
@@ -137,6 +171,7 @@ export const useCompanyLinkForm = ({
       onClose();
     },
     onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create company relationship.",
@@ -147,10 +182,12 @@ export const useCompanyLinkForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     createRelationshipMutation.mutate();
   };
 
   const handleCompanyChange = (value: string) => {
+    console.log('Company changed to:', value);
     setFormData(prev => ({ ...prev, company_id: value, reports_to: '' }));
   };
 
@@ -176,6 +213,7 @@ export const useCompanyLinkForm = ({
   };
 
   const handleManagerChange = (value: string) => {
+    console.log('Manager changed to:', value);
     setFormData(prev => ({ ...prev, reports_to: value }));
   };
 

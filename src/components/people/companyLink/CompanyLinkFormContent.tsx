@@ -43,6 +43,9 @@ const CompanyLinkFormContent: React.FC<CompanyLinkFormContentProps> = ({
   handleManagerChange,
   handleSubmit
 }) => {
+  console.log('CompanyLinkFormContent formData:', formData);
+  console.log('CompanyLinkFormContent potentialManagers:', potentialManagers);
+
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <CompanySelector 
@@ -63,10 +66,10 @@ const CompanyLinkFormContent: React.FC<CompanyLinkFormContentProps> = ({
         onEndDateChange={handleEndDateChange}
       />
       
-      {potentialManagers && potentialManagers.length > 0 && (
+      {formData.company_id && (
         <ManagerSelector 
           reportsTo={formData.reports_to}
-          potentialManagers={potentialManagers}
+          potentialManagers={potentialManagers || []}
           onManagerChange={handleManagerChange}
         />
       )}

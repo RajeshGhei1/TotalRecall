@@ -75,6 +75,7 @@ const People = () => {
 
   // Function to handle linking a person to a company
   const handleLinkToCompany = (personId: string) => {
+    console.log('Linking person to company:', personId);
     setSelectedPersonId(personId);
     setIsCompanyLinkFormOpen(true);
   };
@@ -93,6 +94,14 @@ const People = () => {
     // Re-trigger the useEffect
     setCompanies([]);
     setCompanyFilter('all');
+  };
+
+  const handleCompanyLinkSubmit = () => {
+    console.log('Company link submitted successfully');
+    queryClient.invalidateQueries({ queryKey: ['people', personType] });
+    toast.success('Company relationship created successfully');
+    setIsCompanyLinkFormOpen(false);
+    setSelectedPersonId(null);
   };
 
   return (
@@ -160,11 +169,11 @@ const People = () => {
               {/* Company link form */}
               <CompanyLinkForm 
                 isOpen={isCompanyLinkFormOpen}
-                onClose={() => setIsCompanyLinkFormOpen(false)}
-                onSubmit={() => {
-                  queryClient.invalidateQueries({ queryKey: ['people', personType] });
+                onClose={() => {
                   setIsCompanyLinkFormOpen(false);
+                  setSelectedPersonId(null);
                 }}
+                onSubmit={handleCompanyLinkSubmit}
                 companies={companies}
                 personType={personType}
                 personId={selectedPersonId || undefined}
