@@ -5,6 +5,11 @@ import { Company } from '@/hooks/useCompanies';
 export interface CompanyFilters {
   search: string;
   
+  // Industry & Company Type (new section)
+  industry1: string[];
+  industry2: string[];
+  industry3: string[];
+  
   // Basic Information
   industries: string[];
   sizes: string[];
@@ -89,6 +94,27 @@ export const useCompanyFilters = (
         company.areaofspecialize?.toLowerCase().includes(search) ||
         company.serviceline?.toLowerCase().includes(search) ||
         company.verticles?.toLowerCase().includes(search)
+      );
+    }
+
+    // Apply industry1 filter
+    if (filters.industry1 && Array.isArray(filters.industry1) && filters.industry1.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry1 && filters.industry1.includes(company.industry1)
+      );
+    }
+
+    // Apply industry2 filter
+    if (filters.industry2 && Array.isArray(filters.industry2) && filters.industry2.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry2 && filters.industry2.includes(company.industry2)
+      );
+    }
+
+    // Apply industry3 filter
+    if (filters.industry3 && Array.isArray(filters.industry3) && filters.industry3.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry3 && filters.industry3.includes(company.industry3)
       );
     }
 

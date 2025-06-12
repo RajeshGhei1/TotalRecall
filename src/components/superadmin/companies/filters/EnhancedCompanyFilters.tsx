@@ -60,6 +60,43 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     return Array.from(industries).sort().map(value => ({ label: value, value }));
   }, [companies]);
 
+  // Industry 1 (Primary) options
+  const industry1Options = React.useMemo(() => {
+    return generateOptionsFromCompanies('industry1');
+  }, [companies]);
+
+  // Industry 2 (Secondary) options - filtered based on Industry 1 selection
+  const industry2Options = React.useMemo(() => {
+    if (!filters.industry1?.length) {
+      return [];
+    }
+    
+    const availableIndustry2 = new Set<string>();
+    companies.forEach(company => {
+      if (company.industry1 && filters.industry1.includes(company.industry1) && company.industry2) {
+        availableIndustry2.add(company.industry2);
+      }
+    });
+    
+    return Array.from(availableIndustry2).sort().map(value => ({ label: value, value }));
+  }, [companies, filters.industry1]);
+
+  // Industry 3 (Specific) options - filtered based on Industry 2 selection
+  const industry3Options = React.useMemo(() => {
+    if (!filters.industry2?.length) {
+      return [];
+    }
+    
+    const availableIndustry3 = new Set<string>();
+    companies.forEach(company => {
+      if (company.industry2 && filters.industry2.includes(company.industry2) && company.industry3) {
+        availableIndustry3.add(company.industry3);
+      }
+    });
+    
+    return Array.from(availableIndustry3).sort().map(value => ({ label: value, value }));
+  }, [companies, filters.industry2]);
+
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
       ...prev,
@@ -71,6 +108,24 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     onFiltersChange({
       ...filters,
       [key]: value
+    });
+  };
+
+  // Clear dependent filters when parent filter changes
+  const updateIndustry1Filter = (value: string[]) => {
+    onFiltersChange({
+      ...filters,
+      industry1: value,
+      industry2: [], // Clear dependent filters
+      industry3: []
+    });
+  };
+
+  const updateIndustry2Filter = (value: string[]) => {
+    onFiltersChange({
+      ...filters,
+      industry2: value,
+      industry3: [] // Clear dependent filter
     });
   };
 
@@ -136,6 +191,60 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
         </div>
 
         <div className="space-y-4">
+          {/* Industry & Company Type */}
+          <FilterSection title="Industry & Company Type" sectionKey="industryCompanyType">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MultiSelectFilter
+                  label="Industry 1 (Primary)"
+                  options={industry1Options}
+                  value={filters.industry1 || []}
+                  onChange={updateIndustry1Filter}
+                  placeholder="Select primary industry"
+                />
+                <MultiSelectFilter
+                  label="Industry 2 (Secondary)"
+                  options={industry2Options}
+                  value={filters.industry2 || []}
+                  onChange={updateIndustry2Filter}
+                  placeholder={filters.industry1?.length ? "Select secondary industry" : "Please select Industry 1 first"}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MultiSelectFilter
+                  label="Industry 3 (Specific)"
+                  options={industry3Options}
+                  value={filters.industry3 || []}
+                  onChange={(value) => updateFilter('industry3', value)}
+                  placeholder={filters.industry2?.length ? "Select specific industry" : "Please select Industry 2 first"}
+                />
+                <MultiSelectFilter
+                  label="Company Sector"
+                  options={generateOptionsFromCompanies('companysector')}
+                  value={filters.sectors}
+                  onChange={(value) => updateFilter('sectors', value)}
+                  placeholder="Select company sector"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MultiSelectFilter
+                  label="Company Type"
+                  options={generateOptionsFromCompanies('companytype')}
+                  value={filters.companyTypes}
+                  onChange={(value) => updateFilter('companyTypes', value)}
+                  placeholder="Select company type"
+                />
+                <MultiSelectFilter
+                  label="Entity Type"
+                  options={generateOptionsFromCompanies('entitytype')}
+                  value={filters.entityTypes}
+                  onChange={(value) => updateFilter('entityTypes', value)}
+                  placeholder="Select entity type"
+                />
+              </div>
+            </div>
+          </FilterSection>
+
           {/* Basic Information */}
           <FilterSection title="Basic Information" sectionKey="basic">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -154,11 +263,11 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
                 placeholder="Select sizes"
               />
               <MultiSelectFilter
-                label="Company Type"
-                options={generateOptionsFromCompanies('companytype')}
-                value={filters.companyTypes}
-                onChange={(value) => updateFilter('companyTypes', value)}
-                placeholder="Select types"
+                label="Company Status"
+                options={generateOptionsFromCompanies('companystatus')}
+                value={filters.statuses}
+                onChange={(value) => updateFilter('statuses', value)}
+                placeholder="Select status"
               />
             </div>
           </FilterSection>
@@ -201,25 +310,18 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
           <FilterSection title="Business Structure" sectionKey="business">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <MultiSelectFilter
-                label="Entity Types"
-                options={generateOptionsFromCompanies('entitytype')}
-                value={filters.entityTypes}
-                onChange={(value) => updateFilter('entityTypes', value)}
-                placeholder="Select entity types"
-              />
-              <MultiSelectFilter
-                label="Company Sectors"
-                options={generateOptionsFromCompanies('companysector')}
-                value={filters.sectors}
-                onChange={(value) => updateFilter('sectors', value)}
-                placeholder="Select sectors"
-              />
-              <MultiSelectFilter
                 label="Company Groups"
                 options={generateOptionsFromCompanies('company_group_name')}
                 value={filters.companyGroups}
                 onChange={(value) => updateFilter('companyGroups', value)}
                 placeholder="Select groups"
+              />
+              <MultiSelectFilter
+                label="HO Locations"
+                options={generateOptionsFromCompanies('holocation')}
+                value={filters.hoLocations}
+                onChange={(value) => updateFilter('hoLocations', value)}
+                placeholder="Select HO locations"
               />
             </div>
           </FilterSection>
