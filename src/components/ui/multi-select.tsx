@@ -38,7 +38,7 @@ interface MultiSelectProps {
 }
 
 export function MultiSelect({
-  options,
+  options = [],
   onValueChange,
   value,
   defaultValue = [],
@@ -56,8 +56,18 @@ export function MultiSelect({
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
   const [isAnimating, setIsAnimating] = React.useState(false)
 
+  // Ensure options is always an array
+  const safeOptions = React.useMemo(() => {
+    return Array.isArray(options) ? options : []
+  }, [options])
+
+  // Ensure selectedValues is always an array
+  const safeSelectedValues = React.useMemo(() => {
+    return Array.isArray(selectedValues) ? selectedValues : []
+  }, [selectedValues])
+
   React.useEffect(() => {
-    if (value) {
+    if (Array.isArray(value)) {
       setSelectedValues(value)
     }
   }, [value])
@@ -66,7 +76,7 @@ export function MultiSelect({
     if (event.key === "Enter") {
       setIsPopoverOpen(true)
     } else if (event.key === "Backspace" && !(event.target as HTMLInputElement).value) {
-      const newSelectedValues = [...selectedValues]
+      const newSelectedValues = [...safeSelectedValues]
       newSelectedValues.pop()
       setSelectedValues(newSelectedValues)
       onValueChange(newSelectedValues)
@@ -74,9 +84,9 @@ export function MultiSelect({
   }
 
   const toggleOption = (option: string) => {
-    const newSelectedValues = selectedValues.includes(option)
-      ? selectedValues.filter((value) => value !== option)
-      : [...selectedValues, option]
+    const newSelectedValues = safeSelectedValues.includes(option)
+      ? safeSelectedValues.filter((value) => value !== option)
+      : [...safeSelectedValues, option]
     setSelectedValues(newSelectedValues)
     onValueChange(newSelectedValues)
   }
@@ -91,16 +101,16 @@ export function MultiSelect({
   }
 
   const clearExtraOptions = () => {
-    const newSelectedValues = selectedValues.slice(0, maxCount)
+    const newSelectedValues = safeSelectedValues.slice(0, maxCount)
     setSelectedValues(newSelectedValues)
     onValueChange(newSelectedValues)
   }
 
   const toggleAll = () => {
-    if (selectedValues.length === options.length) {
+    if (safeSelectedValues.length === safeOptions.length) {
       handleClear()
     } else {
-      const allValues = options.map((option) => option.value)
+      const allValues = safeOptions.map((option) => option.value)
       setSelectedValues(allValues)
       onValueChange(allValues)
     }
@@ -128,10 +138,10 @@ export function MultiSelect({
         >
           <div className="flex justify-between items-center w-full mx-auto">
             <div className="flex flex-wrap items-center">
-              {selectedValues.length > 0 ? (
+              {safeSelectedValues.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
-                  {selectedValues.slice(0, maxCount).map((value) => {
-                    const option = options.find((o) => o.value === value)
+                  {safeSelectedValues.slice(0, maxCount).map((value) => {
+                    const option = safeOptions.find((o) => o.value === value)
                     const IconComponent = option?.icon
                     return (
                       <Badge
@@ -173,7 +183,7 @@ export function MultiSelect({
                       </Badge>
                     )
                   })}
-                  {selectedValues.length > maxCount && (
+                  {safeSelectedValues.length > maxCount && (
                     <Badge
                       className={cn(
                         "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
@@ -183,7 +193,7 @@ export function MultiSelect({
                       )}
                       data-disabled={disabled}
                     >
-                      {`+ ${selectedValues.length - maxCount} more`}
+                      {`+ ${safeSelectedValues.length - maxCount} more`}
                       <button
                         className={cn(
                           "ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -218,7 +228,7 @@ export function MultiSelect({
               )}
             </div>
             <div className="flex items-center justify-between">
-              {selectedValues.length > 0 && (
+              {safeSelectedValues.length > 0 && (
                 <div className="flex items-center">
                   <button
                     className={cn(
@@ -271,7 +281,7 @@ export function MultiSelect({
               <div
                 className={cn(
                   "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                  selectedValues.length === options.length
+                  safeSelectedValues.length === safeOptions.length
                     ? "bg-primary text-primary-foreground"
                     : "opacity-50 [&_svg]:invisible"
                 )}
@@ -280,8 +290,8 @@ export function MultiSelect({
               </div>
               <span>(Select All)</span>
             </CommandItem>
-            {options.map((option) => {
-              const isSelected = selectedValues.includes(option.value)
+            {safeOptions.map((option) => {
+              const isSelected = safeSelectedValues.includes(option.value)
               return (
                 <CommandItem
                   key={option.value}
