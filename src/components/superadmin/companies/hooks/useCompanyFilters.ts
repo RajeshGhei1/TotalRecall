@@ -78,7 +78,7 @@ export const useCompanyFilters = (
 
     let filtered = [...companies];
 
-    // Apply global search filter
+    // Apply global search filter first (but don't apply other filters yet for industry option generation)
     if (searchTerm?.trim()) {
       const search = searchTerm.toLowerCase().trim();
       filtered = filtered.filter(company => 
@@ -97,28 +97,7 @@ export const useCompanyFilters = (
       );
     }
 
-    // Apply industry1 filter
-    if (filters.industry1 && Array.isArray(filters.industry1) && filters.industry1.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry1 && filters.industry1.includes(company.industry1)
-      );
-    }
-
-    // Apply industry2 filter
-    if (filters.industry2 && Array.isArray(filters.industry2) && filters.industry2.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry2 && filters.industry2.includes(company.industry2)
-      );
-    }
-
-    // Apply industry3 filter
-    if (filters.industry3 && Array.isArray(filters.industry3) && filters.industry3.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry3 && filters.industry3.includes(company.industry3)
-      );
-    }
-
-    // Apply industry filter (check all industry fields)
+    // Apply industry filter (check all industry fields) - but exclude industry1/2/3 filters to avoid circular dependency
     if (filters.industries && Array.isArray(filters.industries) && filters.industries.length > 0) {
       filtered = filtered.filter(company => 
         (company.industry1 && filters.industries.includes(company.industry1)) ||
@@ -388,6 +367,25 @@ export const useCompanyFilters = (
         const hasFacebook = !!company.facebook;
         return filters.hasFacebook.includes(hasFacebook.toString());
       });
+    }
+
+    // NOW apply industry1/2/3 filters at the end after all other filtering is complete
+    if (filters.industry1 && Array.isArray(filters.industry1) && filters.industry1.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry1 && filters.industry1.includes(company.industry1)
+      );
+    }
+
+    if (filters.industry2 && Array.isArray(filters.industry2) && filters.industry2.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry2 && filters.industry2.includes(company.industry2)
+      );
+    }
+
+    if (filters.industry3 && Array.isArray(filters.industry3) && filters.industry3.length > 0) {
+      filtered = filtered.filter(company => 
+        company.industry3 && filters.industry3.includes(company.industry3)
+      );
     }
 
     return filtered;

@@ -25,7 +25,7 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
 }) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-  // Generate options from actual company data
+  // Generate options from actual company data - use original companies array for option generation
   const generateOptionsFromCompanies = (field: keyof Company) => {
     const uniqueValues = new Set<string>();
     companies.forEach(company => {
@@ -49,7 +49,7 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     { label: 'No', value: 'false' }
   ];
 
-  // Industry options
+  // Industry options - use original companies array for all option generation
   const industryOptions = React.useMemo(() => {
     const industries = new Set<string>();
     companies.forEach(company => {
@@ -60,15 +60,15 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     return Array.from(industries).sort().map(value => ({ label: value, value }));
   }, [companies]);
 
-  // Industry 1 (Primary) options
+  // Industry 1 (Primary) options - always use full companies array
   const industry1Options = React.useMemo(() => {
     return generateOptionsFromCompanies('industry1');
   }, [companies]);
 
-  // Industry 2 (Secondary) options - filtered based on Industry 1 selection
+  // Industry 2 (Secondary) options - filter based on Industry 1 selection but from original data
   const industry2Options = React.useMemo(() => {
     if (!filters.industry1?.length) {
-      return [];
+      return generateOptionsFromCompanies('industry2');
     }
     
     const availableIndustry2 = new Set<string>();
@@ -81,10 +81,10 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
     return Array.from(availableIndustry2).sort().map(value => ({ label: value, value }));
   }, [companies, filters.industry1]);
 
-  // Industry 3 (Specific) options - filtered based on Industry 2 selection
+  // Industry 3 (Specific) options - filter based on Industry 2 selection but from original data
   const industry3Options = React.useMemo(() => {
     if (!filters.industry2?.length) {
-      return [];
+      return generateOptionsFromCompanies('industry3');
     }
     
     const availableIndustry3 = new Set<string>();
