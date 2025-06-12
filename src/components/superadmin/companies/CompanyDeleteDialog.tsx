@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,141 +8,176 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Trash2, AlertCircle, Building2, Users, Network } from 'lucide-react';
-import { Company } from '@/hooks/useCompanies';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCompanyDeletion } from '@/hooks/useCompanyDeletion';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AlertTriangle } from 'lucide-react';
+import { Company } from '@/hooks/useCompanies';
+import { useCompanies } from '@/hooks/useCompanies';
+import { toast } from 'sonner';
 
 interface CompanyDeleteDialogProps {
-  company: Company | null;
-  onClose: () => void;
   isOpen: boolean;
+  onClose: () => void;
+  company: Company | null;
   allCompanies: Company[];
+  bulkDeleteIds?: string[];
+  onBulkDelete?: () => void;
 }
 
 const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
-  company,
-  onClose,
   isOpen,
+  onClose,
+  company,
   allCompanies,
+  bulkDeleteIds,
+  onBulkDelete,
 }) => {
-  const [deletionInfo, setDeletionInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const { deleteCompany, checkDeletionInfo, isDeleting } = useCompanyDeletion();
-  
-  useEffect(() => {
-    if (company && isOpen) {
-      setLoading(true);
-      checkDeletionInfo(company, allCompanies)
-        .then(setDeletionInfo)
-        .finally(() => setLoading(false));
-    }
-  }, [company, isOpen, allCompanies]);
+  const { deleteCompany } = useCompanies();
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
-  const handleConfirmDelete = async () => {
-    if (!company) return;
-    
-    try {
-      await deleteCompany.mutateAsync(company);
-      onClose();
-    } catch (error) {
-      // Error is handled in the mutation
+  // Check if this is a bulk delete operation
+  const isBulkDelete = !company && bulkDeleteIds && bulkDeleteIds.length > 0;
+  const bulkCompanies = isBulkDelete 
+    ? allCompanies.filter(c => bulkDeleteIds.includes(c.id))
+    : [];
+
+  // Find child companies for single delete
+  const childCompanies = company 
+    ? allCompanies.filter(c => c.parent_company_id === company.id)
+    : [];
+
+  const handleDelete = async () => {
+    if (isBulkDelete && onBulkDelete) {
+      setIsDeleting(true);
+      try {
+        await onBulkDelete();
+        onClose();
+      } catch (error) {
+        console.error('Bulk delete failed:', error);
+      } finally {
+        setIsDeleting(false);
+      }
+    } else if (company) {
+      setIsDeleting(true);
+      try {
+        await deleteCompany.mutateAsync(company.id);
+        toast.success('Company deleted successfully');
+        onClose();
+      } catch (error: any) {
+        toast.error(`Failed to delete company: ${error.message}`);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
-  if (!company) return null;
+  const getDialogTitle = () => {
+    if (isBulkDelete) {
+      return `Delete ${bulkDeleteIds!.length} Companies`;
+    }
+    return 'Delete Company';
+  };
+
+  const getDialogDescription = () => {
+    if (isBulkDelete) {
+      return `Are you sure you want to delete these ${bulkDeleteIds!.length} companies? This action cannot be undone.`;
+    }
+    return `Are you sure you want to delete "${company?.name}"? This action cannot be undone.`;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-destructive" />
-            Delete Company
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            {getDialogTitle()}
           </DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <span className="font-semibold">{company.name}</span>?
-            This action cannot be undone and will permanently remove the company and all associated data.
+          <DialogDescription className="text-left">
+            {getDialogDescription()}
           </DialogDescription>
         </DialogHeader>
-        
-        {loading ? (
-          <div className="py-4 text-center text-sm text-gray-500">
-            Checking deletion requirements...
-          </div>
-        ) : deletionInfo && (
-          <div className="space-y-4">
-            {/* Impact Summary */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Network className="h-4 w-4 text-blue-500" />
-                </div>
-                <div className="text-sm font-medium">{deletionInfo.childCompaniesCount}</div>
-                <div className="text-xs text-gray-500">Child Companies</div>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Building2 className="h-4 w-4 text-green-500" />
-                </div>
-                <div className="text-sm font-medium">{deletionInfo.branchOfficesCount}</div>
-                <div className="text-xs text-gray-500">Branch Offices</div>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Users className="h-4 w-4 text-purple-500" />
-                </div>
-                <div className="text-sm font-medium">{deletionInfo.relationshipsCount}</div>
-                <div className="text-xs text-gray-500">People Links</div>
+
+        <div className="space-y-4">
+          {isBulkDelete ? (
+            <div className="space-y-2">
+              <p className="font-medium">Companies to be deleted:</p>
+              <div className="max-h-32 overflow-y-auto space-y-1">
+                {bulkCompanies.map((comp) => (
+                  <div key={comp.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                    <span className="text-sm">{comp.name}</span>
+                    {comp.industry1 && (
+                      <Badge variant="outline" className="text-xs">
+                        {comp.industry1}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Warnings */}
-            {deletionInfo.warnings.length > 0 && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="space-y-1">
-                    <div className="font-medium">This deletion will:</div>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      {deletionInfo.warnings.map((warning: string, index: number) => (
-                        <li key={index}>{warning}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Special handling for child companies */}
-            {deletionInfo.hasChildCompanies && (
-              <Alert>
-                <Network className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="space-y-2">
-                    <div className="font-medium">Child companies will be updated:</div>
-                    <div className="text-sm">
-                      All child companies will have their parent company reference removed and their hierarchy level reset to 0.
+          ) : (
+            <>
+              {company && (
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-medium">{company.name}</h4>
+                      {company.industry1 && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {company.industry1}
+                        </p>
+                      )}
+                      {company.location && (
+                        <p className="text-sm text-muted-foreground">
+                          {company.location}
+                        </p>
+                      )}
                     </div>
+                    <Badge variant="outline">
+                      Level {company.hierarchy_level || 0}
+                    </Badge>
                   </div>
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        )}
-        
-        <DialogFooter className="sm:justify-end">
-          <Button type="button" variant="outline" onClick={onClose}>
+                </div>
+              )}
+
+              {childCompanies.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <p className="font-medium text-amber-700">
+                      Warning: Child Companies Found
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    This company has {childCompanies.length} child companies. Deleting this company will also affect the hierarchy structure.
+                  </p>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {childCompanies.map((child) => (
+                      <div key={child.id} className="flex items-center justify-between p-2 bg-amber-50 rounded border border-amber-200">
+                        <span className="text-sm">{child.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          Level {child.hierarchy_level || 0}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
             Cancel
           </Button>
           <Button 
-            type="button" 
             variant="destructive" 
-            onClick={handleConfirmDelete}
-            disabled={loading || isDeleting}
+            onClick={handleDelete}
+            disabled={isDeleting}
+            loading={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete Company'}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogFooter>
       </DialogContent>
