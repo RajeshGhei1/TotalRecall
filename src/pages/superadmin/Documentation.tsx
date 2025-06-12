@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { documentService, type DocumentContent } from '@/services/documentService';
 import { Button } from '@/components/ui/button';
@@ -675,8 +674,7 @@ Total Recall provides real-time collaboration capabilities across all modules.
 ✅ Performance optimization tips
 🔄 Automated deployment scripts
 🔄 Kubernetes deployment manifests`
-    }
-];
+};
 
 export default function Documentation() {
   const [selectedDocument, setSelectedDocument] = useState<DocumentContent | null>(null);
@@ -699,9 +697,7 @@ export default function Documentation() {
         };
         setSelectedDocument(documentContent);
       } else {
-        // Fallback to service if content not found
-        const document = await documentService.loadDocument(filePath);
-        setSelectedDocument(document);
+        console.error('Document not found in available documents');
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -712,8 +708,30 @@ export default function Documentation() {
 
   const downloadDocument = async (filePath: string, title: string) => {
     try {
-      const filename = `${title.toLowerCase().replace(/\s+/g, '-')}.md`;
-      await documentService.downloadDocument(filePath, filename);
+      // Find the document in our available documents
+      const doc = availableDocuments.find(d => d.filePath === filePath);
+      if (doc && doc.content) {
+        const filename = `${title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}.md`;
+        
+        // Create a blob with the markdown content
+        const blob = new Blob([doc.content], { type: 'text/markdown' });
+        
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Document content not found');
+      }
     } catch (error) {
       console.error('Error downloading document:', error);
     }
@@ -721,7 +739,32 @@ export default function Documentation() {
 
   const downloadAllDocuments = async () => {
     try {
-      await documentService.downloadAllDocuments(availableDocuments);
+      // Download each document individually
+      for (const doc of availableDocuments) {
+        if (doc.content) {
+          const filename = `${doc.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}.md`;
+          
+          // Create a blob with the markdown content
+          const blob = new Blob([doc.content], { type: 'text/markdown' });
+          
+          // Create a download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          
+          // Trigger download
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          // Small delay between downloads to avoid browser blocking
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
     } catch (error) {
       console.error('Error downloading all documents:', error);
     }
@@ -948,7 +991,13 @@ export default function Documentation() {
                             </div>
                           </div>
                           <Button
-                            onClick={() => downloadDocument('', selectedDocument.title)}
+                            onClick={() => {
+                              // Find the original document to get the filePath
+                              const originalDoc = availableDocuments.find(d => d.title === selectedDocument.title);
+                              if (originalDoc) {
+                                downloadDocument(originalDoc.filePath, selectedDocument.title);
+                              }
+                            }}
                             variant="outline"
                             size="sm"
                           >
