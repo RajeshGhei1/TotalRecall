@@ -5,9 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
 import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
 
 // Enhanced company dashboard
 import CompanyRevenueChart from "./charts/CompanyRevenueChart";
@@ -91,17 +88,6 @@ const AnalyticsDashboard = () => {
                   </CardContent>
                 </Card>
               </div>
-              
-              <Alert>
-                <AlertTitle>Talent & Recruiting Analytics</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <p>Talent and recruiting analytics have been moved to the ATS (Applicant Tracking System) module for better workflow integration.</p>
-                  <Button variant="outline" size="sm" className="mt-2">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Access ATS Analytics in Tenant Portal
-                  </Button>
-                </AlertDescription>
-              </Alert>
             </TabsContent>
             
             <TabsContent value="contacts">
