@@ -25,11 +25,16 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   onClose,
   onSubmit,
   companies,
-  personType,
+  personType = 'contact',
   personId,
   isSubmitting: externalIsSubmitting
 }) => {
-  console.log('CompanyLinkForm props:', { isOpen, personId, companiesCount: companies.length });
+  console.log('CompanyLinkForm rendering with props:', { 
+    isOpen, 
+    personId, 
+    personType,
+    companiesCount: companies.length 
+  });
   
   const {
     formData,

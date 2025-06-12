@@ -30,8 +30,8 @@ export const useCompanyLinkForm = ({
     role?: string;
   } | null }>>([]);
 
-  // Initialize form data based on current props
-  const [formData, setFormData] = useState<LinkCompanyRelationshipData>(() => ({
+  // Initialize form data with proper defaults
+  const getInitialFormData = (): LinkCompanyRelationshipData => ({
     person_id: personId || '',
     company_id: '',
     role: '',
@@ -39,26 +39,28 @@ export const useCompanyLinkForm = ({
     end_date: '',
     is_current: true,
     relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
-  }));
+  });
+
+  const [formData, setFormData] = useState<LinkCompanyRelationshipData>(getInitialFormData());
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Reset form when dialog opens/closes or personId/personType changes
   useEffect(() => {
+    console.log('useCompanyLinkForm effect triggered:', { isOpen, personId, personType });
+    
     if (isOpen && personId) {
-      console.log('Resetting form with personId:', personId, 'personType:', personType);
-      const newFormData: LinkCompanyRelationshipData = {
-        person_id: personId,
-        company_id: '',
-        role: '',
-        start_date: '',
-        end_date: '',
-        is_current: true,
-        relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
-      };
+      const newFormData = getInitialFormData();
       console.log('Setting new form data:', newFormData);
       setFormData(newFormData);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setPotentialManagers([]);
+    } else if (!isOpen) {
+      // Reset form when closing
+      const resetData = getInitialFormData();
+      setFormData(resetData);
       setStartDate(undefined);
       setEndDate(undefined);
       setPotentialManagers([]);
