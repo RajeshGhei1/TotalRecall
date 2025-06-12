@@ -250,21 +250,23 @@ export function MultiSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto p-0"
+        className="w-auto p-0 bg-background border shadow-md z-[10000]"
         align="start"
         onEscapeKeyDown={() => setIsPopoverOpen(false)}
+        style={{ zIndex: 10000 }}
       >
-        <Command>
+        <Command className="bg-background">
           <CommandInput
             placeholder="Search..."
             onKeyDown={handleInputKeyDown}
+            className="bg-background"
           />
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto">
+          <CommandEmpty className="bg-background">No results found.</CommandEmpty>
+          <CommandGroup className="max-h-64 overflow-auto bg-background">
             <CommandItem
               key="all"
               onSelect={toggleAll}
-              className="cursor-pointer"
+              className="cursor-pointer bg-background hover:bg-accent hover:text-accent-foreground"
             >
               <div
                 className={cn(
@@ -284,7 +286,7 @@ export function MultiSelect({
                 <CommandItem
                   key={option.value}
                   onSelect={() => toggleOption(option.value)}
-                  className="cursor-pointer"
+                  className="cursor-pointer bg-background hover:bg-accent hover:text-accent-foreground"
                 >
                   <div
                     className={cn(
