@@ -36,6 +36,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
   // Enhanced filter state
   const [filters, setFilters] = useState<CompanyFilters>({
     search: '',
+    industry1: [],
+    industry2: [],
+    industry3: [],
     industries: [],
     sizes: [],
     locations: [],
@@ -87,6 +90,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
   const handleFiltersReset = () => {
     setFilters({
       search: '',
+      industry1: [],
+      industry2: [],
+      industry3: [],
       industries: [],
       sizes: [],
       locations: [],
