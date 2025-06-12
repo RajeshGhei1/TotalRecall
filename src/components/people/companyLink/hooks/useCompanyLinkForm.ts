@@ -21,14 +21,14 @@ export const useCompanyLinkForm = ({
   isOpen
 }: UseCompanyLinkFormProps) => {
   // Initialize form data with proper defaults
-  const getInitialFormData = () => ({
+  const getInitialFormData = (): LinkCompanyRelationshipData => ({
     person_id: personId || '',
     company_id: '',
     role: '',
     start_date: '',
     end_date: '',
     is_current: true,
-    relationship_type: personType === 'talent' ? 'employment' : 'business_contact'
+    relationship_type: (personType === 'talent' ? 'employment' : 'business_contact') as 'employment' | 'business_contact'
   });
 
   const [formData, setFormData] = useState<LinkCompanyRelationshipData>(getInitialFormData());
