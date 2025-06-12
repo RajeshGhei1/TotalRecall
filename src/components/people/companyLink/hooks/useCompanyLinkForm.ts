@@ -43,11 +43,12 @@ export const useCompanyLinkForm = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Reset form when dialog opens/closes
+  // Reset form when dialog opens/closes or personId changes
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && personId) {
+      console.log('Resetting form with personId:', personId);
       setFormData({
-        person_id: personId || '',
+        person_id: personId,
         company_id: '',
         role: '',
         start_date: '',
@@ -188,7 +189,7 @@ export const useCompanyLinkForm = ({
 
   const handleCompanyChange = (value: string) => {
     console.log('Company changed to:', value);
-    setFormData(prev => ({ ...prev, company_id: value, reports_to: '' }));
+    setFormData(prev => ({ ...prev, company_id: value, reports_to: undefined }));
   };
 
   const handleRoleChange = (value: string) => {
