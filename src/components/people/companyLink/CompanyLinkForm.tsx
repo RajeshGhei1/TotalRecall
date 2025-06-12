@@ -29,6 +29,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   personId,
   isSubmitting: externalIsSubmitting
 }) => {
+  console.log('CompanyLinkForm props:', { isOpen, personId, companiesCount: companies.length });
+  
   const {
     formData,
     startDate,
@@ -48,6 +50,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     onClose,
     isOpen
   });
+
+  console.log('CompanyLinkForm formData:', formData);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

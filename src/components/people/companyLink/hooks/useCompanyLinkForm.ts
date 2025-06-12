@@ -20,7 +20,8 @@ export const useCompanyLinkForm = ({
   onClose,
   isOpen
 }: UseCompanyLinkFormProps) => {
-  const [formData, setFormData] = useState<LinkCompanyRelationshipData>({
+  // Initialize form data with proper defaults
+  const getInitialFormData = () => ({
     person_id: personId || '',
     company_id: '',
     role: '',
@@ -29,7 +30,8 @@ export const useCompanyLinkForm = ({
     is_current: true,
     relationship_type: personType === 'talent' ? 'employment' : 'business_contact'
   });
-  
+
+  const [formData, setFormData] = useState<LinkCompanyRelationshipData>(getInitialFormData());
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [potentialManagers, setPotentialManagers] = useState<Array<{ person: {
@@ -47,15 +49,9 @@ export const useCompanyLinkForm = ({
   useEffect(() => {
     if (isOpen && personId) {
       console.log('Resetting form with personId:', personId);
-      setFormData({
-        person_id: personId,
-        company_id: '',
-        role: '',
-        start_date: '',
-        end_date: '',
-        is_current: true,
-        relationship_type: personType === 'talent' ? 'employment' : 'business_contact'
-      });
+      const newFormData = getInitialFormData();
+      console.log('New form data:', newFormData);
+      setFormData(newFormData);
       setStartDate(undefined);
       setEndDate(undefined);
       setPotentialManagers([]);
@@ -188,12 +184,16 @@ export const useCompanyLinkForm = ({
   };
 
   const handleCompanyChange = (value: string) => {
-    console.log('Company changed to:', value);
-    setFormData(prev => ({ 
-      ...prev, 
-      company_id: value, 
-      reports_to: '' // Reset manager when company changes
-    }));
+    console.log('handleCompanyChange called with value:', value);
+    setFormData(prev => {
+      const newData = { 
+        ...prev, 
+        company_id: value, 
+        reports_to: '' // Reset manager when company changes
+      };
+      console.log('Updated form data:', newData);
+      return newData;
+    });
   };
 
   const handleRoleChange = (value: string) => {

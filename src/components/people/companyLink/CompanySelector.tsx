@@ -14,7 +14,11 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
   companies,
   onCompanyChange
 }) => {
-  console.log('CompanySelector rendering with:', { companyId, companiesCount: companies.length, companies });
+  console.log('CompanySelector rendering with:', { 
+    companyId, 
+    companiesCount: companies.length, 
+    companies: companies.slice(0, 2) // Log first 2 companies for debugging
+  });
   
   return (
     <div className="space-y-2">
