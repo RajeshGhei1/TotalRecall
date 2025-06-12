@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 import { useModuleAIConfiguration } from '@/hooks/ai/useModuleAIConfiguration';
 import { 
@@ -94,7 +94,6 @@ export const ModuleAIConfiguration: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ModuleSelector
-          modules={modules}
           selectedModule={selectedModule}
           onModuleSelect={setSelectedModule}
         />
