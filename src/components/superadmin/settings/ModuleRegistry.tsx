@@ -10,7 +10,7 @@ import {
   Plus,
   Zap
 } from 'lucide-react';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import CreateModuleDialog from './modules/CreateModuleDialog';
 import EditModuleDialog from './modules/EditModuleDialog';
 import DeleteModuleDialog from './modules/DeleteModuleDialog';

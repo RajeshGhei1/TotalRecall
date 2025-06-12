@@ -3,19 +3,19 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SystemModule } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 
 interface ModuleSelectorProps {
-  modules?: SystemModule[];
   selectedModule: string;
   onModuleSelect: (moduleId: string) => void;
 }
 
 export const ModuleSelector: React.FC<ModuleSelectorProps> = ({
-  modules = [],
   selectedModule,
   onModuleSelect
 }) => {
+  const { data: modules = [] } = useSystemModules();
+
   return (
     <Card>
       <CardHeader>
