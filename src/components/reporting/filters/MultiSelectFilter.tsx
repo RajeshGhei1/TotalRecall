@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
+import { SimpleMultiSelect, SimpleMultiSelectOption } from '@/components/ui/simple-multi-select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 interface MultiSelectFilterProps {
   label: string;
-  options: MultiSelectOption[];
+  options: SimpleMultiSelectOption[];
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;
@@ -26,7 +26,7 @@ const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   return (
     <div className={cn("space-y-2", className)}>
       <Label className="text-sm font-medium">{label}</Label>
-      <MultiSelect
+      <SimpleMultiSelect
         options={options}
         onValueChange={onChange}
         value={value}
