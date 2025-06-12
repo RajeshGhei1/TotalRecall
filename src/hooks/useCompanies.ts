@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -286,12 +287,42 @@ export const useCompanies = () => {
     },
   });
 
+  // Mutation for deleting a company
+  const deleteCompany = useMutation({
+    mutationFn: async (companyId: string) => {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', companyId);
+
+      if (error) throw error;
+      
+      return companyId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
+      toast({
+        title: 'Company deleted',
+        description: 'The company has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error deleting company:", error);
+      toast({
+        title: 'Error',
+        description: `Failed to delete company: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     companies,
     isLoading,
     error,
     createCompany,
     updateCompany,
+    deleteCompany,
     refetch,
   };
 };
