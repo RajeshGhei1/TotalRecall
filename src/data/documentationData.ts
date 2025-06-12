@@ -1,4 +1,3 @@
-
 export interface DocumentItem {
   filePath: string;
   title: string;
@@ -25,6 +24,318 @@ export interface PriorityLevel {
 }
 
 export const availableDocuments: DocumentItem[] = [
+  {
+    filePath: 'docs/current/TECHNICAL_ARCHITECTURE_RELATIONSHIPS.md',
+    title: 'Technical Architecture Relationships',
+    description: 'Detailed technical relationships between SuperAdmin, Tenants, Modules, Subscriptions, AI Orchestration, and Analytics in Total Recall',
+    category: 'architecture',
+    priority: 'critical',
+    tags: ['current', 'architecture', 'relationships'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '25 min',
+    content: `# Technical Architecture Relationships in Total Recall
+
+## Overview
+This document provides a comprehensive technical analysis of how the core components of Total Recall interact, based on the actual codebase implementation.
+
+## Core Component Relationships
+
+### 1. SuperAdmin → Tenant Hierarchy
+
+\`\`\`
+SuperAdmin
+├── Global System Control
+├── Tenant Management
+├── Module Assignment (Emergency Overrides)
+├── Subscription Plan Management
+└── AI System Orchestration
+\`\`\`
+
+**Technical Implementation:**
+- SuperAdmin operates at the highest privilege level
+- Access controlled through role-based permissions
+- Can override tenant-specific module access via \`tenant_module_assignments\` table
+- Manages global AI agent configurations and system-wide AI policies
+
+### 2. Tenant → Module → Subscription Relationships
+
+\`\`\`
+Tenant
+├── Subscription Plans (tenant_subscriptions)
+│   ├── Module Permissions (module_permissions)
+│   ├── Usage Limits (per module)
+│   └── Billing Cycles
+├── Emergency Module Overrides (tenant_module_assignments)
+├── User Management
+└── AI Configuration (tenant-specific)
+\`\`\`
+
+**Database Schema Relationships:**
+
+\`\`\`sql
+-- Primary subscription-based access
+tenant_subscriptions → subscription_plans → module_permissions → system_modules
+
+-- Emergency override path
+tenant_module_assignments → system_modules
+
+-- Access resolution logic (from useUnifiedModuleAccess.ts):
+1. Check user-level subscription (if userId provided)
+2. Check tenant-level subscription
+3. Check emergency tenant overrides
+4. Return 'no access' if none found
+\`\`\`
+
+### 3. Module Access Resolution Flow
+
+**Implementation in \`useUnifiedModuleAccess.ts\`:**
+
+\`\`\`typescript
+export interface UnifiedAccessResult extends AccessCheckResult {
+  accessSource: 'subscription' | 'tenant_override' | 'none';
+  subscriptionDetails?: {
+    subscriptionType: 'user' | 'tenant';
+    planName: string;
+    status: string;
+  };
+  overrideDetails?: {
+    assignedBy: string;
+    assignedAt: string;
+    expiresAt?: string;
+  };
+}
+\`\`\`
+
+**Access Priority Order:**
+1. **User Subscription** (highest priority)
+2. **Tenant Subscription** (fallback)
+3. **Emergency Override** (admin-assigned)
+4. **No Access** (default)
+
+### 4. AI Orchestration Integration
+
+\`\`\`
+AI Orchestration System
+├── Enhanced AI Service (enhancedOrchestrationService.ts)
+│   ├── Agent Selection (hybridAgentSelector)
+│   ├── Context Management (moduleContextManager)
+│   ├── Token Budget Tracking
+│   └── Performance Metrics
+├── Tenant-Specific AI Configuration
+│   ├── AI Model Selection (tenantAIModelService)
+│   ├── Budget Limits per Module
+│   └── Custom Agent Assignments
+└── Module Integration
+    ├── Context Enhancement
+    ├── Usage Tracking
+    └── Cost Attribution
+\`\`\`
+
+**Technical Flow:**
+
+\`\`\`typescript
+// From enhancedOrchestrationService.ts
+async requestPrediction(context: AIContext, parameters: any) {
+  // 1. Enhance context with module information
+  const enhancedContext = await moduleContextManager.enhanceContextWithModule(context);
+  
+  // 2. Check module token budget
+  const budgetCheck = await moduleContextManager.checkTokenBudget(
+    context.module, 
+    context.tenant_id, 
+    estimatedTokens
+  );
+  
+  // 3. Select best agent for tenant/module
+  const agentId = await hybridAgentSelector.selectAgent(enhancedContext, availableAgents);
+  
+  // 4. Process request and track usage
+  const response = await this.processRequest(request);
+  
+  // 5. Record module usage for billing
+  await moduleContextManager.recordModuleUsage(
+    request.context.module,
+    request.context.tenant_id,
+    tokensUsed,
+    cost,
+    success
+  );
+}
+\`\`\`
+
+### 5. AI Analytics Integration
+
+\`\`\`
+AI Analytics System
+├── Talent Analytics (talentAnalyticsService.ts)
+│   ├── Skills Gap Analysis
+│   ├── Retention Risk Assessment
+│   └── Career Path Recommendations
+├── Behavioral Intelligence
+│   ├── User Pattern Recognition
+│   ├── Module Usage Analytics
+│   └── Predictive Insights
+└── Performance Metrics
+    ├── Agent Performance Tracking
+    ├── Module Efficiency Metrics
+    └── Cost Optimization
+\`\`\`
+
+**Analytics Data Flow:**
+
+\`\`\`typescript
+// From talentAnalyticsService.ts
+async analyzeTalent(request: TalentAnalyticsRequest) {
+  // 1. Create AI context for analysis
+  const aiContext = {
+    user_id: 'system',
+    tenant_id: request.tenantId,
+    module: 'smart_talent_analytics',
+    action: \`analyze_\${request.analysisType}\`,
+    entity_type: 'talent',
+    session_data: { /* analysis parameters */ }
+  };
+
+  // 2. Use AI orchestration for analysis
+  const aiResult = await enhancedAIOrchestrationService.requestPrediction(aiContext, {
+    model_type: 'analytics',
+    analysis_depth: 'comprehensive'
+  });
+
+  // 3. Store insights for future use
+  await this.storeInsights(tenantId, insights);
+}
+\`\`\`
+
+### 6. Database Schema Relationships
+
+**Core Tables and Relationships:**
+
+\`\`\`
+Tenants
+├── tenant_subscriptions → subscription_plans
+├── tenant_module_assignments → system_modules
+├── user_subscriptions → subscription_plans
+└── ai_agents (tenant-specific)
+
+Modules
+├── system_modules → module_permissions
+├── module_pricing (pricing tiers)
+└── module_usage_tracking
+
+AI System
+├── ai_agents → ai_performance_metrics
+├── ai_request_logs → ai_models
+├── ai_insights → applicable_modules
+└── behavioral_patterns → tenants
+
+Analytics
+├── ai_decisions → ai_learning_data
+├── talent_skills → people
+└── ai_context_cache → tenants
+\`\`\`
+
+### 7. Permission & Access Control Flow
+
+\`\`\`mermaid
+graph TD
+    A[User Request] --> B[Check User Subscription]
+    B --> C{Has User Sub?}
+    C -->|Yes| D[Check Module Permission]
+    C -->|No| E[Check Tenant Subscription]
+    E --> F{Has Tenant Sub?}
+    F -->|Yes| D
+    F -->|No| G[Check Emergency Override]
+    G --> H{Has Override?}
+    H -->|Yes| I[Grant Access]
+    H -->|No| J[Deny Access]
+    D --> K{Module Enabled?}
+    K -->|Yes| I
+    K -->|No| J
+\`\`\`
+
+### 8. AI Budget & Cost Management
+
+**Token Budget Flow:**
+
+\`\`\`typescript
+// From moduleContextManager
+async checkTokenBudget(moduleName: string, tenantId: string, estimatedTokens: number) {
+  // 1. Get module budget configuration
+  const moduleConfig = await this.getModuleConfig(moduleName, tenantId);
+  
+  // 2. Check current usage
+  const currentUsage = await this.getCurrentTokenUsage(moduleName, tenantId);
+  
+  // 3. Calculate if request would exceed budget
+  const wouldExceed = (currentUsage + estimatedTokens) > moduleConfig.tokenBudget;
+  
+  // 4. Apply overage policies
+  if (wouldExceed && moduleConfig.allowOverages) {
+    return { allowed: true, overage_amount: excess };
+  }
+  
+  return { allowed: !wouldExceed };
+}
+\`\`\`
+
+### 9. Real-time Data Synchronization
+
+**Component Integration:**
+- **Tenant Module Manager**: Real-time access control updates
+- **AI Orchestration**: Live agent performance monitoring
+- **Analytics Dashboard**: Real-time insights and metrics
+- **Subscription System**: Dynamic plan changes and access updates
+
+### 10. Security & Isolation
+
+**Multi-tenant Security:**
+- Row-level security (RLS) on all tenant-scoped tables
+- AI agent isolation per tenant
+- Module access verification at every request
+- Audit logging for all administrative actions
+
+## Implementation Files Reference
+
+**Core Services:**
+- \`enhancedOrchestrationService.ts\` - AI orchestration hub
+- \`useUnifiedModuleAccess.ts\` - Access control logic
+- \`talentAnalyticsService.ts\` - AI analytics integration
+- \`TenantModuleManager.tsx\` - Admin interface for overrides
+
+**Database Integration:**
+- Supabase RLS policies ensure tenant isolation
+- Foreign key constraints maintain referential integrity
+- Audit tables track all changes for compliance
+
+**Frontend Integration:**
+- \`useTenantContext\` provides tenant-scoped operations
+- \`useModuleAccess\` handles real-time permission checks
+- \`useUnifiedAIOrchestration\` manages AI system interactions
+
+## Current Status & Future Enhancements
+
+**✅ Implemented:**
+- Multi-tenant architecture with complete isolation
+- Subscription-based module access with emergency overrides
+- AI orchestration with tenant-specific configurations
+- Real-time analytics and behavioral tracking
+- Comprehensive audit logging and cost tracking
+
+**🔄 In Development:**
+- Advanced AI agent auto-scaling
+- Predictive usage analytics
+- Cross-tenant learning (with privacy preservation)
+- Advanced cost optimization algorithms
+
+**📋 Planned:**
+- White-label deployment options
+- Advanced compliance reporting
+- Real-time collaboration features
+- Mobile application integration
+
+This architecture ensures scalability, security, and flexibility while maintaining clear separation of concerns between different system components.`
+  },
   {
     filePath: 'docs/current/AI_ORCHESTRATION.md',
     title: 'AI Orchestration & Agent Management',
