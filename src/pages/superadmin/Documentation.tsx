@@ -81,17 +81,17 @@ Total Recall's AI orchestration system provides intelligent agent management, be
 ✅ Module configuration interface complete
 🔄 Advanced pattern recognition in development
 🔄 Cross-module learning optimization pending`
-    },
-    {
-      filePath: 'docs/current/MODULE_SYSTEM.md',
-      title: 'Total Recall Module System',
-      description: 'Architecture and management of Total Recall\'s modular system including registry, access control, and tenant assignments',
-      category: 'modules',
-      priority: 'critical',
-      tags: ['current', 'modules'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '12 min',
-      content: `# Total Recall Module System
+  },
+  {
+    filePath: 'docs/current/MODULE_SYSTEM.md',
+    title: 'Total Recall Module System',
+    description: 'Architecture and management of Total Recall\'s modular system including registry, access control, and tenant assignments',
+    category: 'modules',
+    priority: 'critical',
+    tags: ['current', 'modules'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '12 min',
+    content: `# Total Recall Module System
 
 ## System Architecture
 Total Recall operates on a modular architecture enabling flexible enterprise deployment and customization.
@@ -139,17 +139,17 @@ Total Recall operates on a modular architecture enabling flexible enterprise dep
 ✅ Module registry and assignment system active
 ✅ Cross-module integration working
 ✅ Tenant-based access control implemented`
-    },
-    {
-      filePath: 'docs/current/ENTERPRISE_ARCHITECTURE.md',
-      title: 'Enterprise Architecture Overview',
-      description: 'Total Recall\'s enterprise-grade architecture including multi-tenancy, security, and scalability features',
-      category: 'architecture',
-      priority: 'critical',
-      tags: ['current', 'enterprise'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '18 min',
-      content: `# Total Recall Enterprise Architecture
+  },
+  {
+    filePath: 'docs/current/ENTERPRISE_ARCHITECTURE.md',
+    title: 'Enterprise Architecture Overview',
+    description: 'Total Recall\'s enterprise-grade architecture including multi-tenancy, security, and scalability features',
+    category: 'architecture',
+    priority: 'critical',
+    tags: ['current', 'enterprise'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '18 min',
+    content: `# Total Recall Enterprise Architecture
 
 ## Core Principles
 - **Multi-Tenant by Design**: Complete tenant isolation and customization
@@ -196,17 +196,17 @@ Total Recall operates on a modular architecture enabling flexible enterprise dep
 - **Intelligent Caching**: Multi-layer caching strategy
 - **Real-time Sync**: Live collaboration and data synchronization
 - **Horizontal Scaling**: Cloud-native scalability patterns`
-    },
-    {
-      filePath: 'docs/current/SMART_WORKFLOWS.md',
-      title: 'Smart Workflows & Automation',
-      description: 'AI-powered workflow automation, form intelligence, and process optimization across Total Recall modules',
-      category: 'workflow',
-      priority: 'critical',
-      tags: ['current', 'ai-workflows'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '10 min',
-      content: `# Smart Workflows & Automation
+  },
+  {
+    filePath: 'docs/current/SMART_WORKFLOWS.md',
+    title: 'Smart Workflows & Automation',
+    description: 'AI-powered workflow automation, form intelligence, and process optimization across Total Recall modules',
+    category: 'workflow',
+    priority: 'critical',
+    tags: ['current', 'ai-workflows'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '10 min',
+    content: `# Smart Workflows & Automation
 
 ## Overview
 Total Recall's intelligent workflow system combines AI-powered automation with human oversight to optimize business processes.
@@ -246,17 +246,17 @@ Total Recall's intelligent workflow system combines AI-powered automation with h
 ✅ Process bottleneck detection
 🔄 Advanced predictive workflow optimization
 🔄 Cross-system integration workflows`
-    },
-    {
-      filePath: 'docs/current/TALENT_ANALYTICS.md',
-      title: 'Advanced Talent Analytics',
-      description: 'AI-driven talent insights, predictive analytics, and smart matching for comprehensive talent management',
-      category: 'ai',
-      priority: 'critical',
-      tags: ['current', 'talent-ai'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '14 min',
-      content: `# Advanced Talent Analytics
+  },
+  {
+    filePath: 'docs/current/TALENT_ANALYTICS.md',
+    title: 'Advanced Talent Analytics',
+    description: 'AI-driven talent insights, predictive analytics, and smart matching for comprehensive talent management',
+    category: 'ai',
+    priority: 'critical',
+    tags: ['current', 'talent-ai'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '14 min',
+    content: `# Advanced Talent Analytics
 
 ## Smart Talent Management
 Total Recall's talent analytics system provides AI-powered insights for strategic talent decisions.
@@ -294,17 +294,17 @@ Total Recall's talent analytics system provides AI-powered insights for strategi
 ✅ ATS integration framework
 🔄 Advanced machine learning models
 🔄 Real-time market intelligence`
-    },
-    {
-      filePath: 'docs/current/BEHAVIORAL_INTELLIGENCE.md',
-      title: 'Behavioral Intelligence System',
-      description: 'Real-time user behavior tracking, pattern recognition, and AI-powered personalization across all modules',
-      category: 'ai',
-      priority: 'high',
-      tags: ['current', 'behavioral-ai'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '12 min',
-      content: `# Behavioral Intelligence System
+  },
+  {
+    filePath: 'docs/current/BEHAVIORAL_INTELLIGENCE.md',
+    title: 'Behavioral Intelligence System',
+    description: 'Real-time user behavior tracking, pattern recognition, and AI-powered personalization across all modules',
+    category: 'ai',
+    priority: 'high',
+    tags: ['current', 'behavioral-ai'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '12 min',
+    content: `# Behavioral Intelligence System
 
 ## Overview
 Total Recall's behavioral intelligence system provides real-time user interaction tracking and AI-powered personalization.
@@ -336,17 +336,17 @@ Total Recall's behavioral intelligence system provides real-time user interactio
 ✅ Cross-module data collection
 🔄 Advanced predictive modeling
 🔄 Autonomous workflow optimization`
-    },
-    {
-      filePath: 'docs/current/API_INTEGRATION.md',
-      title: 'API & Integration Framework',
-      description: 'Comprehensive API documentation, third-party integrations, and developer resources for Total Recall',
-      category: 'api',
-      priority: 'critical',
-      tags: ['current', 'api'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '16 min',
-      content: `# API & Integration Framework
+  },
+  {
+    filePath: 'docs/current/API_INTEGRATION.md',
+    title: 'API & Integration Framework',
+    description: 'Comprehensive API documentation, third-party integrations, and developer resources for Total Recall',
+    category: 'api',
+    priority: 'critical',
+    tags: ['current', 'api'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '16 min',
+    content: `# API & Integration Framework
 
 ## REST API Architecture
 Total Recall provides a comprehensive REST API for all system functions.
@@ -392,17 +392,17 @@ Total Recall provides a comprehensive REST API for all system functions.
 ✅ SDK development in progress
 🔄 GraphQL API development
 🔄 Webhook system implementation`
-    },
-    {
-      filePath: 'docs/current/SECURITY_COMPLIANCE.md',
-      title: 'Security & Compliance Framework',
-      description: 'Enterprise-grade security implementation, compliance features, and data protection in Total Recall',
-      category: 'security',
-      priority: 'critical',
-      tags: ['current', 'security'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '20 min',
-      content: `# Security & Compliance Framework
+  },
+  {
+    filePath: 'docs/current/SECURITY_COMPLIANCE.md',
+    title: 'Security & Compliance Framework',
+    description: 'Enterprise-grade security implementation, compliance features, and data protection in Total Recall',
+    category: 'security',
+    priority: 'critical',
+    tags: ['current', 'security'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '20 min',
+    content: `# Security & Compliance Framework
 
 ## Security Architecture
 
@@ -451,17 +451,17 @@ Total Recall provides a comprehensive REST API for all system functions.
 ✅ Access control system functional
 🔄 Advanced threat detection
 🔄 Automated compliance reporting`
-    },
-    {
-      filePath: 'docs/current/ENTERPRISE_FEATURES.md',
-      title: 'Enterprise Features & Capabilities',
-      description: 'Comprehensive overview of Total Recall\'s enterprise-grade features, scalability, and advanced functionality',
-      category: 'enterprise',
-      priority: 'high',
-      tags: ['current', 'enterprise'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '14 min',
-      content: `# Enterprise Features & Capabilities
+  },
+  {
+    filePath: 'docs/current/ENTERPRISE_FEATURES.md',
+    title: 'Enterprise Features & Capabilities',
+    description: 'Comprehensive overview of Total Recall\'s enterprise-grade features, scalability, and advanced functionality',
+    category: 'enterprise',
+    priority: 'high',
+    tags: ['current', 'enterprise'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '14 min',
+    content: `# Enterprise Features & Capabilities
 
 ## Multi-Tenant Architecture
 Total Recall is built from the ground up as a multi-tenant platform supporting enterprise-scale deployments.
@@ -513,17 +513,17 @@ Total Recall is built from the ground up as a multi-tenant platform supporting e
 ✅ Training and onboarding programs
 🔄 Advanced SLA options
 🔄 White-label deployment options`
-    },
-    {
-      filePath: 'docs/current/SUBSCRIPTION_MANAGEMENT.md',
-      title: 'Subscription & Module Management',
-      description: 'Flexible subscription plans, module permissions, and pricing management for Total Recall enterprise deployments',
-      category: 'modules',
-      priority: 'high',
-      tags: ['current', 'subscriptions'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '10 min',
-      content: `# Subscription & Module Management
+  },
+  {
+    filePath: 'docs/current/SUBSCRIPTION_MANAGEMENT.md',
+    title: 'Subscription & Module Management',
+    description: 'Flexible subscription plans, module permissions, and pricing management for Total Recall enterprise deployments',
+    category: 'modules',
+    priority: 'high',
+    tags: ['current', 'subscriptions'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '10 min',
+    content: `# Subscription & Module Management
 
 ## Flexible Subscription Model
 Total Recall offers flexible subscription management with granular module control.
@@ -571,17 +571,17 @@ Total Recall offers flexible subscription management with granular module contro
 ✅ Usage tracking implemented
 🔄 Advanced usage analytics
 🔄 Self-service subscription management`
-    },
-    {
-      filePath: 'docs/current/REAL_TIME_COLLABORATION.md',
-      title: 'Real-Time Collaboration System',
-      description: 'Live collaboration features, real-time updates, and team coordination capabilities across Total Recall',
-      category: 'ai',
-      priority: 'medium',
-      tags: ['current', 'collaboration'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '8 min',
-      content: `# Real-Time Collaboration System
+  },
+  {
+    filePath: 'docs/current/REAL_TIME_COLLABORATION.md',
+    title: 'Real-Time Collaboration System',
+    description: 'Live collaboration features, real-time updates, and team coordination capabilities across Total Recall',
+    category: 'ai',
+    priority: 'medium',
+    tags: ['current', 'collaboration'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '8 min',
+    content: `# Real-Time Collaboration System
 
 ## Live Collaboration Features
 Total Recall provides real-time collaboration capabilities across all modules.
@@ -613,17 +613,17 @@ Total Recall provides real-time collaboration capabilities across all modules.
 🔄 Advanced conflict resolution
 🔄 Mobile collaboration apps
 🔄 Video call integration`
-    },
-    {
-      filePath: 'docs/current/DEPLOYMENT_GUIDE.md',
-      title: 'Deployment & Operations Guide',
-      description: 'Complete guide for deploying, configuring, and maintaining Total Recall in enterprise environments',
-      category: 'architecture',
-      priority: 'high',
-      tags: ['current', 'deployment'],
-      lastModified: '2025-06-12',
-      estimatedReadTime: '22 min',
-      content: `# Deployment & Operations Guide
+  },
+  {
+    filePath: 'docs/current/DEPLOYMENT_GUIDE.md',
+    title: 'Deployment & Operations Guide',
+    description: 'Complete guide for deploying, configuring, and maintaining Total Recall in enterprise environments',
+    category: 'architecture',
+    priority: 'high',
+    tags: ['current', 'deployment'],
+    lastModified: '2025-06-12',
+    estimatedReadTime: '22 min',
+    content: `# Deployment & Operations Guide
 
 ## Deployment Options
 
@@ -674,7 +674,8 @@ Total Recall provides real-time collaboration capabilities across all modules.
 ✅ Performance optimization tips
 🔄 Automated deployment scripts
 🔄 Kubernetes deployment manifests`
-};
+  }
+];
 
 export default function Documentation() {
   const [selectedDocument, setSelectedDocument] = useState<DocumentContent | null>(null);
