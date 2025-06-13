@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -11,10 +10,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Search } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Search, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +44,11 @@ interface PotentialDirectReport {
   role?: string;
 }
 
+interface Company {
+  id: string;
+  name: string;
+}
+
 // Input sanitization helper
 const sanitizeInput = (input: string): string => {
   return input.trim().replace(/[<>]/g, '');
@@ -66,6 +70,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 }) => {
   // Form state
   const [companyId, setCompanyId] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [role, setRole] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -74,16 +79,52 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
   const [potentialDirectReports, setPotentialDirectReports] = useState<PotentialDirectReport[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // Company search state
   const [companySearchQuery, setCompanySearchQuery] = useState('');
+  const [searchedCompanies, setSearchedCompanies] = useState<Company[]>([]);
+  const [isCompanyPopoverOpen, setIsCompanyPopoverOpen] = useState(false);
+  const [isSearchingCompanies, setIsSearchingCompanies] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLogger();
 
-  // Filter companies based on search query
-  const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
-  );
+  // Search companies dynamically
+  const searchCompanies = async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchedCompanies([]);
+      return;
+    }
+
+    setIsSearchingCompanies(true);
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name')
+        .ilike('name', `%${query}%`)
+        .order('name')
+        .limit(10);
+
+      if (error) throw error;
+      
+      setSearchedCompanies(data || []);
+    } catch (error) {
+      console.error('Error searching companies:', error);
+      setSearchedCompanies([]);
+    } finally {
+      setIsSearchingCompanies(false);
+    }
+  };
+
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchCompanies(companySearchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [companySearchQuery]);
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -91,6 +132,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       console.log('CompanyLinkForm opened for person:', personId, 'type:', personType);
       // Reset all form fields
       setCompanyId('');
+      setSelectedCompany(null);
       setRole('');
       setStartDate(undefined);
       setEndDate(undefined);
@@ -100,6 +142,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       setPotentialDirectReports([]);
       setValidationErrors({});
       setCompanySearchQuery('');
+      setSearchedCompanies([]);
     }
   }, [isOpen, personId, personType]);
 
@@ -336,11 +379,13 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     createRelationshipMutation.mutate();
   };
 
-  const handleCompanyChange = (value: string) => {
-    console.log('Company changed to:', value);
-    setCompanyId(value);
+  const handleCompanySelect = (company: Company) => {
+    console.log('Company selected:', company);
+    setCompanyId(company.id);
+    setSelectedCompany(company);
     setReportsTo(''); // Reset manager when company changes
     setDirectReports([]); // Reset direct reports when company changes
+    setIsCompanyPopoverOpen(false);
     // Clear company validation error when user selects a company
     if (validationErrors.companyId) {
       setValidationErrors(prev => ({ ...prev, companyId: '' }));
@@ -370,46 +415,66 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          {/* Company Selection with Search */}
+          {/* Company Search Selection */}
           <div className="space-y-2">
             <Label htmlFor="company_select" className="text-sm font-medium">
               Company <span className="text-destructive">*</span>
             </Label>
-            <div className="relative">
-              <Select value={companyId} onValueChange={handleCompanyChange}>
-                <SelectTrigger className={cn(
-                  "w-full h-11 border-2 transition-colors bg-background",
-                  validationErrors.companyId ? 'border-destructive focus:border-destructive' : 'border-input focus:border-primary'
-                )}>
-                  <SelectValue placeholder="Select a company" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-[100]">
-                  <div className="flex items-center border-b px-3 pb-2 mb-2">
-                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                    <Input
-                      placeholder="Search companies..."
-                      value={companySearchQuery}
-                      onChange={(e) => setCompanySearchQuery(e.target.value)}
-                      className="border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                  </div>
-                  {filteredCompanies.length === 0 ? (
-                    <div className="py-2 px-3 text-sm text-muted-foreground">
-                      No companies found
-                    </div>
-                  ) : (
-                    filteredCompanies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))
+            <Popover open={isCompanyPopoverOpen} onOpenChange={setIsCompanyPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isCompanyPopoverOpen}
+                  className={cn(
+                    "w-full h-11 justify-between border-2 transition-colors",
+                    validationErrors.companyId ? 'border-destructive' : 'border-input hover:border-primary'
                   )}
-                </SelectContent>
-              </Select>
-            </div>
+                >
+                  {selectedCompany ? selectedCompany.name : "Search and select a company..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0 bg-background border shadow-lg" align="start">
+                <Command className="w-full">
+                  <CommandInput
+                    placeholder="Search companies..."
+                    value={companySearchQuery}
+                    onValueChange={setCompanySearchQuery}
+                    className="h-9"
+                  />
+                  <CommandList className="max-h-[200px]">
+                    <CommandEmpty>
+                      {isSearchingCompanies ? "Searching..." : "No companies found"}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {searchedCompanies.map((company) => (
+                        <CommandItem
+                          key={company.id}
+                          value={company.name}
+                          onSelect={() => handleCompanySelect(company)}
+                          className="cursor-pointer"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCompany?.id === company.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {company.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {validationErrors.companyId && (
               <p className="text-sm text-destructive font-medium">{validationErrors.companyId}</p>
             )}
+            <p className="text-xs text-muted-foreground">
+              Start typing to search for companies. Select one from the dropdown.
+            </p>
           </div>
 
           {/* Role Input */}
@@ -524,29 +589,72 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               {potentialManagers.length > 0 && (
                 <div className="space-y-2">
                   <Label htmlFor="reports_to" className="text-sm font-medium">Reports To (Manager)</Label>
-                  <Select value={reportsTo} onValueChange={(value) => {
-                    setReportsTo(value);
-                    if (validationErrors.reportsTo) {
-                      setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
-                    }
-                  }}>
-                    <SelectTrigger className="h-11 border-2 bg-background">
-                      <SelectValue placeholder="Select a manager (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-[100]">
-                      <SelectItem value="">None</SelectItem>
-                      {potentialManagers.map(manager => (
-                        <SelectItem key={manager.id} value={manager.id}>
-                          <div className="flex flex-col">
-                            <span>{manager.full_name}</span>
-                            {manager.role && (
-                              <span className="text-xs text-muted-foreground">{manager.role}</span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full h-11 justify-between border-2 bg-background"
+                      >
+                        {reportsTo ? 
+                          potentialManagers.find(m => m.id === reportsTo)?.full_name || "Select manager" :
+                          "Select a manager (optional)"
+                        }
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-background border shadow-lg">
+                      <Command>
+                        <CommandInput placeholder="Search managers..." />
+                        <CommandList className="max-h-[200px]">
+                          <CommandEmpty>No managers found</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() => {
+                                setReportsTo('');
+                                if (validationErrors.reportsTo) {
+                                  setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
+                                }
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  !reportsTo ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              None
+                            </CommandItem>
+                            {potentialManagers.map(manager => (
+                              <CommandItem
+                                key={manager.id}
+                                value={manager.full_name}
+                                onSelect={() => {
+                                  setReportsTo(manager.id);
+                                  if (validationErrors.reportsTo) {
+                                    setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
+                                  }
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    reportsTo === manager.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span>{manager.full_name}</span>
+                                  {manager.role && (
+                                    <span className="text-xs text-muted-foreground">{manager.role}</span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {validationErrors.reportsTo && (
                     <p className="text-sm text-destructive font-medium">{validationErrors.reportsTo}</p>
                   )}
