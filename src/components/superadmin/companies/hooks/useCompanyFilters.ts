@@ -1,62 +1,30 @@
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Company } from '@/hooks/useCompanies';
 
 export interface CompanyFilters {
   search: string;
-  
-  // Industry & Company Type (new section)
   industry1: string[];
   industry2: string[];
   industry3: string[];
-  
-  // Basic Information
-  industries: string[];
   sizes: string[];
-  companyTypes: string[];
-  entityTypes: string[];
-  sectors: string[];
   statuses: string[];
-  
-  // Location & Geography
   locations: string[];
   countries: string[];
   globalRegions: string[];
   regions: string[];
   hoLocations: string[];
-  
-  // Business Metrics
-  employeeCountMin?: string;
-  employeeCountMax?: string;
-  turnoverMin?: string;
-  turnoverMax?: string;
-  paidCapitalMin?: string;
-  paidCapitalMax?: string;
+  sectors: string[];
+  companyTypes: string[];
+  entityTypes: string[];
   employeeSegments: string[];
   turnoverSegments: string[];
   capitalSegments: string[];
-  turnoverYears: string[];
-  
-  // Date Ranges
-  foundedFrom?: Date;
-  foundedTo?: Date;
-  registrationFrom?: Date;
-  registrationTo?: Date;
-  establishmentFrom?: Date;
-  establishmentTo?: Date;
-  
-  // Business Profile
   specializations: string[];
   serviceLines: string[];
   verticals: string[];
-  
-  // Hierarchy
   companyGroups: string[];
-  hierarchyLevelMin?: string;
-  hierarchyLevelMax?: string;
   hasParent: string[];
-  
-  // Contact & Social Media
   hasEmail: string[];
   hasPhone: string[];
   hasWebsite: string[];
@@ -65,333 +33,140 @@ export interface CompanyFilters {
   hasFacebook: string[];
 }
 
-export const useCompanyFilters = (
-  companies: Company[] | undefined,
-  filters: CompanyFilters,
-  searchTerm: string
-) => {
+const initialFilters: CompanyFilters = {
+  search: '',
+  industry1: [],
+  industry2: [],
+  industry3: [],
+  sizes: [],
+  statuses: [],
+  locations: [],
+  countries: [],
+  globalRegions: [],
+  regions: [],
+  hoLocations: [],
+  sectors: [],
+  companyTypes: [],
+  entityTypes: [],
+  employeeSegments: [],
+  turnoverSegments: [],
+  capitalSegments: [],
+  specializations: [],
+  serviceLines: [],
+  verticals: [],
+  companyGroups: [],
+  hasParent: [],
+  hasEmail: [],
+  hasPhone: [],
+  hasWebsite: [],
+  hasLinkedin: [],
+  hasTwitter: [],
+  hasFacebook: [],
+};
+
+export const useCompanyFilters = (companies: Company[]) => {
+  const [filters, setFilters] = useState<CompanyFilters>(initialFilters);
+
   const filteredCompanies = useMemo(() => {
-    // Return empty array if companies is not available or not an array
-    if (!companies || !Array.isArray(companies)) {
-      return [];
-    }
+    if (!companies) return [];
 
-    let filtered = [...companies];
-
-    // Apply global search filter first (but don't apply other filters yet for industry option generation)
-    if (searchTerm?.trim()) {
-      const search = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(company => 
-        company.name?.toLowerCase().includes(search) ||
-        company.domain?.toLowerCase().includes(search) ||
-        company.email?.toLowerCase().includes(search) ||
-        company.industry1?.toLowerCase().includes(search) ||
-        company.industry2?.toLowerCase().includes(search) ||
-        company.industry3?.toLowerCase().includes(search) ||
-        company.location?.toLowerCase().includes(search) ||
-        company.description?.toLowerCase().includes(search) ||
-        company.companyprofile?.toLowerCase().includes(search) ||
-        company.areaofspecialize?.toLowerCase().includes(search) ||
-        company.serviceline?.toLowerCase().includes(search) ||
-        company.verticles?.toLowerCase().includes(search)
-      );
-    }
-
-    // Apply industry filter (check all industry fields) - but exclude industry1/2/3 filters to avoid circular dependency
-    if (filters.industries && Array.isArray(filters.industries) && filters.industries.length > 0) {
-      filtered = filtered.filter(company => 
-        (company.industry1 && filters.industries.includes(company.industry1)) ||
-        (company.industry2 && filters.industries.includes(company.industry2)) ||
-        (company.industry3 && filters.industries.includes(company.industry3))
-      );
-    }
-
-    // Apply size filter
-    if (filters.sizes && Array.isArray(filters.sizes) && filters.sizes.length > 0) {
-      filtered = filtered.filter(company => 
-        company.size && filters.sizes.includes(company.size)
-      );
-    }
-
-    // Apply company type filter
-    if (filters.companyTypes && Array.isArray(filters.companyTypes) && filters.companyTypes.length > 0) {
-      filtered = filtered.filter(company => 
-        company.companytype && filters.companyTypes.includes(company.companytype)
-      );
-    }
-
-    // Apply entity type filter
-    if (filters.entityTypes && Array.isArray(filters.entityTypes) && filters.entityTypes.length > 0) {
-      filtered = filtered.filter(company => 
-        company.entitytype && filters.entityTypes.includes(company.entitytype)
-      );
-    }
-
-    // Apply sector filter
-    if (filters.sectors && Array.isArray(filters.sectors) && filters.sectors.length > 0) {
-      filtered = filtered.filter(company => 
-        company.companysector && filters.sectors.includes(company.companysector)
-      );
-    }
-
-    // Apply status filter
-    if (filters.statuses && Array.isArray(filters.statuses) && filters.statuses.length > 0) {
-      filtered = filtered.filter(company => 
-        company.companystatus && filters.statuses.includes(company.companystatus)
-      );
-    }
-
-    // Apply location filter
-    if (filters.locations && Array.isArray(filters.locations) && filters.locations.length > 0) {
-      filtered = filtered.filter(company => 
-        company.location && filters.locations.includes(company.location)
-      );
-    }
-
-    // Apply country filter
-    if (filters.countries && Array.isArray(filters.countries) && filters.countries.length > 0) {
-      filtered = filtered.filter(company => 
-        company.country && filters.countries.includes(company.country)
-      );
-    }
-
-    // Apply global region filter
-    if (filters.globalRegions && Array.isArray(filters.globalRegions) && filters.globalRegions.length > 0) {
-      filtered = filtered.filter(company => 
-        company.globalregion && filters.globalRegions.includes(company.globalregion)
-      );
-    }
-
-    // Apply region filter
-    if (filters.regions && Array.isArray(filters.regions) && filters.regions.length > 0) {
-      filtered = filtered.filter(company => 
-        company.region && filters.regions.includes(company.region)
-      );
-    }
-
-    // Apply HO location filter
-    if (filters.hoLocations && Array.isArray(filters.hoLocations) && filters.hoLocations.length > 0) {
-      filtered = filtered.filter(company => 
-        company.holocation && filters.hoLocations.includes(company.holocation)
-      );
-    }
-
-    // Apply employee count range filter
-    if (filters.employeeCountMin || filters.employeeCountMax) {
-      filtered = filtered.filter(company => {
-        if (!company.noofemployee) return false;
-        const employeeCount = parseInt(company.noofemployee);
-        if (isNaN(employeeCount)) return false;
+    return companies.filter(company => {
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          company.name?.toLowerCase().includes(searchLower) ||
+          company.tr_id?.toLowerCase().includes(searchLower) ||
+          company.cin?.toLowerCase().includes(searchLower) ||
+          company.email?.toLowerCase().includes(searchLower) ||
+          company.website?.toLowerCase().includes(searchLower) ||
+          company.location?.toLowerCase().includes(searchLower);
         
-        const min = filters.employeeCountMin ? parseInt(filters.employeeCountMin) : 0;
-        const max = filters.employeeCountMax ? parseInt(filters.employeeCountMax) : Infinity;
-        
-        return employeeCount >= min && employeeCount <= max;
-      });
-    }
+        if (!matchesSearch) return false;
+      }
 
-    // Apply turnover range filter
-    if (filters.turnoverMin || filters.turnoverMax) {
-      filtered = filtered.filter(company => {
-        if (!company.turnover) return false;
-        const turnover = parseFloat(company.turnover);
-        if (isNaN(turnover)) return false;
-        
-        const min = filters.turnoverMin ? parseFloat(filters.turnoverMin) : 0;
-        const max = filters.turnoverMax ? parseFloat(filters.turnoverMax) : Infinity;
-        
-        return turnover >= min && turnover <= max;
-      });
-    }
+      // Industry filters
+      if (filters.industry1.length && (!company.industry1 || !filters.industry1.includes(company.industry1))) return false;
+      if (filters.industry2.length && (!company.industry2 || !filters.industry2.includes(company.industry2))) return false;
+      if (filters.industry3.length && (!company.industry3 || !filters.industry3.includes(company.industry3))) return false;
 
-    // Apply paid capital range filter
-    if (filters.paidCapitalMin || filters.paidCapitalMax) {
-      filtered = filtered.filter(company => {
-        if (!company.paidupcapital) return false;
-        const capital = parseFloat(company.paidupcapital);
-        if (isNaN(capital)) return false;
-        
-        const min = filters.paidCapitalMin ? parseFloat(filters.paidCapitalMin) : 0;
-        const max = filters.paidCapitalMax ? parseFloat(filters.paidCapitalMax) : Infinity;
-        
-        return capital >= min && capital <= max;
-      });
-    }
+      // Basic filters
+      if (filters.sizes.length && (!company.size || !filters.sizes.includes(company.size))) return false;
+      if (filters.statuses.length && (!company.companystatus || !filters.statuses.includes(company.companystatus))) return false;
 
-    // Apply employee segment filter
-    if (filters.employeeSegments && Array.isArray(filters.employeeSegments) && filters.employeeSegments.length > 0) {
-      filtered = filtered.filter(company => 
-        company.segmentaspernumberofemployees && filters.employeeSegments.includes(company.segmentaspernumberofemployees)
-      );
-    }
+      // Location filters
+      if (filters.locations.length && (!company.location || !filters.locations.includes(company.location))) return false;
+      if (filters.countries.length && (!company.country || !filters.countries.includes(company.country))) return false;
+      if (filters.globalRegions.length && (!company.globalregion || !filters.globalRegions.includes(company.globalregion))) return false;
+      if (filters.regions.length && (!company.region || !filters.regions.includes(company.region))) return false;
+      if (filters.hoLocations.length && (!company.holocation || !filters.hoLocations.includes(company.holocation))) return false;
 
-    // Apply turnover segment filter
-    if (filters.turnoverSegments && Array.isArray(filters.turnoverSegments) && filters.turnoverSegments.length > 0) {
-      filtered = filtered.filter(company => 
-        company.segmentasperturnover && filters.turnoverSegments.includes(company.segmentasperturnover)
-      );
-    }
+      // Company type filters
+      if (filters.sectors.length && (!company.companysector || !filters.sectors.includes(company.companysector))) return false;
+      if (filters.companyTypes.length && (!company.companytype || !filters.companyTypes.includes(company.companytype))) return false;
+      if (filters.entityTypes.length && (!company.entitytype || !filters.entityTypes.includes(company.entitytype))) return false;
 
-    // Apply capital segment filter
-    if (filters.capitalSegments && Array.isArray(filters.capitalSegments) && filters.capitalSegments.length > 0) {
-      filtered = filtered.filter(company => 
-        company.segmentasperpaidupcapital && filters.capitalSegments.includes(company.segmentasperpaidupcapital)
-      );
-    }
+      // Metrics filters
+      if (filters.employeeSegments.length && (!company.segmentaspernumberofemployees || !filters.employeeSegments.includes(company.segmentaspernumberofemployees))) return false;
+      if (filters.turnoverSegments.length && (!company.segmentasperturnover || !filters.turnoverSegments.includes(company.segmentasperturnover))) return false;
+      if (filters.capitalSegments.length && (!company.segmentasperpaidupcapital || !filters.capitalSegments.includes(company.segmentasperpaidupcapital))) return false;
 
-    // Apply turnover year filter
-    if (filters.turnoverYears && Array.isArray(filters.turnoverYears) && filters.turnoverYears.length > 0) {
-      filtered = filtered.filter(company => 
-        company.turnoveryear && filters.turnoverYears.includes(company.turnoveryear)
-      );
-    }
+      // Specialization filters
+      if (filters.specializations.length && (!company.areaofspecialize || !filters.specializations.includes(company.areaofspecialize))) return false;
+      if (filters.serviceLines.length && (!company.serviceline || !filters.serviceLines.includes(company.serviceline))) return false;
+      if (filters.verticals.length && (!company.verticles || !filters.verticals.includes(company.verticles))) return false;
 
-    // Apply founded date range filter
-    if (filters.foundedFrom || filters.foundedTo) {
-      filtered = filtered.filter(company => {
-        if (!company.founded) return false;
-        if (filters.foundedFrom && company.founded < filters.foundedFrom.getFullYear()) return false;
-        if (filters.foundedTo && company.founded > filters.foundedTo.getFullYear()) return false;
-        return true;
-      });
-    }
+      // Group filters
+      if (filters.companyGroups.length && (!company.company_group_name || !filters.companyGroups.includes(company.company_group_name))) return false;
 
-    // Apply establishment date range filter
-    if (filters.establishmentFrom || filters.establishmentTo) {
-      filtered = filtered.filter(company => {
-        if (!company.yearofestablishment) return false;
-        const estYear = parseInt(company.yearofestablishment);
-        if (isNaN(estYear)) return false;
-        if (filters.establishmentFrom && estYear < filters.establishmentFrom.getFullYear()) return false;
-        if (filters.establishmentTo && estYear > filters.establishmentTo.getFullYear()) return false;
-        return true;
-      });
-    }
+      // Boolean filters
+      if (filters.hasParent.length) {
+        const hasParent = company.parent_company_id ? 'true' : 'false';
+        if (!filters.hasParent.includes(hasParent)) return false;
+      }
 
-    // Apply registration date range filter
-    if (filters.registrationFrom || filters.registrationTo) {
-      filtered = filtered.filter(company => {
-        if (!company.registrationdate) return false;
-        const regDate = new Date(company.registrationdate);
-        if (filters.registrationFrom && regDate < filters.registrationFrom) return false;
-        if (filters.registrationTo && regDate > filters.registrationTo) return false;
-        return true;
-      });
-    }
+      if (filters.hasEmail.length) {
+        const hasEmail = company.email ? 'true' : 'false';
+        if (!filters.hasEmail.includes(hasEmail)) return false;
+      }
 
-    // Apply specialization filter
-    if (filters.specializations && Array.isArray(filters.specializations) && filters.specializations.length > 0) {
-      filtered = filtered.filter(company => 
-        company.areaofspecialize && filters.specializations.includes(company.areaofspecialize)
-      );
-    }
+      if (filters.hasPhone.length) {
+        const hasPhone = company.phone ? 'true' : 'false';
+        if (!filters.hasPhone.includes(hasPhone)) return false;
+      }
 
-    // Apply service line filter
-    if (filters.serviceLines && Array.isArray(filters.serviceLines) && filters.serviceLines.length > 0) {
-      filtered = filtered.filter(company => 
-        company.serviceline && filters.serviceLines.includes(company.serviceline)
-      );
-    }
+      if (filters.hasWebsite.length) {
+        const hasWebsite = company.website ? 'true' : 'false';
+        if (!filters.hasWebsite.includes(hasWebsite)) return false;
+      }
 
-    // Apply verticals filter
-    if (filters.verticals && Array.isArray(filters.verticals) && filters.verticals.length > 0) {
-      filtered = filtered.filter(company => 
-        company.verticles && filters.verticals.includes(company.verticles)
-      );
-    }
+      if (filters.hasLinkedin.length) {
+        const hasLinkedin = company.linkedin ? 'true' : 'false';
+        if (!filters.hasLinkedin.includes(hasLinkedin)) return false;
+      }
 
-    // Apply company group filter
-    if (filters.companyGroups && Array.isArray(filters.companyGroups) && filters.companyGroups.length > 0) {
-      filtered = filtered.filter(company => 
-        company.company_group_name && filters.companyGroups.includes(company.company_group_name)
-      );
-    }
+      if (filters.hasTwitter.length) {
+        const hasTwitter = company.twitter ? 'true' : 'false';
+        if (!filters.hasTwitter.includes(hasTwitter)) return false;
+      }
 
-    // Apply hierarchy level range filter
-    if (filters.hierarchyLevelMin || filters.hierarchyLevelMax) {
-      filtered = filtered.filter(company => {
-        const level = company.hierarchy_level || 0;
-        const min = filters.hierarchyLevelMin ? parseInt(filters.hierarchyLevelMin) : 0;
-        const max = filters.hierarchyLevelMax ? parseInt(filters.hierarchyLevelMax) : Infinity;
-        
-        return level >= min && level <= max;
-      });
-    }
+      if (filters.hasFacebook.length) {
+        const hasFacebook = company.facebook ? 'true' : 'false';
+        if (!filters.hasFacebook.includes(hasFacebook)) return false;
+      }
 
-    // Apply has parent filter
-    if (filters.hasParent && Array.isArray(filters.hasParent) && filters.hasParent.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasParent = !!company.parent_company_id;
-        return filters.hasParent.includes(hasParent.toString());
-      });
-    }
+      return true;
+    });
+  }, [companies, filters]);
 
-    // Apply contact and social media filters
-    if (filters.hasEmail && Array.isArray(filters.hasEmail) && filters.hasEmail.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasEmail = !!company.email;
-        return filters.hasEmail.includes(hasEmail.toString());
-      });
-    }
-
-    if (filters.hasPhone && Array.isArray(filters.hasPhone) && filters.hasPhone.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasPhone = !!company.phone;
-        return filters.hasPhone.includes(hasPhone.toString());
-      });
-    }
-
-    if (filters.hasWebsite && Array.isArray(filters.hasWebsite) && filters.hasWebsite.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasWebsite = !!company.website;
-        return filters.hasWebsite.includes(hasWebsite.toString());
-      });
-    }
-
-    if (filters.hasLinkedin && Array.isArray(filters.hasLinkedin) && filters.hasLinkedin.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasLinkedin = !!company.linkedin;
-        return filters.hasLinkedin.includes(hasLinkedin.toString());
-      });
-    }
-
-    if (filters.hasTwitter && Array.isArray(filters.hasTwitter) && filters.hasTwitter.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasTwitter = !!company.twitter;
-        return filters.hasTwitter.includes(hasTwitter.toString());
-      });
-    }
-
-    if (filters.hasFacebook && Array.isArray(filters.hasFacebook) && filters.hasFacebook.length > 0) {
-      filtered = filtered.filter(company => {
-        const hasFacebook = !!company.facebook;
-        return filters.hasFacebook.includes(hasFacebook.toString());
-      });
-    }
-
-    // NOW apply industry1/2/3 filters at the end after all other filtering is complete
-    if (filters.industry1 && Array.isArray(filters.industry1) && filters.industry1.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry1 && filters.industry1.includes(company.industry1)
-      );
-    }
-
-    if (filters.industry2 && Array.isArray(filters.industry2) && filters.industry2.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry2 && filters.industry2.includes(company.industry2)
-      );
-    }
-
-    if (filters.industry3 && Array.isArray(filters.industry3) && filters.industry3.length > 0) {
-      filtered = filtered.filter(company => 
-        company.industry3 && filters.industry3.includes(company.industry3)
-      );
-    }
-
-    return filtered;
-  }, [companies, filters, searchTerm]);
+  const resetFilters = () => {
+    setFilters(initialFilters);
+  };
 
   return {
-    filteredCompanies
+    filters,
+    setFilters,
+    filteredCompanies,
+    resetFilters,
   };
 };

@@ -4,22 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building, Calendar, MapPin, Globe, Hash } from 'lucide-react';
+import { Search, Building, Calendar, MapPin, Globe, Hash, Filter } from 'lucide-react';
 import { useCompanies } from '@/hooks/useCompanies';
 import TrIdSearchDialog from './TrIdSearchDialog';
+import EnhancedCompanyFilters from './filters/EnhancedCompanyFilters';
+import { useCompanyFilters } from './hooks/useCompanyFilters';
 
 const CompanyEnhancedListContainer: React.FC = () => {
   const { companies, isLoading } = useCompanies();
-  const [searchTerm, setSearchTerm] = useState('');
   const [isTrIdSearchOpen, setIsTrIdSearchOpen] = useState(false);
-
-  // Filter companies based on search term
-  const filteredCompanies = companies?.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.tr_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.cin?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.location?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  const {
+    filters,
+    setFilters,
+    filteredCompanies,
+    resetFilters,
+  } = useCompanyFilters(companies || []);
 
   if (isLoading) {
     return (
@@ -42,25 +43,52 @@ const CompanyEnhancedListContainer: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search companies by name, TR ID, CIN, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search companies by name, TR ID, CIN, email, or location..."
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsTrIdSearchOpen(true)}
+              className="whitespace-nowrap"
+            >
+              <Hash className="h-4 w-4 mr-2" />
+              Search by TR ID
+            </Button>
+            <Button
+              variant={showAdvancedFilters ? "default" : "outline"}
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="whitespace-nowrap"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Advanced Filters
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setIsTrIdSearchOpen(true)}
-          className="whitespace-nowrap"
-        >
-          <Hash className="h-4 w-4 mr-2" />
-          Search by TR ID
-        </Button>
+        
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground">
+          Showing {filteredCompanies.length} of {companies?.length || 0} companies
+        </div>
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <EnhancedCompanyFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          onReset={resetFilters}
+          companies={companies || []}
+        />
+      )}
 
       {/* Companies List */}
       <div className="space-y-4">
@@ -70,7 +98,9 @@ const CompanyEnhancedListContainer: React.FC = () => {
               <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No companies found</h3>
               <p className="text-muted-foreground">
-                {searchTerm ? 'Try adjusting your search criteria' : 'No companies have been added yet'}
+                {filters.search || Object.values(filters).some(f => Array.isArray(f) ? f.length > 0 : f) 
+                  ? 'Try adjusting your search criteria or filters' 
+                  : 'No companies have been added yet'}
               </p>
             </CardContent>
           </Card>
