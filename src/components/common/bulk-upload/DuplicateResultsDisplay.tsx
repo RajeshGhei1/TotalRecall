@@ -122,8 +122,8 @@ const DuplicateResultsDisplay: React.FC<DuplicateResultsDisplayProps> = ({ resul
                       <div><strong>Name:</strong> {duplicate.newRecord.full_name}</div>
                       <div><strong>Email:</strong> {duplicate.newRecord.email}</div>
                       <div><strong>Phone:</strong> {duplicate.newRecord.phone || 'N/A'}</div>
+                      <div><strong>Location:</strong> {duplicate.newRecord.location || 'N/A'}</div>
                       <div><strong>Company:</strong> {duplicate.newRecord.company_name || 'N/A'}</div>
-                      <div><strong>LinkedIn:</strong> {duplicate.newRecord.linkedin_url || 'N/A'}</div>
                     </div>
                   </div>
                   <div>
@@ -132,8 +132,8 @@ const DuplicateResultsDisplay: React.FC<DuplicateResultsDisplayProps> = ({ resul
                       <div><strong>Name:</strong> {duplicate.existingRecord.full_name}</div>
                       <div><strong>Email:</strong> {duplicate.existingRecord.email}</div>
                       <div><strong>Phone:</strong> {duplicate.existingRecord.phone || 'N/A'}</div>
-                      <div><strong>Company:</strong> {duplicate.existingRecord.current_title || 'N/A'}</div>
-                      <div><strong>LinkedIn:</strong> {duplicate.existingRecord.linkedin_url || 'N/A'}</div>
+                      <div><strong>Location:</strong> {duplicate.existingRecord.location || 'N/A'}</div>
+                      <div><strong>Type:</strong> {duplicate.existingRecord.type || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="col-span-2">
