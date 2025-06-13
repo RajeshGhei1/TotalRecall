@@ -1,21 +1,36 @@
 
 import React from 'react';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
-import ModuleRegistry from '@/components/superadmin/settings/ModuleRegistry';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTenantContext } from '@/contexts/TenantContext';
+import TenantModuleManager from '../modules/TenantModuleManager';
+import GlobalTenantSelector from '../shared/GlobalTenantSelector';
 
-const ModulesTabContent = () => {
+const ModulesTabContent: React.FC = () => {
+  const { selectedTenantId } = useTenantContext();
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Module Management</h2>
-        <p className="text-gray-600">
-          Configure and manage system modules, assign modules to tenants, and control module permissions.
-        </p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Tenant Selection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GlobalTenantSelector />
+        </CardContent>
+      </Card>
 
-      <ErrorBoundary>
-        <ModuleRegistry />
-      </ErrorBoundary>
+      {selectedTenantId ? (
+        <TenantModuleManager />
+      ) : (
+        <Card>
+          <CardContent className="text-center py-8">
+            <h3 className="text-lg font-medium mb-2">Select a Tenant</h3>
+            <p className="text-muted-foreground">
+              Choose a tenant above to manage their module configurations
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
