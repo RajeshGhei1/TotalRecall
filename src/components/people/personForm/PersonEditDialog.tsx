@@ -39,6 +39,8 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
       type: person?.type || 'talent',
       company_id: undefined,
       role: '',
+      official_id: '',
+      personal_id: '',
     }
   });
 
@@ -53,6 +55,8 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         type: person.type,
         company_id: undefined,
         role: '',
+        official_id: '',
+        personal_id: '',
       });
     }
   }, [person, form]);
@@ -96,13 +100,17 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit {person?.type === 'talent' ? 'Talent' : 'Contact'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PersonFormFields form={form} personType={person?.type} />
+            <PersonFormFields 
+              form={form} 
+              personType={person?.type} 
+              personId={person?.id}
+            />
             
             {person?.id && person?.type && (
               <div className="border-t pt-4 mt-4">
