@@ -1,3 +1,4 @@
+
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Company } from '@/hooks/useCompanies';
@@ -18,11 +19,9 @@ export interface BranchOfficeData {
   is_active: boolean;
 }
 
-export { BranchOfficeData };
-
 export interface CSVFieldMapping {
   csvColumn: string;
-  companyField: keyof Company;
+  companyField: keyof Company | 'ignore';
   isRequired: boolean;
 }
 
@@ -64,7 +63,7 @@ export const defaultFieldMappings: CSVFieldMapping[] = [
   { csvColumn: 'website', companyField: 'website', isRequired: false },
   { csvColumn: 'phone', companyField: 'phone', isRequired: false },
   { csvColumn: 'location', companyField: 'location', isRequired: false },
-  { csvColumn: 'industry', companyField: 'industry', isRequired: false },
+  { csvColumn: 'industry1', companyField: 'industry1', isRequired: false },
   { csvColumn: 'size', companyField: 'size', isRequired: false },
   { csvColumn: 'description', companyField: 'description', isRequired: false },
 ];
@@ -157,18 +156,20 @@ export const validateCSVData = (
 
     // Process each column based on field mappings
     fieldMappings.forEach(mapping => {
+      if (mapping.companyField === 'ignore') return;
+      
       const columnIndex = headers.indexOf(mapping.csvColumn);
       if (columnIndex !== -1) {
         const value = row[columnIndex]?.trim();
-        if (value !== undefined) {
-          company[mapping.companyField] = value;
+        if (value !== undefined && value !== '') {
+          (company as any)[mapping.companyField] = value;
         }
       }
     });
 
     // Validate required fields
     requiredFields.forEach(field => {
-      if (!company[field]) {
+      if (field !== 'ignore' && !company[field as keyof Company]) {
         errors.push({
           row: i + 1,
           field: field as string,
@@ -204,16 +205,16 @@ export const validateCSVData = (
         if (branchName) {
           const branchOffice: BranchOfficeData = {
             branch_name: branchName,
-            branch_type: (row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_type`))] || 'branch') as BranchOfficeData['branch_type'],
-            address: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_address`))]?.trim(),
-            city: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_city`))]?.trim(),
-            state: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_state`))]?.trim(),
-            country: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_country`))]?.trim(),
-            postal_code: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_postal_code`))]?.trim(),
-            phone: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_phone`))]?.trim(),
-            email: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_email`))]?.trim(),
-            gst_number: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_gst_number`))]?.trim(),
-            is_headquarters: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_is_headquarters`))]?.trim().toLowerCase() === 'true',
+            branch_type: (row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_type`) || '')] || 'branch') as BranchOfficeData['branch_type'],
+            address: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_address`) || '')]?.trim(),
+            city: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_city`) || '')]?.trim(),
+            state: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_state`) || '')]?.trim(),
+            country: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_country`) || '')]?.trim(),
+            postal_code: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_postal_code`) || '')]?.trim(),
+            phone: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_phone`) || '')]?.trim(),
+            email: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_email`) || '')]?.trim(),
+            gst_number: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_gst_number`) || '')]?.trim(),
+            is_headquarters: row[headers.indexOf(headers.find(h => h.toLowerCase() === `branch_office_${j}_is_headquarters`) || '')]?.trim().toLowerCase() === 'true',
             is_active: true
           };
           branchOffices.push(branchOffice);
