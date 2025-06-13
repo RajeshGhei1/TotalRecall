@@ -9,10 +9,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { TabsContent } from '@/components/ui/tabs';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import SettingsHeader from '@/components/superadmin/settings/layout/SettingsHeader';
+import SettingsTabs from '@/components/superadmin/settings/layout/SettingsTabs';
+import ModulesTabContent from '@/components/superadmin/settings/tabs/ModulesTabContent';
+import FormsTabContent from '@/components/superadmin/settings/tabs/FormsTabContent';
+import IntegrationsTabContent from '@/components/superadmin/settings/tabs/IntegrationsTabContent';
 
 const Settings: React.FC = () => {
+  console.log("Rendering SuperAdmin Settings Page");
+  
   return (
     <AdminLayout>
       <div className="p-4 md:p-6">
@@ -30,31 +37,25 @@ const Settings: React.FC = () => {
           </Breadcrumb>
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Tenant Settings</h1>
-          <p className="text-muted-foreground">
-            Configure tenant-specific settings and preferences
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SettingsIcon className="h-5 w-5" />
-              Tenant Configuration
-            </CardTitle>
-            <CardDescription>
-              Manage tenant-specific configurations and settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <SettingsIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Tenant Settings</p>
-              <p className="text-sm">Tenant configuration and settings management will be implemented here.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <ErrorBoundary>
+          <SettingsHeader />
+          
+          <ErrorBoundary>
+            <SettingsTabs>
+              <TabsContent value="modules" className="mt-6">
+                <ModulesTabContent />
+              </TabsContent>
+              
+              <TabsContent value="forms" className="mt-6">
+                <FormsTabContent />
+              </TabsContent>
+              
+              <TabsContent value="integrations" className="mt-6">
+                <IntegrationsTabContent />
+              </TabsContent>
+            </SettingsTabs>
+          </ErrorBoundary>
+        </ErrorBoundary>
       </div>
     </AdminLayout>
   );
