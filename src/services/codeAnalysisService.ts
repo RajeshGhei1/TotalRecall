@@ -67,13 +67,6 @@ export interface MethodDefinition {
   description: string;
 }
 
-export interface FileChangeEvent {
-  filePath: string;
-  changeType: 'created' | 'modified' | 'deleted';
-  timestamp: string;
-  content?: string;
-}
-
 class CodeAnalysisService {
   private fileContents: Map<string, string> = new Map();
   private analyzedFiles: Map<string, any> = new Map();
