@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -28,9 +29,6 @@ import { Company } from '@/hooks/useCompanies';
 import { EditCompanyDialog } from './EditCompanyDialog';
 import { useCompanies } from '@/hooks/useCompanies';
 import { toast } from 'sonner';
-import PeopleSection from './sections/PeopleSection';
-import RelationshipsSection from './sections/RelationshipsSection';
-import CompanyOrgChart from '@/components/orgchart/CompanyOrgChart';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -44,13 +42,20 @@ const CompanyDetailView: React.FC = () => {
     queryFn: async () => {
       if (!companyId) throw new Error('Company ID is required');
       
+      console.log('Fetching company with ID:', companyId);
+      
       const { data, error } = await supabase
         .from('companies')
         .select('*')
         .eq('id', companyId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching company:', error);
+        throw error;
+      }
+      
+      console.log('Company data retrieved:', data);
       return data as Company;
     },
     enabled: !!companyId,
@@ -60,7 +65,6 @@ const CompanyDetailView: React.FC = () => {
     if (!company) return;
     
     try {
-      // Fix: Pass the data directly without wrapping in companyData
       await updateCompany.mutateAsync({ id: company.id, ...data });
       setIsEditDialogOpen(false);
       refetch();
@@ -73,16 +77,52 @@ const CompanyDetailView: React.FC = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading company details...</div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error || !company) {
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-red-600">
-          Error loading company details. Please try again.
+        <div className="text-center">
+          <div className="mb-4">
+            <Building className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <h2 className="text-2xl font-bold text-red-600 mb-2">Error Loading Company</h2>
+            <p className="text-gray-600 mb-4">
+              {error instanceof Error ? error.message : 'An unexpected error occurred'}
+            </p>
+            <Button onClick={() => navigate('/superadmin/companies')} variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Companies
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!company) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <Building className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Company Not Found</h2>
+          <p className="text-gray-600 mb-4">
+            The company you're looking for doesn't exist or may have been deleted.
+          </p>
+          <Button onClick={() => navigate('/superadmin/companies')} variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Companies
+          </Button>
         </div>
       </div>
     );
@@ -108,445 +148,135 @@ const CompanyDetailView: React.FC = () => {
         </Button>
       </div>
 
-      {/* Main Content with Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="people" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            People
-          </TabsTrigger>
-          <TabsTrigger value="relationships" className="flex items-center gap-2">
-            <Network className="h-4 w-4" />
-            Associations
-          </TabsTrigger>
-          <TabsTrigger value="orgchart" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Org Chart
-          </TabsTrigger>
-          <TabsTrigger value="business" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Business Info
-          </TabsTrigger>
-          <TabsTrigger value="contact" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Contact & Social
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Information */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Building className="h-5 w-5 mr-2" />
-                    Basic Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Company Name</label>
-                      <p className="text-lg font-semibold">{company.name}</p>
-                    </div>
-                    
-                    {company.website && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Website</label>
-                        <div className="flex items-center">
-                          <Globe className="h-4 w-4 mr-2" />
-                          <a 
-                            href={company.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 flex items-center"
-                          >
-                            {company.website}
-                            <ExternalLink className="h-3 w-3 ml-1" />
-                          </a>
-                        </div>
-                      </div>
-                    )}
-
-                    {company.location && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Location</label>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          <span>{company.location}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {company.size && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Company Size</label>
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
-                          <Badge variant="secondary">{company.size}</Badge>
-                        </div>
-                      </div>
-                    )}
-
-                    {company.founded && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Founded</label>
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          <span>{company.founded}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {company.description && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Description</label>
-                      <p className="mt-1 text-sm text-gray-700">{company.description}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Industry Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Industry Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {company.industry1 && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Primary Industry</label>
-                        <Badge variant="outline" className="mt-1">{company.industry1}</Badge>
-                      </div>
-                    )}
-                    {company.industry2 && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Secondary Industry</label>
-                        <Badge variant="outline" className="mt-1">{company.industry2}</Badge>
-                      </div>
-                    )}
-                    {company.industry3 && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Tertiary Industry</label>
-                        <Badge variant="outline" className="mt-1">{company.industry3}</Badge>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Quick Stats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Stats</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {company.noofemployee && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Employees</span>
-                      <span className="font-medium">{company.noofemployee}</span>
-                    </div>
-                  )}
-                  {company.turnover && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Turnover</span>
-                      <span className="font-medium">{company.turnover}</span>
-                    </div>
-                  )}
-                  {company.hierarchy_level !== undefined && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Hierarchy Level</span>
-                      <Badge variant="outline">Level {company.hierarchy_level}</Badge>
-                    </div>
-                  )}
-                  {company.company_group_name && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Group</span>
-                      <span className="font-medium">{company.company_group_name}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Status Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Status & Classification</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {company.companystatus && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Status</label>
-                      <Badge variant="outline">{company.companystatus}</Badge>
-                    </div>
-                  )}
-                  {company.companytype && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Type</label>
-                      <Badge variant="outline">{company.companytype}</Badge>
-                    </div>
-                  )}
-                  {company.entitytype && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Entity Type</label>
-                      <Badge variant="outline">{company.entitytype}</Badge>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* People Tab */}
-        <TabsContent value="people">
-          <PeopleSection 
-            form={{ getValues: () => ({ id: companyId }) } as any}
-            showFullView={true}
-          />
-        </TabsContent>
-
-        {/* Relationships/Associations Tab */}
-        <TabsContent value="relationships">
-          <RelationshipsSection 
-            companyId={companyId!}
-            companyName={company.name}
-          />
-        </TabsContent>
-
-        {/* Org Chart Tab */}
-        <TabsContent value="orgchart">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Organization Chart
+      {/* Company Overview Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                {company.name}
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CompanyOrgChart companyId={companyId!} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Business Info Tab */}
-        <TabsContent value="business" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Financial Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {company.turnover && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Turnover</label>
-                    <p className="font-medium">{company.turnover}</p>
-                  </div>
-                )}
-                {company.turnoveryear && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Turnover Year</label>
-                    <p className="font-medium">{company.turnoveryear}</p>
-                  </div>
-                )}
-                {company.paidupcapital && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Paid Up Capital</label>
-                    <p className="font-medium">{company.paidupcapital}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Business Profile */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Profile</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {company.areaofspecialize && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Area of Specialization</label>
-                    <p className="text-sm">{company.areaofspecialize}</p>
-                  </div>
-                )}
-                {company.serviceline && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Service Line</label>
-                    <p className="text-sm">{company.serviceline}</p>
-                  </div>
-                )}
-                {company.verticles && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Verticals</label>
-                    <p className="text-sm">{company.verticles}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Geographic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Geographic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {company.country && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Country</label>
-                    <p className="font-medium">{company.country}</p>
-                  </div>
-                )}
-                {company.region && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Region/State</label>
-                    <p className="font-medium">{company.region}</p>
-                  </div>
-                )}
-                {company.globalregion && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Global Region</label>
-                    <p className="font-medium">{company.globalregion}</p>
-                  </div>
-                )}
-                {company.holocation && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">HO Location</label>
-                    <p className="font-medium">{company.holocation}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Legal Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Legal Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="font-mono text-xs">
+                  {company.tr_id || 'No TR ID'}
+                </Badge>
                 {company.cin && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">CIN</label>
-                    <p className="font-medium">{company.cin}</p>
-                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    CIN: {company.cin}
+                  </Badge>
                 )}
-                {company.registrationdate && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Registration Date</label>
-                    <p className="font-medium">{new Date(company.registrationdate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {company.registeredofficeaddress && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Registered Office Address</label>
-                    <p className="text-sm">{company.registeredofficeaddress}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            {company.industry1 && (
+              <Badge variant="default">{company.industry1}</Badge>
+            )}
           </div>
-        </TabsContent>
-
-        {/* Contact & Social Tab */}
-        <TabsContent value="contact" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Contact Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {company.email && (
-                  <div className="flex items-center">
-                    <Mail className="h-4 w-4 mr-2" />
-                    <a href={`mailto:${company.email}`} className="text-blue-600 hover:text-blue-800">
-                      {company.email}
-                    </a>
-                  </div>
-                )}
-                {company.phone && (
-                  <div className="flex items-center">
-                    <Phone className="h-4 w-4 mr-2" />
-                    <a href={`tel:${company.phone}`} className="text-blue-600 hover:text-blue-800">
-                      {company.phone}
-                    </a>
-                  </div>
-                )}
-                {company.registeredemailaddress && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Registered Email</label>
-                    <p className="text-sm">{company.registeredemailaddress}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Social Media Links */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Social Media & Online Presence</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {company.linkedin && (
-                  <a 
-                    href={company.linkedin} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800"
-                  >
-                    <Linkedin className="h-4 w-4 mr-2" />
-                    LinkedIn Profile
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                )}
-                
-                {company.twitter && (
-                  <a 
-                    href={company.twitter} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800"
-                  >
-                    <Twitter className="h-4 w-4 mr-2" />
-                    Twitter Profile
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                )}
-                
-                {company.facebook && (
-                  <a 
-                    href={company.facebook} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800"
-                  >
-                    <Facebook className="h-4 w-4 mr-2" />
-                    Facebook Page
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                )}
-                
-                {!company.linkedin && !company.twitter && !company.facebook && (
-                  <p className="text-muted-foreground text-sm">No social media links available</p>
-                )}
-              </CardContent>
-            </Card>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {company.location && (
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span>{company.location}</span>
+              </div>
+            )}
+            {company.website && (
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href={company.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline truncate flex items-center gap-1"
+                >
+                  {company.website}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+            {company.founded && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>Founded {company.founded}</span>
+              </div>
+            )}
+            {company.size && (
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span>{company.size}</span>
+              </div>
+            )}
+            {company.email && (
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href={`mailto:${company.email}`}
+                  className="text-blue-600 hover:underline truncate"
+                >
+                  {company.email}
+                </a>
+              </div>
+            )}
+            {company.phone && (
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>{company.phone}</span>
+              </div>
+            )}
           </div>
-        </TabsContent>
-      </Tabs>
+          
+          {company.description && (
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                {company.description}
+              </p>
+            </div>
+          )}
+          
+          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+            <span>Created: {new Date(company.created_at).toLocaleDateString()}</span>
+            <span>Updated: {new Date(company.updated_at).toLocaleDateString()}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Additional Company Information */}
+      {(company.industry2 || company.industry3 || company.companystatus || company.companytype) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Additional Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {company.industry2 && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Secondary Industry</label>
+                  <Badge variant="outline" className="mt-1">{company.industry2}</Badge>
+                </div>
+              )}
+              {company.industry3 && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Tertiary Industry</label>
+                  <Badge variant="outline" className="mt-1">{company.industry3}</Badge>
+                </div>
+              )}
+              {company.companystatus && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <Badge variant="outline" className="mt-1">{company.companystatus}</Badge>
+                </div>
+              )}
+              {company.companytype && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Type</label>
+                  <Badge variant="outline" className="mt-1">{company.companytype}</Badge>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Dialog */}
       {isEditDialogOpen && (
