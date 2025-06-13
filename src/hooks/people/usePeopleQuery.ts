@@ -27,6 +27,7 @@ export const usePeopleQuery = (
         .from('people')
         .select(`
           id, 
+          tr_id,
           full_name, 
           email, 
           phone, 
@@ -44,7 +45,7 @@ export const usePeopleQuery = (
       
       // Add search filter if specified
       if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,tr_id.ilike.%${searchQuery}%`);
       }
       
       const { data, error } = await query;
@@ -54,7 +55,7 @@ export const usePeopleQuery = (
         throw error;
       }
       
-      const peopleData = data as PersonQueryResult[];
+      const peopleData = data as (PersonQueryResult & { tr_id?: string })[];
       
       // If company filter is applied, fetch and filter by company association
       if (companyFilter && companyFilter !== 'all') {

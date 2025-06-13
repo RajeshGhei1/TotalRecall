@@ -1,94 +1,94 @@
 
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building, Trash2, Pencil } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Person } from '@/types/person';
-import CurrentCompanyBadge from '../CurrentCompanyBadge';
+import { Eye, Edit, Trash2, Link, Mail, Phone, MapPin } from 'lucide-react';
 
 interface MobilePeopleCardsProps {
   people: Person[];
   onLinkToCompany: (id: string) => void;
   onDeletePerson: (id: string) => void;
-  onEditPerson: (person: any) => void;
+  onEditPerson: (person: Person) => void;
   onViewPerson: (id: string) => void;
 }
 
-const MobilePeopleCards: React.FC<MobilePeopleCardsProps> = ({
-  people,
-  onLinkToCompany,
-  onDeletePerson,
-  onEditPerson,
-  onViewPerson
-}) => {
+const MobilePeopleCards = ({ 
+  people, 
+  onLinkToCompany, 
+  onDeletePerson, 
+  onEditPerson, 
+  onViewPerson 
+}: MobilePeopleCardsProps) => {
   return (
     <div className="space-y-4">
       {people.map((person) => (
-        <div 
-          key={person.id} 
-          className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-        >
-          <div className="flex justify-between items-start mb-2">
-            <div 
-              className="cursor-pointer" 
-              onClick={() => onViewPerson(person.id)}
-            >
-              <div className="font-medium text-primary">{person.full_name}</div>
-              <div className="text-sm text-gray-500">{person.email}</div>
-            </div>
-            {person.current_company && (
-              <CurrentCompanyBadge 
-                companyName={person.current_company.name}
-                role={person.current_company.role}
-              />
-            )}
-          </div>
-          
-          <div className="flex flex-col space-y-1 mb-3">
-            {person.phone && (
-              <div className="text-sm">
-                <span className="font-medium mr-1">Phone:</span>
-                {person.phone}
+        <Card key={person.id} className="p-4">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <h3 className="font-semibold">{person.full_name}</h3>
+                <div className="flex items-center gap-2">
+                  <Badge variant={person.type === 'talent' ? 'default' : 'outline'}>
+                    {person.type}
+                  </Badge>
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {person.tr_id || 'No TR ID'}
+                  </Badge>
+                </div>
               </div>
-            )}
-            
-            {person.location && (
-              <div className="text-sm">
-                <span className="font-medium mr-1">Location:</span>
-                {person.location}
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span>{person.email}</span>
               </div>
-            )}
-          </div>
-          
-          <div className="flex flex-col space-y-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onLinkToCompany(person.id)}
-              className="w-full"
-            >
-              <Building className="h-4 w-4 mr-2" /> Link to Company
-            </Button>
+              
+              {person.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span>{person.phone}</span>
+                </div>
+              )}
+              
+              {person.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{person.location}</span>
+                </div>
+              )}
+              
+              {person.current_company && (
+                <div className="mt-3 p-2 bg-muted rounded-md">
+                  <div className="font-medium">{person.current_company.name}</div>
+                  <div className="text-xs text-muted-foreground">{person.current_company.role}</div>
+                </div>
+              )}
+            </div>
             
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex-1"
-                onClick={() => onEditPerson(person)}
-              >
-                <Pencil className="h-4 w-4 mr-2" /> Edit
+            <div className="flex items-center gap-2 mt-4">
+              <Button variant="outline" size="sm" onClick={() => onViewPerson(person.id)}>
+                <Eye className="h-4 w-4 mr-1" />
+                View
               </Button>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                className="flex-1"
-                onClick={() => onDeletePerson(person.id)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
+              <Button variant="outline" size="sm" onClick={() => onEditPerson(person)}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onLinkToCompany(person.id)}>
+                <Link className="h-4 w-4 mr-1" />
+                Link
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onDeletePerson(person.id)}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
               </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
