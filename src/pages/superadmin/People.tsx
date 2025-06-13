@@ -165,7 +165,7 @@ const People = () => {
                 companyFilter={companyFilter}
               />
 
-              {/* Company link form */}
+              {/* Updated Company link form with proper props */}
               <CompanyLinkForm 
                 isOpen={isCompanyLinkFormOpen}
                 onClose={() => {

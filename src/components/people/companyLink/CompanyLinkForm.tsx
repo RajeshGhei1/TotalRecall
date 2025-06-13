@@ -308,20 +308,25 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Link Person to Company</DialogTitle>
-          <DialogDescription>
-            Create a new company relationship for this person.
+          <DialogTitle className="text-xl font-semibold">Link Person to Company</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Create a new company relationship for this person. All fields marked with * are required.
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           {/* Company Selection */}
           <div className="space-y-2">
-            <Label htmlFor="company_select">Company *</Label>
+            <Label htmlFor="company_select" className="text-sm font-medium">
+              Company <span className="text-destructive">*</span>
+            </Label>
             <Select value={companyId} onValueChange={handleCompanyChange}>
-              <SelectTrigger className={validationErrors.companyId ? 'border-destructive' : ''}>
+              <SelectTrigger className={cn(
+                "w-full h-11 border-2 transition-colors",
+                validationErrors.companyId ? 'border-destructive focus:border-destructive' : 'border-input focus:border-primary'
+              )}>
                 <SelectValue placeholder="Select a company" />
               </SelectTrigger>
               <SelectContent>
@@ -333,38 +338,45 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               </SelectContent>
             </Select>
             {validationErrors.companyId && (
-              <p className="text-sm text-destructive">{validationErrors.companyId}</p>
+              <p className="text-sm text-destructive font-medium">{validationErrors.companyId}</p>
             )}
           </div>
 
           {/* Role Input */}
           <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
+            <Label htmlFor="role" className="text-sm font-medium">
+              Role <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="role"
               value={role}
               onChange={handleRoleChange}
-              placeholder="Enter role"
-              className={validationErrors.role ? 'border-destructive' : ''}
+              placeholder="e.g., Software Engineer, Marketing Manager"
+              className={cn(
+                "h-11 border-2 transition-colors",
+                validationErrors.role ? 'border-destructive focus:border-destructive' : 'border-input focus:border-primary'
+              )}
               maxLength={100}
             />
             {validationErrors.role && (
-              <p className="text-sm text-destructive">{validationErrors.role}</p>
+              <p className="text-sm text-destructive font-medium">{validationErrors.role}</p>
             )}
           </div>
 
           {/* Date Selectors */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Start Date *</Label>
+              <Label className="text-sm font-medium">
+                Start Date <span className="text-destructive">*</span>
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full h-11 justify-start text-left font-normal border-2 transition-colors",
                       !startDate && "text-muted-foreground",
-                      validationErrors.startDate && "border-destructive"
+                      validationErrors.startDate ? "border-destructive" : "border-input hover:border-primary"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -383,24 +395,25 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     }}
                     disabled={(date) => date > new Date()}
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
               {validationErrors.startDate && (
-                <p className="text-sm text-destructive">{validationErrors.startDate}</p>
+                <p className="text-sm text-destructive font-medium">{validationErrors.startDate}</p>
               )}
             </div>
             
             <div className="space-y-2">
-              <Label>End Date (optional)</Label>
+              <Label className="text-sm font-medium">End Date (optional)</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full h-11 justify-start text-left font-normal border-2 transition-colors",
                       !endDate && "text-muted-foreground",
-                      validationErrors.endDate && "border-destructive"
+                      validationErrors.endDate ? "border-destructive" : "border-input hover:border-primary"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -422,11 +435,12 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                       (startDate && date < startDate)
                     }
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
               {validationErrors.endDate && (
-                <p className="text-sm text-destructive">{validationErrors.endDate}</p>
+                <p className="text-sm text-destructive font-medium">{validationErrors.endDate}</p>
               )}
             </div>
           </div>
@@ -434,9 +448,9 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           {/* Manager Selection */}
           {companyId && potentialManagers.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="reports_to">Reports To</Label>
+              <Label htmlFor="reports_to" className="text-sm font-medium">Reports To</Label>
               <Select value={reportsTo} onValueChange={setReportsTo}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 border-2">
                   <SelectValue placeholder="Select a manager (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -456,12 +470,22 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="h-11"
+            >
+              Cancel
+            </Button>
             <Button 
               type="submit" 
               disabled={!canSubmit}
+              className="h-11 min-w-[120px]"
             >
-              {isSubmitting ? "Submitting..." : "Save changes"}
+              {isSubmitting ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>
