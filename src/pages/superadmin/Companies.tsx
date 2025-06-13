@@ -145,7 +145,6 @@ const Companies = () => {
       parent_company_id: data.parentCompanyId || null,
       company_group_name: data.companyGroupName || null,
       founded: data.founded || null,
-      industry: data.industry1 || null, // Map industry1 to industry for compatibility
     };
 
     createCompany.mutate(companyData);
