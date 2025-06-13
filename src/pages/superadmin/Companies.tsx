@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -20,7 +21,7 @@ import EnhancedBulkUploadDialog from '@/components/superadmin/companies/Enhanced
 import EnhancedExportDialog from '@/components/superadmin/companies/EnhancedExportDialog';
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
 import ImportHistoryDialog from '@/components/superadmin/companies/ImportHistoryDialog';
-import { useCompanies } from '@/hooks/useCompanies';
+import { useCompanies, Company } from '@/hooks/useCompanies';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
@@ -96,6 +97,59 @@ const Companies = () => {
       toast.error('Bulk import failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
       throw error;
     }
+  };
+
+  const handleCreateCompany = (data: any) => {
+    // Fix: Ensure name is required and properly typed
+    const companyData: Omit<Company, 'id' | 'created_at' | 'updated_at' | 'tr_id'> = {
+      name: data.name || '', // Ensure name is always a string
+      website: data.website || null,
+      size: data.size || null,
+      description: data.description || null,
+      domain: data.domain || null,
+      location: data.location || null,
+      email: data.email || null,
+      phone: data.phone || null,
+      linkedin: data.linkedin || null,
+      twitter: data.twitter || null,
+      facebook: data.facebook || null,
+      hierarchy_level: data.hierarchyLevel || 0,
+      cin: data.cin || null,
+      companystatus: data.companyStatus || null,
+      registeredofficeaddress: data.registeredOfficeAddress || null,
+      registrationdate: data.registrationDate ? new Date(data.registrationDate).toISOString() : null,
+      registeredemailaddress: data.registeredEmailAddress || null,
+      noofdirectives: data.noOfDirectives || null,
+      globalregion: data.globalRegion || null,
+      country: data.country || null,
+      region: data.region || null,
+      holocation: data.hoLocation || null,
+      industry1: data.industry1 || null,
+      industry2: data.industry2 || null,
+      industry3: data.industry3 || null,
+      companysector: data.companySector || null,
+      companytype: data.companyType || null,
+      entitytype: data.entityType || null,
+      noofemployee: data.noOfEmployee || null,
+      segmentaspernumberofemployees: data.segmentAsPerNumberOfEmployees || null,
+      turnover: data.turnOver || null,
+      segmentasperturnover: data.segmentAsPerTurnover || null,
+      turnoveryear: data.turnoverYear || null,
+      yearofestablishment: data.yearOfEstablishment || null,
+      paidupcapital: data.paidupCapital || null,
+      segmentasperpaidupcapital: data.segmentAsPerPaidUpCapital || null,
+      areaofspecialize: data.areaOfSpecialize || null,
+      serviceline: data.serviceLine || null,
+      verticles: data.verticles || null,
+      companyprofile: data.companyProfile || null,
+      parent_company_id: data.parentCompanyId || null,
+      company_group_name: data.companyGroupName || null,
+      founded: data.founded || null,
+      industry: data.industry1 || null, // Map industry1 to industry for compatibility
+    };
+
+    createCompany.mutate(companyData);
+    setIsCreateDialogOpen(false);
   };
 
   return (
@@ -181,10 +235,7 @@ const Companies = () => {
         <CreateCompanyDialog
           isOpen={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
-          onSubmit={(data) => {
-            createCompany.mutate(data);
-            setIsCreateDialogOpen(false);
-          }}
+          onSubmit={handleCreateCompany}
           isSubmitting={createCompany.isPending}
         />
         

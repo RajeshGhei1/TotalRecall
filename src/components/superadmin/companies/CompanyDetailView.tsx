@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -61,7 +60,8 @@ const CompanyDetailView: React.FC = () => {
     if (!company) return;
     
     try {
-      await updateCompany.mutateAsync({ id: company.id, companyData: data });
+      // Fix: Pass the data directly without wrapping in companyData
+      await updateCompany.mutateAsync({ id: company.id, ...data });
       setIsEditDialogOpen(false);
       refetch();
       toast.success('Company updated successfully');
