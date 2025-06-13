@@ -201,6 +201,21 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType, p
             )}
           />
 
+          {/* Role/Designation */}
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role/Designation</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter role or designation" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Company Name */}
           <div className="space-y-2">
             <FormLabel>Company Name</FormLabel>

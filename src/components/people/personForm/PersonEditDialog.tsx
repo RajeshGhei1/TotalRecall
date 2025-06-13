@@ -13,6 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Person } from '@/types/person';
 import { CustomFieldsForm } from '@/components/customFields';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePersonEmploymentHistory } from '@/hooks/company-relationships/usePersonEmploymentHistory';
+import JobHistoryList from '../JobHistoryList';
 
 interface PersonEditDialogProps {
   isOpen: boolean;
@@ -28,6 +31,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
   person
 }) => {
   const queryClient = useQueryClient();
+  const { employmentHistory, isLoading: isLoadingHistory } = usePersonEmploymentHistory(person?.id);
 
   const form = useForm<PersonFormValues>({
     resolver: zodResolver(personFormSchema),
@@ -98,18 +102,52 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit {person?.type === 'talent' ? 'Talent' : 'Contact'}</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PersonFormFields 
-              form={form} 
-              personType={person?.type} 
-              personId={person?.id}
-            />
-            
+        
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="custom">Custom Fields</TabsTrigger>
+            {person?.type === 'contact' && (
+              <TabsTrigger value="employment">Employment History</TabsTrigger>
+            )}
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <PersonFormFields 
+                  form={form} 
+                  personType={person?.type} 
+                  personId={person?.id}
+                />
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updatePersonMutation.isPending}
+                  >
+                    {updatePersonMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+          
+          <TabsContent value="custom" className="space-y-4">
             {person?.id && person?.type && (
               <div className="border-t pt-4 mt-4">
                 <h3 className="text-sm font-medium mb-2">Custom Fields</h3>
@@ -121,27 +159,27 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
                 />
               </div>
             )}
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={updatePersonMutation.isPending}
-              >
-                {updatePersonMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          </TabsContent>
+          
+          {person?.type === 'contact' && (
+            <TabsContent value="employment" className="space-y-4">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Employment History</h3>
+                {isLoadingHistory ? (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : employmentHistory && employmentHistory.length > 0 ? (
+                  <JobHistoryList history={employmentHistory} showAllHistory={true} />
+                ) : (
+                  <div className="rounded-md bg-muted p-4 text-center">
+                    <p>No employment history found.</p>
+                  </div>
                 )}
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </Form>
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
