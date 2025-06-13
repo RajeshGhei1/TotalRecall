@@ -39,8 +39,8 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
       type: person?.type || 'talent',
       company_id: undefined,
       role: '',
-      official_id: '',
-      personal_id: '',
+      company_email: '',
+      personal_email: '',
     }
   });
 
@@ -55,8 +55,8 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         type: person.type,
         company_id: undefined,
         role: '',
-        official_id: '',
-        personal_id: '',
+        company_email: '',
+        personal_email: '',
       });
     }
   }, [person, form]);

@@ -187,30 +187,30 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType, p
       {/* Business Contact specific fields */}
       {personType === 'contact' && (
         <>
-          {/* Official ID */}
+          {/* Company Email */}
           <FormField
             control={form.control}
-            name="official_id"
+            name="company_email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Official ID</FormLabel>
+                <FormLabel>Company Email ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter official ID (e.g., Employee ID)" {...field} />
+                  <Input placeholder="Enter company email address" type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Personal ID */}
+          {/* Personal Email */}
           <FormField
             control={form.control}
-            name="personal_id"
+            name="personal_email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Personal ID</FormLabel>
+                <FormLabel>Personal Email ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter personal ID (e.g., National ID)" {...field} />
+                  <Input placeholder="Enter personal email address" type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
