@@ -60,8 +60,11 @@ export const EditCompanyDialog: React.FC<EditCompanyDialogProps> = ({
               <Input
                 id="name"
                 {...register('name', { required: 'Company name is required' })}
-                error={errors.name?.message}
+                className={errors.name ? 'border-red-500' : ''}
               />
+              {errors.name && (
+                <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
