@@ -4,16 +4,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building, Calendar, MapPin, Globe, Hash, Filter } from 'lucide-react';
+import { Search, Building, Calendar, MapPin, Globe, Hash, Filter, Eye, Edit, MoreHorizontal } from 'lucide-react';
 import { useCompanies } from '@/hooks/useCompanies';
+import { useNavigate } from 'react-router-dom';
 import TrIdSearchDialog from './TrIdSearchDialog';
 import EnhancedCompanyFilters from './filters/EnhancedCompanyFilters';
 import { useCompanyFilters } from './hooks/useCompanyFilters';
+import { EditCompanyDialog } from './EditCompanyDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 const CompanyEnhancedListContainer: React.FC = () => {
-  const { companies, isLoading } = useCompanies();
+  const navigate = useNavigate();
+  const { companies, isLoading, updateCompany } = useCompanies();
   const [isTrIdSearchOpen, setIsTrIdSearchOpen] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<any>(null);
   
   const {
     filters,
@@ -21,6 +32,26 @@ const CompanyEnhancedListContainer: React.FC = () => {
     filteredCompanies,
     resetFilters,
   } = useCompanyFilters(companies || []);
+
+  const handleViewDetails = (companyId: string) => {
+    navigate(`/superadmin/companies/${companyId}`);
+  };
+
+  const handleEditCompany = (company: any) => {
+    setEditingCompany(company);
+  };
+
+  const handleEditSubmit = async (data: any) => {
+    if (!editingCompany) return;
+    
+    try {
+      await updateCompany.mutateAsync({ id: editingCompany.id, ...data });
+      setEditingCompany(null);
+      toast.success('Company updated successfully');
+    } catch (error) {
+      toast.error('Failed to update company');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -126,6 +157,23 @@ const CompanyEnhancedListContainer: React.FC = () => {
                     {company.industry1 && (
                       <Badge variant="default">{company.industry1}</Badge>
                     )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewDetails(company.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditCompany(company)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Company
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </CardHeader>
@@ -204,6 +252,17 @@ const CompanyEnhancedListContainer: React.FC = () => {
         isOpen={isTrIdSearchOpen}
         onClose={() => setIsTrIdSearchOpen(false)}
       />
+
+      {/* Edit Company Dialog */}
+      {editingCompany && (
+        <EditCompanyDialog
+          isOpen={!!editingCompany}
+          onClose={() => setEditingCompany(null)}
+          company={editingCompany}
+          onSubmit={handleEditSubmit}
+          isSubmitting={updateCompany.isPending}
+        />
+      )}
     </div>
   );
 };
