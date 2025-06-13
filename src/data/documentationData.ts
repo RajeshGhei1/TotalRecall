@@ -8,6 +8,9 @@ export interface DocumentItem {
   lastModified: string;
   estimatedReadTime: string;
   content: string;
+  type?: string; // Added for document type (guide, reference, tutorial, api)
+  difficulty?: string; // Added for difficulty level (beginner, intermediate, advanced)
+  version?: string; // Added for version tracking
 }
 
 export interface DocumentCategory {
