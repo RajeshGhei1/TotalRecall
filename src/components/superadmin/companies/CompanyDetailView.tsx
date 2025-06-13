@@ -18,17 +18,16 @@ import {
   Edit,
   ArrowLeft,
   ExternalLink,
-  Linkedin,
-  Twitter,
-  Facebook,
   Network,
-  FileText,
-  Activity
+  History
 } from 'lucide-react';
 import { Company } from '@/hooks/useCompanies';
 import { EditCompanyDialog } from './EditCompanyDialog';
 import { useCompanies } from '@/hooks/useCompanies';
 import { toast } from 'sonner';
+import CompanyPeopleManager from '@/components/people/CompanyPeopleManager';
+import CompanyOrgChart from '@/components/orgchart/CompanyOrgChart';
+import RelationshipsSection from './sections/RelationshipsSection';
 
 const CompanyDetailView: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -148,135 +147,202 @@ const CompanyDetailView: React.FC = () => {
         </Button>
       </div>
 
-      {/* Company Overview Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                {company.name}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {company.tr_id || 'No TR ID'}
-                </Badge>
-                {company.cin && (
-                  <Badge variant="outline" className="text-xs">
-                    CIN: {company.cin}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            {company.industry1 && (
-              <Badge variant="default">{company.industry1}</Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            {company.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{company.location}</span>
-              </div>
-            )}
-            {company.website && (
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <a
-                  href={company.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline truncate flex items-center gap-1"
-                >
-                  {company.website}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            )}
-            {company.founded && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Founded {company.founded}</span>
-              </div>
-            )}
-            {company.size && (
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{company.size}</span>
-              </div>
-            )}
-            {company.email && (
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <a
-                  href={`mailto:${company.email}`}
-                  className="text-blue-600 hover:underline truncate"
-                >
-                  {company.email}
-                </a>
-              </div>
-            )}
-            {company.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{company.phone}</span>
-              </div>
-            )}
-          </div>
-          
-          {company.description && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                {company.description}
-              </p>
-            </div>
-          )}
-          
-          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-            <span>Created: {new Date(company.created_at).toLocaleDateString()}</span>
-            <span>Updated: {new Date(company.updated_at).toLocaleDateString()}</span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Main Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="people">
+            <Users className="h-4 w-4 mr-2" />
+            People
+          </TabsTrigger>
+          <TabsTrigger value="orgchart">
+            <Network className="h-4 w-4 mr-2" />
+            Org Chart
+          </TabsTrigger>
+          <TabsTrigger value="relationships">
+            <Building className="h-4 w-4 mr-2" />
+            Relationships
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <History className="h-4 w-4 mr-2" />
+            History
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Additional Company Information */}
-      {(company.industry2 || company.industry3 || company.companystatus || company.companytype) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Additional Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {company.industry2 && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Secondary Industry</label>
-                  <Badge variant="outline" className="mt-1">{company.industry2}</Badge>
+        <TabsContent value="overview" className="mt-6">
+          <div className="space-y-6">
+            {/* Company Overview Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Building className="h-5 w-5" />
+                      {company.name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {company.tr_id || 'No TR ID'}
+                      </Badge>
+                      {company.cin && (
+                        <Badge variant="outline" className="text-xs">
+                          CIN: {company.cin}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {company.industry1 && (
+                    <Badge variant="default">{company.industry1}</Badge>
+                  )}
                 </div>
-              )}
-              {company.industry3 && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Tertiary Industry</label>
-                  <Badge variant="outline" className="mt-1">{company.industry3}</Badge>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                  {company.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{company.location}</span>
+                    </div>
+                  )}
+                  {company.website && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={company.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline truncate flex items-center gap-1"
+                      >
+                        {company.website}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                  {company.founded && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>Founded {company.founded}</span>
+                    </div>
+                  )}
+                  {company.size && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{company.size}</span>
+                    </div>
+                  )}
+                  {company.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={`mailto:${company.email}`}
+                        className="text-blue-600 hover:underline truncate"
+                      >
+                        {company.email}
+                      </a>
+                    </div>
+                  )}
+                  {company.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{company.phone}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {company.companystatus && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <Badge variant="outline" className="mt-1">{company.companystatus}</Badge>
+                
+                {company.description && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      {company.description}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Created: {new Date(company.created_at).toLocaleDateString()}</span>
+                  <span>Updated: {new Date(company.updated_at).toLocaleDateString()}</span>
                 </div>
-              )}
-              {company.companytype && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Type</label>
-                  <Badge variant="outline" className="mt-1">{company.companytype}</Badge>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+
+            {/* Additional Company Information */}
+            {(company.industry2 || company.industry3 || company.companystatus || company.companytype) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {company.industry2 && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Secondary Industry</label>
+                        <Badge variant="outline" className="mt-1">{company.industry2}</Badge>
+                      </div>
+                    )}
+                    {company.industry3 && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Tertiary Industry</label>
+                        <Badge variant="outline" className="mt-1">{company.industry3}</Badge>
+                      </div>
+                    )}
+                    {company.companystatus && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Status</label>
+                        <Badge variant="outline" className="mt-1">{company.companystatus}</Badge>
+                      </div>
+                    )}
+                    {company.companytype && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Type</label>
+                        <Badge variant="outline" className="mt-1">{company.companytype}</Badge>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="people" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Company People
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CompanyPeopleManager companyId={companyId!} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="orgchart" className="mt-6">
+          <CompanyOrgChart companyId={companyId!} />
+        </TabsContent>
+
+        <TabsContent value="relationships" className="mt-6">
+          <RelationshipsSection companyId={companyId!} companyName={company.name} />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Company History & Changes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">History Tracking</p>
+                <p className="text-sm">Company change history and audit logs will be displayed here.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Dialog */}
       {isEditDialogOpen && (
