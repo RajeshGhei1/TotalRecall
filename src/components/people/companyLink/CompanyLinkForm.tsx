@@ -13,13 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Search, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Search, Check, ChevronsUpDown, X, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuditLogger } from '@/hooks/audit/useAuditLogger';
+import { Badge } from "@/components/ui/badge";
 import { MultiSelect } from "@/components/ui/multi-select";
 
 interface CompanyLinkFormProps {
@@ -86,6 +87,20 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [isCompanyPopoverOpen, setIsCompanyPopoverOpen] = useState(false);
   const [isSearchingCompanies, setIsSearchingCompanies] = useState(false);
 
+  // Manager search state
+  const [managerSearchQuery, setManagerSearchQuery] = useState('');
+  const [searchedManagers, setSearchedManagers] = useState<PotentialManager[]>([]);
+  const [isManagerPopoverOpen, setIsManagerPopoverOpen] = useState(false);
+  const [isSearchingManagers, setIsSearchingManagers] = useState(false);
+  const [selectedManager, setSelectedManager] = useState<PotentialManager | null>(null);
+
+  // Direct reports search state
+  const [directReportSearchQuery, setDirectReportSearchQuery] = useState('');
+  const [searchedDirectReports, setSearchedDirectReports] = useState<PotentialDirectReport[]>([]);
+  const [isDirectReportPopoverOpen, setIsDirectReportPopoverOpen] = useState(false);
+  const [isSearchingDirectReports, setIsSearchingDirectReports] = useState(false);
+  const [selectedDirectReports, setSelectedDirectReports] = useState<PotentialDirectReport[]>([]);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLogger();
@@ -117,14 +132,103 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     }
   };
 
-  // Debounced search effect
+  // Search managers dynamically
+  const searchManagers = async (query: string) => {
+    if (!query || query.length < 2 || !companyId) {
+      setSearchedManagers([]);
+      return;
+    }
+
+    setIsSearchingManagers(true);
+    try {
+      const { data, error } = await supabase
+        .from('company_relationships')
+        .select(`
+          role,
+          person:people(id, full_name)
+        `)
+        .eq('company_id', companyId)
+        .eq('is_current', true)
+        .neq('person_id', personId)
+        .ilike('people.full_name', `%${query}%`)
+        .limit(10);
+
+      if (error) throw error;
+      
+      const managers = data?.map(item => ({
+        id: item.person?.id || '',
+        full_name: item.person?.full_name || '',
+        role: item.role
+      })).filter(person => person.id && person.full_name) || [];
+      
+      setSearchedManagers(managers);
+    } catch (error) {
+      console.error('Error searching managers:', error);
+      setSearchedManagers([]);
+    } finally {
+      setIsSearchingManagers(false);
+    }
+  };
+
+  // Search direct reports dynamically
+  const searchDirectReports = async (query: string) => {
+    if (!query || query.length < 2 || !companyId) {
+      setSearchedDirectReports([]);
+      return;
+    }
+
+    setIsSearchingDirectReports(true);
+    try {
+      const { data, error } = await supabase
+        .from('company_relationships')
+        .select(`
+          role,
+          person:people(id, full_name)
+        `)
+        .eq('company_id', companyId)
+        .eq('is_current', true)
+        .neq('person_id', personId)
+        .ilike('people.full_name', `%${query}%`)
+        .limit(10);
+
+      if (error) throw error;
+      
+      const reports = data?.map(item => ({
+        id: item.person?.id || '',
+        full_name: item.person?.full_name || '',
+        role: item.role
+      })).filter(person => person.id && person.full_name) || [];
+      
+      setSearchedDirectReports(reports);
+    } catch (error) {
+      console.error('Error searching direct reports:', error);
+      setSearchedDirectReports([]);
+    } finally {
+      setIsSearchingDirectReports(false);
+    }
+  };
+
+  // Debounced search effects
   useEffect(() => {
     const timer = setTimeout(() => {
       searchCompanies(companySearchQuery);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [companySearchQuery]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchManagers(managerSearchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [managerSearchQuery, companyId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchDirectReports(directReportSearchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [directReportSearchQuery, companyId]);
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -138,11 +242,15 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       setEndDate(undefined);
       setReportsTo('');
       setDirectReports([]);
-      setPotentialManagers([]);
-      setPotentialDirectReports([]);
+      setSelectedManager(null);
+      setSelectedDirectReports([]);
       setValidationErrors({});
       setCompanySearchQuery('');
       setSearchedCompanies([]);
+      setManagerSearchQuery('');
+      setSearchedManagers([]);
+      setDirectReportSearchQuery('');
+      setSearchedDirectReports([]);
     }
   }, [isOpen, personId, personType]);
 
@@ -383,19 +491,47 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     console.log('Company selected:', company);
     setCompanyId(company.id);
     setSelectedCompany(company);
-    setReportsTo(''); // Reset manager when company changes
-    setDirectReports([]); // Reset direct reports when company changes
+    setReportsTo('');
+    setDirectReports([]);
+    setSelectedManager(null);
+    setSelectedDirectReports([]);
     setIsCompanyPopoverOpen(false);
-    // Clear company validation error when user selects a company
     if (validationErrors.companyId) {
       setValidationErrors(prev => ({ ...prev, companyId: '' }));
     }
   };
 
+  const handleManagerSelect = (manager: PotentialManager) => {
+    setSelectedManager(manager);
+    setReportsTo(manager.id);
+    setIsManagerPopoverOpen(false);
+    if (validationErrors.reportsTo) {
+      setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
+    }
+  };
+
+  const handleDirectReportSelect = (report: PotentialDirectReport) => {
+    if (!selectedDirectReports.find(r => r.id === report.id)) {
+      const newReports = [...selectedDirectReports, report];
+      setSelectedDirectReports(newReports);
+      setDirectReports(newReports.map(r => r.id));
+      setIsDirectReportPopoverOpen(false);
+      setDirectReportSearchQuery('');
+      if (validationErrors.directReports) {
+        setValidationErrors(prev => ({ ...prev, directReports: '' }));
+      }
+    }
+  };
+
+  const handleRemoveDirectReport = (reportId: string) => {
+    const newReports = selectedDirectReports.filter(r => r.id !== reportId);
+    setSelectedDirectReports(newReports);
+    setDirectReports(newReports.map(r => r.id));
+  };
+
   const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setRole(value);
-    // Clear role validation error when user types
     if (validationErrors.role) {
       setValidationErrors(prev => ({ ...prev, role: '' }));
     }
@@ -581,114 +717,167 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           </div>
 
           {/* Reporting Structure Section */}
-          {companyId && (potentialManagers.length > 0 || potentialDirectReports.length > 0) && (
+          {companyId && (
             <div className="space-y-4 border-t pt-4">
-              <h3 className="text-lg font-medium">Reporting Structure</h3>
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Reporting Structure
+              </h3>
               
               {/* Reports To (Manager) */}
-              {potentialManagers.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="reports_to" className="text-sm font-medium">Reports To (Manager)</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full h-11 justify-between border-2 bg-background"
-                      >
-                        {reportsTo ? 
-                          potentialManagers.find(m => m.id === reportsTo)?.full_name || "Select manager" :
-                          "Select a manager (optional)"
-                        }
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 bg-background border shadow-lg">
-                      <Command>
-                        <CommandInput placeholder="Search managers..." />
-                        <CommandList className="max-h-[200px]">
-                          <CommandEmpty>No managers found</CommandEmpty>
-                          <CommandGroup>
+              <div className="space-y-2">
+                <Label htmlFor="reports_to" className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Reports To (Manager)
+                </Label>
+                <Popover open={isManagerPopoverOpen} onOpenChange={setIsManagerPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full h-11 justify-between border-2 bg-background"
+                    >
+                      {selectedManager ? 
+                        `${selectedManager.full_name}${selectedManager.role ? ` (${selectedManager.role})` : ''}` :
+                        "Search and select a manager (optional)"
+                      }
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 bg-background border shadow-lg">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search managers..." 
+                        value={managerSearchQuery}
+                        onValueChange={setManagerSearchQuery}
+                      />
+                      <CommandList className="max-h-[200px]">
+                        <CommandEmpty>
+                          {isSearchingManagers ? "Searching..." : "No managers found"}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            onSelect={() => {
+                              setSelectedManager(null);
+                              setReportsTo('');
+                              setIsManagerPopoverOpen(false);
+                              if (validationErrors.reportsTo) {
+                                setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
+                              }
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                !selectedManager ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            None
+                          </CommandItem>
+                          {searchedManagers.map(manager => (
                             <CommandItem
-                              onSelect={() => {
-                                setReportsTo('');
-                                if (validationErrors.reportsTo) {
-                                  setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
-                                }
-                              }}
+                              key={manager.id}
+                              value={manager.full_name}
+                              onSelect={() => handleManagerSelect(manager)}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  !reportsTo ? "opacity-100" : "opacity-0"
+                                  selectedManager?.id === manager.id ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              None
+                              <div className="flex flex-col">
+                                <span>{manager.full_name}</span>
+                                {manager.role && (
+                                  <span className="text-xs text-muted-foreground">{manager.role}</span>
+                                )}
+                              </div>
                             </CommandItem>
-                            {potentialManagers.map(manager => (
-                              <CommandItem
-                                key={manager.id}
-                                value={manager.full_name}
-                                onSelect={() => {
-                                  setReportsTo(manager.id);
-                                  if (validationErrors.reportsTo) {
-                                    setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
-                                  }
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    reportsTo === manager.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <div className="flex flex-col">
-                                  <span>{manager.full_name}</span>
-                                  {manager.role && (
-                                    <span className="text-xs text-muted-foreground">{manager.role}</span>
-                                  )}
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {validationErrors.reportsTo && (
-                    <p className="text-sm text-destructive font-medium">{validationErrors.reportsTo}</p>
-                  )}
-                </div>
-              )}
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {validationErrors.reportsTo && (
+                  <p className="text-sm text-destructive font-medium">{validationErrors.reportsTo}</p>
+                )}
+              </div>
 
               {/* Direct Reports */}
-              {potentialDirectReports.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Direct Reports (Subordinates)</Label>
-                  <MultiSelect
-                    options={potentialDirectReports.map(person => ({
-                      label: `${person.full_name}${person.role ? ` (${person.role})` : ''}`,
-                      value: person.id
-                    }))}
-                    onValueChange={(values) => {
-                      setDirectReports(values);
-                      if (validationErrors.directReports) {
-                        setValidationErrors(prev => ({ ...prev, directReports: '' }));
-                      }
-                    }}
-                    value={directReports}
-                    placeholder="Select direct reports (optional)"
-                    maxCount={5}
-                    className="bg-background"
-                  />
-                  {validationErrors.directReports && (
-                    <p className="text-sm text-destructive font-medium">{validationErrors.directReports}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Select people who will report to this person in their new role
-                  </p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Direct Reports (Subordinates)
+                </Label>
+                
+                {/* Selected Direct Reports */}
+                {selectedDirectReports.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedDirectReports.map(report => (
+                      <Badge key={report.id} variant="secondary" className="flex items-center gap-1">
+                        {report.full_name}
+                        {report.role && <span className="text-xs">({report.role})</span>}
+                        <X 
+                          className="h-3 w-3 cursor-pointer" 
+                          onClick={() => handleRemoveDirectReport(report.id)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <Popover open={isDirectReportPopoverOpen} onOpenChange={setIsDirectReportPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full h-11 justify-between border-2 bg-background"
+                    >
+                      Search and add direct reports (optional)
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 bg-background border shadow-lg">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search people..." 
+                        value={directReportSearchQuery}
+                        onValueChange={setDirectReportSearchQuery}
+                      />
+                      <CommandList className="max-h-[200px]">
+                        <CommandEmpty>
+                          {isSearchingDirectReports ? "Searching..." : "No people found"}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {searchedDirectReports
+                            .filter(report => !selectedDirectReports.find(r => r.id === report.id))
+                            .map(report => (
+                            <CommandItem
+                              key={report.id}
+                              value={report.full_name}
+                              onSelect={() => handleDirectReportSelect(report)}
+                            >
+                              <div className="flex flex-col">
+                                <span>{report.full_name}</span>
+                                {report.role && (
+                                  <span className="text-xs text-muted-foreground">{report.role}</span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {validationErrors.directReports && (
+                  <p className="text-sm text-destructive font-medium">{validationErrors.directReports}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Search and select people who will report to this person in their new role
+                </p>
+              </div>
             </div>
           )}
           
