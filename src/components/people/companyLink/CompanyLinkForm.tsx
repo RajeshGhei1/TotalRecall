@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuditLogger } from '@/hooks/audit/useAuditLogger';
+import { MultiSelect } from "@/components/ui/multi-select";
 
 interface CompanyLinkFormProps {
   isOpen: boolean;
@@ -33,6 +34,12 @@ interface CompanyLinkFormProps {
 }
 
 interface PotentialManager {
+  id: string;
+  full_name: string;
+  role?: string;
+}
+
+interface PotentialDirectReport {
   id: string;
   full_name: string;
   role?: string;
@@ -63,12 +70,20 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [reportsTo, setReportsTo] = useState('');
+  const [directReports, setDirectReports] = useState<string[]>([]);
   const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
+  const [potentialDirectReports, setPotentialDirectReports] = useState<PotentialDirectReport[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [companySearchQuery, setCompanySearchQuery] = useState('');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLogger();
+
+  // Filter companies based on search query
+  const filteredCompanies = companies.filter(company =>
+    company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
+  );
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -80,8 +95,11 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       setStartDate(undefined);
       setEndDate(undefined);
       setReportsTo('');
+      setDirectReports([]);
       setPotentialManagers([]);
+      setPotentialDirectReports([]);
       setValidationErrors({});
+      setCompanySearchQuery('');
     }
   }, [isOpen, personId, personType]);
 
@@ -111,20 +129,31 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       errors.startDate = 'Start date cannot be in the future';
     }
 
+    // Validate circular reporting - person cannot report to themselves
+    if (reportsTo === personId) {
+      errors.reportsTo = 'Person cannot report to themselves';
+    }
+
+    // Validate circular reporting - person cannot be their own direct report
+    if (directReports.includes(personId || '')) {
+      errors.directReports = 'Person cannot be their own direct report';
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Fetch potential managers when company changes
+  // Fetch potential managers and direct reports when company changes
   useEffect(() => {
-    const fetchPotentialManagers = async () => {
+    const fetchPotentialPeople = async () => {
       if (!companyId || !personId) {
         setPotentialManagers([]);
+        setPotentialDirectReports([]);
         return;
       }
       
       try {
-        console.log('Fetching potential managers for company:', companyId);
+        console.log('Fetching potential managers and direct reports for company:', companyId);
         
         const { data, error } = await supabase
           .from('company_relationships')
@@ -137,30 +166,32 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           .neq('person_id', personId);
           
         if (error) {
-          console.error('Error fetching potential managers:', error);
+          console.error('Error fetching potential people:', error);
           throw error;
         }
         
-        const managers = data?.map(item => ({
+        const people = data?.map(item => ({
           id: item.person?.id || '',
           full_name: item.person?.full_name || '',
           role: item.role
-        })).filter(manager => manager.id && manager.full_name) || [];
+        })).filter(person => person.id && person.full_name) || [];
         
-        console.log('Found potential managers:', managers);
-        setPotentialManagers(managers);
+        console.log('Found potential people:', people);
+        setPotentialManagers(people);
+        setPotentialDirectReports(people);
       } catch (error) {
-        console.error('Error fetching potential managers:', error);
+        console.error('Error fetching potential people:', error);
         toast({
           title: "Error",
-          description: "Failed to load potential managers",
+          description: "Failed to load potential managers and direct reports",
           variant: "destructive"
         });
         setPotentialManagers([]);
+        setPotentialDirectReports([]);
       }
     };
     
-    fetchPotentialManagers();
+    fetchPotentialPeople();
   }, [companyId, personId, toast]);
 
   const createRelationshipMutation = useMutation({
@@ -215,7 +246,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         reports_to: reportsTo || null
       };
       
-      const { data, error } = await supabase
+      const { data: relationshipData, error } = await supabase
         .from('company_relationships')
         .insert([dataToSubmit])
         .select();
@@ -224,8 +255,27 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         console.error('Error creating relationship:', error);
         throw new Error(error.message);
       }
+
+      // Update direct reports relationships if any selected
+      if (directReports.length > 0) {
+        const updatePromises = directReports.map(reportId => 
+          supabase
+            .from('company_relationships')
+            .update({ reports_to: personId })
+            .eq('person_id', reportId)
+            .eq('company_id', companyId)
+            .eq('is_current', true)
+        );
+
+        const results = await Promise.all(updatePromises);
+        const hasErrors = results.some(result => result.error);
+        
+        if (hasErrors) {
+          console.warn('Some direct report relationships could not be updated');
+        }
+      }
       
-      return data;
+      return relationshipData;
     },
     onSuccess: (data) => {
       // Log audit event
@@ -235,7 +285,9 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           person_id: personId,
           company_id: companyId,
           role: sanitizeInput(role),
-          relationship_type: personType
+          relationship_type: personType,
+          reports_to: reportsTo || null,
+          direct_reports_count: directReports.length
         },
         severity: 'medium',
         module_name: 'people_management'
@@ -288,6 +340,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     console.log('Company changed to:', value);
     setCompanyId(value);
     setReportsTo(''); // Reset manager when company changes
+    setDirectReports([]); // Reset direct reports when company changes
     // Clear company validation error when user selects a company
     if (validationErrors.companyId) {
       setValidationErrors(prev => ({ ...prev, companyId: '' }));
@@ -308,7 +361,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Link Person to Company</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -317,26 +370,43 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          {/* Company Selection */}
+          {/* Company Selection with Search */}
           <div className="space-y-2">
             <Label htmlFor="company_select" className="text-sm font-medium">
               Company <span className="text-destructive">*</span>
             </Label>
-            <Select value={companyId} onValueChange={handleCompanyChange}>
-              <SelectTrigger className={cn(
-                "w-full h-11 border-2 transition-colors",
-                validationErrors.companyId ? 'border-destructive focus:border-destructive' : 'border-input focus:border-primary'
-              )}>
-                <SelectValue placeholder="Select a company" />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Select value={companyId} onValueChange={handleCompanyChange}>
+                <SelectTrigger className={cn(
+                  "w-full h-11 border-2 transition-colors bg-background",
+                  validationErrors.companyId ? 'border-destructive focus:border-destructive' : 'border-input focus:border-primary'
+                )}>
+                  <SelectValue placeholder="Select a company" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-lg z-[100]">
+                  <div className="flex items-center border-b px-3 pb-2 mb-2">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <Input
+                      placeholder="Search companies..."
+                      value={companySearchQuery}
+                      onChange={(e) => setCompanySearchQuery(e.target.value)}
+                      className="border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                  {filteredCompanies.length === 0 ? (
+                    <div className="py-2 px-3 text-sm text-muted-foreground">
+                      No companies found
+                    </div>
+                  ) : (
+                    filteredCompanies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
             {validationErrors.companyId && (
               <p className="text-sm text-destructive font-medium">{validationErrors.companyId}</p>
             )}
@@ -383,7 +453,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                <PopoverContent className="w-auto p-0 bg-background border shadow-lg z-[100]" align="center" side="bottom">
                   <Calendar
                     mode="single"
                     selected={startDate}
@@ -420,7 +490,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                <PopoverContent className="w-auto p-0 bg-background border shadow-lg z-[100]" align="center" side="bottom">
                   <Calendar
                     mode="single"
                     selected={endDate}
@@ -445,28 +515,72 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
             </div>
           </div>
 
-          {/* Manager Selection */}
-          {companyId && potentialManagers.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="reports_to" className="text-sm font-medium">Reports To</Label>
-              <Select value={reportsTo} onValueChange={setReportsTo}>
-                <SelectTrigger className="h-11 border-2">
-                  <SelectValue placeholder="Select a manager (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  {potentialManagers.map(manager => (
-                    <SelectItem key={manager.id} value={manager.id}>
-                      <div className="flex flex-col">
-                        <span>{manager.full_name}</span>
-                        {manager.role && (
-                          <span className="text-xs text-muted-foreground">{manager.role}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Reporting Structure Section */}
+          {companyId && (potentialManagers.length > 0 || potentialDirectReports.length > 0) && (
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="text-lg font-medium">Reporting Structure</h3>
+              
+              {/* Reports To (Manager) */}
+              {potentialManagers.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="reports_to" className="text-sm font-medium">Reports To (Manager)</Label>
+                  <Select value={reportsTo} onValueChange={(value) => {
+                    setReportsTo(value);
+                    if (validationErrors.reportsTo) {
+                      setValidationErrors(prev => ({ ...prev, reportsTo: '' }));
+                    }
+                  }}>
+                    <SelectTrigger className="h-11 border-2 bg-background">
+                      <SelectValue placeholder="Select a manager (optional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-[100]">
+                      <SelectItem value="">None</SelectItem>
+                      {potentialManagers.map(manager => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          <div className="flex flex-col">
+                            <span>{manager.full_name}</span>
+                            {manager.role && (
+                              <span className="text-xs text-muted-foreground">{manager.role}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {validationErrors.reportsTo && (
+                    <p className="text-sm text-destructive font-medium">{validationErrors.reportsTo}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Direct Reports */}
+              {potentialDirectReports.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Direct Reports (Subordinates)</Label>
+                  <MultiSelect
+                    options={potentialDirectReports.map(person => ({
+                      label: `${person.full_name}${person.role ? ` (${person.role})` : ''}`,
+                      value: person.id
+                    }))}
+                    onValueChange={(values) => {
+                      setDirectReports(values);
+                      if (validationErrors.directReports) {
+                        setValidationErrors(prev => ({ ...prev, directReports: '' }));
+                      }
+                    }}
+                    value={directReports}
+                    placeholder="Select direct reports (optional)"
+                    maxCount={5}
+                    className="bg-background"
+                  />
+                  {validationErrors.directReports && (
+                    <p className="text-sm text-destructive font-medium">{validationErrors.directReports}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Select people who will report to this person in their new role
+                  </p>
+                </div>
+              )}
             </div>
           )}
           
@@ -485,7 +599,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               disabled={!canSubmit}
               className="h-11 min-w-[120px]"
             >
-              {isSubmitting ? "Saving..." : "Save changes"}
+              {isSubmitting ? "Saving..." : "Save Relationship"}
             </Button>
           </DialogFooter>
         </form>
