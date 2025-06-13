@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -147,7 +146,7 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType, p
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>{personType === 'contact' ? 'Company Email' : 'Email'}</FormLabel>
             <FormControl>
               <Input placeholder="Enter email address" type="email" {...field} />
             </FormControl>
@@ -187,21 +186,6 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType, p
       {/* Business Contact specific fields */}
       {personType === 'contact' && (
         <>
-          {/* Company Email */}
-          <FormField
-            control={form.control}
-            name="company_email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company Email ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter company email address" type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Personal Email */}
           <FormField
             control={form.control}

@@ -9,7 +9,6 @@ export const personFormSchema = z.object({
   type: z.enum(['talent', 'contact']),
   company_id: z.string().optional(),
   role: z.string().optional(),
-  company_email: z.string().email('Invalid company email').optional().or(z.literal('')),
   personal_email: z.string().email('Invalid personal email').optional().or(z.literal('')),
 });
 
