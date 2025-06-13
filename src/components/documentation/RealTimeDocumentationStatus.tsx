@@ -11,7 +11,8 @@ export function RealTimeDocumentationStatus() {
     isInitialized,
     isMonitoring,
     documentationChanges,
-    clearChanges
+    clearChanges,
+    refreshData
   } = useRealTimeDocumentation();
 
   const getStatusIcon = () => {
@@ -22,7 +23,7 @@ export function RealTimeDocumentationStatus() {
 
   const getStatusText = () => {
     if (!isInitialized) return 'Initializing...';
-    if (isMonitoring) return 'Active';
+    if (isMonitoring) return 'Active & Monitoring';
     return 'Inactive';
   };
 
@@ -42,7 +43,7 @@ export function RealTimeDocumentationStatus() {
               Real-Time Documentation System
             </CardTitle>
             <CardDescription>
-              Monitor and automatically update documentation based on code changes
+              Automatically analyzes your codebase and generates live documentation
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -57,14 +58,23 @@ export function RealTimeDocumentationStatus() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Recent Changes</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearChanges}
-              disabled={documentationChanges.length === 0}
-            >
-              Clear History
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshData}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearChanges}
+                disabled={documentationChanges.length === 0}
+              >
+                Clear History
+              </Button>
+            </div>
           </div>
           
           {documentationChanges.length === 0 ? (
@@ -80,10 +90,11 @@ export function RealTimeDocumentationStatus() {
                 >
                   <div className="flex-1">
                     <div className="text-sm font-medium">
-                      {change.documentPath}
+                      {change.documentPath.replace('docs/', '').replace('.md', '')}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(change.timestamp).toLocaleString()}
+                      {change.changeType && ` • ${change.changeType}`}
                     </div>
                   </div>
                   <Badge
