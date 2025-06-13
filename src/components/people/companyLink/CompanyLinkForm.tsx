@@ -132,7 +132,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     }
   };
 
-  // Search managers dynamically
+  // Search managers dynamically - only from selected company
   const searchManagers = async (query: string) => {
     if (!query || query.length < 2 || !companyId) {
       setSearchedManagers([]);
@@ -145,7 +145,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         .from('company_relationships')
         .select(`
           role,
-          person:people(id, full_name)
+          people!inner(id, full_name)
         `)
         .eq('company_id', companyId)
         .eq('is_current', true)
@@ -156,8 +156,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       if (error) throw error;
       
       const managers = data?.map(item => ({
-        id: item.person?.id || '',
-        full_name: item.person?.full_name || '',
+        id: item.people?.id || '',
+        full_name: item.people?.full_name || '',
         role: item.role
       })).filter(person => person.id && person.full_name) || [];
       
@@ -170,7 +170,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     }
   };
 
-  // Search direct reports dynamically
+  // Search direct reports dynamically - only from selected company
   const searchDirectReports = async (query: string) => {
     if (!query || query.length < 2 || !companyId) {
       setSearchedDirectReports([]);
@@ -183,7 +183,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         .from('company_relationships')
         .select(`
           role,
-          person:people(id, full_name)
+          people!inner(id, full_name)
         `)
         .eq('company_id', companyId)
         .eq('is_current', true)
@@ -194,8 +194,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       if (error) throw error;
       
       const reports = data?.map(item => ({
-        id: item.person?.id || '',
-        full_name: item.person?.full_name || '',
+        id: item.people?.id || '',
+        full_name: item.people?.full_name || '',
         role: item.role
       })).filter(person => person.id && person.full_name) || [];
       
@@ -294,7 +294,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  // Fetch potential managers and direct reports when company changes
+  // Fetch potential managers and direct reports when company changes - only from selected company
   useEffect(() => {
     const fetchPotentialPeople = async () => {
       if (!companyId || !personId) {
@@ -310,7 +310,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
           .from('company_relationships')
           .select(`
             role,
-            person:people(id, full_name)
+            people!inner(id, full_name)
           `)
           .eq('company_id', companyId)
           .eq('is_current', true)
@@ -322,8 +322,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         }
         
         const people = data?.map(item => ({
-          id: item.person?.id || '',
-          full_name: item.person?.full_name || '',
+          id: item.people?.id || '',
+          full_name: item.people?.full_name || '',
           role: item.role
         })).filter(person => person.id && person.full_name) || [];
         
@@ -563,7 +563,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   role="combobox"
                   aria-expanded={isCompanyPopoverOpen}
                   className={cn(
-                    "w-full h-11 justify-between border-2 transition-colors",
+                    "w-full h-11 justify-between border-2",
                     validationErrors.companyId ? 'border-destructive' : 'border-input hover:border-primary'
                   )}
                 >
