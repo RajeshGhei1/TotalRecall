@@ -41,115 +41,58 @@ const Companies = () => {
     branchOfficesData?: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>
   ) => {
     try {
-      let importedCount = 0;
-      let skippedCount = 0;
-      let errorCount = 0;
-      let branchOfficesCreated = 0;
+      // Use the new enhanced duplicate detection system
+      const { CompanyBulkUploadProcessor } = await import('@/components/common/bulk-upload/CompanyBulkUploadProcessor');
+      
+      const defaultStrategy = {
+        primaryAction: 'skip' as const,
+        emailMatches: 'merge' as const,
+        phoneMatches: 'skip' as const,
+        nameMatches: 'review' as const,
+        linkedinMatches: 'merge' as const,
+        confidenceThreshold: 0.8
+      };
 
-      console.log(`Starting bulk import of ${companiesToImport.length} companies...`);
+      const mergeOptions = {
+        overwriteEmpty: true,
+        mergeArrays: true,
+        keepMostRecent: true,
+        preserveExisting: false
+      };
 
-      // Process companies in batches for better performance
-      const batchSize = 50;
-      const batches = [];
-      for (let i = 0; i < companiesToImport.length; i += batchSize) {
-        batches.push(companiesToImport.slice(i, i + batchSize));
-      }
+      console.log(`Starting enhanced bulk import of ${companiesToImport.length} companies with duplicate detection...`);
 
-      const importedCompanies: any[] = [];
-
-      for (const batch of batches) {
-        const batchPromises = batch.map(async (companyData, batchIndex) => {
-          try {
-            // Check for duplicates if skipDuplicates is enabled
-            if (options.skipDuplicates) {
-              const existingCompany = companies?.find(
-                c => c.name.toLowerCase() === companyData.name?.toLowerCase() ||
-                     (companyData.email && c.email?.toLowerCase() === companyData.email?.toLowerCase())
-              );
-              
-              if (existingCompany) {
-                skippedCount++;
-                return { success: false, reason: 'duplicate' };
-              }
-            }
-
-            const newCompany = await createCompany.mutateAsync(companyData);
-            importedCompanies.push({ company: newCompany, originalIndex: batchIndex });
-            importedCount++;
-            return { success: true, company: newCompany };
-          } catch (error) {
-            console.error('Failed to import company:', companyData.name, error);
-            errorCount++;
-            return { success: false, reason: 'error', error };
-          }
-        });
-
-        // Wait for batch to complete
-        await Promise.all(batchPromises);
-      }
-
-      // Create branch offices for imported companies
-      if (branchOfficesData && branchOfficesData.length > 0) {
-        console.log(`Creating branch offices for ${branchOfficesData.length} companies...`);
-        
-        for (const branchData of branchOfficesData) {
-          const importedCompany = importedCompanies.find(ic => ic.originalIndex === branchData.companyIndex);
-          
-          if (importedCompany && importedCompany.company) {
-            try {
-              for (const branchOffice of branchData.branchOffices) {
-                const { error } = await supabase
-                  .from('company_branch_offices')
-                  .insert({
-                    company_id: importedCompany.company.id,
-                    branch_name: branchOffice.branch_name,
-                    branch_type: branchOffice.branch_type,
-                    address: branchOffice.address || null,
-                    city: branchOffice.city || null,
-                    state: branchOffice.state || null,
-                    country: branchOffice.country || null,
-                    postal_code: branchOffice.postal_code || null,
-                    phone: branchOffice.phone || null,
-                    email: branchOffice.email || null,
-                    gst_number: branchOffice.gst_number || null,
-                    is_headquarters: branchOffice.is_headquarters,
-                    is_active: branchOffice.is_active
-                  });
-
-                if (error) {
-                  console.error('Failed to create branch office:', error);
-                } else {
-                  branchOfficesCreated++;
-                }
-              }
-            } catch (error) {
-              console.error('Error creating branch offices for company:', importedCompany.company.name, error);
-            }
-          }
-        }
-      }
+      const results = await CompanyBulkUploadProcessor.processCompaniesWithDuplicateHandling(
+        companiesToImport as any[],
+        defaultStrategy,
+        mergeOptions
+      );
 
       await refetch();
       
       // Show comprehensive results
-      let message = `Import completed: ${importedCount} companies imported`;
-      if (branchOfficesCreated > 0) {
-        message += `, ${branchOfficesCreated} branch offices created`;
+      let message = `Import completed: ${results.successful} companies imported`;
+      if (results.duplicates_merged > 0) {
+        message += `, ${results.duplicates_merged} merged`;
       }
-      if (skippedCount > 0) {
-        message += `, ${skippedCount} skipped (duplicates)`;
+      if (results.duplicates_skipped > 0) {
+        message += `, ${results.duplicates_skipped} skipped (duplicates)`;
       }
-      if (errorCount > 0) {
-        message += `, ${errorCount} failed`;
+      if (results.failed > 0) {
+        message += `, ${results.failed} failed`;
         toast.error(message);
       } else {
         toast.success(message);
       }
 
-      console.log(`Bulk import completed: ${importedCount} imported, ${branchOfficesCreated} branch offices, ${skippedCount} skipped, ${errorCount} errors`);
+      if (results.duplicates_found > 0) {
+        toast.info(`Duplicate detection: ${results.duplicates_found} found, ${results.duplicates_skipped} skipped, ${results.duplicates_merged} merged`);
+      }
+
+      console.log(`Enhanced bulk import completed with duplicate detection: ${results.successful} imported, ${results.duplicates_merged} merged, ${results.duplicates_skipped} skipped, ${results.failed} errors`);
       
     } catch (error) {
-      console.error('Bulk import error:', error);
+      console.error('Enhanced bulk import error:', error);
       toast.error('Bulk import failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
       throw error;
     }
