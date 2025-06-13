@@ -9,9 +9,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { SecurityDashboard as SecurityDashboardComponent } from '@/components/superadmin/security/SecurityDashboard';
+import TenantUserManager from '@/components/TenantUserManager';
 
-const SecurityDashboard = () => {
+const TenantUsers = () => {
   return (
     <AdminLayout>
       <div className="p-6">
@@ -22,22 +22,22 @@ const SecurityDashboard = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Security Dashboard</BreadcrumbPage>
+              <BreadcrumbPage>Tenant Users</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Security Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Tenant Users</h1>
           <p className="text-muted-foreground">
-            Monitor security metrics and system health
+            Manage users across all tenants in the platform
           </p>
         </div>
 
-        <SecurityDashboardComponent />
+        <TenantUserManager />
       </div>
     </AdminLayout>
   );
 };
 
-export default SecurityDashboard;
+export default TenantUsers;

@@ -1,66 +1,42 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Shield, Activity, ArrowLeft } from 'lucide-react';
-import AuditDashboard from '@/components/superadmin/audit/AuditDashboard';
-import AuditLogViewer from '@/components/superadmin/audit/AuditLogViewer';
+import React from 'react';
+import AdminLayout from '@/components/AdminLayout';
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { AuditDashboard } from '@/components/superadmin/audit/AuditDashboard';
 
-const AuditLogs: React.FC = () => {
-  const navigate = useNavigate();
-  const [selectedTenantId, setSelectedTenantId] = useState<string | undefined>();
-
-  const handleBackToDashboard = () => {
-    navigate('/superadmin/dashboard');
-  };
-
+const AuditLogs = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Audit Logs</h1>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={handleBackToDashboard}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to BI Dashboard
-          </Button>
+    <AdminLayout>
+      <div className="p-6">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Audit Logs</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
+          <p className="text-muted-foreground">
+            View and analyze system audit logs and activity tracking
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          Monitor system activities, track user actions, and maintain security compliance
-        </p>
+
+        <AuditDashboard />
       </div>
-
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Audit Logs
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard" className="space-y-6">
-          <AuditDashboard selectedTenantId={selectedTenantId} />
-        </TabsContent>
-
-        <TabsContent value="logs" className="space-y-6">
-          <AuditLogViewer 
-            selectedTenantId={selectedTenantId} 
-            onTenantChange={setSelectedTenantId}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+    </AdminLayout>
   );
 };
 

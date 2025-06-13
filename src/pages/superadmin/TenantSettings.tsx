@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const GlobalSettings = () => {
+const TenantSettings = () => {
   return (
     <AdminLayout>
       <div className="p-6">
@@ -22,28 +22,28 @@ const GlobalSettings = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Global Settings</BreadcrumbPage>
+              <BreadcrumbPage>Tenant Settings</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Global Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Tenant Settings</h1>
           <p className="text-muted-foreground">
-            Configure global platform settings and system parameters
+            Configure tenant-specific settings and preferences
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Global Configuration</CardTitle>
+            <CardTitle>Tenant Configuration</CardTitle>
             <CardDescription>
-              Manage platform-wide settings and configurations
+              Manage settings for individual tenants
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Global settings management functionality will be implemented here.
+              Tenant settings management functionality will be implemented here.
             </p>
           </CardContent>
         </Card>
@@ -52,4 +52,4 @@ const GlobalSettings = () => {
   );
 };
 
-export default GlobalSettings;
+export default TenantSettings;

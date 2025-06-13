@@ -1,66 +1,42 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Activity, Users, ArrowLeft } from 'lucide-react';
-import UserActivityDashboard from '@/components/superadmin/user-activity/UserActivityDashboard';
-import UserSessionViewer from '@/components/superadmin/user-activity/UserSessionViewer';
+import React from 'react';
+import AdminLayout from '@/components/AdminLayout';
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { UserActivityDashboard } from '@/components/superadmin/user-activity/UserActivityDashboard';
 
-const UserActivity: React.FC = () => {
-  const navigate = useNavigate();
-  const [selectedTenantId, setSelectedTenantId] = useState<string | undefined>();
-
-  const handleBackToDashboard = () => {
-    navigate('/superadmin/dashboard');
-  };
-
+const UserActivity = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">User Activity</h1>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={handleBackToDashboard}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to BI Dashboard
-          </Button>
+    <AdminLayout>
+      <div className="p-6">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>User Activity</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">User Activity</h1>
+          <p className="text-muted-foreground">
+            Monitor user activity, sessions, and behavioral patterns
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          Monitor user sessions, track login patterns, and manage active connections
-        </p>
+
+        <UserActivityDashboard />
       </div>
-
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="sessions" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Sessions
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard" className="space-y-6">
-          <UserActivityDashboard selectedTenantId={selectedTenantId} />
-        </TabsContent>
-
-        <TabsContent value="sessions" className="space-y-6">
-          <UserSessionViewer 
-            selectedTenantId={selectedTenantId} 
-            onTenantChange={setSelectedTenantId}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+    </AdminLayout>
   );
 };
 
