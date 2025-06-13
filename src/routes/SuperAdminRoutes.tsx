@@ -36,10 +36,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/analytics" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'analytics', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <Analytics />
             </RouteGuard>
           } 
@@ -47,10 +44,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/advanced-analytics" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'analytics', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <AdvancedAnalytics />
             </RouteGuard>
           } 
@@ -58,10 +52,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/tenants" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'tenants', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <Tenants />
             </RouteGuard>
           } 
@@ -69,10 +60,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/users" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'users', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <TenantUsers />
             </RouteGuard>
           } 
@@ -80,10 +68,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/companies" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'companies', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <Companies />
             </RouteGuard>
           } 
@@ -91,10 +76,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/companies/:companyId" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'companies', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <CompanyDetailView />
             </RouteGuard>
           } 
@@ -102,10 +84,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/people" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'people', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <People />
             </RouteGuard>
           } 
@@ -113,10 +92,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/documentation" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'documentation', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <Documentation />
             </RouteGuard>
           } 
@@ -124,10 +100,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/ai-orchestration" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'ai_system', action: 'manage' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <AIOrchestration />
             </RouteGuard>
           } 
@@ -135,10 +108,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/ai-analytics" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'ai_system', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <AIAnalytics />
             </RouteGuard>
           } 
@@ -146,10 +116,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/security-dashboard" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'security', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <SecurityDashboard />
             </RouteGuard>
           } 
@@ -157,10 +124,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/audit-logs" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'audit_logs', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <AuditLogs />
             </RouteGuard>
           } 
@@ -168,10 +132,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/user-activity" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'user_activity', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <UserActivity />
             </RouteGuard>
           } 
@@ -179,10 +140,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/subscription-plans" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'subscription_plans', action: 'view' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <SubscriptionPlans />
             </RouteGuard>
           } 
@@ -190,10 +148,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/global-settings" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'settings', action: 'manage' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <GlobalSettings />
             </RouteGuard>
           } 
@@ -201,10 +156,7 @@ const SuperAdminRoutes = () => {
         <Route 
           path="/settings" 
           element={
-            <RouteGuard 
-              requiredRole={['super_admin']}
-              requiredPermission={{ resource: 'tenant_settings', action: 'manage' }}
-            >
+            <RouteGuard requiredRole={['super_admin']}>
               <TenantSettings />
             </RouteGuard>
           } 
