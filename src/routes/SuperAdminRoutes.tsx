@@ -6,17 +6,75 @@ import Tenants from '@/pages/superadmin/Tenants';
 import Companies from '@/pages/superadmin/Companies';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
+import { RouteGuard } from '@/components/security/RouteGuard';
+import { SecureErrorBoundary } from '@/components/common/SecureErrorBoundary';
 
 const SuperAdminRoutes = () => {
   return (
-    <Routes>
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/tenants" element={<Tenants />} />
-      <Route path="/companies" element={<Companies />} />
-      <Route path="/companies/:companyId" element={<CompanyDetailView />} />
-      <Route path="/subscription-plans" element={<SubscriptionPlans />} />
-      <Route path="/" element={<Dashboard />} />
-    </Routes>
+    <SecureErrorBoundary>
+      <Routes>
+        <Route 
+          path="/dashboard" 
+          element={
+            <RouteGuard requiredRole={['super_admin']}>
+              <Dashboard />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/tenants" 
+          element={
+            <RouteGuard 
+              requiredRole={['super_admin']}
+              requiredPermission={{ resource: 'tenants', action: 'view' }}
+            >
+              <Tenants />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/companies" 
+          element={
+            <RouteGuard 
+              requiredRole={['super_admin']}
+              requiredPermission={{ resource: 'companies', action: 'view' }}
+            >
+              <Companies />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/companies/:companyId" 
+          element={
+            <RouteGuard 
+              requiredRole={['super_admin']}
+              requiredPermission={{ resource: 'companies', action: 'view' }}
+            >
+              <CompanyDetailView />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/subscription-plans" 
+          element={
+            <RouteGuard 
+              requiredRole={['super_admin']}
+              requiredPermission={{ resource: 'subscription_plans', action: 'view' }}
+            >
+              <SubscriptionPlans />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/" 
+          element={
+            <RouteGuard requiredRole={['super_admin']}>
+              <Dashboard />
+            </RouteGuard>
+          } 
+        />
+      </Routes>
+    </SecureErrorBoundary>
   );
 };
 
