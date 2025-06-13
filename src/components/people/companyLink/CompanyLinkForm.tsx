@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuditLogger } from '@/hooks/audit/useAuditLogger';
 
 interface CompanyLinkFormProps {
   isOpen: boolean;
@@ -37,6 +38,16 @@ interface PotentialManager {
   role?: string;
 }
 
+// Input sanitization helper
+const sanitizeInput = (input: string): string => {
+  return input.trim().replace(/[<>]/g, '');
+};
+
+// Role validation helper
+const validateRole = (role: string): boolean => {
+  return role.length >= 2 && role.length <= 100 && /^[a-zA-Z0-9\s\-&.,()]+$/.test(role);
+};
+
 const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   isOpen,
   onClose,
@@ -53,9 +64,11 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [reportsTo, setReportsTo] = useState('');
   const [potentialManagers, setPotentialManagers] = useState<PotentialManager[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLogger();
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -68,8 +81,39 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       setEndDate(undefined);
       setReportsTo('');
       setPotentialManagers([]);
+      setValidationErrors({});
     }
   }, [isOpen, personId, personType]);
+
+  // Form validation
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!companyId) {
+      errors.companyId = 'Company is required';
+    }
+
+    if (!role) {
+      errors.role = 'Role is required';
+    } else if (!validateRole(role)) {
+      errors.role = 'Role must be 2-100 characters and contain only letters, numbers, spaces, and basic punctuation';
+    }
+
+    if (!startDate) {
+      errors.startDate = 'Start date is required';
+    }
+
+    if (endDate && startDate && endDate <= startDate) {
+      errors.endDate = 'End date must be after start date';
+    }
+
+    if (startDate && startDate > new Date()) {
+      errors.startDate = 'Start date cannot be in the future';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // Fetch potential managers when company changes
   useEffect(() => {
@@ -124,11 +168,18 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       if (!personId || !companyId || !role || !startDate) {
         throw new Error("Missing required fields.");
       }
+
+      // Sanitize inputs
+      const sanitizedRole = sanitizeInput(role);
+      
+      if (!validateRole(sanitizedRole)) {
+        throw new Error("Invalid role format");
+      }
       
       console.log('Creating relationship with data:', {
         person_id: personId,
         company_id: companyId,
-        role,
+        role: sanitizedRole,
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         is_current: !endDate,
@@ -156,7 +207,7 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       const dataToSubmit = {
         person_id: personId,
         company_id: companyId,
-        role,
+        role: sanitizedRole,
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         is_current: !endDate,
@@ -176,7 +227,20 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Log audit event
+      logEvent('CREATE', 'company_relationship', {
+        entity_id: data?.[0]?.id,
+        new_values: {
+          person_id: personId,
+          company_id: companyId,
+          role: sanitizeInput(role),
+          relationship_type: personType
+        },
+        severity: 'medium',
+        module_name: 'people_management'
+      });
+
       toast({
         title: "Success",
         description: "Company relationship created successfully.",
@@ -188,6 +252,14 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     },
     onError: (error: any) => {
       console.error('Mutation error:', error);
+      
+      // Log failed attempt
+      logEvent('CREATE_FAILED', 'company_relationship', {
+        severity: 'high',
+        module_name: 'people_management',
+        additional_context: { error: error.message }
+      });
+
       toast({
         title: "Error",
         description: error.message || "Failed to create company relationship.",
@@ -199,6 +271,16 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted');
+    
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please correct the errors below.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createRelationshipMutation.mutate();
   };
 
@@ -206,10 +288,23 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
     console.log('Company changed to:', value);
     setCompanyId(value);
     setReportsTo(''); // Reset manager when company changes
+    // Clear company validation error when user selects a company
+    if (validationErrors.companyId) {
+      setValidationErrors(prev => ({ ...prev, companyId: '' }));
+    }
+  };
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setRole(value);
+    // Clear role validation error when user types
+    if (validationErrors.role) {
+      setValidationErrors(prev => ({ ...prev, role: '' }));
+    }
   };
 
   const isSubmitting = createRelationshipMutation.isPending || externalIsSubmitting;
-  const canSubmit = companyId && role && startDate && !isSubmitting;
+  const canSubmit = companyId && role && startDate && !isSubmitting && Object.keys(validationErrors).length === 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -224,9 +319,9 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           {/* Company Selection */}
           <div className="space-y-2">
-            <Label htmlFor="company_select">Company</Label>
+            <Label htmlFor="company_select">Company *</Label>
             <Select value={companyId} onValueChange={handleCompanyChange}>
-              <SelectTrigger>
+              <SelectTrigger className={validationErrors.companyId ? 'border-destructive' : ''}>
                 <SelectValue placeholder="Select a company" />
               </SelectTrigger>
               <SelectContent>
@@ -237,30 +332,39 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            {validationErrors.companyId && (
+              <p className="text-sm text-destructive">{validationErrors.companyId}</p>
+            )}
           </div>
 
           {/* Role Input */}
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role">Role *</Label>
             <Input
               id="role"
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={handleRoleChange}
               placeholder="Enter role"
+              className={validationErrors.role ? 'border-destructive' : ''}
+              maxLength={100}
             />
+            {validationErrors.role && (
+              <p className="text-sm text-destructive">{validationErrors.role}</p>
+            )}
           </div>
 
           {/* Date Selectors */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Start Date</Label>
+              <Label>Start Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
+                      !startDate && "text-muted-foreground",
+                      validationErrors.startDate && "border-destructive"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -271,12 +375,20 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   <Calendar
                     mode="single"
                     selected={startDate}
-                    onSelect={setStartDate}
+                    onSelect={(date) => {
+                      setStartDate(date);
+                      if (validationErrors.startDate) {
+                        setValidationErrors(prev => ({ ...prev, startDate: '' }));
+                      }
+                    }}
                     disabled={(date) => date > new Date()}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
+              {validationErrors.startDate && (
+                <p className="text-sm text-destructive">{validationErrors.startDate}</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -287,7 +399,8 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                     variant={"outline"}
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
+                      !endDate && "text-muted-foreground",
+                      validationErrors.endDate && "border-destructive"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -298,7 +411,12 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   <Calendar
                     mode="single"
                     selected={endDate}
-                    onSelect={setEndDate}
+                    onSelect={(date) => {
+                      setEndDate(date);
+                      if (validationErrors.endDate) {
+                        setValidationErrors(prev => ({ ...prev, endDate: '' }));
+                      }
+                    }}
                     disabled={(date) => 
                       date > new Date() || 
                       (startDate && date < startDate)
@@ -307,6 +425,9 @@ const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
                   />
                 </PopoverContent>
               </Popover>
+              {validationErrors.endDate && (
+                <p className="text-sm text-destructive">{validationErrors.endDate}</p>
+              )}
             </div>
           </div>
 
