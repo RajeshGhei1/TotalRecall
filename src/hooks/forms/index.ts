@@ -4,5 +4,6 @@ export {
   useCreateFormDefinition,
   useUpdateFormDefinition,
   useDeleteFormDefinition,
-  type FormDefinition
+  type FormDefinition,
+  type FormDefinitionInsert
 } from './useFormDefinitions';

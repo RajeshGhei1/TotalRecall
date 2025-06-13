@@ -11,6 +11,15 @@ export interface Tenant {
   registration_date?: string;
   created_at: string;
   updated_at: string;
+  tr_id?: string;
+}
+
+export interface TenantInsert {
+  name: string;
+  description?: string;
+  domain?: string;
+  registration_date?: string;
+  tr_id?: string;
 }
 
 export const useTenants = () => {
@@ -31,7 +40,7 @@ export const useTenants = () => {
   });
 
   const createTenant = useMutation({
-    mutationFn: async (tenantData: Partial<Tenant>) => {
+    mutationFn: async (tenantData: TenantInsert) => {
       const { data, error } = await supabase
         .from('tenants')
         .insert([tenantData])
@@ -58,7 +67,7 @@ export const useTenants = () => {
   });
 
   const updateTenant = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Tenant> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<TenantInsert> }) => {
       const { data, error } = await supabase
         .from('tenants')
         .update(updates)

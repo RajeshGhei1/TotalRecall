@@ -6,14 +6,30 @@ import { useToast } from '@/hooks/use-toast';
 export interface FormDefinition {
   id: string;
   name: string;
+  slug: string;
   description?: string;
-  tenant_id: string;
+  tenant_id?: string;
   is_active: boolean;
   access_level: string;
   visibility_scope?: string;
-  slug?: string;
   created_at: string;
   updated_at: string;
+  created_by?: string;
+  settings?: any;
+  required_modules?: string[];
+}
+
+export interface FormDefinitionInsert {
+  name: string;
+  slug: string;
+  description?: string;
+  tenant_id?: string;
+  is_active?: boolean;
+  access_level?: string;
+  visibility_scope?: string;
+  created_by?: string;
+  settings?: any;
+  required_modules?: string[];
 }
 
 export const useFormDefinitions = (tenantId?: string) => {
@@ -43,7 +59,7 @@ export const useCreateFormDefinition = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (formData: Partial<FormDefinition>) => {
+    mutationFn: async (formData: FormDefinitionInsert) => {
       const { data, error } = await supabase
         .from('form_definitions')
         .insert([formData])
@@ -75,7 +91,7 @@ export const useUpdateFormDefinition = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormDefinition> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<FormDefinitionInsert> }) => {
       const { data, error } = await supabase
         .from('form_definitions')
         .update(updates)
