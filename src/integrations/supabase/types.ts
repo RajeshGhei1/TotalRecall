@@ -1483,6 +1483,36 @@ export type Database = {
         }
         Relationships: []
       }
+      documentation_updates: {
+        Row: {
+          content: string | null
+          created_at: string
+          document_path: string
+          id: string
+          metadata: Json | null
+          update_type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          document_path: string
+          id?: string
+          metadata?: Json | null
+          update_type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          document_path?: string
+          id?: string
+          metadata?: Json | null
+          update_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dropdown_option_categories: {
         Row: {
           created_at: string

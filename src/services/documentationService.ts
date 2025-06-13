@@ -28,21 +28,30 @@ export interface DocumentationUpdate {
   };
 }
 
+// Browser-compatible watcher interface
+interface FileWatcher {
+  path: string;
+  lastCheck: number;
+  onChange: (changes: CodeChange[]) => void;
+}
+
 class DocumentationService {
-  private watchers: Map<string, FileSystemWatcher> = new Map();
+  private watchers: Map<string, FileWatcher> = new Map();
   private updateQueue: DocumentationUpdate[] = [];
+  private isInitialized = false;
 
   async initializeDocumentationSystem() {
+    if (this.isInitialized) return;
+    
     console.log('Initializing real-time documentation system...');
     
-    // Set up file watchers for key directories
+    // Set up simulated file watchers for key directories
     await this.setupFileWatchers();
-    
-    // Initialize documentation database
-    await this.initializeDocumentationDatabase();
     
     // Start processing queue
     this.startUpdateProcessor();
+    
+    this.isInitialized = true;
   }
 
   private async setupFileWatchers() {
@@ -61,17 +70,16 @@ class DocumentationService {
   }
 
   private async createWatcher(path: string) {
-    // In a real implementation, this would use the File System Access API
-    // For now, we'll simulate with periodic checks
+    // Browser-compatible watcher simulation
     console.log(`Setting up watcher for: ${path}`);
     
-    const watcher = {
+    const watcher: FileWatcher = {
       path,
       lastCheck: Date.now(),
       onChange: (changes: CodeChange[]) => this.handleCodeChanges(changes)
     };
     
-    this.watchers.set(path, watcher as any);
+    this.watchers.set(path, watcher);
   }
 
   private async handleCodeChanges(changes: CodeChange[]) {
@@ -223,8 +231,7 @@ class DocumentationService {
         document_path: update.documentPath,
         content: update.content,
         update_type: update.updateType,
-        metadata: update.metadata,
-        created_at: new Date().toISOString()
+        metadata: update.metadata
       });
 
     if (error) {
@@ -264,9 +271,31 @@ class DocumentationService {
     return filePath.split('/').pop()?.replace('.ts', '') || 'Unknown';
   }
 
-  private async initializeDocumentationDatabase() {
-    // Database initialization would be handled via migrations
-    console.log('Documentation database initialized');
+  // Public method to manually trigger documentation updates
+  public async triggerDocumentationUpdate(filePath: string, changeType: 'created' | 'modified' | 'deleted' = 'modified') {
+    const change: CodeChange = {
+      filePath,
+      changeType,
+      timestamp: new Date().toISOString()
+    };
+    
+    await this.handleCodeChanges([change]);
+  }
+
+  // Public method to get recent documentation updates
+  public async getRecentUpdates(limit = 10) {
+    const { data, error } = await supabase
+      .from('documentation_updates')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching documentation updates:', error);
+      return [];
+    }
+
+    return data || [];
   }
 }
 
