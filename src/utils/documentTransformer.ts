@@ -1,6 +1,8 @@
 
 import type { DocumentItem } from '@/data/documentationData';
 import type { ATSDocument } from '@/data/atsDocumentation';
+import { availableDocuments } from '@/data/documentationData';
+import { atsDocuments } from '@/data/atsDocumentation';
 
 export function transformATSDocumentToStandard(atsDoc: ATSDocument): DocumentItem {
   // Map ATS difficulty to priority
@@ -27,10 +29,6 @@ export function transformATSDocumentToStandard(atsDoc: ATSDocument): DocumentIte
 }
 
 export function getAllIntegratedDocuments(): DocumentItem[] {
-  // Import here to avoid circular dependencies
-  const { availableDocuments } = require('@/data/documentationData');
-  const { atsDocuments } = require('@/data/atsDocumentation');
-  
   const standardDocs = availableDocuments;
   const transformedATSDocs = atsDocuments.map(transformATSDocumentToStandard);
   
