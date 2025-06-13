@@ -1,23 +1,42 @@
 
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import AdminLayout from "@/components/AdminLayout";
-import AnalyticsDashboard from "@/components/reporting/AnalyticsDashboard";
+import React from 'react';
+import AdminLayout from '@/components/AdminLayout';
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { DynamicDashboard } from '@/components/dashboard/DynamicDashboard';
 
-const Analytics = () => {
+const Analytics: React.FC = () => {
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">
-              Business intelligence and operational analytics for enterprise management
-            </p>
-          </div>
+      <div className="p-4 md:p-6">
+        <div className="mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>BI Dashboard</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-        
-        <AnalyticsDashboard />
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">Business Intelligence Dashboard</h1>
+          <p className="text-muted-foreground">
+            Real-time analytics and business intelligence overview
+          </p>
+        </div>
+
+        <DynamicDashboard />
       </div>
     </AdminLayout>
   );
