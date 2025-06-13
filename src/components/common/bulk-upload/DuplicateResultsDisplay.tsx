@@ -132,7 +132,7 @@ const DuplicateResultsDisplay: React.FC<DuplicateResultsDisplayProps> = ({ resul
                       <div><strong>Name:</strong> {duplicate.existingRecord.full_name}</div>
                       <div><strong>Email:</strong> {duplicate.existingRecord.email}</div>
                       <div><strong>Phone:</strong> {duplicate.existingRecord.phone || 'N/A'}</div>
-                      <div><strong>Company:</strong> {duplicate.existingRecord.current_company || 'N/A'}</div>
+                      <div><strong>Company:</strong> {duplicate.existingRecord.current_title || 'N/A'}</div>
                       <div><strong>LinkedIn:</strong> {duplicate.existingRecord.linkedin_url || 'N/A'}</div>
                     </div>
                   </div>

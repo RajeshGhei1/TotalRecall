@@ -27,19 +27,19 @@ export class SmartMerger {
       return existingValue;
     };
 
-    // Merge basic fields
+    // Merge basic fields - using correct field mappings for people table
     const fieldMappings = {
       'full_name': 'full_name',
       'email': 'email',
       'phone': 'phone',
       'location': 'location',
-      'personal_email': 'personal_email',
+      'personal_email': 'personal_email', // This field may not exist in people table
       'linkedin_url': 'linkedin_url',
       'current_title': 'current_title',
-      'current_company': 'current_company',
-      'notes': 'notes',
-      'resume_url': 'resume_url',
-      'portfolio_url': 'portfolio_url'
+      'current_company': 'current_title', // Map to existing field since current_company doesn't exist
+      'notes': 'notes', // This field may not exist in people table
+      'resume_url': 'resume_url', // This field may not exist in people table
+      'portfolio_url': 'portfolio_url' // This field may not exist in people table
     };
 
     Object.entries(fieldMappings).forEach(([csvField, dbField]) => {

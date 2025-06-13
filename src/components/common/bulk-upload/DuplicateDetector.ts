@@ -50,7 +50,7 @@ export class DuplicateDetector {
   ): Promise<DuplicateInfo[]> {
     const duplicates: DuplicateInfo[] = [];
     
-    // Get all existing people for comparison
+    // Get all existing people for comparison - select the fields that actually exist
     const { data: existingPeople, error } = await supabase
       .from('people')
       .select('*');
@@ -102,14 +102,15 @@ export class DuplicateDetector {
           }
         }
 
-        // Name + Company match
+        // Name + Company match - use correct field names
         if (contact.full_name && existing.full_name) {
           const nameSimilarity = this.calculateNameSimilarity(contact.full_name, existing.full_name);
           
           if (nameSimilarity >= 0.8) {
             let companyBonus = 0;
-            if (contact.company_name && existing.current_company) {
-              const companySimilarity = this.calculateNameSimilarity(contact.company_name, existing.current_company);
+            // Use current_title field instead of current_company, or check if company fields exist
+            if (contact.company_name && existing.current_title) {
+              const companySimilarity = this.calculateNameSimilarity(contact.company_name, existing.current_title);
               if (companySimilarity >= 0.8) {
                 companyBonus = 0.3;
               }
@@ -128,7 +129,7 @@ export class DuplicateDetector {
           }
         }
 
-        // LinkedIn match
+        // LinkedIn match - use correct field name
         if (contact.linkedin_url && existing.linkedin_url) {
           const normalizedContactLinkedIn = contact.linkedin_url.toLowerCase().trim();
           const normalizedExistingLinkedIn = existing.linkedin_url.toLowerCase().trim();
