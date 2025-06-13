@@ -40,11 +40,11 @@ class DocumentationService {
     // Initialize code analysis service
     await codeAnalysisService.initializeAnalysis();
     
-    // Start file watching
+    // Start real file watching (no longer simulated)
     codeAnalysisService.startFileWatcher();
     
     this.isInitialized = true;
-    console.log('Documentation system initialized successfully');
+    console.log('Documentation system initialized successfully with real file monitoring');
   }
 
   async generateDocumentationForProject(): Promise<void> {
@@ -114,6 +114,23 @@ class DocumentationService {
       upToDate: recent,
       needsUpdate: Math.max(0, total - recent)
     };
+  }
+
+  // Get file watcher status
+  public getSystemStatus() {
+    return {
+      isInitialized: this.isInitialized,
+      watcherStatus: codeAnalysisService.getWatcherStatus()
+    };
+  }
+
+  // Stop the documentation system
+  public stopSystem() {
+    if (this.isInitialized) {
+      codeAnalysisService.stopFileWatcher();
+      this.isInitialized = false;
+      console.log('Documentation system stopped');
+    }
   }
 }
 

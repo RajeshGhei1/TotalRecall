@@ -55,7 +55,7 @@ export function useRealTimeDocumentation() {
       const recentUpdates = await documentationService.getRecentUpdates(20);
       const changes: DocumentationChange[] = recentUpdates.map(update => ({
         documentPath: update.document_path,
-        updateType: update.update_type,
+        updateType: update.update_type as 'auto' | 'manual',
         timestamp: update.created_at,
         content: update.content
       }));
