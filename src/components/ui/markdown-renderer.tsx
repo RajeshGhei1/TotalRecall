@@ -1,132 +1,108 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { cn } from '@/lib/utils';
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ 
-  content, 
-  className 
-}) => {
+export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
-    <div className={cn("prose prose-slate max-w-none", className)}>
+    <div className={`prose prose-gray max-w-none ${className}`}>
       <ReactMarkdown
         components={{
-          h1: ({ children }) => (
-            <h1 className="text-3xl font-bold text-foreground mb-6 pb-2 border-b border-border">
-              {children}
-            </h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="text-2xl font-semibold text-foreground mt-8 mb-4">
-              {children}
-            </h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
-              {children}
-            </h3>
-          ),
-          h4: ({ children }) => (
-            <h4 className="text-lg font-semibold text-foreground mt-4 mb-2">
-              {children}
-            </h4>
-          ),
-          p: ({ children }) => (
-            <p className="text-foreground leading-7 mb-4">
-              {children}
-            </p>
-          ),
-          ul: ({ children }) => (
-            <ul className="list-disc pl-6 mb-4 space-y-1">
-              {children}
-            </ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="list-decimal pl-6 mb-4 space-y-1">
-              {children}
-            </ol>
-          ),
-          li: ({ children }) => (
-            <li className="text-foreground">
-              {children}
-            </li>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground mb-4">
-              {children}
-            </blockquote>
-          ),
-          code: ({ children, className }) => {
-            const isInline = !className;
-            if (isInline) {
+          // Custom styling for code blocks
+          code: ({ node, inline, className, children, ...props }) => {
+            if (inline) {
               return (
-                <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">
+                <code
+                  className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono"
+                  {...props}
+                >
                   {children}
                 </code>
               );
             }
             return (
-              <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">
-                <code className="text-sm font-mono text-foreground">
+              <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+                <code className="text-sm font-mono" {...props}>
                   {children}
                 </code>
               </pre>
             );
           },
+          // Custom styling for tables
           table: ({ children }) => (
-            <div className="overflow-x-auto mb-4">
-              <table className="min-w-full border border-border rounded-lg">
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-200">
                 {children}
               </table>
             </div>
           ),
-          thead: ({ children }) => (
-            <thead className="bg-muted">
-              {children}
-            </thead>
-          ),
-          tbody: ({ children }) => (
-            <tbody>
-              {children}
-            </tbody>
-          ),
-          tr: ({ children }) => (
-            <tr className="border-b border-border">
-              {children}
-            </tr>
-          ),
           th: ({ children }) => (
-            <th className="px-4 py-2 text-left font-semibold text-foreground">
+            <th className="border border-gray-200 bg-gray-50 px-4 py-2 text-left font-medium">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="px-4 py-2 text-foreground">
+            <td className="border border-gray-200 px-4 py-2">
               {children}
             </td>
           ),
-          a: ({ children, href }) => (
-            <a 
-              href={href} 
-              className="text-primary hover:underline"
+          // Custom styling for headings
+          h1: ({ children }) => (
+            <h1 className="text-3xl font-bold mb-6 text-gray-900 border-b pb-2">
+              {children}
+            </h1>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-2xl font-semibold mb-4 mt-8 text-gray-900">
+              {children}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-xl font-semibold mb-3 mt-6 text-gray-900">
+              {children}
+            </h3>
+          ),
+          h4: ({ children }) => (
+            <h4 className="text-lg font-semibold mb-2 mt-4 text-gray-900">
+              {children}
+            </h4>
+          ),
+          // Custom styling for lists
+          ul: ({ children }) => (
+            <ul className="list-disc list-inside mb-4 space-y-1">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="list-decimal list-inside mb-4 space-y-1">
+              {children}
+            </ol>
+          ),
+          // Custom styling for blockquotes
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-blue-500 pl-4 italic my-4 text-gray-700">
+              {children}
+            </blockquote>
+          ),
+          // Custom styling for links
+          a: ({ href, children }) => (
+            <a
+              href={href}
+              className="text-blue-600 hover:text-blue-800 underline"
               target="_blank"
               rel="noopener noreferrer"
             >
               {children}
             </a>
           ),
-          hr: () => (
-            <hr className="border-border my-8" />
-          )
         }}
       >
         {content}
       </ReactMarkdown>
     </div>
   );
-};
+}
