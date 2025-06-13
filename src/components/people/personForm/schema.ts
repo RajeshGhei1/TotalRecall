@@ -10,6 +10,11 @@ export const personFormSchema = z.object({
   company_id: z.string().optional(),
   role: z.string().optional(),
   personal_email: z.string().email('Invalid personal email').optional().or(z.literal('')),
+  // Add social media fields
+  linkedin_url: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
+  twitter_url: z.string().url('Invalid Twitter URL').optional().or(z.literal('')),
+  facebook_url: z.string().url('Invalid Facebook URL').optional().or(z.literal('')),
+  instagram_url: z.string().url('Invalid Instagram URL').optional().or(z.literal('')),
 });
 
 export type PersonFormValues = z.infer<typeof personFormSchema>;
