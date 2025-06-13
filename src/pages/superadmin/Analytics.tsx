@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { DynamicDashboard } from '@/components/dashboard/DynamicDashboard';
+import DynamicDashboard from '@/components/dashboard/DynamicDashboard';
 
 const Analytics: React.FC = () => {
   return (
