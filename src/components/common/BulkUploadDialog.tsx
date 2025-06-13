@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -14,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import * as XLSX from 'xlsx';
 
 interface BulkUploadDialogProps {
   isOpen: boolean;
@@ -31,7 +31,19 @@ interface ContactCSVRow {
   company_name?: string;
   reports_to_name?: string;
   direct_reports?: string; // comma-separated names
+  linkedin_url?: string;
+  current_title?: string;
+  current_company?: string;
+  experience_years?: string;
+  skills?: string;
+  notes?: string;
+  availability_date?: string;
+  desired_salary?: string;
+  resume_url?: string;
+  portfolio_url?: string;
 }
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB in bytes
 
 const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({ 
   isOpen, 
@@ -50,10 +62,29 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
-        toast.error("Please select a CSV file.");
+      
+      // Check file size
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error("File size exceeds 500MB limit. Please choose a smaller file.");
         return;
       }
+      
+      // Check file type
+      const validTypes = [
+        'text/csv',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ];
+      const validExtensions = ['.csv', '.xls', '.xlsx'];
+      
+      const isValidType = validTypes.includes(selectedFile.type) || 
+                         validExtensions.some(ext => selectedFile.name.toLowerCase().endsWith(ext));
+      
+      if (!isValidType) {
+        toast.error("Please select a CSV, XLS, or XLSX file.");
+        return;
+      }
+      
       setFile(selectedFile);
       setUploadResults(null);
     }
@@ -130,6 +161,67 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
     return rows;
   };
   
+  const parseFile = async (file: File): Promise<ContactCSVRow[]> => {
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.csv')) {
+      return parseCSV(await file.text());
+    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      return parseExcel(file);
+    } else {
+      throw new Error('Unsupported file format');
+    }
+  };
+  
+  const parseExcel = async (file: File): Promise<ContactCSVRow[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get the first worksheet
+          const worksheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[worksheetName];
+          
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+          
+          if (jsonData.length < 2) {
+            throw new Error('File must have at least a header row and one data row');
+          }
+          
+          const headers = jsonData[0].map((h: any) => String(h).toLowerCase().trim());
+          const rows: ContactCSVRow[] = [];
+          
+          for (let i = 1; i < jsonData.length; i++) {
+            const rowData = jsonData[i];
+            const row: any = {};
+            
+            headers.forEach((header, index) => {
+              if (rowData[index] !== undefined && rowData[index] !== null && rowData[index] !== '') {
+                row[header] = String(rowData[index]).trim();
+              }
+            });
+            
+            if (row.full_name || row.email) { // Only add rows with at least name or email
+              rows.push(row);
+            }
+          }
+          
+          resolve(rows);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsArrayBuffer(file);
+    });
+  };
+  
   const processContacts = async (contacts: ContactCSVRow[]) => {
     const results = { successful: 0, failed: 0, errors: [] as string[] };
     
@@ -142,23 +234,57 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
           continue;
         }
         
-        // Create person record
-        const { data: personData, error: personError } = await supabase
+        // Parse experience years
+        const experienceYears = contact.experience_years ? parseInt(contact.experience_years) : null;
+        
+        // Parse desired salary
+        const desiredSalary = contact.desired_salary ? parseFloat(contact.desired_salary.replace(/[,$]/g, '')) : null;
+        
+        // Parse skills (comma-separated string to array)
+        let skillsArray = [];
+        if (contact.skills) {
+          skillsArray = contact.skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+        }
+        
+        // Parse availability date
+        let availabilityDate = null;
+        if (contact.availability_date) {
+          const parsedDate = new Date(contact.availability_date);
+          if (!isNaN(parsedDate.getTime())) {
+            availabilityDate = parsedDate.toISOString().split('T')[0];
+          }
+        }
+        
+        // Create person record with all fields
+        const personData = {
+          full_name: contact.full_name,
+          email: contact.email,
+          phone: contact.phone || null,
+          location: contact.location || null,
+          personal_email: contact.personal_email || null,
+          linkedin_url: contact.linkedin_url || null,
+          current_title: contact.current_title || null,
+          current_company: contact.current_company || null,
+          experience_years: experienceYears,
+          skills: skillsArray.length > 0 ? JSON.stringify(skillsArray) : null,
+          notes: contact.notes || null,
+          availability_date: availabilityDate,
+          desired_salary: desiredSalary,
+          resume_url: contact.resume_url || null,
+          portfolio_url: contact.portfolio_url || null,
+          type: 'contact'
+        };
+        
+        const { data: insertedPerson, error: personError } = await supabase
           .from('people')
-          .insert([{
-            full_name: contact.full_name,
-            email: contact.email,
-            phone: contact.phone || null,
-            location: contact.location || null,
-            type: 'contact'
-          }])
+          .insert([personData])
           .select()
           .single();
           
         if (personError) throw personError;
         
         // If company_name is provided, try to find or create company and link
-        if (contact.company_name && contact.role && personData) {
+        if (contact.company_name && contact.role && insertedPerson) {
           // First try to find existing company
           let { data: companyData, error: companyFindError } = await supabase
             .from('companies')
@@ -193,7 +319,7 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
           const { error: relationshipError } = await supabase
             .from('company_relationships')
             .insert([{
-              person_id: personData.id,
+              person_id: insertedPerson.id,
               company_id: companyId,
               role: contact.role,
               relationship_type: 'business_contact',
@@ -220,7 +346,7 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
   
   const handleUpload = async () => {
     if (!file) {
-      toast.error("Please select a CSV file to upload.");
+      toast.error("Please select a file to upload.");
       return;
     }
     
@@ -228,11 +354,10 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
     setUploadResults(null);
     
     try {
-      const csvText = await file.text();
-      const contacts = parseCSV(csvText);
+      const contacts = await parseFile(file);
       
       if (contacts.length === 0) {
-        throw new Error('No valid data found in CSV file');
+        throw new Error('No valid data found in file');
       }
       
       const results = await processContacts(contacts);
@@ -264,20 +389,28 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
     onClose();
   };
   
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Bulk Upload {entityType === 'talent' ? 'Talents' : 'Business Contacts'}</DialogTitle>
           <DialogDescription>
-            Upload a CSV file with multiple {entityType === 'talent' ? 'talents' : 'business contacts'} to add them all at once.
+            Upload a CSV, XLS, or XLSX file with multiple {entityType === 'talent' ? 'talents' : 'business contacts'} to add them all at once. Maximum file size: 500MB.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
-              File must be in CSV format with proper headers.
+              Supports CSV, XLS, and XLSX files up to 500MB.
             </p>
             <Button 
               variant="outline" 
@@ -293,17 +426,37 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
           {entityType === 'contact' && (
             <div className="bg-blue-50 p-4 rounded-lg">
               <h4 className="font-medium text-blue-900 mb-2">Business Contact Fields:</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li><strong>full_name</strong> (required) - Full name of the contact</li>
-                <li><strong>email</strong> (required) - Business email address</li>
-                <li><strong>phone</strong> (optional) - Phone number</li>
-                <li><strong>location</strong> (optional) - Location/address</li>
-                <li><strong>personal_email</strong> (optional) - Personal email address</li>
-                <li><strong>role</strong> (optional) - Job title/role</li>
-                <li><strong>company_name</strong> (optional) - Company name (will be created if doesn't exist)</li>
-                <li><strong>reports_to_name</strong> (optional) - Manager's name</li>
-                <li><strong>direct_reports</strong> (optional) - Comma-separated list of direct report names</li>
-              </ul>
+              <div className="grid grid-cols-2 gap-2 text-sm text-blue-800">
+                <div>
+                  <strong>Required Fields:</strong>
+                  <ul className="mt-1 space-y-1">
+                    <li>• full_name</li>
+                    <li>• email</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>Optional Fields:</strong>
+                  <ul className="mt-1 space-y-1 max-h-32 overflow-y-auto">
+                    <li>• phone</li>
+                    <li>• location</li>
+                    <li>• personal_email</li>
+                    <li>• role</li>
+                    <li>• company_name</li>
+                    <li>• reports_to_name</li>
+                    <li>• direct_reports</li>
+                    <li>• linkedin_url</li>
+                    <li>• current_title</li>
+                    <li>• current_company</li>
+                    <li>• experience_years</li>
+                    <li>• skills (comma-separated)</li>
+                    <li>• notes</li>
+                    <li>• availability_date</li>
+                    <li>• desired_salary</li>
+                    <li>• resume_url</li>
+                    <li>• portfolio_url</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
           
@@ -314,20 +467,21 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                 <div className="text-left">
                   <p className="font-medium">{file.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {(file.size / 1024).toFixed(2)} KB
+                    {formatFileSize(file.size)}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <p>Drag and drop your CSV file here, or click to browse</p>
+                <p>Drag and drop your CSV, XLS, or XLSX file here, or click to browse</p>
+                <p className="text-sm text-gray-500">Maximum file size: 500MB</p>
               </div>
             )}
             <Input 
               id="file-upload" 
               type="file" 
-              accept=".csv" 
+              accept=".csv,.xls,.xlsx" 
               className="hidden"
               onChange={handleFileChange}
             />
