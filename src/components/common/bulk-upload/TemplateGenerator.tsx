@@ -12,16 +12,28 @@ const TemplateGenerator: React.FC<TemplateGeneratorProps> = ({ entityType }) => 
   const generateCSVTemplate = () => {
     if (entityType === 'contact') {
       const headers = [
+        // Basic Information (Required)
         'full_name',
-        'email', 
+        'email',
+        
+        // Contact Information
         'phone',
         'location',
         'personal_email',
+        
+        // Business Information
         'role',
         'company_name',
         'reports_to_name',
         'direct_reports',
+        
+        // Social Media Fields
         'linkedin_url',
+        'twitter_url',
+        'facebook_url',
+        'instagram_url',
+        
+        // Additional Business Fields
         'current_title',
         'current_company',
         'experience_years',
@@ -44,11 +56,14 @@ const TemplateGenerator: React.FC<TemplateGeneratorProps> = ({ entityType }) => 
         'Jane Smith',
         'Alice Johnson, Bob Wilson',
         'https://linkedin.com/in/johndoe',
+        'https://twitter.com/johndoe',
+        'https://facebook.com/johndoe',
+        'https://instagram.com/johndoe',
         'Senior Software Engineer',
         'Tech Corp',
         '5',
         'JavaScript, React, Node.js',
-        'Excellent team player',
+        'Excellent team player with strong leadership skills',
         '2024-01-15',
         '85000',
         'https://example.com/resume.pdf',

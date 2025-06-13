@@ -64,7 +64,7 @@ export class EnhancedContactProcessor {
             if (action === 'merge') {
               updatedData = SmartMerger.mergeContacts(existingRecord, contact, mergeOptions);
             } else {
-              // Simple update - new data overwrites old (only for fields that exist)
+              // Simple update - new data overwrites old (only for fields that exist in people table)
               updatedData = this.convertContactToPersonData(contact);
             }
 
@@ -80,7 +80,6 @@ export class EnhancedContactProcessor {
             results.duplicates_merged++;
             console.log(`${action === 'merge' ? 'Merged' : 'Updated'} duplicate: ${contact.full_name}`);
 
-            // Note: Company relationship handling removed since it would require additional tables
           } else if (action === 'create_anyway') {
             // Create new record despite being a duplicate
             await this.createNewPerson(contact);
@@ -120,18 +119,33 @@ export class EnhancedContactProcessor {
 
     if (personError) throw personError;
 
-    // Note: Company relationship handling removed since it would require additional tables
+    // TODO: Handle additional fields that don't exist in people table
+    // This would require creating separate tables for:
+    // - Company relationships (company_name, reports_to_name, direct_reports)
+    // - Professional details (current_title, current_company, experience_years, skills, etc.)
+    // For now, these fields are preserved in the CSV but not stored in the database
+
     return insertedPerson.id;
   }
 
   private static convertContactToPersonData(contact: ContactCSVRow) {
-    // Only include fields that exist in the people table
-    return {
+    // Only include fields that exist in the people table schema
+    const personData: any = {
       full_name: contact.full_name,
       email: contact.email,
       phone: contact.phone || null,
       location: contact.location || null,
       type: 'contact' // Set the type based on what's being imported
     };
+
+    // Add social media fields if they exist in the schema
+    if (contact.personal_email) personData.personal_email = contact.personal_email;
+    if (contact.role) personData.role = contact.role;
+    if (contact.linkedin_url) personData.linkedin_url = contact.linkedin_url;
+    if (contact.twitter_url) personData.twitter_url = contact.twitter_url;
+    if (contact.facebook_url) personData.facebook_url = contact.facebook_url;
+    if (contact.instagram_url) personData.instagram_url = contact.instagram_url;
+
+    return personData;
   }
 }

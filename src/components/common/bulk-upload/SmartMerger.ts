@@ -27,17 +27,32 @@ export class SmartMerger {
       return existingValue;
     };
 
-    // Merge basic fields - only use fields that exist in people table
+    // Merge basic fields that exist in people table
     const fieldMappings = {
       'full_name': 'full_name',
       'email': 'email',
       'phone': 'phone',
       'location': 'location'
-      // Note: Removed fields that don't exist in people table:
-      // personal_email, linkedin_url, current_title, current_company, notes, resume_url, portfolio_url
     };
 
-    Object.entries(fieldMappings).forEach(([csvField, dbField]) => {
+    // Handle social media fields that exist in schema
+    const socialMediaFields = {
+      'linkedin_url': 'linkedin_url',
+      'twitter_url': 'twitter_url', 
+      'facebook_url': 'facebook_url',
+      'instagram_url': 'instagram_url'
+    };
+
+    // Handle business fields that exist in schema
+    const businessFields = {
+      'personal_email': 'personal_email',
+      'role': 'role'
+    };
+
+    // Merge all fields that exist in the people table
+    const allFieldMappings = { ...fieldMappings, ...socialMediaFields, ...businessFields };
+
+    Object.entries(allFieldMappings).forEach(([csvField, dbField]) => {
       if (newRecord[csvField as keyof ContactCSVRow] !== undefined) {
         merged[dbField] = mergeField(
           existingRecord[dbField],
@@ -47,8 +62,10 @@ export class SmartMerger {
       }
     });
 
-    // Note: Removed numeric fields handling since they don't exist in people table
-    // (experience_years, desired_salary, availability_date, skills)
+    // Note: Fields like company_name, reports_to_name, direct_reports, current_title, 
+    // current_company, experience_years, skills, notes, availability_date, desired_salary,
+    // resume_url, portfolio_url are not part of the people table schema and would require
+    // additional processing or separate tables to handle properly.
 
     // Update timestamp
     merged.updated_at = new Date().toISOString();
