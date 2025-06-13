@@ -1,87 +1,115 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Settings,
+  ArrowLeft
+} from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
-import GlobalTenantSelector from '../shared/GlobalTenantSelector';
-import { Globe, Link, Database, MessageSquare } from 'lucide-react';
+import { ModuleConnectionManager } from '../modules/ModuleConnectionManager';
+import ModuleEnablementManager from '../modules/ModuleEnablementManager';
+import { useTenants } from '@/hooks/useTenants';
 
-const IntegrationsTabContent: React.FC = () => {
+const IntegrationsTabContent = () => {
   const { selectedTenantId } = useTenantContext();
+  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<'overview' | 'module-config'>('overview');
+  
+  const { tenants } = useTenants();
+  const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
 
-  const integrations = [
-    {
-      id: 'linkedin',
-      name: 'LinkedIn',
-      description: 'Connect LinkedIn for talent sourcing and outreach',
-      icon: Link,
-      status: 'available'
-    },
-    {
-      id: 'email',
-      name: 'Email Service',
-      description: 'Configure SMTP settings for automated emails',
-      icon: MessageSquare,
-      status: 'available'
-    },
-    {
-      id: 'api',
-      name: 'External APIs',
-      description: 'Manage third-party API connections',
-      icon: Database,
-      status: 'available'
-    }
-  ];
+  const handleConfigureModule = (moduleName: string) => {
+    setSelectedIntegration(moduleName);
+    setCurrentView('module-config');
+  };
+
+  if (!selectedTenantId) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <Settings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-600">Please select a tenant to manage integrations</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (currentView === 'module-config' && selectedIntegration) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setCurrentView('overview');
+              setSelectedIntegration(null);
+            }}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Overview
+          </Button>
+        </div>
+        
+        <ModuleConnectionManager
+          moduleName={selectedIntegration}
+          moduleDisplayName={selectedIntegration.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tenant Selection</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <GlobalTenantSelector />
-        </CardContent>
-      </Card>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Integration Management</h2>
+        <p className="text-gray-600">
+          Manage integration modules and their configurations for the selected tenant.
+        </p>
+      </div>
 
-      {selectedTenantId ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Available Integrations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {integrations.map((integration) => (
-                <div key={integration.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <integration.icon className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{integration.name}</h3>
-                      <p className="text-sm text-muted-foreground">{integration.description}</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                    {integration.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="text-center py-8">
-            <h3 className="text-lg font-medium mb-2">Select a Tenant</h3>
-            <p className="text-muted-foreground">
-              Choose a tenant above to manage their integrations
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="enablement" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="enablement">Module Enablement</TabsTrigger>
+          <TabsTrigger value="connections">Active Connections</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="enablement" className="mt-6">
+          {selectedTenant && (
+            <ModuleEnablementManager
+              tenantId={selectedTenantId}
+              tenantName={selectedTenant.name}
+              onConfigureModule={handleConfigureModule}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="connections" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Module Connections</CardTitle>
+              <CardDescription>
+                Configure and manage connections for enabled integration modules
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Settings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600 mb-4">
+                  Select a module from the Enablement tab to configure its connections
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => setCurrentView('overview')}
+                >
+                  View Module Enablement
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

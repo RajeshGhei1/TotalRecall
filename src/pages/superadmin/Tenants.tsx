@@ -1,83 +1,100 @@
 
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { useTenants } from '@/hooks/useTenants';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import TenantUserManager from '@/components/TenantUserManager';
+import TenantsHeader from '@/components/superadmin/TenantsHeader';
+import TenantList from '@/components/superadmin/TenantList';
+import CreateTenantDialog from '@/components/superadmin/CreateTenantDialog';
+import EditTenantDialog from '@/components/superadmin/EditTenantDialog';
+import CustomFieldsDialog from '@/components/superadmin/CustomFieldsDialog';
+import { TenantFormValues } from '@/components/superadmin/tenant-form';
+import { useTenants, Tenant } from '@/hooks/useTenants';
 
-const Tenants: React.FC = () => {
+const Tenants = () => {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [isUserManagerOpen, setIsUserManagerOpen] = useState(false);
+  const [isCustomFieldsOpen, setIsCustomFieldsOpen] = useState(false);
+
   const { tenants, isLoading, createTenant, updateTenant } = useTenants();
 
-  const handleCreateTenant = async () => {
-    try {
-      await createTenant.mutateAsync({
-        name: 'New Tenant',
-        description: 'A new tenant'
-      });
-    } catch (error) {
-      console.error('Failed to create tenant:', error);
+  const handleCreateTenant = (data: TenantFormValues) => {
+    createTenant.mutate(data);
+    setIsCreateDialogOpen(false);
+  };
+
+  const handleEditTenant = (data: TenantFormValues) => {
+    if (selectedTenant) {
+      updateTenant.mutate({ id: selectedTenant.id, tenantData: data });
+      setIsEditDialogOpen(false);
+      setSelectedTenant(null);
     }
   };
 
-  const handleUpdateTenant = async (id: string) => {
-    try {
-      await updateTenant.mutateAsync({
-        id,
-        updates: {
-          name: 'Updated Tenant Name'
-        }
-      });
-    } catch (error) {
-      console.error('Failed to update tenant:', error);
-    }
+  const handleOpenUserManager = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsUserManagerOpen(true);
   };
 
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <div className="animate-pulse space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const handleOpenCustomFields = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsCustomFieldsOpen(true);
+  };
+
+  const handleOpenEditDialog = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsEditDialogOpen(true);
+  };
 
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Tenants</h1>
-          <Button onClick={handleCreateTenant}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Tenant
-          </Button>
-        </div>
+        <TenantsHeader onCreateTenant={() => setIsCreateDialogOpen(true)} />
+        
+        <TenantList 
+          tenants={tenants} 
+          isLoading={isLoading} 
+          onOpenUserManager={handleOpenUserManager} 
+          onOpenCustomFields={handleOpenCustomFields}
+          onEditTenant={handleOpenEditDialog}
+        />
 
-        <div className="grid gap-4">
-          {tenants?.map((tenant) => (
-            <Card key={tenant.id}>
-              <CardHeader>
-                <CardTitle>{tenant.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{tenant.description}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleUpdateTenant(tenant.id)}
-                  className="mt-2"
-                >
-                  Update
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <CreateTenantDialog
+          isOpen={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+          onSubmit={handleCreateTenant}
+          isSubmitting={createTenant.isPending}
+        />
+
+        <EditTenantDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setSelectedTenant(null);
+          }}
+          onSubmit={handleEditTenant}
+          isSubmitting={updateTenant.isPending}
+          tenant={selectedTenant}
+        />
+
+        {selectedTenant && (
+          <>
+            <TenantUserManager
+              tenantId={selectedTenant.id}
+              tenantName={selectedTenant.name}
+              isOpen={isUserManagerOpen}
+              onClose={() => setIsUserManagerOpen(false)}
+            />
+            
+            <CustomFieldsDialog
+              tenantId={selectedTenant.id}
+              tenantName={selectedTenant.name}
+              isOpen={isCustomFieldsOpen}
+              onClose={() => setIsCustomFieldsOpen(false)}
+            />
+          </>
+        )}
       </div>
     </AdminLayout>
   );

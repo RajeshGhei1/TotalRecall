@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -14,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCreateFormDefinition, FormDefinitionInsert } from '@/hooks/forms/useFormDefinitions';
+import { useCreateFormDefinition } from '@/hooks/forms/useFormDefinitions';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { FormDefinition } from '@/types/form-builder';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -70,24 +69,22 @@ const CreateFormDialog: React.FC<CreateFormDialogProps> = ({
     const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     
     try {
-      const formInsertData: FormDefinitionInsert = {
+      const newForm = await createFormMutation.mutateAsync({
         name: formData.name,
         slug,
-        description: formData.description || undefined,
-        tenant_id: formData.visibility_scope === 'tenant_specific' ? formData.target_tenant_id || undefined : undefined,
+        description: formData.description || null,
+        tenant_id: formData.visibility_scope === 'tenant_specific' ? formData.target_tenant_id : null,
         visibility_scope: formData.visibility_scope,
         access_level: formData.access_level,
         required_modules: formData.required_modules,
         is_active: true,
         settings: {},
-      };
-
-      const newForm = await createFormMutation.mutateAsync(formInsertData);
+      });
 
       // Invalidate form options cache to include the new form
       await queryClient.invalidateQueries({ queryKey: ['available-form-options'] });
 
-      onSuccess(newForm as FormDefinition);
+      onSuccess(newForm);
       onClose();
       setFormData({
         name: '',

@@ -1,10 +1,8 @@
 
 import React from 'react';
+import { Building2, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Building2 } from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
-import { useTenants } from '@/hooks/useTenants';
-import { cn } from '@/lib/utils';
 
 interface TenantContextIndicatorProps {
   showInHeader?: boolean;
@@ -13,30 +11,37 @@ interface TenantContextIndicatorProps {
 
 const TenantContextIndicator: React.FC<TenantContextIndicatorProps> = ({ 
   showInHeader = false, 
-  className 
+  className = "" 
 }) => {
-  const { selectedTenantId } = useTenantContext();
-  const { tenants } = useTenants();
-  
-  const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
+  const { selectedTenantId, selectedTenantName } = useTenantContext();
 
-  if (!selectedTenantId || !selectedTenant) {
+  if (!selectedTenantId) {
     return (
-      <div className={cn("flex items-center gap-2", className)}>
-        <Badge variant="outline" className="text-muted-foreground">
-          <Building2 className="h-3 w-3 mr-1" />
+      <div className={`flex items-center gap-2 ${className}`}>
+        <AlertCircle className="h-4 w-4 text-amber-500" />
+        <span className="text-sm text-muted-foreground">
           No tenant selected
+        </span>
+      </div>
+    );
+  }
+
+  if (showInHeader) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <Building2 className="h-4 w-4 text-blue-600" />
+        <span className="font-medium text-blue-900">{selectedTenantName}</span>
+        <Badge variant="outline" className="text-xs">
+          {selectedTenantId.slice(0, 8)}...
         </Badge>
       </div>
     );
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <Badge variant="default" className="bg-primary text-primary-foreground">
-        <Building2 className="h-3 w-3 mr-1" />
-        {selectedTenant.name}
-      </Badge>
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md ${className}`}>
+      <Building2 className="h-3 w-3 text-blue-600" />
+      <span className="text-sm font-medium text-blue-900">{selectedTenantName}</span>
     </div>
   );
 };

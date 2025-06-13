@@ -2,18 +2,18 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Shield, 
-  Users, 
-  Settings,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Crown
+  AlertTriangle, 
+  Settings, 
+  TrendingUp, 
+  Clock,
+  Users
 } from 'lucide-react';
 import { ModuleAccessService } from '@/services/moduleAccessService';
-import { SubscriptionService } from '@/services/subscriptionService';
+import { useQuery } from '@tanstack/react-query';
 
 interface TenantAccessOverviewProps {
   tenantId: string;
@@ -24,133 +24,125 @@ const TenantAccessOverview: React.FC<TenantAccessOverviewProps> = ({
   tenantId,
   tenantName
 }) => {
-  const { data: accessStats, isLoading: statsLoading } = useQuery({
-    queryKey: ['module-access-stats', tenantId],
+  const { data: accessStats, isLoading } = useQuery({
+    queryKey: ['tenant-access-stats', tenantId],
     queryFn: () => ModuleAccessService.getAccessStats(tenantId)
   });
 
-  const { data: subscriptionOverview, isLoading: subscriptionLoading } = useQuery({
-    queryKey: ['tenant-subscription-overview', tenantId],
-    queryFn: () => SubscriptionService.getTenantSubscriptionOverview(tenantId)
-  });
-
   const { data: migrationCandidates } = useQuery({
-    queryKey: ['migration-candidates', tenantId],
+    queryKey: ['modules-needing-migration', tenantId],
     queryFn: () => ModuleAccessService.getModulesNeedingMigration(tenantId)
   });
 
-  if (statsLoading || subscriptionLoading) {
+  if (isLoading) {
     return (
-      <div className="animate-pulse space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-32 bg-gray-200 rounded"></div>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-8 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  const hasActiveSubscription = subscriptionOverview?.tenantSubscription?.status === 'active';
+  const hasOverrides = (accessStats?.overrideModules || 0) > 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <Users className="h-5 w-5" />
             Access Overview - {tenantName}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-              <div className="text-2xl font-bold text-green-900">{accessStats?.subscriptionModules || 0}</div>
-              <div className="text-sm text-green-700">Via Subscription</div>
+            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center justify-center mb-2">
+                <Shield className="h-6 w-6 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-green-900">{accessStats?.subscriptionModules || 0}</p>
+              <p className="text-sm text-green-700">Via Subscription</p>
             </div>
-            <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <div className="text-2xl font-bold text-amber-900">{accessStats?.overrideModules || 0}</div>
-              <div className="text-sm text-amber-700">Via Override</div>
+            
+            <div className="text-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="flex items-center justify-center mb-2">
+                <AlertTriangle className="h-6 w-6 text-amber-600" />
+              </div>
+              <p className="text-2xl font-bold text-amber-900">{accessStats?.overrideModules || 0}</p>
+              <p className="text-sm text-amber-700">Via Override</p>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="text-2xl font-bold text-blue-900">{accessStats?.totalActiveModules || 0}</div>
-              <div className="text-sm text-blue-700">Total Active</div>
+            
+            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-center mb-2">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-900">{accessStats?.totalActiveModules || 0}</p>
+              <p className="text-sm text-blue-700">Total Active</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-lg font-bold text-gray-900">{accessStats?.planName || 'No Plan'}</div>
-              <div className="text-sm text-gray-700">Current Plan</div>
+            
+            <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-center mb-2">
+                <Settings className="h-6 w-6 text-gray-600" />
+              </div>
+              <p className="text-lg font-bold text-gray-900">{accessStats?.planName}</p>
+              <p className="text-sm text-gray-700">Current Plan</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Subscription Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5" />
-            Subscription Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${hasActiveSubscription ? 'bg-green-100' : 'bg-gray-100'}`}>
-                {hasActiveSubscription ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-gray-600" />
-                )}
-              </div>
-              <div>
-                <h3 className="font-medium">
-                  {hasActiveSubscription ? 'Active Subscription' : 'No Active Subscription'}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {hasActiveSubscription 
-                    ? `Plan: ${accessStats?.planName}`
-                    : 'Consider setting up a subscription plan for better module management'
-                  }
-                </p>
-              </div>
-            </div>
-            <Badge variant={hasActiveSubscription ? "default" : "secondary"}>
-              {hasActiveSubscription ? 'Active' : 'Inactive'}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Migration Recommendations */}
-      {migrationCandidates && migrationCandidates.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              Migration Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
-                The following modules are currently assigned via override. Consider migrating them to subscription-based access:
-              </p>
-              {migrationCandidates.map((candidate) => (
-                <div key={candidate.id} className="flex items-center justify-between p-3 border rounded-lg bg-amber-50">
+          {/* Override Warning */}
+          {hasOverrides && (
+            <Alert className="border-amber-200 bg-amber-50">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">{candidate.moduleName}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Category: {candidate.moduleCategory} • Assigned: {new Date(candidate.assignedAt).toLocaleDateString()}
+                    <strong>Override Assignments Detected</strong>
+                    <p className="text-sm mt-1">
+                      This tenant has {accessStats?.overrideModules} modules assigned via override. 
+                      Consider migrating to subscription-based access.
                     </p>
                   </div>
-                  <Badge variant="outline" className="border-amber-300 text-amber-800">
-                    Override
-                  </Badge>
+                  <Button variant="outline" size="sm" className="border-amber-300 text-amber-800">
+                    Review Overrides
+                  </Button>
                 </div>
-              ))}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Migration Candidates */}
+          {migrationCandidates && migrationCandidates.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm text-gray-700">Override Assignments:</h4>
+              <div className="space-y-2">
+                {migrationCandidates.map((module: any) => (
+                  <div key={module.id} className="flex items-center justify-between p-2 bg-amber-50 rounded border border-amber-200">
+                    <div>
+                      <span className="font-medium text-amber-900">{module.moduleName}</span>
+                      <Badge variant="outline" className="ml-2 text-xs bg-amber-100 border-amber-300">
+                        {module.moduleCategory}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-amber-700">
+                      <Clock className="h-3 w-3" />
+                      {module.expiresAt ? (
+                        <span>Expires: {new Date(module.expiresAt).toLocaleDateString()}</span>
+                      ) : (
+                        <span>No expiry</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

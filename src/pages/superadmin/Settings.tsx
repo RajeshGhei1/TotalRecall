@@ -1,63 +1,61 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { 
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { TabsContent } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import SetupWizard from '@/components/superadmin/settings/SetupWizard';
+
+// Import new tenant context components
+import { TenantProvider } from '@/contexts/TenantContext';
+
+// Import new refactored components
 import SettingsHeader from '@/components/superadmin/settings/layout/SettingsHeader';
 import SettingsTabs from '@/components/superadmin/settings/layout/SettingsTabs';
 import ModulesTabContent from '@/components/superadmin/settings/tabs/ModulesTabContent';
-import FormsTabContent from '@/components/superadmin/settings/tabs/FormsTabContent';
 import IntegrationsTabContent from '@/components/superadmin/settings/tabs/IntegrationsTabContent';
+import FormsTabContent from '@/components/superadmin/settings/tabs/FormsTabContent';
 
-const Settings: React.FC = () => {
+const Settings = () => {
   console.log("Rendering SuperAdmin Settings Page");
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
   
   return (
-    <AdminLayout>
-      <div className="p-4 md:p-6">
-        <div className="mb-6">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Tenant Settings</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-
-        <ErrorBoundary>
-          <SettingsHeader />
-          
-          <ErrorBoundary>
+    <ErrorBoundary>
+      <AdminLayout>
+        <TenantProvider>
+          <div className="p-6">
+            <SettingsHeader />
+            
+            <ErrorBoundary>
+              <SetupWizard 
+                open={showSetupWizard} 
+                onOpenChange={setShowSetupWizard} 
+              />
+            </ErrorBoundary>
+            
             <SettingsTabs>
-              <TabsContent value="modules" className="mt-6">
-                <ModulesTabContent />
-              </TabsContent>
+              <ErrorBoundary>
+                <TabsContent value="modules" className="mt-6">
+                  <ModulesTabContent />
+                </TabsContent>
+              </ErrorBoundary>
               
-              <TabsContent value="forms" className="mt-6">
-                <FormsTabContent />
-              </TabsContent>
+              <ErrorBoundary>
+                <TabsContent value="forms" className="mt-6">
+                  <FormsTabContent />
+                </TabsContent>
+              </ErrorBoundary>
               
-              <TabsContent value="integrations" className="mt-6">
-                <IntegrationsTabContent />
-              </TabsContent>
+              <ErrorBoundary>
+                <TabsContent value="integrations" className="mt-6">
+                  <IntegrationsTabContent />
+                </TabsContent>
+              </ErrorBoundary>
             </SettingsTabs>
-          </ErrorBoundary>
-        </ErrorBoundary>
-      </div>
-    </AdminLayout>
+          </div>
+        </TenantProvider>
+      </AdminLayout>
+    </ErrorBoundary>
   );
 };
 
