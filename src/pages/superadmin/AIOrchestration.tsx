@@ -1,6 +1,6 @@
 
 import React from 'react';
-import AdminLayout from '@/components/AdminLayout';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -9,45 +9,31 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AIOrchestrationManager } from '@/components/superadmin/ai/AIOrchestrationManager';
+import AdminLayout from '@/components/AdminLayout';
 
-const AIOrchestration = () => {
+const AIOrchestration: React.FC = () => {
   return (
     <AdminLayout>
-      <div className="p-6">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>AI Orchestration</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <ErrorBoundary>
+        <div className="p-4 md:p-6">
+          <div className="mb-6">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>AI Orchestration</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">AI Orchestration</h1>
-          <p className="text-muted-foreground">
-            Manage AI agents, models, and orchestration workflows
-          </p>
+          <AIOrchestrationManager />
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>AI System Management</CardTitle>
-            <CardDescription>
-              Configure and monitor AI agents and orchestration workflows
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              AI orchestration management functionality will be implemented here.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      </ErrorBoundary>
     </AdminLayout>
   );
 };

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import AdminLayout from '@/components/AdminLayout';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -10,32 +10,30 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { SecurityDashboard as SecurityDashboardComponent } from '@/components/superadmin/security/SecurityDashboard';
+import AdminLayout from '@/components/AdminLayout';
 
-const SecurityDashboard = () => {
+const SecurityDashboard: React.FC = () => {
   return (
     <AdminLayout>
-      <div className="p-6">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Security Dashboard</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <ErrorBoundary>
+        <div className="p-4 md:p-6">
+          <div className="mb-6">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/superadmin/dashboard">Super Admin</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Security Dashboard</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Security Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor security metrics and system health
-          </p>
+          <SecurityDashboardComponent />
         </div>
-
-        <SecurityDashboardComponent />
-      </div>
+      </ErrorBoundary>
     </AdminLayout>
   );
 };
