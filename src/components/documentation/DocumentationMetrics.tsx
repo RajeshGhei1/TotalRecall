@@ -1,0 +1,85 @@
+
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  FileText, 
+  GitCommit, 
+  Clock, 
+  TrendingUp,
+  CheckCircle,
+  AlertTriangle
+} from 'lucide-react';
+
+interface DocumentationMetric {
+  label: string;
+  value: number;
+  change: number;
+  icon: React.ReactNode;
+  color: 'green' | 'red' | 'blue' | 'yellow';
+}
+
+export function DocumentationMetrics() {
+  const metrics: DocumentationMetric[] = [
+    {
+      label: 'Total Documents',
+      value: 45,
+      change: 12,
+      icon: <FileText className="h-4 w-4" />,
+      color: 'blue'
+    },
+    {
+      label: 'Auto-Generated',
+      value: 32,
+      change: 8,
+      icon: <GitCommit className="h-4 w-4" />,
+      color: 'green'
+    },
+    {
+      label: 'Up to Date',
+      value: 38,
+      change: -2,
+      icon: <CheckCircle className="h-4 w-4" />,
+      color: 'green'
+    },
+    {
+      label: 'Needs Update',
+      value: 7,
+      change: 2,
+      icon: <AlertTriangle className="h-4 w-4" />,
+      color: 'yellow'
+    }
+  ];
+
+  const getChangeColor = (change: number) => {
+    return change > 0 ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-600';
+  };
+
+  const getChangeIcon = (change: number) => {
+    return change > 0 ? '↗' : change < 0 ? '↙' : '→';
+  };
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {metrics.map((metric, index) => (
+        <Card key={index}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {metric.label}
+            </CardTitle>
+            <div className={`text-${metric.color}-600`}>
+              {metric.icon}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{metric.value}</div>
+            <div className={`text-xs ${getChangeColor(metric.change)} flex items-center`}>
+              <span className="mr-1">{getChangeIcon(metric.change)}</span>
+              {Math.abs(metric.change)} from last week
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
