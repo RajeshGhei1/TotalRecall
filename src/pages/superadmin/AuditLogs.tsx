@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { AuditDashboard } from '@/components/superadmin/audit/AuditDashboard';
+import AuditDashboard from '@/components/superadmin/audit/AuditDashboard';
 
 const AuditLogs = () => {
   return (

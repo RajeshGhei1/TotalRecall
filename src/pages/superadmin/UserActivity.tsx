@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { UserActivityDashboard } from '@/components/superadmin/user-activity/UserActivityDashboard';
+import UserActivityDashboard from '@/components/superadmin/user-activity/UserActivityDashboard';
 
 const UserActivity = () => {
   return (

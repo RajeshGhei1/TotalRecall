@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import TenantUserManager from '@/components/TenantUserManager';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const TenantUsers = () => {
   return (
@@ -34,7 +34,19 @@ const TenantUsers = () => {
           </p>
         </div>
 
-        <TenantUserManager />
+        <Card>
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>
+              Manage users across all tenant organizations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Tenant user management functionality will be implemented here.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
