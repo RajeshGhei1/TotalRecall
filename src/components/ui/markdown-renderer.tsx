@@ -145,4 +145,3 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     </div>
   );
 }
-</MarkdownRenderer>
