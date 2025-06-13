@@ -9,14 +9,28 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, Upload, Download, File } from 'lucide-react';
+import { Loader2, Upload, Download, File, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface BulkUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
   entityType: 'talent' | 'contact';
+}
+
+interface ContactCSVRow {
+  full_name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  personal_email?: string;
+  role?: string;
+  company_name?: string;
+  reports_to_name?: string;
+  direct_reports?: string; // comma-separated names
 }
 
 const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({ 
@@ -26,41 +40,237 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState<{
+    successful: number;
+    failed: number;
+    errors: string[];
+  } | null>(null);
+  const queryClient = useQueryClient();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
+        toast.error("Please select a CSV file.");
+        return;
+      }
+      setFile(selectedFile);
+      setUploadResults(null);
+    }
+  };
+  
+  const generateCSVTemplate = () => {
+    if (entityType === 'contact') {
+      const headers = [
+        'full_name',
+        'email', 
+        'phone',
+        'location',
+        'personal_email',
+        'role',
+        'company_name',
+        'reports_to_name',
+        'direct_reports'
+      ];
+      
+      const sampleData = [
+        'John Doe',
+        'john.doe@company.com',
+        '+1-555-123-4567',
+        'New York, NY',
+        'john.personal@gmail.com',
+        'Senior Manager',
+        'Acme Corporation',
+        'Jane Smith',
+        'Alice Johnson, Bob Wilson'
+      ];
+      
+      const csvContent = [
+        headers.join(','),
+        sampleData.join(',')
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'business_contacts_template.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     }
   };
   
   const handleDownloadTemplate = () => {
-    // In a real implementation, this would download a CSV template
-    toast.success(`${entityType === 'talent' ? 'Talent' : 'Contact'} CSV template has been downloaded to your device.`);
+    generateCSVTemplate();
+    toast.success(`${entityType === 'talent' ? 'Talent' : 'Business Contact'} CSV template has been downloaded to your device.`);
   };
   
-  const handleUpload = () => {
+  const parseCSV = (csvText: string): ContactCSVRow[] => {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    if (lines.length < 2) throw new Error('CSV must have at least a header row and one data row');
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const rows: ContactCSVRow[] = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+      const row: any = {};
+      
+      headers.forEach((header, index) => {
+        if (values[index]) {
+          row[header] = values[index];
+        }
+      });
+      
+      rows.push(row);
+    }
+    
+    return rows;
+  };
+  
+  const processContacts = async (contacts: ContactCSVRow[]) => {
+    const results = { successful: 0, failed: 0, errors: [] as string[] };
+    
+    for (const contact of contacts) {
+      try {
+        // Validate required fields
+        if (!contact.full_name || !contact.email) {
+          results.failed++;
+          results.errors.push(`Row ${results.successful + results.failed + 1}: Missing required fields (full_name, email)`);
+          continue;
+        }
+        
+        // Create person record
+        const { data: personData, error: personError } = await supabase
+          .from('people')
+          .insert([{
+            full_name: contact.full_name,
+            email: contact.email,
+            phone: contact.phone || null,
+            location: contact.location || null,
+            type: 'contact'
+          }])
+          .select()
+          .single();
+          
+        if (personError) throw personError;
+        
+        // If company_name is provided, try to find or create company and link
+        if (contact.company_name && contact.role && personData) {
+          // First try to find existing company
+          let { data: companyData, error: companyFindError } = await supabase
+            .from('companies')
+            .select('id, name')
+            .ilike('name', contact.company_name)
+            .limit(1);
+            
+          if (companyFindError) {
+            console.warn('Error finding company:', companyFindError);
+          }
+          
+          let companyId: string;
+          
+          if (companyData && companyData.length > 0) {
+            companyId = companyData[0].id;
+          } else {
+            // Create new company
+            const { data: newCompanyData, error: companyCreateError } = await supabase
+              .from('companies')
+              .insert([{
+                name: contact.company_name,
+                description: `Company created via bulk upload for ${contact.full_name}`
+              }])
+              .select('id')
+              .single();
+              
+            if (companyCreateError) throw companyCreateError;
+            companyId = newCompanyData.id;
+          }
+          
+          // Create company relationship
+          const { error: relationshipError } = await supabase
+            .from('company_relationships')
+            .insert([{
+              person_id: personData.id,
+              company_id: companyId,
+              role: contact.role,
+              relationship_type: 'business_contact',
+              start_date: new Date().toISOString().split('T')[0],
+              is_current: true
+            }]);
+            
+          if (relationshipError) {
+            console.warn('Error creating company relationship:', relationshipError);
+            // Don't fail the entire import for relationship errors
+          }
+        }
+        
+        results.successful++;
+        
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`${contact.full_name || 'Unknown'}: ${error.message}`);
+      }
+    }
+    
+    return results;
+  };
+  
+  const handleUpload = async () => {
     if (!file) {
       toast.error("Please select a CSV file to upload.");
       return;
     }
     
     setIsUploading(true);
+    setUploadResults(null);
     
-    // Simulate file processing
-    setTimeout(() => {
+    try {
+      const csvText = await file.text();
+      const contacts = parseCSV(csvText);
+      
+      if (contacts.length === 0) {
+        throw new Error('No valid data found in CSV file');
+      }
+      
+      const results = await processContacts(contacts);
+      setUploadResults(results);
+      
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['people', entityType] });
+      
+      if (results.successful > 0) {
+        toast.success(`Successfully imported ${results.successful} ${entityType === 'talent' ? 'talents' : 'contacts'}${results.failed > 0 ? ` (${results.failed} failed)` : ''}`);
+      }
+      
+      if (results.failed > 0) {
+        toast.error(`${results.failed} records failed to import. Check the results for details.`);
+      }
+      
+    } catch (error: any) {
+      console.error('Bulk upload error:', error);
+      toast.error(`Upload failed: ${error.message}`);
+      setUploadResults({ successful: 0, failed: 0, errors: [error.message] });
+    } finally {
       setIsUploading(false);
-      toast.success(`Successfully processed ${file.name} with ${entityType} data.`);
-      onClose();
-    }, 2000);
+    }
+  };
+  
+  const handleClose = () => {
+    setFile(null);
+    setUploadResults(null);
+    onClose();
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Bulk Upload {entityType === 'talent' ? 'Talents' : 'Contacts'}</DialogTitle>
+          <DialogTitle>Bulk Upload {entityType === 'talent' ? 'Talents' : 'Business Contacts'}</DialogTitle>
           <DialogDescription>
-            Upload a CSV file with multiple {entityType === 'talent' ? 'talents' : 'contacts'} to add them all at once.
+            Upload a CSV file with multiple {entityType === 'talent' ? 'talents' : 'business contacts'} to add them all at once.
           </DialogDescription>
         </DialogHeader>
         
@@ -79,6 +289,23 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
               Download Template
             </Button>
           </div>
+          
+          {entityType === 'contact' && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Business Contact Fields:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li><strong>full_name</strong> (required) - Full name of the contact</li>
+                <li><strong>email</strong> (required) - Business email address</li>
+                <li><strong>phone</strong> (optional) - Phone number</li>
+                <li><strong>location</strong> (optional) - Location/address</li>
+                <li><strong>personal_email</strong> (optional) - Personal email address</li>
+                <li><strong>role</strong> (optional) - Job title/role</li>
+                <li><strong>company_name</strong> (optional) - Company name (will be created if doesn't exist)</li>
+                <li><strong>reports_to_name</strong> (optional) - Manager's name</li>
+                <li><strong>direct_reports</strong> (optional) - Comma-separated list of direct report names</li>
+              </ul>
+            </div>
+          )}
           
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
             {file ? (
@@ -111,29 +338,54 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
               {file ? 'Change File' : 'Select File'}
             </label>
           </div>
+          
+          {uploadResults && (
+            <div className="border rounded-lg p-4 space-y-2">
+              <h4 className="font-medium flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Upload Results
+              </h4>
+              <div className="text-sm space-y-1">
+                <p className="text-green-600">✓ Successfully imported: {uploadResults.successful}</p>
+                <p className="text-red-600">✗ Failed to import: {uploadResults.failed}</p>
+                {uploadResults.errors.length > 0 && (
+                  <div className="mt-2">
+                    <p className="font-medium">Errors:</p>
+                    <ul className="list-disc list-inside text-red-600 max-h-32 overflow-y-auto">
+                      {uploadResults.errors.map((error, index) => (
+                        <li key={index} className="text-xs">{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isUploading}>
-            Cancel
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isUploading}>
+            {uploadResults ? 'Close' : 'Cancel'}
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleUpload} 
-            disabled={!file || isUploading}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload
-              </>
-            )}
-          </Button>
+          {!uploadResults && (
+            <Button 
+              type="button" 
+              onClick={handleUpload} 
+              disabled={!file || isUploading}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
