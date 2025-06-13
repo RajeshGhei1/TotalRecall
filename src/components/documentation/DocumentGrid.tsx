@@ -37,6 +37,25 @@ export function DocumentGrid({
     }
   };
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return 'bg-green-100 text-green-800';
+      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'advanced': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'guide': return '📖';
+      case 'reference': return '📚';
+      case 'tutorial': return '🎓';
+      case 'api': return '⚡';
+      default: return '📄';
+    }
+  };
+
   return (
     <div className="space-y-4">
       {documentCategories
@@ -67,6 +86,11 @@ export function DocumentGrid({
                           <Badge className={getPriorityColor(doc.priority)}>
                             {doc.priority}
                           </Badge>
+                          {doc.difficulty && (
+                            <Badge className={getDifficultyColor(doc.difficulty)}>
+                              {doc.difficulty}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <CardDescription className="text-xs">
@@ -74,19 +98,33 @@ export function DocumentGrid({
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-1">
-                          {doc.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-1">
+                            {doc.type && (
+                              <Badge variant="secondary" className="text-xs">
+                                {getTypeIcon(doc.type)} {doc.type}
+                              </Badge>
+                            )}
+                            {doc.tags?.slice(0, 2).map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                            {doc.tags && doc.tags.length > 2 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{doc.tags.length - 2}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        
                         <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => onLoadDocument(doc.filePath)}
+                            className="flex-1"
                           >
                             View
                           </Button>
@@ -98,9 +136,11 @@ export function DocumentGrid({
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500">
-                        {doc.estimatedReadTime} • Updated {doc.lastModified}
+                        
+                        <div className="text-xs text-gray-500">
+                          {doc.estimatedReadTime} • Updated {doc.lastModified}
+                          {doc.version && ` • v${doc.version}`}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

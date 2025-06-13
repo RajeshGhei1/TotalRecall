@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { documentCategories, priorityLevels } from '@/data/documentationCategories';
+import { documentCategories, priorityLevels, documentTypes, difficultyLevels } from '@/data/documentationCategories';
 
 interface DocumentationFiltersProps {
   searchTerm: string;
@@ -13,6 +13,10 @@ interface DocumentationFiltersProps {
   setSelectedCategory: (category: string) => void;
   selectedPriority: string;
   setSelectedPriority: (priority: string) => void;
+  selectedType?: string;
+  setSelectedType?: (type: string) => void;
+  selectedDifficulty?: string;
+  setSelectedDifficulty?: (difficulty: string) => void;
 }
 
 export function DocumentationFilters({
@@ -22,13 +26,17 @@ export function DocumentationFilters({
   setSelectedCategory,
   selectedPriority,
   setSelectedPriority,
+  selectedType,
+  setSelectedType,
+  selectedDifficulty,
+  setSelectedDifficulty,
 }: DocumentationFiltersProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Search & Filter Documentation</CardTitle>
         <CardDescription>
-          Browse Total Recall's current system documentation and implementation guides
+          Browse Total Recall's complete documentation including ATS training materials
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -64,6 +72,44 @@ export function DocumentationFilters({
             })}
           </div>
         </div>
+
+        {/* Document Type Filters */}
+        {selectedType !== undefined && setSelectedType && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-700">Document Type</h3>
+            <div className="flex flex-wrap gap-2">
+              {documentTypes.map((type) => (
+                <Button
+                  key={type.id}
+                  variant={selectedType === type.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedType(type.id)}
+                >
+                  {type.label} {type.count !== undefined && `(${type.count})`}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Difficulty Level Filters */}
+        {selectedDifficulty !== undefined && setSelectedDifficulty && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-700">Difficulty Level</h3>
+            <div className="flex flex-wrap gap-2">
+              {difficultyLevels.map((difficulty) => (
+                <Button
+                  key={difficulty.id}
+                  variant={selectedDifficulty === difficulty.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedDifficulty(difficulty.id)}
+                >
+                  {difficulty.label} {difficulty.count !== undefined && `(${difficulty.count})`}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Priority Filters */}
         <div className="space-y-3">

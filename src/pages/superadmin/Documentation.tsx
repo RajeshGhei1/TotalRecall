@@ -10,7 +10,7 @@ import { DocumentViewer } from '@/components/documentation/DocumentViewer';
 import { RealTimeDocumentationStatus } from '@/components/documentation/RealTimeDocumentationStatus';
 import { LiveDocumentationPanel } from '@/components/documentation/LiveDocumentationPanel';
 import { useDocumentation } from '@/hooks/documentation/useDocumentation';
-import { availableDocuments } from '@/data/documentationData';
+import { getAllIntegratedDocuments } from '@/utils/documentTransformer';
 
 export default function Documentation() {
   const {
@@ -22,11 +22,17 @@ export default function Documentation() {
     setSelectedCategory,
     selectedPriority,
     setSelectedPriority,
+    selectedType,
+    setSelectedType,
+    selectedDifficulty,
+    setSelectedDifficulty,
     filteredDocuments,
     loadDocument,
     downloadDocument,
     downloadAllDocuments,
   } = useDocumentation();
+
+  const allDocuments = getAllIntegratedDocuments();
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -40,11 +46,11 @@ export default function Documentation() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Total Recall Documentation Center</h1>
-              <p className="text-gray-600">Live system documentation with real-time updates (Updated June 2025)</p>
+              <p className="text-gray-600">Complete system documentation with ATS training materials (Updated June 2025)</p>
             </div>
             <Button onClick={downloadAllDocuments} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Export All ({availableDocuments.length})
+              Export All ({allDocuments.length})
             </Button>
           </div>
         </div>
@@ -67,6 +73,10 @@ export default function Documentation() {
                 setSelectedCategory={setSelectedCategory}
                 selectedPriority={selectedPriority}
                 setSelectedPriority={setSelectedPriority}
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                selectedDifficulty={selectedDifficulty}
+                setSelectedDifficulty={setSelectedDifficulty}
               />
 
               <DocumentGrid
