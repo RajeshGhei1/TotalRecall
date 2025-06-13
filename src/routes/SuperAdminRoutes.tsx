@@ -18,6 +18,7 @@ import AuditLogs from '@/pages/superadmin/AuditLogs';
 import UserActivity from '@/pages/superadmin/UserActivity';
 import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import TenantSettings from '@/pages/superadmin/TenantSettings';
+import Settings from '@/pages/superadmin/Settings';
 import { RouteGuard } from '@/components/security/RouteGuard';
 import { SecureErrorBoundary } from '@/components/common/SecureErrorBoundary';
 
@@ -157,7 +158,7 @@ const SuperAdminRoutes = () => {
           path="/settings" 
           element={
             <RouteGuard requiredRole={['super_admin']}>
-              <TenantSettings />
+              <Settings />
             </RouteGuard>
           } 
         />
