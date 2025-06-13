@@ -62,16 +62,16 @@ export function ATSDocumentationViewer({ className }: ATSDocumentationViewerProp
     }
   };
 
-  const handleDownloadDocument = (document: ATSDocument) => {
-    const content = `# ${document.title}\n\n${document.content}`;
+  const handleDownloadDocument = (documentItem: ATSDocument) => {
+    const content = `# ${documentItem.title}\n\n${documentItem.content}`;
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${document.title.replace(/\s+/g, '-').toLowerCase()}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${documentItem.title.replace(/\s+/g, '-').toLowerCase()}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
@@ -82,12 +82,12 @@ export function ATSDocumentationViewer({ className }: ATSDocumentationViewerProp
     
     const blob = new Blob([allContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ats-complete-documentation.md';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ats-complete-documentation.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
@@ -161,43 +161,43 @@ export function ATSDocumentationViewer({ className }: ATSDocumentationViewerProp
 
           {/* Document Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredDocuments.map((document) => (
-              <Card key={document.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            {filteredDocuments.map((documentItem) => (
+              <Card key={documentItem.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      {getTypeIcon(document.type)}
-                      <CardTitle className="text-lg">{document.title}</CardTitle>
+                      {getTypeIcon(documentItem.type)}
+                      <CardTitle className="text-lg">{documentItem.title}</CardTitle>
                     </div>
-                    <Badge className={getDifficultyColor(document.difficulty)}>
-                      {document.difficulty}
+                    <Badge className={getDifficultyColor(documentItem.difficulty)}>
+                      {documentItem.difficulty}
                     </Badge>
                   </div>
                   <CardDescription>
                     <div className="flex items-center gap-4 text-sm">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {document.estimatedReadTime}
+                        {documentItem.estimatedReadTime}
                       </span>
-                      <span>v{document.version}</span>
+                      <span>v{documentItem.version}</span>
                     </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground line-clamp-3">
-                      {document.content.substring(0, 150)}...
+                      {documentItem.content.substring(0, 150)}...
                     </p>
                     
                     <div className="flex flex-wrap gap-1">
-                      {document.tags.slice(0, 3).map((tag) => (
+                      {documentItem.tags.slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
-                      {document.tags.length > 3 && (
+                      {documentItem.tags.length > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{document.tags.length - 3} more
+                          +{documentItem.tags.length - 3} more
                         </Badge>
                       )}
                     </div>
@@ -205,7 +205,7 @@ export function ATSDocumentationViewer({ className }: ATSDocumentationViewerProp
                     <div className="flex gap-2 pt-2">
                       <Button
                         size="sm"
-                        onClick={() => setSelectedDocument(document)}
+                        onClick={() => setSelectedDocument(documentItem)}
                         className="flex-1"
                       >
                         <BookOpen className="h-4 w-4 mr-2" />
@@ -214,7 +214,7 @@ export function ATSDocumentationViewer({ className }: ATSDocumentationViewerProp
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDownloadDocument(document)}
+                        onClick={() => handleDownloadDocument(documentItem)}
                       >
                         <Download className="h-4 w-4" />
                       </Button>

@@ -13,8 +13,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
       <ReactMarkdown
         components={{
           // Custom styling for code blocks
-          code: ({ node, inline, className, children, ...props }) => {
-            if (inline) {
+          code: ({ children, className, ...props }) => {
+            const isInline = !className;
+            if (isInline) {
               return (
                 <code
                   className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono"
