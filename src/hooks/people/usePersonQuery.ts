@@ -14,7 +14,6 @@ export const usePersonQuery = (id?: string) => {
         .from('people')
         .select(`
           id, 
-          tr_id,
           full_name, 
           email, 
           phone, 
@@ -32,7 +31,7 @@ export const usePersonQuery = (id?: string) => {
       }
       
       // Type the response properly
-      const typedData = data as PersonQueryResult & { tr_id?: string };
+      const typedData = data as PersonQueryResult;
       
       return {
         ...typedData,

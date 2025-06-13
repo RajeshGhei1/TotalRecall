@@ -1,102 +1,85 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Building, Trash2, Pencil } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Person } from '@/types/person';
-import { Eye, Edit, Trash2, Link } from 'lucide-react';
+import CurrentCompanyBadge from '../CurrentCompanyBadge';
 
 interface PeopleTableProps {
   people: Person[];
   onLinkToCompany: (id: string) => void;
   onDeletePerson: (id: string) => void;
-  onEditPerson: (person: Person) => void;
+  onEditPerson: (person: any) => void;
   onViewPerson: (id: string) => void;
 }
 
-const PeopleTable = ({ 
-  people, 
-  onLinkToCompany, 
-  onDeletePerson, 
-  onEditPerson, 
-  onViewPerson 
-}: PeopleTableProps) => {
+const PeopleTable: React.FC<PeopleTableProps> = ({
+  people,
+  onLinkToCompany,
+  onDeletePerson,
+  onEditPerson,
+  onViewPerson
+}) => {
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>TR ID</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
-            <TableHead>Current Company</TableHead>
             <TableHead>Location</TableHead>
-            <TableHead>Type</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {people.map((person) => (
-            <TableRow key={person.id} className="hover:bg-muted/50">
-              <TableCell className="font-medium">
-                {person.full_name}
-              </TableCell>
+            <TableRow key={person.id}>
               <TableCell>
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {person.tr_id || 'No TR ID'}
-                </Badge>
+                <div 
+                  className="font-medium cursor-pointer text-primary hover:underline"
+                  onClick={() => onViewPerson(person.id)}
+                >
+                  {person.full_name}
+                  {person.current_company && (
+                    <span className="ml-2">
+                      <CurrentCompanyBadge
+                        companyName={person.current_company.name}
+                        role={person.current_company.role}
+                      />
+                    </span>
+                  )}
+                </div>
               </TableCell>
               <TableCell>{person.email}</TableCell>
               <TableCell>{person.phone || '-'}</TableCell>
-              <TableCell>
-                {person.current_company ? (
-                  <div>
-                    <div className="font-medium">{person.current_company.name}</div>
-                    <div className="text-sm text-muted-foreground">{person.current_company.role}</div>
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">No company</span>
-                )}
-              </TableCell>
               <TableCell>{person.location || '-'}</TableCell>
-              <TableCell>
-                <Badge variant={person.type === 'talent' ? 'default' : 'outline'}>
-                  {person.type}
-                </Badge>
-              </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewPerson(person.id)}
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onLinkToCompany(person.id)}
                   >
-                    <Eye className="h-4 w-4" />
+                    <Building className="h-4 w-4 mr-2" /> Link to Company
                   </Button>
-                  <Button
-                    variant="ghost"
+                  <Button 
+                    variant="outline" 
                     size="sm"
                     onClick={() => onEditPerson(person)}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onLinkToCompany(person.id)}
-                  >
-                    <Link className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
+                  <Button 
+                    variant="destructive" 
                     size="sm"
                     onClick={() => onDeletePerson(person.id)}
                   >

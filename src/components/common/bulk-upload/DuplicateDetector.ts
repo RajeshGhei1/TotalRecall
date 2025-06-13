@@ -50,10 +50,10 @@ export class DuplicateDetector {
   ): Promise<DuplicateInfo[]> {
     const duplicates: DuplicateInfo[] = [];
     
-    // Get all existing people for comparison - only select fields that exist in the people table
+    // Get all existing people for comparison - select the fields that actually exist
     const { data: existingPeople, error } = await supabase
       .from('people')
-      .select('id, full_name, email, phone, location, type, created_at, updated_at');
+      .select('*');
     
     if (error) {
       console.error('Error fetching existing people:', error);
@@ -102,22 +102,48 @@ export class DuplicateDetector {
           }
         }
 
-        // Name match only (since we don't have company info in people table)
+        // Name + Company match - use correct field names
         if (contact.full_name && existing.full_name) {
           const nameSimilarity = this.calculateNameSimilarity(contact.full_name, existing.full_name);
           
           if (nameSimilarity >= 0.8) {
-            currentMatches.push({
-              type: 'name_company',
-              confidence: nameSimilarity,
-              field: 'full_name',
-              value: contact.full_name
-            });
-            totalConfidence += nameSimilarity * 0.7; // Lower weight for name-only matches
+            let companyBonus = 0;
+            // Use current_title field instead of current_company, or check if company fields exist
+            if (contact.company_name && existing.current_title) {
+              const companySimilarity = this.calculateNameSimilarity(contact.company_name, existing.current_title);
+              if (companySimilarity >= 0.8) {
+                companyBonus = 0.3;
+              }
+            }
+            
+            const confidence = Math.min(nameSimilarity + companyBonus, 1.0);
+            if (confidence >= 0.8) {
+              currentMatches.push({
+                type: 'name_company',
+                confidence,
+                field: 'full_name',
+                value: contact.full_name
+              });
+              totalConfidence += confidence * 0.7; // Lower weight for name matches
+            }
           }
         }
 
-        // Note: LinkedIn matching removed since linkedin_url field doesn't exist in people table
+        // LinkedIn match - use correct field name
+        if (contact.linkedin_url && existing.linkedin_url) {
+          const normalizedContactLinkedIn = contact.linkedin_url.toLowerCase().trim();
+          const normalizedExistingLinkedIn = existing.linkedin_url.toLowerCase().trim();
+          
+          if (normalizedContactLinkedIn === normalizedExistingLinkedIn) {
+            currentMatches.push({
+              type: 'linkedin',
+              confidence: 0.95,
+              field: 'linkedin_url',
+              value: contact.linkedin_url
+            });
+            totalConfidence += 0.95;
+          }
+        }
 
         // If we found matches above threshold, consider this a duplicate
         if (currentMatches.length > 0 && totalConfidence >= strategy.confidenceThreshold) {
@@ -136,9 +162,12 @@ export class DuplicateDetector {
         const hasEmailMatch = matches.some(m => m.type === 'email');
         const hasPhoneMatch = matches.some(m => m.type === 'phone');
         const hasNameMatch = matches.some(m => m.type === 'name_company');
+        const hasLinkedInMatch = matches.some(m => m.type === 'linkedin');
 
         if (hasEmailMatch) {
           suggestedAction = strategy.emailMatches;
+        } else if (hasLinkedInMatch) {
+          suggestedAction = strategy.linkedinMatches;
         } else if (hasPhoneMatch) {
           suggestedAction = strategy.phoneMatches;
         } else if (hasNameMatch) {

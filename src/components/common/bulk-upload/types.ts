@@ -1,6 +1,6 @@
 
 export interface DuplicateMatch {
-  type: 'email' | 'phone' | 'name_company' | 'linkedin' | 'cin' | 'gst' | 'website';
+  type: 'email' | 'phone' | 'name_company' | 'linkedin';
   confidence: number;
   field: string;
   value: string;

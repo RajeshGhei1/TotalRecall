@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ContactCSVRow } from './FileProcessor';
 import { DuplicateDetector } from './DuplicateDetector';
@@ -64,7 +63,7 @@ export class EnhancedContactProcessor {
             if (action === 'merge') {
               updatedData = SmartMerger.mergeContacts(existingRecord, contact, mergeOptions);
             } else {
-              // Simple update - new data overwrites old (only for fields that exist in people table)
+              // Simple update - new data overwrites old
               updatedData = this.convertContactToPersonData(contact);
             }
 
@@ -80,6 +79,10 @@ export class EnhancedContactProcessor {
             results.duplicates_merged++;
             console.log(`${action === 'merge' ? 'Merged' : 'Updated'} duplicate: ${contact.full_name}`);
 
+            // Handle company relationship if provided
+            if (contact.company_name && contact.role) {
+              await this.handleCompanyRelationship(contact, existingRecord.id);
+            }
           } else if (action === 'create_anyway') {
             // Create new record despite being a duplicate
             await this.createNewPerson(contact);
@@ -119,33 +122,107 @@ export class EnhancedContactProcessor {
 
     if (personError) throw personError;
 
-    // TODO: Handle additional fields that don't exist in people table
-    // This would require creating separate tables for:
-    // - Company relationships (company_name, reports_to_name, direct_reports)
-    // - Professional details (current_title, current_company, experience_years, skills, etc.)
-    // For now, these fields are preserved in the CSV but not stored in the database
+    // Handle company relationship if provided
+    if (contact.company_name && contact.role && insertedPerson) {
+      await this.handleCompanyRelationship(contact, insertedPerson.id);
+    }
 
     return insertedPerson.id;
   }
 
   private static convertContactToPersonData(contact: ContactCSVRow) {
-    // Only include fields that exist in the people table schema
-    const personData: any = {
+    // Parse experience years
+    const experienceYears = contact.experience_years ? parseInt(contact.experience_years) : null;
+    
+    // Parse desired salary
+    const desiredSalary = contact.desired_salary ? parseFloat(contact.desired_salary.replace(/[,$]/g, '')) : null;
+    
+    // Parse skills (comma-separated string to array)
+    let skillsArray = [];
+    if (contact.skills) {
+      skillsArray = contact.skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+    }
+    
+    // Parse availability date
+    let availabilityDate = null;
+    if (contact.availability_date) {
+      const parsedDate = new Date(contact.availability_date);
+      if (!isNaN(parsedDate.getTime())) {
+        availabilityDate = parsedDate.toISOString().split('T')[0];
+      }
+    }
+
+    return {
       full_name: contact.full_name,
       email: contact.email,
       phone: contact.phone || null,
       location: contact.location || null,
-      type: 'contact' // Set the type based on what's being imported
+      personal_email: contact.personal_email || null,
+      linkedin_url: contact.linkedin_url || null,
+      current_title: contact.current_title || null,
+      current_company: contact.current_company || null,
+      experience_years: experienceYears,
+      skills: skillsArray.length > 0 ? JSON.stringify(skillsArray) : null,
+      notes: contact.notes || null,
+      availability_date: availabilityDate,
+      desired_salary: desiredSalary,
+      resume_url: contact.resume_url || null,
+      portfolio_url: contact.portfolio_url || null,
+      type: 'contact'
     };
+  }
 
-    // Add social media fields if they exist in the schema
-    if (contact.personal_email) personData.personal_email = contact.personal_email;
-    if (contact.role) personData.role = contact.role;
-    if (contact.linkedin_url) personData.linkedin_url = contact.linkedin_url;
-    if (contact.twitter_url) personData.twitter_url = contact.twitter_url;
-    if (contact.facebook_url) personData.facebook_url = contact.facebook_url;
-    if (contact.instagram_url) personData.instagram_url = contact.instagram_url;
-
-    return personData;
+  private static async handleCompanyRelationship(contact: ContactCSVRow, personId: string) {
+    try {
+      // First try to find existing company
+      let { data: companyData, error: companyFindError } = await supabase
+        .from('companies')
+        .select('id, name')
+        .ilike('name', contact.company_name!)
+        .limit(1);
+        
+      if (companyFindError) {
+        console.warn('Error finding company:', companyFindError);
+      }
+      
+      let companyId: string;
+      
+      if (companyData && companyData.length > 0) {
+        companyId = companyData[0].id;
+      } else {
+        // Create new company
+        const { data: newCompanyData, error: companyCreateError } = await supabase
+          .from('companies')
+          .insert([{
+            name: contact.company_name,
+            description: `Company created via bulk upload for ${contact.full_name}`
+          }])
+          .select('id')
+          .single();
+          
+        if (companyCreateError) throw companyCreateError;
+        companyId = newCompanyData.id;
+      }
+      
+      // Create company relationship
+      const { error: relationshipError } = await supabase
+        .from('company_relationships')
+        .insert([{
+          person_id: personId,
+          company_id: companyId,
+          role: contact.role,
+          relationship_type: 'business_contact',
+          start_date: new Date().toISOString().split('T')[0],
+          is_current: true
+        }]);
+        
+      if (relationshipError) {
+        console.warn('Error creating company relationship:', relationshipError);
+        // Don't fail the entire import for relationship errors
+      }
+    } catch (error) {
+      console.warn('Error handling company relationship:', error);
+      // Don't fail the entire import for relationship errors
+    }
   }
 }

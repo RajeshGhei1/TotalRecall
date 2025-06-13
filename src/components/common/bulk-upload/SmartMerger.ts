@@ -27,32 +27,22 @@ export class SmartMerger {
       return existingValue;
     };
 
-    // Merge basic fields that exist in people table
+    // Merge basic fields - using correct field mappings for people table
     const fieldMappings = {
       'full_name': 'full_name',
       'email': 'email',
       'phone': 'phone',
-      'location': 'location'
-    };
-
-    // Handle social media fields that exist in schema
-    const socialMediaFields = {
+      'location': 'location',
+      'personal_email': 'personal_email', // This field may not exist in people table
       'linkedin_url': 'linkedin_url',
-      'twitter_url': 'twitter_url', 
-      'facebook_url': 'facebook_url',
-      'instagram_url': 'instagram_url'
+      'current_title': 'current_title',
+      'current_company': 'current_title', // Map to existing field since current_company doesn't exist
+      'notes': 'notes', // This field may not exist in people table
+      'resume_url': 'resume_url', // This field may not exist in people table
+      'portfolio_url': 'portfolio_url' // This field may not exist in people table
     };
 
-    // Handle business fields that exist in schema
-    const businessFields = {
-      'personal_email': 'personal_email',
-      'role': 'role'
-    };
-
-    // Merge all fields that exist in the people table
-    const allFieldMappings = { ...fieldMappings, ...socialMediaFields, ...businessFields };
-
-    Object.entries(allFieldMappings).forEach(([csvField, dbField]) => {
+    Object.entries(fieldMappings).forEach(([csvField, dbField]) => {
       if (newRecord[csvField as keyof ContactCSVRow] !== undefined) {
         merged[dbField] = mergeField(
           existingRecord[dbField],
@@ -62,10 +52,77 @@ export class SmartMerger {
       }
     });
 
-    // Note: Fields like company_name, reports_to_name, direct_reports, current_title, 
-    // current_company, experience_years, skills, notes, availability_date, desired_salary,
-    // resume_url, portfolio_url are not part of the people table schema and would require
-    // additional processing or separate tables to handle properly.
+    // Handle numeric fields
+    if (newRecord.experience_years) {
+      const newExp = parseInt(newRecord.experience_years);
+      if (!isNaN(newExp)) {
+        merged.experience_years = mergeField(
+          existingRecord.experience_years,
+          newExp,
+          'experience_years'
+        );
+      }
+    }
+
+    if (newRecord.desired_salary) {
+      const newSalary = parseFloat(newRecord.desired_salary.replace(/[,$]/g, ''));
+      if (!isNaN(newSalary)) {
+        merged.desired_salary = mergeField(
+          existingRecord.desired_salary,
+          newSalary,
+          'desired_salary'
+        );
+      }
+    }
+
+    // Handle date fields
+    if (newRecord.availability_date) {
+      const parsedDate = new Date(newRecord.availability_date);
+      if (!isNaN(parsedDate.getTime())) {
+        const newDateStr = parsedDate.toISOString().split('T')[0];
+        
+        if (options.keepMostRecent && existingRecord.availability_date) {
+          const existingDate = new Date(existingRecord.availability_date);
+          merged.availability_date = parsedDate > existingDate ? newDateStr : existingRecord.availability_date;
+        } else {
+          merged.availability_date = mergeField(
+            existingRecord.availability_date,
+            newDateStr,
+            'availability_date'
+          );
+        }
+      }
+    }
+
+    // Handle skills array merging
+    if (options.mergeArrays && newRecord.skills) {
+      const newSkills = newRecord.skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+      
+      let existingSkills: string[] = [];
+      if (existingRecord.skills) {
+        try {
+          existingSkills = typeof existingRecord.skills === 'string' 
+            ? JSON.parse(existingRecord.skills)
+            : existingRecord.skills;
+        } catch (e) {
+          existingSkills = [];
+        }
+      }
+
+      // Merge and deduplicate skills
+      const allSkills = [...existingSkills, ...newSkills];
+      const uniqueSkills = Array.from(new Set(allSkills.map(s => s.toLowerCase())))
+        .map(s => allSkills.find(skill => skill.toLowerCase() === s) || s);
+      
+      merged.skills = JSON.stringify(uniqueSkills);
+    } else if (newRecord.skills) {
+      const newSkills = newRecord.skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+      merged.skills = mergeField(
+        existingRecord.skills,
+        JSON.stringify(newSkills),
+        'skills'
+      );
+    }
 
     // Update timestamp
     merged.updated_at = new Date().toISOString();
@@ -93,7 +150,9 @@ export class SmartMerger {
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
         let action: 'keep' | 'update' | 'merge' = 'update';
         
-        if (oldValue != null && oldValue !== '' && options.preserveExisting) {
+        if (field === 'skills' && options.mergeArrays) {
+          action = 'merge';
+        } else if (oldValue != null && oldValue !== '' && options.preserveExisting) {
           action = 'keep';
         }
         

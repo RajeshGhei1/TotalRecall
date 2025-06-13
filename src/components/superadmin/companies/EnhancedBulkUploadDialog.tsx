@@ -407,7 +407,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   };
 
   const csvHeaders = csvData?.[0] || [];
-  const companyFields: (keyof Company | 'ignore')[] = [
+  const companyFields = [
     // Basic Information
     'name', 'cin', 'email', 'website', 'domain', 'phone', 'description', 'founded',
     

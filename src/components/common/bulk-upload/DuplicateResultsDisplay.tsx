@@ -122,14 +122,8 @@ const DuplicateResultsDisplay: React.FC<DuplicateResultsDisplayProps> = ({ resul
                       <div><strong>Name:</strong> {duplicate.newRecord.full_name}</div>
                       <div><strong>Email:</strong> {duplicate.newRecord.email}</div>
                       <div><strong>Phone:</strong> {duplicate.newRecord.phone || 'N/A'}</div>
-                      <div><strong>Location:</strong> {duplicate.newRecord.location || 'N/A'}</div>
-                      <div><strong>Personal Email:</strong> {duplicate.newRecord.personal_email || 'N/A'}</div>
-                      <div><strong>Role:</strong> {duplicate.newRecord.role || 'N/A'}</div>
                       <div><strong>Company:</strong> {duplicate.newRecord.company_name || 'N/A'}</div>
                       <div><strong>LinkedIn:</strong> {duplicate.newRecord.linkedin_url || 'N/A'}</div>
-                      <div><strong>Current Title:</strong> {duplicate.newRecord.current_title || 'N/A'}</div>
-                      <div><strong>Experience:</strong> {duplicate.newRecord.experience_years || 'N/A'} years</div>
-                      <div><strong>Skills:</strong> {duplicate.newRecord.skills || 'N/A'}</div>
                     </div>
                   </div>
                   <div>
@@ -138,14 +132,8 @@ const DuplicateResultsDisplay: React.FC<DuplicateResultsDisplayProps> = ({ resul
                       <div><strong>Name:</strong> {duplicate.existingRecord.full_name}</div>
                       <div><strong>Email:</strong> {duplicate.existingRecord.email}</div>
                       <div><strong>Phone:</strong> {duplicate.existingRecord.phone || 'N/A'}</div>
-                      <div><strong>Location:</strong> {duplicate.existingRecord.location || 'N/A'}</div>
-                      <div><strong>Personal Email:</strong> {duplicate.existingRecord.personal_email || 'N/A'}</div>
-                      <div><strong>Role:</strong> {duplicate.existingRecord.role || 'N/A'}</div>
-                      <div><strong>Type:</strong> {duplicate.existingRecord.type || 'N/A'}</div>
+                      <div><strong>Company:</strong> {duplicate.existingRecord.current_title || 'N/A'}</div>
                       <div><strong>LinkedIn:</strong> {duplicate.existingRecord.linkedin_url || 'N/A'}</div>
-                      <div><strong>Twitter:</strong> {duplicate.existingRecord.twitter_url || 'N/A'}</div>
-                      <div><strong>Facebook:</strong> {duplicate.existingRecord.facebook_url || 'N/A'}</div>
-                      <div><strong>Instagram:</strong> {duplicate.existingRecord.instagram_url || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="col-span-2">

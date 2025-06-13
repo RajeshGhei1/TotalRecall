@@ -10,7 +10,6 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 interface PersonFormFieldsProps {
   form: UseFormReturn<PersonFormValues>;
@@ -128,340 +127,271 @@ const PersonFormFields: React.FC<PersonFormFieldsProps> = ({ form, personType, p
 
   return (
     <div className="space-y-4">
-      {/* Basic Information Section */}
-      <div className="space-y-4">
-        <FormField
-          control={form.control}
-          name="full_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter full name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{personType === 'contact' ? 'Company Email' : 'Email'}</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter email address" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter location" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <FormField
+        control={form.control}
+        name="full_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Full Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter full name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{personType === 'contact' ? 'Company Email' : 'Email'}</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter email address" type="email" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
+        name="phone"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Phone (Optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter phone number" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
+        name="location"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Location (Optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter location" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       {/* Business Contact specific fields */}
       {personType === 'contact' && (
         <>
-          <Separator className="my-6" />
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Business Information</h3>
-            
-            {/* Personal Email */}
-            <FormField
-              control={form.control}
-              name="personal_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Personal Email ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter personal email address" type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          {/* Personal Email */}
+          <FormField
+            control={form.control}
+            name="personal_email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Personal Email ID</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter personal email address" type="email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            {/* Role/Designation */}
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role/Designation</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter role or designation" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          {/* Role/Designation */}
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role/Designation</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter role or designation" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            {/* Company Name */}
-            <div className="space-y-2">
-              <FormLabel>Company Name</FormLabel>
-              <Popover open={isCompanyOpen} onOpenChange={setIsCompanyOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={isCompanyOpen}
-                    className="w-full justify-between"
-                  >
-                    {selectedCompany ? selectedCompany.name : "Search and select a company..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search companies..."
-                      value={companySearchQuery}
-                      onValueChange={setCompanySearchQuery}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No companies found</CommandEmpty>
-                      <CommandGroup>
-                        {companies.map((company) => (
-                          <CommandItem
-                            key={company.id}
-                            value={company.name}
-                            onSelect={() => {
-                              setSelectedCompany(company);
-                              setIsCompanyOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedCompany?.id === company.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {company.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Reporting To */}
-            <div className="space-y-2">
-              <FormLabel>Reporting To (Manager)</FormLabel>
-              <Popover open={isReportingToOpen} onOpenChange={setIsReportingToOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between"
-                  >
-                    {selectedReportingTo ? selectedReportingTo.full_name : "Search and select manager..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search people..."
-                      value={reportingToSearchQuery}
-                      onValueChange={setReportingToSearchQuery}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No people found</CommandEmpty>
-                      <CommandGroup>
+          {/* Company Name */}
+          <div className="space-y-2">
+            <FormLabel>Company Name</FormLabel>
+            <Popover open={isCompanyOpen} onOpenChange={setIsCompanyOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isCompanyOpen}
+                  className="w-full justify-between"
+                >
+                  {selectedCompany ? selectedCompany.name : "Search and select a company..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search companies..."
+                    value={companySearchQuery}
+                    onValueChange={setCompanySearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No companies found</CommandEmpty>
+                    <CommandGroup>
+                      {companies.map((company) => (
                         <CommandItem
+                          key={company.id}
+                          value={company.name}
                           onSelect={() => {
-                            setSelectedReportingTo(null);
+                            setSelectedCompany(company);
+                            setIsCompanyOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCompany?.id === company.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {company.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Reporting To */}
+          <div className="space-y-2">
+            <FormLabel>Reporting To (Manager)</FormLabel>
+            <Popover open={isReportingToOpen} onOpenChange={setIsReportingToOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {selectedReportingTo ? selectedReportingTo.full_name : "Search and select manager..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search people..."
+                    value={reportingToSearchQuery}
+                    onValueChange={setReportingToSearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No people found</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => {
+                          setSelectedReportingTo(null);
+                          setIsReportingToOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            !selectedReportingTo ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        None
+                      </CommandItem>
+                      {reportingTo.map((person) => (
+                        <CommandItem
+                          key={person.id}
+                          value={person.full_name}
+                          onSelect={() => {
+                            setSelectedReportingTo(person);
                             setIsReportingToOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              !selectedReportingTo ? "opacity-100" : "opacity-0"
+                              selectedReportingTo?.id === person.id ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          None
+                          {person.full_name}
                         </CommandItem>
-                        {reportingTo.map((person) => (
-                          <CommandItem
-                            key={person.id}
-                            value={person.full_name}
-                            onSelect={() => {
-                              setSelectedReportingTo(person);
-                              setIsReportingToOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedReportingTo?.id === person.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {person.full_name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Reporting From (Direct Reports) */}
-            <div className="space-y-2">
-              <FormLabel>Reporting From (Direct Reports)</FormLabel>
-              
-              {selectedReportingFrom.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {selectedReportingFrom.map(person => (
-                    <Badge key={person.id} variant="secondary" className="flex items-center gap-1">
-                      {person.full_name}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveReportingFrom(person.id)}
-                        className="ml-1 text-xs hover:text-destructive"
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              
-              <Popover open={isReportingFromOpen} onOpenChange={setIsReportingFromOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between"
-                  >
-                    Search and add direct reports...
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search people..."
-                      value={reportingFromSearchQuery}
-                      onValueChange={setReportingFromSearchQuery}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No people found</CommandEmpty>
-                      <CommandGroup>
-                        {reportingFrom
-                          .filter(person => !selectedReportingFrom.find(selected => selected.id === person.id))
-                          .map((person) => (
-                          <CommandItem
-                            key={person.id}
-                            value={person.full_name}
-                            onSelect={() => {
-                              setSelectedReportingFrom([...selectedReportingFrom, person]);
-                              setReportingFromSearchQuery('');
-                              setIsReportingFromOpen(false);
-                            }}
-                          >
-                            {person.full_name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
-          {/* Social Media Section */}
-          <Separator className="my-6" />
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Social Media & Online Presence</h3>
+          {/* Reporting From (Direct Reports) */}
+          <div className="space-y-2">
+            <FormLabel>Reporting From (Direct Reports)</FormLabel>
             
-            <FormField
-              control={form.control}
-              name="linkedin_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LinkedIn Profile</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://linkedin.com/in/profile" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="twitter_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Twitter/X Profile</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://twitter.com/username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="facebook_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Facebook Profile</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://facebook.com/profile" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="instagram_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Instagram Profile</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://instagram.com/username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Selected Direct Reports */}
+            {selectedReportingFrom.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedReportingFrom.map(person => (
+                  <Badge key={person.id} variant="secondary" className="flex items-center gap-1">
+                    {person.full_name}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveReportingFrom(person.id)}
+                      className="ml-1 text-xs hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            <Popover open={isReportingFromOpen} onOpenChange={setIsReportingFromOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  Search and add direct reports...
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search people..."
+                    value={reportingFromSearchQuery}
+                    onValueChange={setReportingFromSearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No people found</CommandEmpty>
+                    <CommandGroup>
+                      {reportingFrom
+                        .filter(person => !selectedReportingFrom.find(selected => selected.id === person.id))
+                        .map((person) => (
+                        <CommandItem
+                          key={person.id}
+                          value={person.full_name}
+                          onSelect={() => {
+                            setSelectedReportingFrom([...selectedReportingFrom, person]);
+                            setReportingFromSearchQuery('');
+                            setIsReportingFromOpen(false);
+                          }}
+                        >
+                          {person.full_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
         </>
       )}
