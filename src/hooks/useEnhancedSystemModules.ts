@@ -19,6 +19,38 @@ export interface EnhancedSystemModule {
   updated_at: string;
 }
 
+// Helper function to safely convert Json to Record<string, any>
+const parseJsonField = (jsonValue: any): Record<string, any> => {
+  if (!jsonValue) return {};
+  if (typeof jsonValue === 'string') {
+    try {
+      return JSON.parse(jsonValue);
+    } catch {
+      return {};
+    }
+  }
+  if (typeof jsonValue === 'object') return jsonValue;
+  return {};
+};
+
+// Helper function to convert database row to EnhancedSystemModule
+const mapDatabaseRowToModule = (row: any): EnhancedSystemModule => ({
+  name: row.name,
+  description: row.description,
+  category: row.category,
+  is_active: row.is_active,
+  version: row.version,
+  dependencies: row.dependencies || [],
+  default_limits: parseJsonField(row.default_limits),
+  pricing_tier: row.pricing_tier,
+  monthly_price: row.monthly_price,
+  annual_price: row.annual_price,
+  requires_modules: row.requires_modules || [],
+  max_usage_limits: parseJsonField(row.max_usage_limits),
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+});
+
 export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
   const [data, setData] = useState<EnhancedSystemModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +76,8 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
         return;
       }
 
-      setData(modules || []);
+      const mappedModules = (modules || []).map(mapDatabaseRowToModule);
+      setData(mappedModules);
       setError(null);
     } catch (err) {
       console.error('Error in fetchModules:', err);
@@ -83,7 +116,7 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
 
       // Refresh the module list
       await fetchModules();
-      return newModule;
+      return mapDatabaseRowToModule(newModule);
     } catch (error) {
       console.error('Error creating module:', error);
       throw error;
@@ -92,9 +125,18 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
 
   const updateModule = async (moduleName: string, updates: Partial<EnhancedSystemModule>) => {
     try {
+      // Convert Record<string, any> fields back to the format expected by Supabase
+      const updateData: any = { ...updates };
+      if (updates.default_limits) {
+        updateData.default_limits = updates.default_limits;
+      }
+      if (updates.max_usage_limits) {
+        updateData.max_usage_limits = updates.max_usage_limits;
+      }
+
       const { data: updatedModule, error } = await supabase
         .from('system_modules')
-        .update(updates)
+        .update(updateData)
         .eq('name', moduleName)
         .select()
         .single();
@@ -103,7 +145,7 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
 
       // Refresh the module list
       await fetchModules();
-      return updatedModule;
+      return mapDatabaseRowToModule(updatedModule);
     } catch (error) {
       console.error('Error updating module:', error);
       throw error;
@@ -165,7 +207,7 @@ export const useEnhancedSystemModuleByName = (moduleName: string) => {
           return;
         }
 
-        setData(module);
+        setData(mapDatabaseRowToModule(module));
         setError(null);
       } catch (err) {
         console.error('Error in fetchModule:', err);
