@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,37 +19,33 @@ import {
   Clock,
   BarChart3
 } from 'lucide-react';
-import { useRealModuleDiscovery, RealModuleInfo } from '@/hooks/useRealModuleDiscovery';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useOptimizedModuleDiscovery, OptimizedModuleInfo } from '@/hooks/useOptimizedModuleDiscovery';
+import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 
 interface RealModuleDashboardProps {
   tenantId?: string;
 }
 
 const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) => {
-  const { user, bypassAuth } = useAuth();
-  const [selectedModule, setSelectedModule] = useState<RealModuleInfo | null>(null);
+  const [selectedModule, setSelectedModule] = useState<OptimizedModuleInfo | null>(null);
 
-  // Get current tenant for super admin context
-  const { data: tenantData } = useQuery({
-    queryKey: ['currentTenantData', user?.id],
-    queryFn: async () => {
-      if (bypassAuth) {
-        return { tenant_id: 'super-admin-context' };
-      }
-      
-      if (!user) return null;
-      
-      return { tenant_id: 'dev-tenant-' + user.id };
-    },
-    enabled: !!user || bypassAuth,
-  });
-
+  // Use stable tenant context
+  const { data: tenantData } = useStableTenantContext();
   const currentTenantId = tenantId || tenantData?.tenant_id;
-  const { modules, isLoading, getModulesByCategory, getModulesByStatus, getModulesByAccess, totalModules, activeModules, availableModules } = useRealModuleDiscovery(currentTenantId);
+  
+  // Use optimized module discovery
+  const { 
+    modules, 
+    isLoading, 
+    getModulesByCategory, 
+    getModulesByStatus, 
+    getModulesByAccess, 
+    totalModules, 
+    activeModules, 
+    availableModules 
+  } = useOptimizedModuleDiscovery(currentTenantId);
 
-  const getStatusColor = (status: RealModuleInfo['status']) => {
+  const getStatusColor = (status: OptimizedModuleInfo['status']) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'inactive': return 'bg-gray-100 text-gray-800';
@@ -59,7 +54,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     }
   };
 
-  const getAccessColor = (accessMethod: RealModuleInfo['accessMethod']) => {
+  const getAccessColor = (accessMethod: OptimizedModuleInfo['accessMethod']) => {
     switch (accessMethod) {
       case 'subscription': return 'bg-blue-100 text-blue-800';
       case 'override': return 'bg-purple-100 text-purple-800';
@@ -69,7 +64,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     }
   };
 
-  const renderModuleCard = (module: RealModuleInfo) => (
+  const renderModuleCard = (module: OptimizedModuleInfo) => (
     <Card 
       key={module.id}
       className={`cursor-pointer transition-all hover:shadow-md ${
@@ -121,7 +116,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     </Card>
   );
 
-  const renderModuleDetails = (module: RealModuleInfo) => (
+  const renderModuleDetails = (module: OptimizedModuleInfo) => (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -309,9 +304,12 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
                   </Button>
                 </div>
               </div>
+              <p className="text-sm text-muted-foreground">
+                Tenant: {tenantData?.tenant_name || 'Loading...'}
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3">
+              <div className="grid gap-3 max-h-96 overflow-y-auto">
                 {modules.map(renderModuleCard)}
               </div>
             </CardContent>
@@ -321,7 +319,69 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
         {/* Module Details */}
         <div className="col-span-7">
           {selectedModule ? (
-            renderModuleDetails(selectedModule)
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{selectedModule.name}</CardTitle>
+                  <div className="flex gap-2">
+                    <Badge className={getStatusColor(selectedModule.status)}>
+                      {selectedModule.status}
+                    </Badge>
+                    <Badge className={getAccessColor(selectedModule.accessMethod)}>
+                      {selectedModule.accessMethod}
+                    </Badge>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{selectedModule.description}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Module Information</h4>
+                    <div className="space-y-1 text-sm">
+                      <p><strong>ID:</strong> {selectedModule.id}</p>
+                      <p><strong>Version:</strong> {selectedModule.version}</p>
+                      <p><strong>Category:</strong> {selectedModule.category}</p>
+                      <p><strong>Route:</strong> {selectedModule.route || 'N/A'}</p>
+                      <p><strong>Component:</strong> {selectedModule.component || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Access Information</h4>
+                    <div className="space-y-1 text-sm">
+                      <p><strong>Access Method:</strong> {selectedModule.accessMethod}</p>
+                      <p><strong>Tenant Assigned:</strong> {selectedModule.tenantAssigned ? 'Yes' : 'No'}</p>
+                      <p><strong>Subscription Required:</strong> {selectedModule.subscriptionRequired ? 'Yes' : 'No'}</p>
+                      {selectedModule.pricing && (
+                        <p><strong>Pricing Tier:</strong> {selectedModule.pricing.tier}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedModule.dependencies && selectedModule.dependencies.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold mb-2">Dependencies</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedModule.dependencies.map(dep => (
+                        <Badge key={dep} variant="outline">{dep}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 mt-4">
+                  <Button size="sm" variant="outline">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Test Access
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Configure
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
             <Card>
               <CardContent className="p-8 text-center">

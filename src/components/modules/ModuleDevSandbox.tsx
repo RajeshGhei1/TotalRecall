@@ -16,44 +16,34 @@ import {
   Monitor,
   Database
 } from 'lucide-react';
-import ModuleDeploymentManager from './ModuleDeploymentManager';
-import ModuleScalingDashboard from './ModuleScalingDashboard';
+import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
+import SimplifiedModuleScaling from './SimplifiedModuleScaling';
 import RealModuleDashboard from './RealModuleDashboard';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 
 const ModuleDevSandbox: React.FC = () => {
-  const { user, bypassAuth } = useAuth();
-
-  // Get current tenant for super admin context
-  const { data: tenantData } = useQuery({
-    queryKey: ['superAdminTenantContext', user?.id],
-    queryFn: async () => {
-      if (bypassAuth) {
-        return { tenant_id: 'super-admin-context' };
-      }
-      
-      if (!user) return null;
-      
-      // Create a development tenant context for super admin
-      return { tenant_id: 'dev-tenant-' + user.id };
-    },
-    enabled: !!user || bypassAuth,
-  });
+  // Use stable tenant context
+  const { data: tenantData, isLoading: tenantLoading } = useStableTenantContext();
 
   // Add debugging to track component lifecycle
   useEffect(() => {
-    console.log('ModuleDevSandbox mounted with real module discovery');
+    console.log('ModuleDevSandbox mounted with stable tenant context');
     return () => {
       console.log('ModuleDevSandbox unmounted');
     };
   }, []);
 
   useEffect(() => {
-    console.log('ModuleDevSandbox - tenant context:', tenantData?.tenant_id);
+    console.log('ModuleDevSandbox - stable tenant context:', tenantData);
   }, [tenantData]);
 
-  console.log('ModuleDevSandbox rendering with real module system');
+  if (tenantLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -62,10 +52,10 @@ const ModuleDevSandbox: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Layers className="h-5 w-5" />
-            Real Module Development Sandbox
+            Stable Module Development Sandbox
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Development environment connected to the actual module system with real access control, subscription management, and usage analytics
+            Development environment with stable tenant context and optimized module discovery
           </p>
         </CardHeader>
         <CardContent>
@@ -76,11 +66,11 @@ const ModuleDevSandbox: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Monitor className="h-4 w-4 text-blue-600" />
-              <span>Real-time Access Control</span>
+              <span>Stable Tenant Context</span>
             </div>
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-purple-600" />
-              <span>Live Module Analytics</span>
+              <span>Optimized Module Discovery</span>
             </div>
           </div>
         </CardContent>
@@ -99,11 +89,11 @@ const ModuleDevSandbox: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="deployment" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
-            Deployment
+            Package Management
           </TabsTrigger>
           <TabsTrigger value="scaling" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Scaling & Performance
+            Performance Insights
           </TabsTrigger>
         </TabsList>
 
@@ -119,7 +109,7 @@ const ModuleDevSandbox: React.FC = () => {
                 Development Tools
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Tools for developing and testing modules in the real system
+                Tools for developing and testing modules with stable context
               </p>
             </CardHeader>
             <CardContent>
@@ -165,11 +155,11 @@ const ModuleDevSandbox: React.FC = () => {
                 <h4 className="font-semibold text-blue-900 mb-2">Development Environment Status</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p><strong>Tenant Context:</strong> {tenantData?.tenant_id || 'Loading...'}</p>
-                    <p><strong>User Role:</strong> Super Admin</p>
+                    <p><strong>Tenant Context:</strong> {tenantData?.tenant_name || 'Loading...'}</p>
+                    <p><strong>Tenant ID:</strong> {tenantData?.tenant_id || 'N/A'}</p>
                   </div>
                   <div>
-                    <p><strong>Environment:</strong> Development</p>
+                    <p><strong>Environment:</strong> {tenantData?.is_development ? 'Development' : 'Production'}</p>
                     <p><strong>Module System:</strong> Connected</p>
                   </div>
                 </div>
@@ -179,11 +169,11 @@ const ModuleDevSandbox: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="deployment" className="mt-6">
-          <ModuleDeploymentManager />
+          <SimplifiedModuleDeployment />
         </TabsContent>
 
         <TabsContent value="scaling" className="mt-6">
-          <ModuleScalingDashboard />
+          <SimplifiedModuleScaling />
         </TabsContent>
       </Tabs>
     </div>
