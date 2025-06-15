@@ -34,21 +34,21 @@ export const useStableTenantContext = () => {
       
       if (!user) return null;
       
-      // For regular users, get their tenant
+      // For regular users, get their profile (without tenant_id since column doesn't exist)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('tenant_id')
+        .select('id, email, full_name')
         .eq('id', user.id)
         .single();
 
       return profile ? { 
-        tenant_id: profile.tenant_id,
-        tenant_name: 'User Tenant',
+        tenant_id: user.id, // Use user ID as fallback tenant context
+        tenant_name: profile.full_name || profile.email || 'User Context',
         is_development: false 
       } : null;
     },
     enabled: !!user || bypassAuth,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaces deprecated cacheTime)
   });
 };

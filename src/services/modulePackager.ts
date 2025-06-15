@@ -23,13 +23,16 @@ export class ModulePackager {
     return ModulePackager.instance;
   }
 
-  async packageModule(moduleId: string): Promise<ModulePackage> {
+  async packageModule(moduleId: string, version?: string): Promise<ModulePackage> {
     // Stub implementation for development
+    const moduleVersion = version || '1.0.0';
+    console.log(`Packaging module ${moduleId} version ${moduleVersion}`);
+    
     return {
       id: moduleId,
-      packageHash: 'dev-hash-' + moduleId,
+      packageHash: `dev-hash-${moduleId}-${moduleVersion}`,
       size: 1024,
-      manifest: { id: moduleId, version: '1.0.0' }
+      manifest: { id: moduleId, version: moduleVersion }
     };
   }
 
