@@ -1,6 +1,5 @@
-
 import { ModuleManifest, LoadedModule, ModuleContext, ModuleLoadOptions } from '@/types/modules';
-import { ModuleRegistry } from './moduleRegistry';
+import { supabase } from '@/integrations/supabase/client';
 
 export class ModuleLoader {
   private static instance: ModuleLoader;
@@ -34,7 +33,7 @@ export class ModuleLoader {
     }
 
     try {
-      // Get module manifest
+      // Get module manifest from database
       const manifest = await this.getModuleManifest(moduleId);
       if (!manifest) {
         throw new Error(`Module manifest not found: ${moduleId}`);
@@ -165,25 +164,24 @@ export class ModuleLoader {
   }
 
   /**
-   * Load module manifest from registry or file system
+   * Load module manifest from database
    */
   private async getModuleManifest(moduleId: string): Promise<ModuleManifest | null> {
     try {
-      // First try to get from module registry (database)
-      const registryModule = ModuleRegistry.getModule(moduleId);
-      if (registryModule) {
-        // Convert registry module to manifest format
-        return this.convertRegistryToManifest(registryModule);
+      // Get module from database
+      const { data: module, error } = await supabase
+        .from('system_modules')
+        .select('*')
+        .eq('id', moduleId)
+        .single();
+
+      if (error || !module) {
+        console.error(`Module not found in database: ${moduleId}`);
+        return null;
       }
 
-      // Fallback to loading from module directory
-      const manifestPath = `/src/modules/${moduleId}/manifest.json`;
-      const response = await fetch(manifestPath);
-      if (response.ok) {
-        return await response.json();
-      }
-
-      return null;
+      // Convert database module to manifest format
+      return this.convertDatabaseToManifest(module);
     } catch (error) {
       console.error(`Error loading manifest for ${moduleId}:`, error);
       return null;
@@ -253,23 +251,23 @@ export class ModuleLoader {
   }
 
   /**
-   * Convert module registry entry to manifest format
+   * Convert database module entry to manifest format
    */
-  private convertRegistryToManifest(registryModule: any): ModuleManifest {
+  private convertDatabaseToManifest(dbModule: any): ModuleManifest {
     return {
-      id: registryModule.id,
-      name: registryModule.name,
-      version: '1.0.0',
-      description: registryModule.description,
-      category: registryModule.category,
+      id: dbModule.id,
+      name: dbModule.name,
+      version: dbModule.version || '1.0.0',
+      description: dbModule.description || '',
+      category: dbModule.category,
       author: 'System',
       license: 'MIT',
-      dependencies: registryModule.dependencies || [],
+      dependencies: dbModule.dependencies || [],
       entryPoint: 'index.ts',
-      requiredPermissions: [],
-      subscriptionTiers: registryModule.pricing ? [registryModule.pricing.tier] : [],
+      requiredPermissions: dbModule.required_permissions || [],
+      subscriptionTiers: dbModule.pricing_tier ? [dbModule.pricing_tier] : [],
       loadOrder: 100,
-      autoLoad: true,
+      autoLoad: dbModule.is_active,
       canUnload: true,
       minCoreVersion: '1.0.0'
     };

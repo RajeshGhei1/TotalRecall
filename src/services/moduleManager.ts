@@ -3,6 +3,7 @@ import { ModuleContext, LoadedModule, ModuleManifest } from '@/types/modules';
 import { ModuleAccessService } from './moduleAccessService';
 import { moduleRepository } from './moduleRepository';
 import { moduleVersionManager } from './moduleVersionManager';
+import { supabase } from '@/integrations/supabase/client';
 
 export class ModuleManager {
   private static instance: ModuleManager;
@@ -230,6 +231,17 @@ export class ModuleManager {
       const overrideModules = await this.getOverrideModules(tenantId);
       availableModules.push(...overrideModules);
 
+      // Get core modules from database
+      const { data: coreModules } = await supabase
+        .from('system_modules')
+        .select('name')
+        .eq('category', 'core')
+        .eq('is_active', true);
+
+      if (coreModules) {
+        availableModules.push(...coreModules.map(m => m.name));
+      }
+
       // Remove duplicates
       return [...new Set(availableModules)];
     } catch (error) {
@@ -325,12 +337,22 @@ export class ModuleManager {
   }
 
   /**
-   * Get modules available via subscription
+   * Get modules available via subscription using database
    */
   private async getSubscriptionModules(tenantId: string): Promise<string[]> {
-    // This would integrate with the existing subscription system
-    // For now, return core modules
-    return ['tenant_management', 'user_management', 'subscription_management'];
+    try {
+      // Get tenant's subscription modules from database
+      const { data: subscriptionModules } = await supabase
+        .from('system_modules')
+        .select('name')
+        .eq('is_active', true)
+        .neq('category', 'core');
+
+      return subscriptionModules?.map(m => m.name) || [];
+    } catch (error) {
+      console.error(`Error getting subscription modules for tenant ${tenantId}:`, error);
+      return [];
+    }
   }
 
   /**

@@ -17,13 +17,13 @@ import DeleteModuleDialog from './modules/DeleteModuleDialog';
 import ModulesManagement from './modules/ModulesManagement';
 import TenantModuleManager from './modules/TenantModuleManager';
 
-const ModuleRegistry: React.FC = () => {
+const ModuleManagement: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState<any>(null);
 
-  const { data: modules, isLoading } = useSystemModules();
+  const { data: modules, isLoading } = useSystemModules(false);
 
   const handleEditModule = (module: any) => {
     setSelectedModule(module);
@@ -163,4 +163,4 @@ const ModuleRegistry: React.FC = () => {
   );
 };
 
-export default ModuleRegistry;
+export default ModuleManagement;

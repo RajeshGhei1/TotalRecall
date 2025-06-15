@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import ModuleRegistry from '@/components/superadmin/settings/ModuleRegistry';
+import ModuleManagement from '@/components/superadmin/settings/ModuleManagement';
 
 const ModulesTabContent = () => {
   return (
@@ -14,7 +14,7 @@ const ModulesTabContent = () => {
       </div>
 
       <ErrorBoundary>
-        <ModuleRegistry />
+        <ModuleManagement />
       </ErrorBoundary>
     </div>
   );

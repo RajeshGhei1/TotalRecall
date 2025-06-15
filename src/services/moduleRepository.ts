@@ -1,4 +1,3 @@
-
 import { ModulePackage, PackageValidationResult } from './modulePackager';
 import { ModuleManifest } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
@@ -337,10 +336,10 @@ export class ModuleRepository {
   }
 
   /**
-   * Update module registry after deployment
+   * Update module registry after deployment using database
    */
   private async updateModuleRegistry(manifest: ModuleManifest): Promise<void> {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('system_modules')
       .upsert({
         id: manifest.id,

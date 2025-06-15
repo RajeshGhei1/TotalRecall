@@ -3,8 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ModuleRegistry, ModuleDefinition } from '@/services/moduleRegistry';
 import { Building2, BarChart, Brain, Zap, Package, BookOpen } from 'lucide-react';
+import { useSystemModules } from '@/hooks/useSystemModules';
 
 const categoryIcons = {
   core: Package,
@@ -33,14 +33,35 @@ interface ModuleConfigurationManagerProps {
 const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
   onAssignModule
 }) => {
-  const coreModules = ModuleRegistry.getCoreModules();
-  const subscriptionModules = ModuleRegistry.getSubscriptionModules();
+  const { data: allModules, isLoading } = useSystemModules(false);
 
-  const renderModule = (module: ModuleDefinition, isAssignable: boolean = false) => {
-    const IconComponent = categoryIcons[module.category];
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-20 bg-gray-200 rounded"></div>
+        ))}
+      </div>
+    );
+  }
+
+  // Separate core modules from subscription modules based on category
+  const coreModules = allModules?.filter(module => 
+    module.category === 'core' || 
+    ['tenant_management', 'user_management', 'subscription_management', 'security_audit', 'global_settings'].includes(module.name)
+  ) || [];
+  
+  const subscriptionModules = allModules?.filter(module => 
+    module.category !== 'core' && 
+    !['tenant_management', 'user_management', 'subscription_management', 'security_audit', 'global_settings'].includes(module.name)
+  ) || [];
+
+  const renderModule = (module: any, isAssignable: boolean = false) => {
+    const IconComponent = categoryIcons[module.category as keyof typeof categoryIcons] || Package;
+    const isCore = coreModules.includes(module);
     
     return (
-      <Card key={module.id} className={`${categoryColors[module.category]} border-l-4 border-l-blue-500`}>
+      <Card key={module.id} className={`${categoryColors[module.category as keyof typeof categoryColors] || 'bg-gray-100'} border-l-4 border-l-blue-500`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -48,12 +69,12 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
               <CardTitle className="text-lg">{module.name}</CardTitle>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge variant={module.isCore ? 'default' : 'secondary'}>
-                {module.isCore ? 'Core' : 'Module'}
+              <Badge variant={isCore ? 'default' : 'secondary'}>
+                {isCore ? 'Core' : 'Module'}
               </Badge>
-              {module.pricing && (
+              {module.monthly_price && (
                 <Badge variant="outline">
-                  ${module.pricing.monthlyPrice}/mo
+                  ${module.monthly_price}/mo
                 </Badge>
               )}
             </div>
@@ -69,13 +90,13 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
               </Badge>
             </div>
             
-            {module.dependencies.length > 0 && (
+            {module.dependencies && module.dependencies.length > 0 && (
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">Dependencies</p>
                 <div className="flex flex-wrap gap-1">
-                  {module.dependencies.map(dep => (
+                  {module.dependencies.map((dep: string) => (
                     <Badge key={dep} variant="secondary" className="text-xs">
-                      {ModuleRegistry.getModule(dep)?.name || dep}
+                      {allModules?.find(m => m.name === dep)?.name || dep}
                     </Badge>
                   ))}
                 </div>
