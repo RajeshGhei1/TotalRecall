@@ -5,7 +5,7 @@ import SortableNavigation from './SortableNavigation';
 import { NavItem } from '@/types/navigation';
 
 const TenantAdminNav = () => {
-  const { items, updateOrder, updateItemLabel, resetToDefaults } = useTenantAdminNavigation();
+  const { items, reorderItems } = useTenantAdminNavigation();
 
   if (!items || items.length === 0) {
     return (
@@ -22,15 +22,24 @@ const TenantAdminNav = () => {
   // Convert NavItem[] to string[] for the updateOrder function
   const handleReorder = (newItems: typeof items) => {
     const newOrder = newItems.map(item => item.id);
-    updateOrder(newOrder);
+    reorderItems(newOrder);
+  };
+
+  // Placeholder functions for rename and reset (not implemented in useNavigationPreferences)
+  const handleRename = (id: string, newLabel: string) => {
+    console.log('Rename functionality not implemented yet:', id, newLabel);
+  };
+
+  const handleResetLabel = (id: string) => {
+    console.log('Reset label functionality not implemented yet:', id);
   };
 
   return (
     <SortableNavigation 
       items={items} 
       onReorder={handleReorder}
-      onRename={updateItemLabel}
-      onResetLabel={resetToDefaults}
+      onRename={handleRename}
+      onResetLabel={handleResetLabel}
     />
   );
 };
