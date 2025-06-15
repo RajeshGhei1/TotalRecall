@@ -47,6 +47,12 @@ const coreNavItems: NavItem[] = [
     href: '/superadmin/subscription-plans'
   },
   { 
+    id: 'module-development',
+    label: 'Module Development', 
+    icon: Code, 
+    href: '/superadmin/module-development'
+  },
+  { 
     id: 'security-dashboard',
     label: 'Security Dashboard', 
     icon: Shield, 
