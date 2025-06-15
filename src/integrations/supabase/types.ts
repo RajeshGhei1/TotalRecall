@@ -842,6 +842,7 @@ export type Database = {
           segmentasperturnover: string | null
           serviceline: string | null
           size: string | null
+          tr_id: string | null
           turnover: string | null
           turnoveryear: string | null
           twitter: string | null
@@ -891,6 +892,7 @@ export type Database = {
           segmentasperturnover?: string | null
           serviceline?: string | null
           size?: string | null
+          tr_id?: string | null
           turnover?: string | null
           turnoveryear?: string | null
           twitter?: string | null
@@ -940,6 +942,7 @@ export type Database = {
           segmentasperturnover?: string | null
           serviceline?: string | null
           size?: string | null
+          tr_id?: string | null
           turnover?: string | null
           turnoveryear?: string | null
           twitter?: string | null
@@ -2703,6 +2706,7 @@ export type Database = {
           id: string
           location: string | null
           phone: string | null
+          tr_id: string | null
           type: string
           updated_at: string
         }
@@ -2713,6 +2717,7 @@ export type Database = {
           id?: string
           location?: string | null
           phone?: string | null
+          tr_id?: string | null
           type: string
           updated_at?: string
         }
@@ -2723,6 +2728,7 @@ export type Database = {
           id?: string
           location?: string | null
           phone?: string | null
+          tr_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -2739,6 +2745,7 @@ export type Database = {
           password_meets_policy: boolean | null
           policy_check_required: boolean | null
           role: Database["public"]["Enums"]["user_role"]
+          tr_id: string | null
           updated_at: string
         }
         Insert: {
@@ -2751,6 +2758,7 @@ export type Database = {
           password_meets_policy?: boolean | null
           policy_check_required?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          tr_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -2763,6 +2771,7 @@ export type Database = {
           password_meets_policy?: boolean | null
           policy_check_required?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          tr_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -3757,6 +3766,7 @@ export type Database = {
           id: string
           name: string
           registration_date: string | null
+          tr_id: string | null
           updated_at: string
         }
         Insert: {
@@ -3766,6 +3776,7 @@ export type Database = {
           id?: string
           name: string
           registration_date?: string | null
+          tr_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -3775,6 +3786,7 @@ export type Database = {
           id?: string
           name?: string
           registration_date?: string | null
+          tr_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -4236,6 +4248,10 @@ export type Database = {
       }
     }
     Functions: {
+      backfill_tr_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       can_access_entity: {
         Args: { p_entity_type: string; p_entity_id: string }
         Returns: boolean
@@ -4259,6 +4275,19 @@ export type Database = {
       delete_test_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      find_entity_by_tr_id: {
+        Args: { p_tr_id: string }
+        Returns: {
+          entity_type: string
+          entity_id: string
+          entity_name: string
+          tr_id: string
+        }[]
+      }
+      generate_tr_id: {
+        Args: { entity_prefix: string }
+        Returns: string
       }
       get_current_user_id: {
         Args: Record<PropertyKey, never>

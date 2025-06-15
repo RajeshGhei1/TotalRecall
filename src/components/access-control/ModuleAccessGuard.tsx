@@ -1,24 +1,41 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Lock, Crown, ArrowRight } from 'lucide-react';
-import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
-import UnifiedModuleAccessGuard from './UnifiedModuleAccessGuard';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Lock } from 'lucide-react';
 
 interface ModuleAccessGuardProps {
-  children: React.ReactNode;
   moduleName: string;
-  tenantId: string | null;
+  requiredAccess?: 'view' | 'edit' | 'admin';
   fallback?: React.ReactNode;
+  children: React.ReactNode;
 }
 
-/**
- * @deprecated Use UnifiedModuleAccessGuard instead for better access control
- */
-const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = (props) => {
-  // For backward compatibility, redirect to the new unified component
-  return <UnifiedModuleAccessGuard {...props} />;
+const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
+  moduleName,
+  requiredAccess = 'view',
+  fallback,
+  children
+}) => {
+  // TODO: Implement actual module access checking
+  // This would check against user's subscription and tenant module assignments
+  const hasAccess = true; // Placeholder - will be implemented with subscription system
+
+  if (!hasAccess) {
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+
+    return (
+      <Alert className="m-4">
+        <Lock className="h-4 w-4" />
+        <AlertDescription>
+          You don't have access to the {moduleName} module. Please contact your administrator or upgrade your subscription.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return <>{children}</>;
 };
 
 export default ModuleAccessGuard;

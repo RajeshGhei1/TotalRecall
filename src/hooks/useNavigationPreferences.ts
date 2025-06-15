@@ -1,13 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   id: string;
   label: string;
-  icon: LucideIcon;
+  icon: any;
   href: string;
-  requiresModule?: string; // Add optional module requirement
+  moduleId?: string; // Add module dependency
 }
 
 interface NavigationPreferences {

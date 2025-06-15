@@ -3,6 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { ContactCSVRow } from './FileProcessor';
 import { DuplicateInfo, DuplicateMatch, DuplicateStrategy } from './types';
 
+// Future-ready interface that can be extended when schema is updated
+interface ExtendedPersonRecord {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  // Future fields that may be added to the schema
+  current_title?: string;
+  linkedin_url?: string;
+  current_company?: string;
+}
+
 export class DuplicateDetector {
   private static normalizePhone(phone: string): string {
     if (!phone) return '';
@@ -50,7 +66,7 @@ export class DuplicateDetector {
   ): Promise<DuplicateInfo[]> {
     const duplicates: DuplicateInfo[] = [];
     
-    // Get all existing people for comparison - select the fields that actually exist
+    // Get all existing people for comparison
     const { data: existingPeople, error } = await supabase
       .from('people')
       .select('*');
@@ -67,13 +83,14 @@ export class DuplicateDetector {
       let highestConfidence = 0;
 
       for (const existing of existingPeople || []) {
+        const extendedExisting = existing as ExtendedPersonRecord;
         const currentMatches: DuplicateMatch[] = [];
         let totalConfidence = 0;
 
         // Email match (highest priority)
-        if (contact.email && existing.email) {
+        if (contact.email && extendedExisting.email) {
           const normalizedContactEmail = this.normalizeEmail(contact.email);
-          const normalizedExistingEmail = this.normalizeEmail(existing.email);
+          const normalizedExistingEmail = this.normalizeEmail(extendedExisting.email);
           
           if (normalizedContactEmail === normalizedExistingEmail) {
             currentMatches.push({
@@ -87,9 +104,9 @@ export class DuplicateDetector {
         }
 
         // Phone match
-        if (contact.phone && existing.phone) {
+        if (contact.phone && extendedExisting.phone) {
           const normalizedContactPhone = this.normalizePhone(contact.phone);
-          const normalizedExistingPhone = this.normalizePhone(existing.phone);
+          const normalizedExistingPhone = this.normalizePhone(extendedExisting.phone);
           
           if (normalizedContactPhone === normalizedExistingPhone && normalizedContactPhone.length >= 7) {
             currentMatches.push({
@@ -102,15 +119,15 @@ export class DuplicateDetector {
           }
         }
 
-        // Name + Company match - use correct field names
-        if (contact.full_name && existing.full_name) {
-          const nameSimilarity = this.calculateNameSimilarity(contact.full_name, existing.full_name);
+        // Name + Company match - defensive programming for optional fields
+        if (contact.full_name && extendedExisting.full_name) {
+          const nameSimilarity = this.calculateNameSimilarity(contact.full_name, extendedExisting.full_name);
           
           if (nameSimilarity >= 0.8) {
             let companyBonus = 0;
-            // Use current_title field instead of current_company, or check if company fields exist
-            if (contact.company_name && existing.current_title) {
-              const companySimilarity = this.calculateNameSimilarity(contact.company_name, existing.current_title);
+            // Safely check for company fields that may or may not exist
+            if (contact.company_name && extendedExisting.current_company) {
+              const companySimilarity = this.calculateNameSimilarity(contact.company_name, extendedExisting.current_company);
               if (companySimilarity >= 0.8) {
                 companyBonus = 0.3;
               }
@@ -129,10 +146,10 @@ export class DuplicateDetector {
           }
         }
 
-        // LinkedIn match - use correct field name
-        if (contact.linkedin_url && existing.linkedin_url) {
+        // LinkedIn match - defensive programming for optional fields
+        if (contact.linkedin_url && extendedExisting.linkedin_url) {
           const normalizedContactLinkedIn = contact.linkedin_url.toLowerCase().trim();
-          const normalizedExistingLinkedIn = existing.linkedin_url.toLowerCase().trim();
+          const normalizedExistingLinkedIn = extendedExisting.linkedin_url.toLowerCase().trim();
           
           if (normalizedContactLinkedIn === normalizedExistingLinkedIn) {
             currentMatches.push({
@@ -149,7 +166,7 @@ export class DuplicateDetector {
         if (currentMatches.length > 0 && totalConfidence >= strategy.confidenceThreshold) {
           if (totalConfidence > highestConfidence) {
             highestConfidence = totalConfidence;
-            bestMatch = existing;
+            bestMatch = extendedExisting;
             matches.splice(0, matches.length, ...currentMatches);
           }
         }
