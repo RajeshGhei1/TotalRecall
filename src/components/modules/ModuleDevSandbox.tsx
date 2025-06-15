@@ -14,7 +14,8 @@ import {
   Activity,
   Package,
   Upload,
-  Zap
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import { LoadedModule } from '@/types/modules';
@@ -23,6 +24,7 @@ import { modulePackager } from '@/services/modulePackager';
 import { moduleVersionManager } from '@/services/moduleVersionManager';
 import { toast } from 'sonner';
 import ModuleDeploymentManager from './ModuleDeploymentManager';
+import ModuleScalingDashboard from './ModuleScalingDashboard';
 
 const ModuleDevSandbox: React.FC = () => {
   const { loadedModules, isLoading, error, reloadModule } = useModuleLoader();
@@ -193,7 +195,7 @@ const ModuleDevSandbox: React.FC = () => {
             Module Development Sandbox
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Isolated development environment with packaging and deployment capabilities
+            Isolated development environment with packaging, deployment, and scaling capabilities
           </p>
         </CardHeader>
         <CardContent>
@@ -245,6 +247,7 @@ const ModuleDevSandbox: React.FC = () => {
         <TabsList>
           <TabsTrigger value="development">Development</TabsTrigger>
           <TabsTrigger value="deployment">Deployment</TabsTrigger>
+          <TabsTrigger value="scaling">Scaling & Performance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="development">
@@ -314,9 +317,13 @@ const ModuleDevSandbox: React.FC = () => {
         <TabsContent value="deployment">
           <ModuleDeploymentManager />
         </TabsContent>
+
+        <TabsContent value="scaling">
+          <ModuleScalingDashboard />
+        </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-export default ModuleDeploymentManager;
+export default ModuleDevSandbox;
