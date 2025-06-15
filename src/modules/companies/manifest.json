@@ -1,0 +1,61 @@
+
+{
+  "id": "companies",
+  "name": "Company Management",
+  "version": "1.0.0",
+  "description": "Comprehensive company management and relationship tracking",
+  "category": "business",
+  "author": "Total Recall",
+  "license": "MIT",
+  "homepage": "https://totalrecall.ai/modules/companies",
+  "dependencies": ["user_management"],
+  "peerDependencies": [],
+  "minCoreVersion": "1.0.0",
+  "entryPoint": "index.ts",
+  "routes": [
+    {
+      "path": "/superadmin/companies",
+      "component": "CompaniesPage",
+      "exact": true,
+      "guards": ["ModuleAccessGuard"]
+    }
+  ],
+  "components": [
+    {
+      "name": "CompaniesPage",
+      "path": "pages/CompaniesPage.tsx",
+      "exports": ["CompaniesPage"]
+    },
+    {
+      "name": "CompanyForm",
+      "path": "components/CompanyForm.tsx",
+      "exports": ["CompanyForm"]
+    }
+  ],
+  "services": [
+    {
+      "name": "CompanyService",
+      "path": "services/CompanyService.ts",
+      "singleton": true
+    }
+  ],
+  "hooks": [
+    {
+      "name": "useCompanies",
+      "path": "hooks/useCompanies.ts"
+    }
+  ],
+  "requiredPermissions": ["companies:read"],
+  "subscriptionTiers": ["basic", "professional", "enterprise"],
+  "resourceLimits": {
+    "memory": 50,
+    "cpu": 10,
+    "storage": 100
+  },
+  "loadOrder": 200,
+  "autoLoad": true,
+  "canUnload": true,
+  "developmentMode": true,
+  "hotReload": true,
+  "sandboxed": false
+}

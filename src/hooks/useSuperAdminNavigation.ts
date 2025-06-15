@@ -17,7 +17,8 @@ import {
   Shield,
   Activity,
   BookOpen,
-  BarChart3
+  BarChart3,
+  Code
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { ModuleAccessService } from '@/services/moduleAccessService';
