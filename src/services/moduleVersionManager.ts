@@ -30,8 +30,8 @@ export class ModuleVersionManager {
     console.log(`Created version ${version} for module ${moduleId}`);
   }
 
-  async hotSwapModule(moduleId: string, version: string): Promise<HotSwapResult> {
-    console.log(`Hot-swapping module ${moduleId} to version ${version}`);
+  async hotSwapModule(moduleId: string, version: string, tenantId?: string): Promise<HotSwapResult> {
+    console.log(`Hot-swapping module ${moduleId} to version ${version} for tenant ${tenantId || 'default'}`);
     
     // Stub implementation for development
     try {
