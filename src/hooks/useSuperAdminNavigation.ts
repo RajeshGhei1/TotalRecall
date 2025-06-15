@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { 
   BarChart2,
   Building2, 
@@ -25,118 +26,6 @@ import { ModuleAccessService } from '@/services/moduleAccessService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-// Core Super Admin items (always available)
-const coreNavItems: NavItem[] = [
-  { 
-    id: 'tenants',
-    label: 'Tenants', 
-    icon: Store, 
-    href: '/superadmin/tenants'
-  },
-  { 
-    id: 'users',
-    label: 'Tenant Users', 
-    icon: Users, 
-    href: '/superadmin/users'
-  },
-  { 
-    id: 'subscription-plans',
-    label: 'Subscription Plans', 
-    icon: Package, 
-    href: '/superadmin/subscription-plans'
-  },
-  { 
-    id: 'module-development',
-    label: 'Module Development', 
-    icon: Code, 
-    href: '/superadmin/module-development'
-  },
-  { 
-    id: 'security-dashboard',
-    label: 'Security Dashboard', 
-    icon: Shield, 
-    href: '/superadmin/security-dashboard'
-  },
-  { 
-    id: 'audit-logs',
-    label: 'Audit Logs', 
-    icon: Shield, 
-    href: '/superadmin/audit-logs'
-  },
-  { 
-    id: 'global-settings',
-    label: 'Global Settings', 
-    icon: Cog, 
-    href: '/superadmin/global-settings'
-  },
-  { 
-    id: 'settings',
-    label: 'System Settings', 
-    icon: Settings, 
-    href: '/superadmin/settings'
-  },
-];
-
-// Module-based items (subscription controlled)
-const moduleNavItems: NavItem[] = [
-  { 
-    id: 'analytics',
-    label: 'BI Dashboard', 
-    icon: BarChart2, 
-    href: '/superadmin/analytics',
-    requiresModule: 'bi_dashboard'
-  },
-  { 
-    id: 'advanced-analytics',
-    label: 'Advanced Analytics', 
-    icon: BarChart3, 
-    href: '/superadmin/advanced-analytics',
-    requiresModule: 'advanced_analytics'
-  },
-  { 
-    id: 'companies',
-    label: 'Companies', 
-    icon: Building2, 
-    href: '/superadmin/companies',
-    requiresModule: 'companies'
-  },
-  { 
-    id: 'people',
-    label: 'Business Contacts', 
-    icon: Users2, 
-    href: '/superadmin/people',
-    requiresModule: 'people_contacts'
-  },
-  { 
-    id: 'documentation',
-    label: 'Documentation', 
-    icon: BookOpen, 
-    href: '/superadmin/documentation',
-    requiresModule: 'documentation'
-  },
-  { 
-    id: 'ai-orchestration',
-    label: 'AI Orchestration', 
-    icon: Brain, 
-    href: '/superadmin/ai-orchestration',
-    requiresModule: 'ai_orchestration'
-  },
-  { 
-    id: 'ai-analytics',
-    label: 'AI Analytics', 
-    icon: Zap, 
-    href: '/superadmin/ai-analytics',
-    requiresModule: 'ai_analytics'
-  },
-  { 
-    id: 'user-activity',
-    label: 'User Activity', 
-    icon: Activity, 
-    href: '/superadmin/user-activity',
-    requiresModule: 'user_activity'
-  },
-];
 
 export const useSuperAdminNavigation = () => {
   const { user, bypassAuth } = useAuth();
@@ -166,6 +55,66 @@ export const useSuperAdminNavigation = () => {
       
       const accessResults: Record<string, boolean> = {};
       
+      // Module-based items (subscription controlled)
+      const moduleNavItems: NavItem[] = [
+        { 
+          id: 'analytics',
+          label: 'BI Dashboard', 
+          icon: BarChart2, 
+          href: '/superadmin/analytics',
+          requiresModule: 'bi_dashboard'
+        },
+        { 
+          id: 'advanced-analytics',
+          label: 'Advanced Analytics', 
+          icon: BarChart3, 
+          href: '/superadmin/advanced-analytics',
+          requiresModule: 'advanced_analytics'
+        },
+        { 
+          id: 'companies',
+          label: 'Companies', 
+          icon: Building2, 
+          href: '/superadmin/companies',
+          requiresModule: 'companies'
+        },
+        { 
+          id: 'people',
+          label: 'Business Contacts', 
+          icon: Users2, 
+          href: '/superadmin/people',
+          requiresModule: 'people_contacts'
+        },
+        { 
+          id: 'documentation',
+          label: 'Documentation', 
+          icon: BookOpen, 
+          href: '/superadmin/documentation',
+          requiresModule: 'documentation'
+        },
+        { 
+          id: 'ai-orchestration',
+          label: 'AI Orchestration', 
+          icon: Brain, 
+          href: '/superadmin/ai-orchestration',
+          requiresModule: 'ai_orchestration'
+        },
+        { 
+          id: 'ai-analytics',
+          label: 'AI Analytics', 
+          icon: Zap, 
+          href: '/superadmin/ai-analytics',
+          requiresModule: 'ai_analytics'
+        },
+        { 
+          id: 'user-activity',
+          label: 'User Activity', 
+          icon: Activity, 
+          href: '/superadmin/user-activity',
+          requiresModule: 'user_activity'
+        },
+      ];
+      
       // Check access for each module
       for (const item of moduleNavItems) {
         if (item.requiresModule) {
@@ -187,12 +136,126 @@ export const useSuperAdminNavigation = () => {
     enabled: !!tenantData?.tenant_id,
   });
 
-  // Filter module items based on access
-  const filteredModuleItems = moduleNavItems.filter(item => 
-    !item.requiresModule || moduleAccess?.[item.requiresModule] === true
-  );
+  // Memoize core navigation items (static, no dependencies)
+  const coreNavItems = useMemo((): NavItem[] => [
+    { 
+      id: 'tenants',
+      label: 'Tenants', 
+      icon: Store, 
+      href: '/superadmin/tenants'
+    },
+    { 
+      id: 'users',
+      label: 'Tenant Users', 
+      icon: Users, 
+      href: '/superadmin/users'
+    },
+    { 
+      id: 'subscription-plans',
+      label: 'Subscription Plans', 
+      icon: Package, 
+      href: '/superadmin/subscription-plans'
+    },
+    { 
+      id: 'module-development',
+      label: 'Module Development', 
+      icon: Code, 
+      href: '/superadmin/module-development'
+    },
+    { 
+      id: 'security-dashboard',
+      label: 'Security Dashboard', 
+      icon: Shield, 
+      href: '/superadmin/security-dashboard'
+    },
+    { 
+      id: 'audit-logs',
+      label: 'Audit Logs', 
+      icon: Shield, 
+      href: '/superadmin/audit-logs'
+    },
+    { 
+      id: 'global-settings',
+      label: 'Global Settings', 
+      icon: Cog, 
+      href: '/superadmin/global-settings'
+    },
+    { 
+      id: 'settings',
+      label: 'System Settings', 
+      icon: Settings, 
+      href: '/superadmin/settings'
+    },
+  ], []);
 
-  const allNavItems = [...coreNavItems, ...filteredModuleItems];
+  // Memoize filtered module items (depends on moduleAccess)
+  const filteredModuleItems = useMemo((): NavItem[] => {
+    const moduleNavItems: NavItem[] = [
+      { 
+        id: 'analytics',
+        label: 'BI Dashboard', 
+        icon: BarChart2, 
+        href: '/superadmin/analytics',
+        requiresModule: 'bi_dashboard'
+      },
+      { 
+        id: 'advanced-analytics',
+        label: 'Advanced Analytics', 
+        icon: BarChart3, 
+        href: '/superadmin/advanced-analytics',
+        requiresModule: 'advanced_analytics'
+      },
+      { 
+        id: 'companies',
+        label: 'Companies', 
+        icon: Building2, 
+        href: '/superadmin/companies',
+        requiresModule: 'companies'
+      },
+      { 
+        id: 'people',
+        label: 'Business Contacts', 
+        icon: Users2, 
+        href: '/superadmin/people',
+        requiresModule: 'people_contacts'
+      },
+      { 
+        id: 'documentation',
+        label: 'Documentation', 
+        icon: BookOpen, 
+        href: '/superadmin/documentation',
+        requiresModule: 'documentation'
+      },
+      { 
+        id: 'ai-orchestration',
+        label: 'AI Orchestration', 
+        icon: Brain, 
+        href: '/superadmin/ai-orchestration',
+        requiresModule: 'ai_orchestration'
+      },
+      { 
+        id: 'ai-analytics',
+        label: 'AI Analytics', 
+        icon: Zap, 
+        href: '/superadmin/ai-analytics',
+        requiresModule: 'ai_analytics'
+      },
+      { 
+        id: 'user-activity',
+        label: 'User Activity', 
+        icon: Activity, 
+        href: '/superadmin/user-activity',
+        requiresModule: 'user_activity'
+      },
+    ];
+
+    return moduleNavItems.filter(item => 
+      !item.requiresModule || moduleAccess?.[item.requiresModule] === true
+    );
+  }, [moduleAccess]);
+
+  // Memoize all navigation items (depends on core and filtered module items)
+  const allNavItems = useMemo(() => [...coreNavItems, ...filteredModuleItems], [coreNavItems, filteredModuleItems]);
   
   return useNavigationPreferences('super_admin', allNavItems);
 };
