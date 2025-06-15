@@ -123,12 +123,12 @@ export class ModuleAccessService {
         }
       }
 
-      // Check override access
+      // Check override access - using module name directly since system_modules uses name as PK
       const { data: assignment } = await supabase
         .from('tenant_module_assignments')
         .select('*')
         .eq('tenant_id', tenantId)
-        .eq('module_id', (await this.getModuleIdByName(moduleName)) || '')
+        .eq('module_id', moduleName) // Changed to use module name directly
         .eq('is_enabled', true)
         .single();
 
@@ -144,19 +144,65 @@ export class ModuleAccessService {
   }
 
   /**
-   * Helper to get module ID by name
+   * Log module access attempt
    */
-  private static async getModuleIdByName(moduleName: string): Promise<string | null> {
+  static async logModuleAccess(
+    tenantId: string,
+    userId: string,
+    moduleName: string,
+    accessType: 'allowed' | 'denied' | 'upgraded',
+    accessSource: 'subscription' | 'override' | 'developer_mode',
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<string | null> {
     try {
-      const { data: module } = await supabase
-        .from('system_modules')
-        .select('id')
-        .eq('name', moduleName)
-        .single();
+      // Use the database function to log module access
+      const { data, error } = await supabase.rpc('log_module_access', {
+        p_tenant_id: tenantId,
+        p_user_id: userId,
+        p_module_name: moduleName,
+        p_access_type: accessType,
+        p_access_source: accessSource,
+        p_ip_address: ipAddress || null,
+        p_user_agent: userAgent || null
+      });
 
-      return module?.id || null;
+      if (error) {
+        console.error('Error logging module access:', error);
+        return null;
+      }
+
+      return data;
     } catch (error) {
+      console.error('Error in logModuleAccess:', error);
       return null;
+    }
+  }
+
+  /**
+   * Check if user has developer override access
+   */
+  static async hasDeveloperOverride(
+    userId: string,
+    moduleName?: string,
+    tenantId?: string
+  ): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('has_developer_override', {
+        p_user_id: userId,
+        p_module_name: moduleName || null,
+        p_tenant_id: tenantId || null
+      });
+
+      if (error) {
+        console.error('Error checking developer override:', error);
+        return false;
+      }
+
+      return data || false;
+    } catch (error) {
+      console.error('Error in hasDeveloperOverride:', error);
+      return false;
     }
   }
 }

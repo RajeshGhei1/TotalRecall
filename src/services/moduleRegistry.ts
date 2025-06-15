@@ -58,10 +58,10 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
     isCore: true
   },
 
-  // Business modules (subscription-based)
+  // Business modules (subscription-based) - updated to match database entries
   'companies': {
     id: 'companies',
-    name: 'Companies',
+    name: 'Company Management',
     description: 'Company management and relationships',
     category: 'business',
     dependencies: ['user_management'],
@@ -75,7 +75,7 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
   },
   'people_contacts': {
     id: 'people_contacts',
-    name: 'People & Contacts',
+    name: 'People & Business Contacts',
     description: 'Contact and people management',
     category: 'business',
     dependencies: ['user_management'],
@@ -87,42 +87,12 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
       annualPrice: 190
     }
   },
-  'basic_reporting': {
-    id: 'basic_reporting',
-    name: 'Basic Reporting',
-    description: 'Standard reports and analytics',
-    category: 'business',
-    dependencies: ['user_management'],
-    isCore: false,
-    pricing: {
-      tier: 'basic',
-      monthlyPrice: 15,
-      annualPrice: 150
-    }
-  },
-
-  // Recruitment modules
-  'ats_core': {
-    id: 'ats_core',
-    name: 'ATS Core',
-    description: 'Applicant Tracking System',
-    category: 'recruitment',
-    dependencies: ['companies', 'people_contacts'],
-    isCore: false,
-    pricing: {
-      tier: 'professional',
-      monthlyPrice: 89,
-      annualPrice: 890
-    }
-  },
-
-  // Analytics modules
   'bi_dashboard': {
     id: 'bi_dashboard',
     name: 'BI Dashboard',
     description: 'Business Intelligence Dashboard',
     category: 'analytics',
-    dependencies: ['basic_reporting'],
+    dependencies: ['user_management'],
     route: '/superadmin/analytics',
     isCore: false,
     pricing: {
@@ -145,11 +115,23 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
       annualPrice: 1490
     }
   },
-
-  // AI modules
+  'documentation': {
+    id: 'documentation',
+    name: 'Documentation Management',
+    description: 'Documentation management system',
+    category: 'integration',
+    dependencies: ['user_management'],
+    route: '/superadmin/documentation',
+    isCore: false,
+    pricing: {
+      tier: 'basic',
+      monthlyPrice: 9,
+      annualPrice: 90
+    }
+  },
   'ai_orchestration': {
     id: 'ai_orchestration',
-    name: 'AI Orchestration',
+    name: 'AI Orchestration Engine',
     description: 'AI agent management and orchestration',
     category: 'ai',
     dependencies: ['user_management'],
@@ -163,7 +145,7 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
   },
   'ai_analytics': {
     id: 'ai_analytics',
-    name: 'AI Analytics',
+    name: 'AI Analytics & Insights',
     description: 'AI-powered analytics and insights',
     category: 'ai',
     dependencies: ['ai_orchestration', 'advanced_analytics'],
@@ -175,20 +157,18 @@ export const MODULE_REGISTRY: Record<string, ModuleDefinition> = {
       annualPrice: 2990
     }
   },
-
-  // Integration modules
-  'documentation': {
-    id: 'documentation',
-    name: 'Documentation',
-    description: 'Documentation management system',
-    category: 'integration',
+  'user_activity': {
+    id: 'user_activity',
+    name: 'User Activity Monitoring',
+    description: 'User activity monitoring and analytics',
+    category: 'analytics',
     dependencies: ['user_management'],
-    route: '/superadmin/documentation',
+    route: '/superadmin/user-activity',
     isCore: false,
     pricing: {
-      tier: 'basic',
-      monthlyPrice: 9,
-      annualPrice: 90
+      tier: 'professional',
+      monthlyPrice: 39,
+      annualPrice: 390
     }
   }
 };
