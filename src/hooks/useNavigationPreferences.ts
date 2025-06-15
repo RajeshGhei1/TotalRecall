@@ -1,146 +1,112 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   id: string;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   href: string;
-  moduleId?: string; // Add module dependency
-  requiresModule?: string; // Add this property for module requirements
+  requiresModule?: string;
+  badge?: string | number;
 }
 
-interface NavigationPreferences {
-  [key: string]: {
-    order: string[];
-    hiddenItems: string[];
-    customLabels: { [key: string]: string };
+export interface NavigationState {
+  items: NavItem[];
+  pinnedItems: string[];
+  hiddenItems: string[];
+  customOrder: string[];
+}
+
+export const useNavigationPreferences = (userType: string, defaultItems: NavItem[]) => {
+  // Memoize the default items to prevent unnecessary re-renders
+  const memoizedDefaultItems = useMemo(() => defaultItems, [defaultItems]);
+  
+  const [navigationState, setNavigationState] = useState<NavigationState>(() => ({
+    items: memoizedDefaultItems,
+    pinnedItems: [],
+    hiddenItems: [],
+    customOrder: []
+  }));
+
+  // Update items when defaultItems changes, but in a controlled way
+  useEffect(() => {
+    setNavigationState(prev => ({
+      ...prev,
+      items: memoizedDefaultItems
+    }));
+  }, [memoizedDefaultItems]);
+
+  const updateNavigationState = (updates: Partial<NavigationState>) => {
+    setNavigationState(prev => ({
+      ...prev,
+      ...updates
+    }));
   };
-}
 
-export const useNavigationPreferences = (context: string, defaultItems: NavItem[]) => {
-  const [preferences, setPreferences] = useState<NavigationPreferences>({});
-  const [orderedItems, setOrderedItems] = useState<NavItem[]>(defaultItems);
+  const togglePinItem = (itemId: string) => {
+    setNavigationState(prev => ({
+      ...prev,
+      pinnedItems: prev.pinnedItems.includes(itemId)
+        ? prev.pinnedItems.filter(id => id !== itemId)
+        : [...prev.pinnedItems, itemId]
+    }));
+  };
 
-  useEffect(() => {
-    const savedPreferences = localStorage.getItem('navigationPreferences');
-    if (savedPreferences) {
-      try {
-        setPreferences(JSON.parse(savedPreferences));
-      } catch (error) {
-        console.error('Error parsing navigation preferences:', error);
-      }
-    }
-  }, []);
+  const toggleHideItem = (itemId: string) => {
+    setNavigationState(prev => ({
+      ...prev,
+      hiddenItems: prev.hiddenItems.includes(itemId)
+        ? prev.hiddenItems.filter(id => id !== itemId)
+        : [...prev.hiddenItems, itemId]
+    }));
+  };
 
-  useEffect(() => {
-    const contextPrefs = preferences[context];
-    if (!contextPrefs) {
-      setOrderedItems(defaultItems);
-      return;
-    }
+  const reorderItems = (newOrder: string[]) => {
+    setNavigationState(prev => ({
+      ...prev,
+      customOrder: newOrder
+    }));
+  };
 
+  // Process items with current preferences
+  const processedItems = useMemo(() => {
+    const { items, pinnedItems, hiddenItems, customOrder } = navigationState;
+    
     // Filter out hidden items
-    const visibleItems = defaultItems.filter(item => 
-      !contextPrefs.hiddenItems?.includes(item.id)
-    );
-
-    // Apply custom order if available
-    if (contextPrefs.order && contextPrefs.order.length > 0) {
-      const ordered = [...visibleItems].sort((a, b) => {
-        const aIndex = contextPrefs.order.indexOf(a.id);
-        const bIndex = contextPrefs.order.indexOf(b.id);
-        
-        // If both items are in the order array, sort by their position
-        if (aIndex !== -1 && bIndex !== -1) {
-          return aIndex - bIndex;
+    const visibleItems = items.filter(item => !hiddenItems.includes(item.id));
+    
+    // Apply custom order if exists
+    if (customOrder.length > 0) {
+      const orderedItems: NavItem[] = [];
+      const itemsMap = new Map(visibleItems.map(item => [item.id, item]));
+      
+      // Add items in custom order
+      customOrder.forEach(id => {
+        const item = itemsMap.get(id);
+        if (item) {
+          orderedItems.push(item);
+          itemsMap.delete(id);
         }
-        
-        // If only one item is in the order array, it comes first
-        if (aIndex !== -1) return -1;
-        if (bIndex !== -1) return 1;
-        
-        // If neither item is in the order array, maintain original order
-        return 0;
       });
       
-      setOrderedItems(ordered);
-    } else {
-      setOrderedItems(visibleItems);
+      // Add remaining items that weren't in custom order
+      orderedItems.push(...Array.from(itemsMap.values()));
+      
+      return orderedItems;
     }
-
-    // Apply custom labels
-    if (contextPrefs.customLabels) {
-      setOrderedItems(prev => prev.map(item => ({
-        ...item,
-        label: contextPrefs.customLabels[item.id] || item.label
-      })));
-    }
-  }, [preferences, context, defaultItems]);
-
-  const updateOrder = (newOrder: string[]) => {
-    const updated = {
-      ...preferences,
-      [context]: {
-        ...preferences[context],
-        order: newOrder
-      }
-    };
-    setPreferences(updated);
-    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
-  };
-
-  const toggleItemVisibility = (itemId: string) => {
-    const contextPrefs = preferences[context] || { order: [], hiddenItems: [], customLabels: {} };
-    const isHidden = contextPrefs.hiddenItems.includes(itemId);
     
-    const updatedHiddenItems = isHidden
-      ? contextPrefs.hiddenItems.filter(id => id !== itemId)
-      : [...contextPrefs.hiddenItems, itemId];
-
-    const updated = {
-      ...preferences,
-      [context]: {
-        ...contextPrefs,
-        hiddenItems: updatedHiddenItems
-      }
-    };
-    
-    setPreferences(updated);
-    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
-  };
-
-  const updateItemLabel = (itemId: string, newLabel: string) => {
-    const contextPrefs = preferences[context] || { order: [], hiddenItems: [], customLabels: {} };
-    
-    const updated = {
-      ...preferences,
-      [context]: {
-        ...contextPrefs,
-        customLabels: {
-          ...contextPrefs.customLabels,
-          [itemId]: newLabel
-        }
-      }
-    };
-    
-    setPreferences(updated);
-    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
-  };
-
-  const resetToDefaults = () => {
-    const updated = { ...preferences };
-    delete updated[context];
-    setPreferences(updated);
-    localStorage.setItem('navigationPreferences', JSON.stringify(updated));
-  };
+    return visibleItems;
+  }, [navigationState]);
 
   return {
-    items: orderedItems,
-    updateOrder,
-    toggleItemVisibility,
-    updateItemLabel,
-    resetToDefaults,
-    hiddenItems: preferences[context]?.hiddenItems || []
+    items: processedItems,
+    pinnedItems: navigationState.pinnedItems,
+    hiddenItems: navigationState.hiddenItems,
+    customOrder: navigationState.customOrder,
+    updateNavigationState,
+    togglePinItem,
+    toggleHideItem,
+    reorderItems
   };
 };

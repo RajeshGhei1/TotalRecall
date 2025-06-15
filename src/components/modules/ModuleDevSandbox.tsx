@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,18 @@ import ModuleScalingDashboard from './ModuleScalingDashboard';
 const ModuleDevSandbox: React.FC = () => {
   const { loadedModules, isLoading, error, reloadModule } = useModuleLoader();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+
+  // Add debugging to track component lifecycle
+  useEffect(() => {
+    console.log('ModuleDevSandbox mounted');
+    return () => {
+      console.log('ModuleDevSandbox unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('ModuleDevSandbox - loadedModules changed:', loadedModules?.length || 0);
+  }, [loadedModules]);
 
   // Package module for deployment
   const packageMutation = useMutation({
@@ -170,6 +182,7 @@ const ModuleDevSandbox: React.FC = () => {
   }
 
   if (error) {
+    console.error('ModuleDevSandbox error:', error);
     return (
       <Card>
         <CardHeader>
@@ -180,10 +193,19 @@ const ModuleDevSandbox: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-red-600">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+            variant="outline"
+          >
+            Reload Page
+          </Button>
         </CardContent>
       </Card>
     );
   }
+
+  console.log('ModuleDevSandbox rendering with modules:', loadedModules?.length || 0);
 
   return (
     <div className="space-y-6">
@@ -199,46 +221,56 @@ const ModuleDevSandbox: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {loadedModules.map(module => (
-              <div
-                key={module.manifest.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedModule === module.manifest.id 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setSelectedModule(module.manifest.id)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold">{module.manifest.name}</h3>
-                  <Badge className={getStatusColor(module.status)}>
-                    {module.status}
-                  </Badge>
+          {!loadedModules || loadedModules.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">No modules loaded yet</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {loadedModules.map(module => (
+                <div
+                  key={module.manifest.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    selectedModule === module.manifest.id 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setSelectedModule(module.manifest.id)}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{module.manifest.name}</h3>
+                    <Badge className={getStatusColor(module.status)}>
+                      {module.status}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {module.manifest.description}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        reloadModule(module.manifest.id);
+                      }}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Reload
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Eye className="h-3 w-3 mr-1" />
+                      View
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  {module.manifest.description}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      reloadModule(module.manifest.id);
-                    }}
-                  >
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    Reload
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Eye className="h-3 w-3 mr-1" />
-                    View
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
