@@ -144,7 +144,7 @@ export class ModuleAccessService {
   }
 
   /**
-   * Log module access attempt - simplified to avoid RPC issues
+   * Log module access attempt - using type assertion for new table
    */
   static async logModuleAccess(
     tenantId: string,
@@ -156,13 +156,13 @@ export class ModuleAccessService {
     userAgent?: string
   ): Promise<string | null> {
     try {
-      // Direct insert instead of using RPC for now
-      const { data, error } = await supabase
+      // Use type assertion for the new table until types are regenerated
+      const { data, error } = await (supabase as any)
         .from('module_access_logs')
         .insert({
           tenant_id: tenantId,
           user_id: userId,
-          module_id: null, // We'll need to resolve this differently
+          module_id: moduleName,
           access_type: accessType,
           access_source: accessSource,
           ip_address: ipAddress || null,
@@ -184,7 +184,7 @@ export class ModuleAccessService {
   }
 
   /**
-   * Check if user has developer override access - simplified to avoid RPC issues
+   * Check if user has developer override access - using type assertion for new table
    */
   static async hasDeveloperOverride(
     userId: string,
@@ -192,8 +192,8 @@ export class ModuleAccessService {
     tenantId?: string
   ): Promise<boolean> {
     try {
-      // Direct query instead of using RPC for now
-      const { data, error } = await supabase
+      // Use type assertion for the new table until types are regenerated
+      const { data, error } = await (supabase as any)
         .from('developer_overrides')
         .select('*')
         .eq('user_id', userId)

@@ -1486,6 +1486,36 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_overrides: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          module_name: string | null
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_name?: string | null
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_name?: string | null
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       documentation_updates: {
         Row: {
           content: string | null
@@ -2549,6 +2579,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      module_access_logs: {
+        Row: {
+          access_source: string | null
+          access_type: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          module_id: string | null
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_source?: string | null
+          access_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          module_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_source?: string | null
+          access_type?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          module_id?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       module_permissions: {
         Row: {
