@@ -1,12 +1,14 @@
-
 import { ModuleLoader } from './moduleLoader';
 import { ModuleContext, LoadedModule, ModuleManifest } from '@/types/modules';
 import { ModuleAccessService } from './moduleAccessService';
+import { moduleRepository } from './moduleRepository';
+import { moduleVersionManager } from './moduleVersionManager';
 
 export class ModuleManager {
   private static instance: ModuleManager;
   private moduleLoader: ModuleLoader;
   private moduleContexts: Map<string, ModuleContext> = new Map();
+  private deploymentCallbacks: Map<string, Function[]> = new Map();
 
   constructor() {
     this.moduleLoader = ModuleLoader.getInstance();
@@ -51,6 +53,9 @@ export class ModuleManager {
           
           // Store context for later use
           this.moduleContexts.set(`${tenantId}:${moduleId}`, context);
+          
+          // Trigger post-load callbacks
+          await this.triggerPostLoadCallbacks(moduleId, module);
         } catch (error) {
           console.error(`Failed to load module ${moduleId} for tenant ${tenantId}:`, error);
           // Continue loading other modules even if one fails
@@ -63,6 +68,150 @@ export class ModuleManager {
     } catch (error) {
       console.error(`Error initializing modules for tenant ${tenantId}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Hot-swap a module to a new version with enhanced deployment support
+   */
+  async hotSwapModule(
+    moduleId: string, 
+    newVersion: string, 
+    tenantId: string
+  ): Promise<LoadedModule> {
+    console.log(`Hot-swapping module ${moduleId} to version ${newVersion}`);
+
+    try {
+      // Get current context
+      const contextKey = `${tenantId}:${moduleId}`;
+      const context = this.moduleContexts.get(contextKey);
+      
+      if (!context) {
+        throw new Error(`No context found for module ${moduleId} in tenant ${tenantId}`);
+      }
+
+      // Check if new version is available in repository
+      const repositoryEntry = await moduleRepository.getRepositoryEntryByVersion(moduleId, newVersion);
+      if (!repositoryEntry || repositoryEntry.status !== 'deployed') {
+        throw new Error(`Version ${newVersion} is not available for deployment`);
+      }
+
+      // Trigger pre-swap callbacks
+      await this.triggerPreSwapCallbacks(moduleId, newVersion);
+
+      // Perform the hot-swap
+      const newModule = await this.moduleLoader.reloadModule(moduleId, context);
+      
+      // Update module context with new version
+      context.moduleId = `${moduleId}@${newVersion}`;
+      this.moduleContexts.set(contextKey, context);
+
+      // Trigger post-swap callbacks
+      await this.triggerPostSwapCallbacks(moduleId, newModule);
+      
+      console.log(`Successfully hot-swapped module ${moduleId} to version ${newVersion}`);
+      return newModule;
+
+    } catch (error) {
+      console.error(`Error hot-swapping module ${moduleId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deploy a module across all applicable tenants
+   */
+  async deployModuleGlobally(moduleId: string, version: string): Promise<{
+    success: string[];
+    failed: { tenantId: string; error: string }[];
+  }> {
+    console.log(`Deploying module ${moduleId}@${version} globally`);
+
+    const success: string[] = [];
+    const failed: { tenantId: string; error: string }[] = [];
+
+    try {
+      // Get all tenants that have access to this module
+      const tenantIds = await this.getTenantsWithModuleAccess(moduleId);
+
+      // Deploy to each tenant
+      for (const tenantId of tenantIds) {
+        try {
+          await this.hotSwapModule(moduleId, version, tenantId);
+          success.push(tenantId);
+        } catch (error) {
+          failed.push({
+            tenantId,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      console.log(`Global deployment completed: ${success.length} success, ${failed.length} failed`);
+      return { success, failed };
+
+    } catch (error) {
+      console.error(`Error during global deployment of ${moduleId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Register deployment callbacks
+   */
+  registerDeploymentCallback(moduleId: string, callback: Function): void {
+    if (!this.deploymentCallbacks.has(moduleId)) {
+      this.deploymentCallbacks.set(moduleId, []);
+    }
+    this.deploymentCallbacks.get(moduleId)!.push(callback);
+  }
+
+  /**
+   * Get deployment status for all modules
+   */
+  async getDeploymentStatus(): Promise<{
+    moduleId: string;
+    currentVersion: string;
+    availableVersions: string[];
+    deploymentHealth: 'healthy' | 'warning' | 'error';
+  }[]> {
+    const status: any[] = [];
+
+    try {
+      const repositoryModules = await moduleRepository.getRepositoryModules();
+      const moduleGroups = repositoryModules.reduce((acc, entry) => {
+        if (!acc[entry.moduleId]) {
+          acc[entry.moduleId] = [];
+        }
+        acc[entry.moduleId].push(entry);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      for (const [moduleId, entries] of Object.entries(moduleGroups)) {
+        const deployedEntries = entries.filter(e => e.status === 'deployed');
+        const currentVersion = deployedEntries[0]?.version || '1.0.0';
+        const availableVersions = entries.map(e => e.version);
+        
+        // Determine health status
+        let deploymentHealth: 'healthy' | 'warning' | 'error' = 'healthy';
+        if (deployedEntries.length === 0) {
+          deploymentHealth = 'error';
+        } else if (entries.some(e => e.status === 'pending')) {
+          deploymentHealth = 'warning';
+        }
+
+        status.push({
+          moduleId,
+          currentVersion,
+          availableVersions,
+          deploymentHealth
+        });
+      }
+
+      return status;
+    } catch (error) {
+      console.error('Error getting deployment status:', error);
+      return [];
     }
   }
 
@@ -86,37 +235,6 @@ export class ModuleManager {
     } catch (error) {
       console.error(`Error getting available modules for tenant ${tenantId}:`, error);
       return [];
-    }
-  }
-
-  /**
-   * Hot-swap a module to a new version
-   */
-  async hotSwapModule(
-    moduleId: string, 
-    newVersion: string, 
-    tenantId: string
-  ): Promise<LoadedModule> {
-    console.log(`Hot-swapping module ${moduleId} to version ${newVersion}`);
-
-    try {
-      // Get current context
-      const contextKey = `${tenantId}:${moduleId}`;
-      const context = this.moduleContexts.get(contextKey);
-      
-      if (!context) {
-        throw new Error(`No context found for module ${moduleId} in tenant ${tenantId}`);
-      }
-
-      // Reload the module with force flag
-      const newModule = await this.moduleLoader.reloadModule(moduleId, context);
-      
-      console.log(`Successfully hot-swapped module ${moduleId}`);
-      return newModule;
-
-    } catch (error) {
-      console.error(`Error hot-swapping module ${moduleId}:`, error);
-      throw error;
     }
   }
 
@@ -153,6 +271,57 @@ export class ModuleManager {
 
     // Clean up contexts
     contextsToRemove.forEach(key => this.moduleContexts.delete(key));
+  }
+
+  /**
+   * Get tenants that have access to a specific module
+   */
+  private async getTenantsWithModuleAccess(moduleId: string): Promise<string[]> {
+    // This would query the database for tenants with access to the module
+    // For now, return a mock list
+    return ['tenant-1', 'tenant-2'];
+  }
+
+  /**
+   * Trigger pre-deployment callbacks
+   */
+  private async triggerPreSwapCallbacks(moduleId: string, newVersion: string): Promise<void> {
+    const callbacks = this.deploymentCallbacks.get(moduleId) || [];
+    for (const callback of callbacks) {
+      try {
+        await callback('pre-swap', { moduleId, newVersion });
+      } catch (error) {
+        console.error(`Pre-swap callback failed for ${moduleId}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Trigger post-deployment callbacks
+   */
+  private async triggerPostSwapCallbacks(moduleId: string, module: LoadedModule): Promise<void> {
+    const callbacks = this.deploymentCallbacks.get(moduleId) || [];
+    for (const callback of callbacks) {
+      try {
+        await callback('post-swap', { moduleId, module });
+      } catch (error) {
+        console.error(`Post-swap callback failed for ${moduleId}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Trigger post-load callbacks
+   */
+  private async triggerPostLoadCallbacks(moduleId: string, module: LoadedModule): Promise<void> {
+    const callbacks = this.deploymentCallbacks.get(moduleId) || [];
+    for (const callback of callbacks) {
+      try {
+        await callback('post-load', { moduleId, module });
+      } catch (error) {
+        console.error(`Post-load callback failed for ${moduleId}:`, error);
+      }
+    }
   }
 
   /**

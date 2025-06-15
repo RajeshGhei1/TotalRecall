@@ -11,14 +11,61 @@ import {
   Code, 
   Eye, 
   Layers,
-  Activity
+  Activity,
+  Package,
+  Upload,
+  Zap
 } from 'lucide-react';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import { LoadedModule } from '@/types/modules';
+import { useMutation } from '@tanstack/react-query';
+import { modulePackager } from '@/services/modulePackager';
+import { moduleVersionManager } from '@/services/moduleVersionManager';
+import { toast } from 'sonner';
+import ModuleDeploymentManager from './ModuleDeploymentManager';
 
 const ModuleDevSandbox: React.FC = () => {
   const { loadedModules, isLoading, error, reloadModule } = useModuleLoader();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+
+  // Package module for deployment
+  const packageMutation = useMutation({
+    mutationFn: async (moduleId: string) => {
+      const currentModule = loadedModules.find(m => m.manifest.id === moduleId);
+      if (!currentModule) throw new Error('Module not found');
+      
+      // Increment patch version for development packaging
+      const currentVersion = currentModule.manifest.version;
+      const versionParts = currentVersion.split('.').map(Number);
+      versionParts[2] = (versionParts[2] || 0) + 1;
+      const newVersion = versionParts.join('.');
+      
+      return modulePackager.packageModule(moduleId, newVersion);
+    },
+    onSuccess: (modulePackage) => {
+      toast.success(`Module ${modulePackage.id} packaged successfully`);
+    },
+    onError: (error) => {
+      toast.error(`Packaging failed: ${error.message}`);
+    },
+  });
+
+  // Hot-swap module version
+  const hotSwapMutation = useMutation({
+    mutationFn: ({ moduleId, version }: { moduleId: string; version: string }) => 
+      moduleVersionManager.hotSwapModule(moduleId, version, 'dev-tenant'),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success(`Hot-swapped ${result.oldVersion} → ${result.newVersion}`);
+        reloadModule(result.newVersion.split('@')[0]);
+      } else {
+        toast.error(`Hot-swap failed: ${result.error}`);
+      }
+    },
+    onError: (error) => {
+      toast.error(`Hot-swap failed: ${error.message}`);
+    },
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,6 +113,34 @@ const ModuleDevSandbox: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Development Actions */}
+      <div className="border-t pt-4">
+        <h4 className="font-semibold mb-3">Development Actions</h4>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => packageMutation.mutate(module.manifest.id)}
+            disabled={packageMutation.isPending}
+          >
+            <Package className="h-3 w-3 mr-1" />
+            Package for Deployment
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => hotSwapMutation.mutate({ 
+              moduleId: module.manifest.id, 
+              version: module.manifest.version 
+            })}
+            disabled={hotSwapMutation.isPending}
+          >
+            <Zap className="h-3 w-3 mr-1" />
+            Test Hot-Swap
+          </Button>
+        </div>
+      </div>
 
       {module.error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -118,7 +193,7 @@ const ModuleDevSandbox: React.FC = () => {
             Module Development Sandbox
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Isolated development environment for modular components
+            Isolated development environment with packaging and deployment capabilities
           </p>
         </CardHeader>
         <CardContent>
@@ -165,70 +240,83 @@ const ModuleDevSandbox: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Module Details */}
-      {selectedModule && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Code className="h-5 w-5" />
-              Module Details: {loadedModules.find(m => m.manifest.id === selectedModule)?.manifest.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="overview">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="manifest">Manifest</TabsTrigger>
-                <TabsTrigger value="components">Components</TabsTrigger>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-              </TabsList>
+      {/* Detailed View */}
+      <Tabs defaultValue="development">
+        <TabsList>
+          <TabsTrigger value="development">Development</TabsTrigger>
+          <TabsTrigger value="deployment">Deployment</TabsTrigger>
+        </TabsList>
 
-              <TabsContent value="overview" className="mt-4">
-                {renderModuleDetails(loadedModules.find(m => m.manifest.id === selectedModule)!)}
-              </TabsContent>
+        <TabsContent value="development">
+          {selectedModule && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Code className="h-5 w-5" />
+                  Module Details: {loadedModules.find(m => m.manifest.id === selectedModule)?.manifest.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="overview">
+                  <TabsList>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="manifest">Manifest</TabsTrigger>
+                    <TabsTrigger value="components">Components</TabsTrigger>
+                    <TabsTrigger value="performance">Performance</TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="manifest" className="mt-4">
-                <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto">
-                  {JSON.stringify(
-                    loadedModules.find(m => m.manifest.id === selectedModule)?.manifest,
-                    null,
-                    2
-                  )}
-                </pre>
-              </TabsContent>
+                  <TabsContent value="overview" className="mt-4">
+                    {renderModuleDetails(loadedModules.find(m => m.manifest.id === selectedModule)!)}
+                  </TabsContent>
 
-              <TabsContent value="components" className="mt-4">
-                <div className="space-y-2">
-                  {loadedModules.find(m => m.manifest.id === selectedModule)?.manifest.components?.map(comp => (
-                    <div key={comp.name} className="p-3 border rounded-lg">
-                      <h4 className="font-semibold">{comp.name}</h4>
-                      <p className="text-sm text-gray-600">{comp.path}</p>
-                      <div className="mt-2">
-                        <Badge variant="outline">Component</Badge>
+                  <TabsContent value="manifest" className="mt-4">
+                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto">
+                      {JSON.stringify(
+                        loadedModules.find(m => m.manifest.id === selectedModule)?.manifest,
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </TabsContent>
+
+                  <TabsContent value="components" className="mt-4">
+                    <div className="space-y-2">
+                      {loadedModules.find(m => m.manifest.id === selectedModule)?.manifest.components?.map(comp => (
+                        <div key={comp.name} className="p-3 border rounded-lg">
+                          <h4 className="font-semibold">{comp.name}</h4>
+                          <p className="text-sm text-gray-600">{comp.path}</p>
+                          <div className="mt-2">
+                            <Badge variant="outline">Component</Badge>
+                          </div>
+                        </div>
+                      )) || <p className="text-gray-500">No components defined</p>}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="performance" className="mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <h4 className="font-semibold text-green-800">Load Time</h4>
+                        <p className="text-2xl font-bold text-green-900">~50ms</p>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="font-semibold text-blue-800">Memory Usage</h4>
+                        <p className="text-2xl font-bold text-blue-900">2.1MB</p>
                       </div>
                     </div>
-                  )) || <p className="text-gray-500">No components defined</p>}
-                </div>
-              </TabsContent>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-              <TabsContent value="performance" className="mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-semibold text-green-800">Load Time</h4>
-                    <p className="text-2xl font-bold text-green-900">~50ms</p>
-                  </div>
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-semibold text-blue-800">Memory Usage</h4>
-                    <p className="text-2xl font-bold text-blue-900">2.1MB</p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      )}
+        <TabsContent value="deployment">
+          <ModuleDeploymentManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
 
-export default ModuleDevSandbox;
+export default ModuleDeploymentManager;
