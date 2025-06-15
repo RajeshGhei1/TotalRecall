@@ -2684,6 +2684,63 @@ export type Database = {
         }
         Relationships: []
       }
+      module_repository: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          deployed_at: string | null
+          download_url: string | null
+          id: string
+          module_id: string
+          package_hash: string
+          rollback_version: string | null
+          size: number
+          status: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string
+          validation_result: Json
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          deployed_at?: string | null
+          download_url?: string | null
+          id: string
+          module_id: string
+          package_hash: string
+          rollback_version?: string | null
+          size: number
+          status: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by: string
+          validation_result?: Json
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          deployed_at?: string | null
+          download_url?: string | null
+          id?: string
+          module_id?: string
+          package_hash?: string
+          rollback_version?: string | null
+          size?: number
+          status?: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string
+          validation_result?: Json
+          version?: string
+        }
+        Relationships: []
+      }
       module_usage_tracking: {
         Row: {
           created_at: string

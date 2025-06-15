@@ -65,8 +65,8 @@ export class ModuleRepository {
       // Store package data (in real implementation, this would go to file storage)
       await this.storePackageData(entry.id, modulePackage);
 
-      // Store repository entry in database
-      const { data, error } = await supabase
+      // Store repository entry in database using type assertion for dynamic table
+      const { data, error } = await (supabase as any)
         .from('module_repository')
         .insert({
           id: entry.id,
@@ -100,7 +100,7 @@ export class ModuleRepository {
     console.log(`Approving module ${entryId}`);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('module_repository')
         .update({
           status: 'approved',
@@ -155,7 +155,7 @@ export class ModuleRepository {
         await this.performDeployment(modulePackage, options);
 
         // Update repository entry
-        await supabase
+        await (supabase as any)
           .from('module_repository')
           .update({
             status: 'deployed',
@@ -223,14 +223,14 @@ export class ModuleRepository {
    */
   async getRepositoryModules(): Promise<ModuleRepositoryEntry[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('module_repository')
         .select('*')
         .order('uploaded_at', { ascending: false });
 
       if (error) throw error;
 
-      return data.map(item => this.convertToRepositoryEntry(item));
+      return data.map((item: any) => this.convertToRepositoryEntry(item));
     } catch (error) {
       console.error('Error fetching repository modules:', error);
       return [];
@@ -242,7 +242,7 @@ export class ModuleRepository {
    */
   async getRepositoryEntry(entryId: string): Promise<ModuleRepositoryEntry | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('module_repository')
         .select('*')
         .eq('id', entryId)
@@ -262,7 +262,7 @@ export class ModuleRepository {
    */
   async getRepositoryEntryByVersion(moduleId: string, version: string): Promise<ModuleRepositoryEntry | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('module_repository')
         .select('*')
         .eq('module_id', moduleId)
@@ -320,7 +320,7 @@ export class ModuleRepository {
    */
   private async createRollbackPoint(moduleId: string): Promise<string> {
     // Get current deployed version
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('module_repository')
       .select('version')
       .eq('module_id', moduleId)
@@ -340,7 +340,7 @@ export class ModuleRepository {
    * Update module registry after deployment
    */
   private async updateModuleRegistry(manifest: ModuleManifest): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('system_modules')
       .upsert({
         id: manifest.id,
