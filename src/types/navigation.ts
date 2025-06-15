@@ -16,4 +16,6 @@ export interface NavItem {
   customLabel?: string;
   icon: React.ComponentType<{ size?: string | number }>;
   href: string;
+  moduleId?: string;
+  requiresModule?: string; // Add this property to match the other definition
 }

@@ -7,6 +7,7 @@ export interface NavItem {
   icon: any;
   href: string;
   moduleId?: string; // Add module dependency
+  requiresModule?: string; // Add this property for module requirements
 }
 
 interface NavigationPreferences {
