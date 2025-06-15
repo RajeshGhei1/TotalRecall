@@ -23,7 +23,6 @@ import {
 import { useRealModuleDiscovery, RealModuleInfo } from '@/hooks/useRealModuleDiscovery';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 interface RealModuleDashboardProps {
   tenantId?: string;
@@ -32,7 +31,6 @@ interface RealModuleDashboardProps {
 const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) => {
   const { user, bypassAuth } = useAuth();
   const [selectedModule, setSelectedModule] = useState<RealModuleInfo | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Get current tenant for super admin context
   const { data: tenantData } = useQuery({
@@ -106,12 +104,6 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
             <span>Version:</span>
             <span className="font-medium">{module.version}</span>
           </div>
-          {module.usage && (
-            <div className="flex items-center justify-between text-xs">
-              <span>Active Users:</span>
-              <span className="font-medium">{module.usage.activeUsers}</span>
-            </div>
-          )}
         </div>
         <div className="flex gap-1 mt-3">
           {module.route && (
@@ -150,7 +142,6 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="access">Access Control</TabsTrigger>
-            <TabsTrigger value="usage">Usage Analytics</TabsTrigger>
             <TabsTrigger value="config">Configuration</TabsTrigger>
           </TabsList>
 
@@ -218,44 +209,6 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
                 </Button>
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="usage" className="mt-4">
-            {module.usage && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <p className="text-sm text-blue-600">Active Users</p>
-                        <p className="text-2xl font-bold text-blue-900">{module.usage.activeUsers}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="text-sm text-green-600">Requests Today</p>
-                        <p className="text-2xl font-bold text-green-900">{module.usage.requestsToday}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <p className="text-sm text-purple-600">Last Accessed</p>
-                        <p className="text-sm font-medium text-purple-900">
-                          {module.usage.lastAccessed?.toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="config" className="mt-4">
@@ -334,7 +287,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
               <TrendingUp className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Usage Rate</p>
-                <p className="text-2xl font-bold">{Math.round((availableModules / totalModules) * 100)}%</p>
+                <p className="text-2xl font-bold">{totalModules > 0 ? Math.round((availableModules / totalModules) * 100) : 0}%</p>
               </div>
             </div>
           </CardContent>

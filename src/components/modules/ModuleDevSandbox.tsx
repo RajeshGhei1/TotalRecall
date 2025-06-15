@@ -16,7 +16,6 @@ import {
   Monitor,
   Database
 } from 'lucide-react';
-import { toast } from 'sonner';
 import ModuleDeploymentManager from './ModuleDeploymentManager';
 import ModuleScalingDashboard from './ModuleScalingDashboard';
 import RealModuleDashboard from './RealModuleDashboard';
@@ -81,7 +80,7 @@ const ModuleDevSandbox: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-purple-600" />
-              <span>Live Usage Analytics</span>
+              <span>Live Module Analytics</span>
             </div>
           </div>
         </CardContent>

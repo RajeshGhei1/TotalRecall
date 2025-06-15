@@ -5,7 +5,6 @@ import { ModuleAccessService } from '@/services/moduleAccessService';
 import { useEnhancedSystemModules } from '@/hooks/useEnhancedSystemModules';
 import { useTenantModules } from '@/hooks/modules/useTenantModules';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface RealModuleInfo {
   id: string;
@@ -59,7 +58,7 @@ export const useRealModuleDiscovery = (tenantId?: string) => {
     enabled: !!user || bypassAuth,
   });
 
-  // Define known route-based modules
+  // Define known route-based modules from actual application routes
   const routeModules = [
     {
       id: 'ats_core',
@@ -176,11 +175,6 @@ export const useRealModuleDiscovery = (tenantId?: string) => {
                 tier: sysModule.pricing_tier || 'basic',
                 monthlyPrice: sysModule.monthly_price || undefined,
                 annualPrice: sysModule.annual_price || undefined
-              },
-              usage: {
-                activeUsers: Math.floor(Math.random() * 50) + 1, // Mock data
-                requestsToday: Math.floor(Math.random() * 1000) + 100,
-                lastAccessed: new Date(Date.now() - Math.random() * 86400000)
               }
             });
           }
@@ -213,12 +207,7 @@ export const useRealModuleDiscovery = (tenantId?: string) => {
               component: routeModule.component,
               dependencies: [],
               tenantAssigned: false,
-              subscriptionRequired: routeModule.subscriptionRequired,
-              usage: {
-                activeUsers: Math.floor(Math.random() * 30) + 1,
-                requestsToday: Math.floor(Math.random() * 500) + 50,
-                lastAccessed: new Date(Date.now() - Math.random() * 86400000)
-              }
+              subscriptionRequired: routeModule.subscriptionRequired
             });
           }
         }
