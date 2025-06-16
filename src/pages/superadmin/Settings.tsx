@@ -11,7 +11,6 @@ import SettingsTabs from '@/components/superadmin/settings/layout/SettingsTabs';
 import ModulesTabContent from '@/components/superadmin/settings/tabs/ModulesTabContent';
 import IntegrationsTabContent from '@/components/superadmin/settings/tabs/IntegrationsTabContent';
 import FormsTabContent from '@/components/superadmin/settings/tabs/FormsTabContent';
-import MigrationTabContent from '@/components/superadmin/settings/tabs/MigrationTabContent';
 
 const Settings = () => {
   console.log("Rendering SuperAdmin Settings Page");
@@ -46,12 +45,6 @@ const Settings = () => {
             <ErrorBoundary>
               <TabsContent value="integrations" className="mt-6">
                 <IntegrationsTabContent />
-              </TabsContent>
-            </ErrorBoundary>
-
-            <ErrorBoundary>
-              <TabsContent value="migration" className="mt-6">
-                <MigrationTabContent />
               </TabsContent>
             </ErrorBoundary>
           </SettingsTabs>

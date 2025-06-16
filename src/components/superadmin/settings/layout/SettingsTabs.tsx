@@ -4,8 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Settings, 
   FileText, 
-  Link, 
-  ArrowRightLeft 
+  Link 
 } from 'lucide-react';
 
 interface SettingsTabsProps {
@@ -15,7 +14,7 @@ interface SettingsTabsProps {
 const SettingsTabs: React.FC<SettingsTabsProps> = ({ children }) => {
   return (
     <Tabs defaultValue="modules" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="modules" className="flex items-center gap-2">
           <Settings className="h-4 w-4" />
           Modules
@@ -27,10 +26,6 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({ children }) => {
         <TabsTrigger value="integrations" className="flex items-center gap-2">
           <Link className="h-4 w-4" />
           Integrations
-        </TabsTrigger>
-        <TabsTrigger value="migration" className="flex items-center gap-2">
-          <ArrowRightLeft className="h-4 w-4" />
-          Migration
         </TabsTrigger>
       </TabsList>
       
