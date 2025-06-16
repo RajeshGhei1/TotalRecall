@@ -5,9 +5,6 @@ import { TabsContent } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import SetupWizard from '@/components/superadmin/settings/SetupWizard';
 
-// Import new tenant context components
-import { TenantProvider } from '@/contexts/TenantContext';
-
 // Import new refactored components
 import SettingsHeader from '@/components/superadmin/settings/layout/SettingsHeader';
 import SettingsTabs from '@/components/superadmin/settings/layout/SettingsTabs';
@@ -23,44 +20,42 @@ const Settings = () => {
   return (
     <ErrorBoundary>
       <AdminLayout>
-        <TenantProvider>
-          <div className="p-6">
-            <SettingsHeader />
-            
+        <div className="p-6">
+          <SettingsHeader />
+          
+          <ErrorBoundary>
+            <SetupWizard 
+              open={showSetupWizard} 
+              onOpenChange={setShowSetupWizard} 
+            />
+          </ErrorBoundary>
+          
+          <SettingsTabs>
             <ErrorBoundary>
-              <SetupWizard 
-                open={showSetupWizard} 
-                onOpenChange={setShowSetupWizard} 
-              />
+              <TabsContent value="modules" className="mt-6">
+                <ModulesTabContent />
+              </TabsContent>
             </ErrorBoundary>
             
-            <SettingsTabs>
-              <ErrorBoundary>
-                <TabsContent value="modules" className="mt-6">
-                  <ModulesTabContent />
-                </TabsContent>
-              </ErrorBoundary>
-              
-              <ErrorBoundary>
-                <TabsContent value="forms" className="mt-6">
-                  <FormsTabContent />
-                </TabsContent>
-              </ErrorBoundary>
-              
-              <ErrorBoundary>
-                <TabsContent value="integrations" className="mt-6">
-                  <IntegrationsTabContent />
-                </TabsContent>
-              </ErrorBoundary>
+            <ErrorBoundary>
+              <TabsContent value="forms" className="mt-6">
+                <FormsTabContent />
+              </TabsContent>
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <TabsContent value="integrations" className="mt-6">
+                <IntegrationsTabContent />
+              </TabsContent>
+            </ErrorBoundary>
 
-              <ErrorBoundary>
-                <TabsContent value="migration" className="mt-6">
-                  <MigrationTabContent />
-                </TabsContent>
-              </ErrorBoundary>
-            </SettingsTabs>
-          </div>
-        </TenantProvider>
+            <ErrorBoundary>
+              <TabsContent value="migration" className="mt-6">
+                <MigrationTabContent />
+              </TabsContent>
+            </ErrorBoundary>
+          </SettingsTabs>
+        </div>
       </AdminLayout>
     </ErrorBoundary>
   );
