@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error checking user role:', error);
-        return '/'; // Default to home
+        return '/tenant-admin/dashboard'; // Default to tenant admin
       }
 
       console.log('User profile:', profile);
@@ -85,11 +84,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Default to tenant admin for authenticated users
-      console.log('User is not super admin, redirecting to tenant admin dashboard');
+      console.log('User is tenant admin, redirecting to tenant admin dashboard');
       return '/tenant-admin/dashboard';
     } catch (error) {
       console.error('Error determining user role:', error);
-      return '/';
+      return '/tenant-admin/dashboard';
     }
   };
 
@@ -111,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
       
       // Determine redirect path based on user role
-      let redirectPath = '/';
+      let redirectPath = '/tenant-admin/dashboard';
       if (data.user) {
         redirectPath = await checkUserRole(data.user.id);
         console.log('Determined redirect path:', redirectPath);

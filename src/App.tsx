@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import './App.css'; // General application styles
 import Auth from '@/pages/Auth';
 import SuperAdminRoutes from '@/routes/SuperAdminRoutes';
+import TenantAdminRoutes from '@/routes/TenantAdminRoutes';
 import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 
@@ -26,17 +27,27 @@ function App() {
               } 
             />
             
-            {/* Default route redirects to superadmin dashboard */}
+            {/* Tenant Admin Routes - Protected */}
+            <Route 
+              path="/tenant-admin/*" 
+              element={
+                <AuthGuard>
+                  <TenantAdminRoutes />
+                </AuthGuard>
+              } 
+            />
+            
+            {/* Default route redirects based on user role */}
             <Route path="/" element={
-              <AuthGuard requiresSuperAdmin={true}>
-                <Navigate to="/superadmin/dashboard" replace />
+              <AuthGuard>
+                <Navigate to="/tenant-admin/dashboard" replace />
               </AuthGuard>
             } />
 
-            {/* Catch all other routes and redirect to superadmin */}
+            {/* Catch all other routes and redirect to tenant admin */}
             <Route path="*" element={
-              <AuthGuard requiresSuperAdmin={true}>
-                <Navigate to="/superadmin/dashboard" replace />
+              <AuthGuard>
+                <Navigate to="/tenant-admin/dashboard" replace />
               </AuthGuard>
             } />
           </Routes>
