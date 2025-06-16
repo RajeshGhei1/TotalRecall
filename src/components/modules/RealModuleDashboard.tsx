@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,20 +36,45 @@ interface RealModuleDashboardProps {
   tenantId?: string;
 }
 
+interface ModuleData {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  status: string;
+  version: string;
+  accessMethod: string;
+  route?: string;
+}
+
 const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) => {
-  const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const {
-    modules,
-    isLoading,
-    totalModules,
-    activeModules,
-    availableModules
-  } = useRealModuleDiscovery(tenantId);
+  const { data: moduleResults, isLoading } = useRealModuleDiscovery(tenantId);
+
+  // Transform the results into the expected format
+  const modules: ModuleData[] = useMemo(() => {
+    if (!moduleResults) return [];
+    
+    return moduleResults.map((result, index) => ({
+      id: `module-${index}`,
+      name: result.moduleId,
+      description: `${result.moduleId} module`,
+      category: 'business', // Default category
+      status: result.isEnabled ? 'active' : 'inactive',
+      version: '1.0.0',
+      accessMethod: result.source,
+      route: result.isEnabled ? `/modules/${result.moduleId}` : undefined
+    }));
+  }, [moduleResults]);
+
+  const totalModules = modules.length;
+  const activeModules = modules.filter(m => m.status === 'active').length;
+  const availableModules = modules.filter(m => m.accessMethod === 'subscription').length;
 
   const filteredModules = useMemo(() => {
     return modules.filter(module => {
@@ -86,13 +112,12 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     switch (accessMethod) {
       case 'core': return 'bg-green-100 text-green-800 border-green-200';
       case 'subscription': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'override': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'unavailable': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const handleOpenModule = (module: any) => {
+  const handleOpenModule = (module: ModuleData) => {
     if (module.route) {
       // Open module in new tab
       window.open(module.route, '_blank');
@@ -103,7 +128,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     }
   };
 
-  const renderModuleCard = (module: any) => (
+  const renderModuleCard = (module: ModuleData) => (
     <Card key={module.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">

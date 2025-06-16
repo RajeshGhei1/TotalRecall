@@ -50,7 +50,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
 
   const currentTenantId = tenantData?.tenant_id || null;
 
-  // Check unified module access (subscription-only)
+  // Check subscription-based module access only
   const { data: accessResult, isLoading } = useUnifiedModuleAccess(
     currentTenantId, 
     moduleName, 
@@ -102,7 +102,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
           </div>
           <CardTitle className="text-xl">Module Access Required</CardTitle>
           <p className="text-muted-foreground">
-            Access to "{moduleName.replace('_', ' ')}" is not available with your current plan
+            Access to "{moduleName.replace('_', ' ')}" is not available with your current subscription
           </p>
         </CardHeader>
         <CardContent className="text-center space-y-4">
