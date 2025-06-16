@@ -1486,36 +1486,6 @@ export type Database = {
         }
         Relationships: []
       }
-      developer_overrides: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: string
-          is_active: boolean | null
-          module_name: string | null
-          tenant_id: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          module_name?: string | null
-          tenant_id?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          module_name?: string | null
-          tenant_id?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       documentation_updates: {
         Row: {
           content: string | null
@@ -3670,60 +3640,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      tenant_module_assignments: {
-        Row: {
-          assigned_at: string
-          assigned_by: string | null
-          created_at: string
-          custom_limits: Json | null
-          expires_at: string | null
-          id: string
-          is_enabled: boolean
-          module_id: string
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          assigned_at?: string
-          assigned_by?: string | null
-          created_at?: string
-          custom_limits?: Json | null
-          expires_at?: string | null
-          id?: string
-          is_enabled?: boolean
-          module_id: string
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          assigned_at?: string
-          assigned_by?: string | null
-          created_at?: string
-          custom_limits?: Json | null
-          expires_at?: string | null
-          id?: string
-          is_enabled?: boolean
-          module_id?: string
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tenant_module_assignments_module_id_fkey"
-            columns: ["module_id"]
-            isOneToOne: false
-            referencedRelation: "system_modules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tenant_module_assignments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       tenant_outreach_configurations: {
         Row: {

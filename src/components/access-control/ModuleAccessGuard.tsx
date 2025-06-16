@@ -50,7 +50,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
 
   const currentTenantId = tenantData?.tenant_id || null;
 
-  // Check unified module access
+  // Check unified module access (subscription-only)
   const { data: accessResult, isLoading } = useUnifiedModuleAccess(
     currentTenantId, 
     moduleName, 
@@ -63,11 +63,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
       const logAccess = async () => {
         try {
           const accessType = accessResult.hasAccess ? 'allowed' : 'denied';
-          const accessSource = accessResult.accessSource === 'subscription' 
-            ? 'subscription' 
-            : accessResult.accessSource === 'tenant_override' 
-            ? 'override' 
-            : 'developer_mode';
+          const accessSource = 'subscription';
 
           await ModuleAccessService.logModuleAccess(
             currentTenantId,
@@ -135,33 +131,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
     );
   }
 
-  // Show access source indicator for transparency
-  return (
-    <div>
-      {accessResult.accessSource === 'tenant_override' && (
-        <Alert className="mb-4 border-amber-200 bg-amber-50">
-          <Lock className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800">
-            <div className="flex items-center justify-between">
-              <span>
-                Access granted via override assignment
-                {accessResult.overrideDetails && (
-                  <span className="text-sm ml-2">
-                    (by {accessResult.overrideDetails.assignedBy})
-                  </span>
-                )}
-              </span>
-              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-                Override
-              </Badge>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 };
 
 export default ModuleAccessGuard;
