@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   AlertDialog, 
@@ -10,7 +9,7 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 
 interface DeleteModuleDialogProps {
   open: boolean;

@@ -15,7 +15,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { useTenantModules } from '@/hooks/modules/useTenantModules';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import { useTenants } from '@/hooks/useTenants';
 import AssignModuleDialog from './AssignModuleDialog';
 import TenantModuleList from './TenantModuleList';

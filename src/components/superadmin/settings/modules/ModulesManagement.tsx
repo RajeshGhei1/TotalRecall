@@ -14,7 +14,7 @@ import {
   Grid3X3,
   List
 } from 'lucide-react';
-import { SystemModule } from '@/hooks/modules/useSystemModules';
+import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleCard from './ModuleCard';
 
 interface ModulesManagementProps {

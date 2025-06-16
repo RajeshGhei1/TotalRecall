@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTenantModules } from '@/hooks/modules/useTenantModules';
-import { SystemModule } from '@/hooks/modules/useSystemModules';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 const assignModuleSchema = z.object({
   tenant_id: z.string().min(1, "Tenant is required"),

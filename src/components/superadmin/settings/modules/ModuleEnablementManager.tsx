@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   ArrowRight,
   Shield
 } from 'lucide-react';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import { useTenantModules } from '@/hooks/modules/useTenantModules';
 import { useQuery } from '@tanstack/react-query';
 import { ModuleAccessService } from '@/services/moduleAccessService';

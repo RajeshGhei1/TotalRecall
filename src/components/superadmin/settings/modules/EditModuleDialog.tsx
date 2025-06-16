@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules } from '@/hooks/useSystemModules';
 import ModuleDependencySelector from './ModuleDependencySelector';
 import ModuleLimitsEditor from './ModuleLimitsEditor';
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Blocks, Settings, Users, BarChart3, MessageSquare, Zap } from 'lucide-react';
-import { useSystemModules } from '@/hooks/modules/useSystemModules';
+import { useSystemModules, SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleSelectionStepProps {
   selectedModules: string[];
@@ -82,7 +81,7 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
     }
     acc[module.category].push(module);
     return acc;
-  }, {} as Record<string, typeof modules>) || {};
+  }, {} as Record<string, SystemModule[]>) || {};
 
   if (isLoading) {
     return (
