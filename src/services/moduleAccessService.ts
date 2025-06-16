@@ -80,7 +80,7 @@ export class ModuleAccessService {
   }
 
   /**
-   * Log module access attempt
+   * Log module access attempt (subscription-only)
    */
   static async logModuleAccess(
     tenantId: string,

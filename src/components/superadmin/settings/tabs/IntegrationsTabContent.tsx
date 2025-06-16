@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { 
   Settings,
   Building2,
-  Users
+  Users,
+  Zap
 } from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
 import { useTenants } from '@/hooks/useTenants';
@@ -31,7 +32,7 @@ const IntegrationsTabContent = () => {
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Integration Management</h2>
         <p className="text-gray-600">
-          Integration modules are now managed through subscription plans. 
+          Integration modules are managed through subscription plans. 
           Configure module access by assigning subscription plans to tenants.
         </p>
       </div>
@@ -49,7 +50,7 @@ const IntegrationsTabContent = () => {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Module access is now controlled through subscription plans. 
+              Module access is controlled through subscription plans. 
               Visit the Subscription Management section to assign plans and configure module access.
             </p>
             <Button variant="outline" className="w-full">
@@ -62,7 +63,7 @@ const IntegrationsTabContent = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-green-600" />
+              <Zap className="h-5 w-5 text-green-600" />
               <CardTitle>Module Configuration</CardTitle>
             </div>
             <CardDescription>
@@ -84,19 +85,19 @@ const IntegrationsTabContent = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Migration Notice</CardTitle>
+          <CardTitle>Simplified Access Control</CardTitle>
           <CardDescription>
-            Module access has been simplified
+            Streamlined module management through subscriptions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-900 mb-2">What Changed?</h4>
+            <h4 className="font-semibold text-blue-900 mb-2">Subscription-Based Access</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Manual module overrides have been removed</li>
-              <li>• All module access is now controlled through subscription plans</li>
-              <li>• This provides a more consistent and scalable approach</li>
-              <li>• Contact support if you need help configuring subscriptions</li>
+              <li>• All module access is controlled through subscription plans</li>
+              <li>• Automatic access provisioning based on plan features</li>
+              <li>• Simplified administration and clearer billing structure</li>
+              <li>• Contact support for custom enterprise configurations</li>
             </ul>
           </div>
         </CardContent>

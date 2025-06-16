@@ -4,18 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search,
-  Filter,
   Grid3X3,
   List,
   Package,
-  Users,
   Activity,
   CheckCircle,
   XCircle,
-  Clock,
   ExternalLink,
   Settings,
   Eye,
@@ -67,7 +63,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
       category: 'business', // Default category
       status: result.isEnabled ? 'active' : 'inactive',
       version: '1.0.0',
-      accessMethod: result.source,
+      accessMethod: 'subscription', // Simplified to subscription-only
       route: result.isEnabled ? `/modules/${result.moduleId}` : undefined
     }));
   }, [moduleResults]);
@@ -99,22 +95,13 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
       'communication': <MessageSquare className="h-4 w-4" />,
       'integration': <Link className="h-4 w-4" />,
       'integrations': <Link className="h-4 w-4" />,
-      'recruitment': <Users className="h-4 w-4" />,
+      'recruitment': <UserCheck className="h-4 w-4" />,
       'talent': <UserCheck className="h-4 w-4" />,
       'ai': <Brain className="h-4 w-4" />,
       'business': <Package className="h-4 w-4" />,
       'security': <Shield className="h-4 w-4" />
     };
     return icons[category] || <Package className="h-4 w-4" />;
-  };
-
-  const getAccessMethodColor = (accessMethod: string) => {
-    switch (accessMethod) {
-      case 'core': return 'bg-green-100 text-green-800 border-green-200';
-      case 'subscription': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'unavailable': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
   };
 
   const handleOpenModule = (module: ModuleData) => {
@@ -124,7 +111,6 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     } else {
       // Show a message or fallback action for modules without routes
       console.log(`Module ${module.name} doesn't have a configured route`);
-      // You could show a toast notification here
     }
   };
 
@@ -148,12 +134,10 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
           <div className="flex items-center gap-2">
             <Badge 
               variant="outline" 
-              className={`text-xs ${getAccessMethodColor(module.accessMethod)}`}
+              className="text-xs bg-blue-100 text-blue-800 border-blue-200"
             >
-              {module.accessMethod === 'core' && <CheckCircle className="h-3 w-3 mr-1" />}
-              {module.accessMethod === 'subscription' && <Zap className="h-3 w-3 mr-1" />}
-              {module.accessMethod === 'unavailable' && <XCircle className="h-3 w-3 mr-1" />}
-              <span className="capitalize">{module.accessMethod}</span>
+              <Zap className="h-3 w-3 mr-1" />
+              <span className="capitalize">Subscription</span>
             </Badge>
           </div>
         </div>
@@ -201,7 +185,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
             variant="outline"
             onClick={() => handleOpenModule(module)}
             className="flex-1"
-            disabled={!module.route && module.accessMethod === 'unavailable'}
+            disabled={!module.route}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             {module.route ? 'Open' : 'No Route'}

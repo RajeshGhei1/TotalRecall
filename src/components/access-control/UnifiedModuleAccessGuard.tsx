@@ -42,9 +42,9 @@ const UnifiedModuleAccessGuard: React.FC<UnifiedModuleAccessGuardProps> = ({
           <div className="mx-auto mb-4 p-3 bg-muted rounded-full w-fit">
             <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
-          <CardTitle className="text-xl">Module Access Required</CardTitle>
+          <CardTitle className="text-xl">Subscription Required</CardTitle>
           <p className="text-muted-foreground">
-            This feature is not included in your current plan
+            This feature requires an active subscription
           </p>
         </CardHeader>
         <CardContent className="text-center space-y-4">

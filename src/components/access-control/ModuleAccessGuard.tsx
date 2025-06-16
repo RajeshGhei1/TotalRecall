@@ -63,14 +63,13 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
       const logAccess = async () => {
         try {
           const accessType = accessResult.hasAccess ? 'allowed' : 'denied';
-          const accessSource = 'subscription';
 
           await ModuleAccessService.logModuleAccess(
             currentTenantId,
             user.id,
             moduleName,
             accessType,
-            accessSource
+            'subscription'
           );
         } catch (error) {
           console.error('Failed to log module access:', error);
@@ -100,9 +99,9 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
           <div className="mx-auto mb-4 p-3 bg-muted rounded-full w-fit">
             <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
-          <CardTitle className="text-xl">Module Access Required</CardTitle>
+          <CardTitle className="text-xl">Subscription Required</CardTitle>
           <p className="text-muted-foreground">
-            Access to "{moduleName.replace('_', ' ')}" is not available with your current subscription
+            Access to "{moduleName.replace('_', ' ')}" requires an active subscription
           </p>
         </CardHeader>
         <CardContent className="text-center space-y-4">
@@ -118,11 +117,11 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
           
           <div className="space-y-2">
             <p className="text-sm">
-              Contact your administrator or upgrade your subscription to access this module
+              Upgrade your subscription to access this module or contact your administrator
             </p>
             <Button className="w-full">
               <Crown className="h-4 w-4 mr-2" />
-              Request Access
+              Upgrade Subscription
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

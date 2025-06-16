@@ -7,11 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   CheckCircle, 
   XCircle, 
-  Clock, 
   Settings,
   Database,
   Users,
-  Calendar,
   Activity
 } from 'lucide-react';
 
@@ -32,7 +30,6 @@ const ModuleStatusViewer: React.FC<ModuleStatusViewerProps> = ({ module, onClose
   const getAccessMethodColor = (method: string) => {
     switch (method) {
       case 'subscription': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'core': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -102,6 +99,9 @@ const ModuleStatusViewer: React.FC<ModuleStatusViewerProps> = ({ module, onClose
                 <Badge className={getAccessMethodColor(module.accessMethod)}>
                   <span className="capitalize">{module.accessMethod}</span>
                 </Badge>
+                <p className="text-xs text-gray-500 mt-1">
+                  Access controlled by subscription plan
+                </p>
               </div>
 
               {module.planName && (
