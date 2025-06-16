@@ -3,9 +3,43 @@ import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Crown, Zap, TrendingUp, Users, ArrowRight } from 'lucide-react';
+import { Crown, Zap, TrendingUp, Users, ArrowRight, Mail } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const UpgradePlan = () => {
+  const { toast } = useToast();
+
+  const handleContactAdministrator = () => {
+    // Create mailto link for contacting administrator
+    const subject = encodeURIComponent('Subscription Plan Upgrade Request');
+    const body = encodeURIComponent(
+      'Hello,\n\nI would like to upgrade my subscription plan to access advanced features including:\n\n' +
+      '- Dashboard Analytics\n' +
+      '- Predictive Insights\n' +
+      '- Workflow Management\n' +
+      '- AI-powered insights\n\n' +
+      'Please let me know how to proceed with the upgrade.\n\n' +
+      'Thank you!'
+    );
+    
+    const mailtoLink = `mailto:admin@company.com?subject=${subject}&body=${body}`;
+    
+    // Try to open email client
+    try {
+      window.location.href = mailtoLink;
+      toast({
+        title: "Email Client Opened",
+        description: "Your email client should now open with a pre-filled upgrade request.",
+      });
+    } catch (error) {
+      // Fallback: show toast with contact information
+      toast({
+        title: "Contact Administrator",
+        description: "Please contact your administrator at admin@company.com to upgrade your plan.",
+      });
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -143,7 +177,9 @@ const UpgradePlan = () => {
                 <Button 
                   size="lg" 
                   className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
+                  onClick={handleContactAdministrator}
                 >
+                  <Mail className="h-4 w-4 mr-2" />
                   Contact Administrator
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
