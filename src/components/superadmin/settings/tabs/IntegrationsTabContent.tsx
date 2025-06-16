@@ -1,29 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Settings,
-  ArrowLeft
+  Building2,
+  Users
 } from 'lucide-react';
 import { useTenantContext } from '@/contexts/TenantContext';
-import { ModuleConnectionManager } from '../modules/ModuleConnectionManager';
-import ModuleEnablementManager from '../modules/ModuleEnablementManager';
 import { useTenants } from '@/hooks/useTenants';
 
 const IntegrationsTabContent = () => {
   const { selectedTenantId } = useTenantContext();
-  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'overview' | 'module-config'>('overview');
-  
   const { tenants } = useTenants();
   const selectedTenant = tenants?.find(t => t.id === selectedTenantId);
-
-  const handleConfigureModule = (moduleName: string) => {
-    setSelectedIntegration(moduleName);
-    setCurrentView('module-config');
-  };
 
   if (!selectedTenantId) {
     return (
@@ -36,80 +26,81 @@ const IntegrationsTabContent = () => {
     );
   }
 
-  if (currentView === 'module-config' && selectedIntegration) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setCurrentView('overview');
-              setSelectedIntegration(null);
-            }}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Overview
-          </Button>
-        </div>
-        
-        <ModuleConnectionManager
-          moduleName={selectedIntegration}
-          moduleDisplayName={selectedIntegration.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Integration Management</h2>
         <p className="text-gray-600">
-          Manage integration modules and their configurations for the selected tenant.
+          Integration modules are now managed through subscription plans. 
+          Configure module access by assigning subscription plans to tenants.
         </p>
       </div>
 
-      <Tabs defaultValue="enablement" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="enablement">Module Enablement</TabsTrigger>
-          <TabsTrigger value="connections">Active Connections</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-blue-600" />
+              <CardTitle>Tenant Subscription</CardTitle>
+            </div>
+            <CardDescription>
+              Manage the subscription plan for {selectedTenant?.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Module access is now controlled through subscription plans. 
+              Visit the Subscription Management section to assign plans and configure module access.
+            </p>
+            <Button variant="outline" className="w-full">
+              <Users className="h-4 w-4 mr-2" />
+              Manage Subscriptions
+            </Button>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="enablement" className="mt-6">
-          {selectedTenant && (
-            <ModuleEnablementManager
-              tenantId={selectedTenantId}
-              tenantName={selectedTenant.name}
-              onConfigureModule={handleConfigureModule}
-            />
-          )}
-        </TabsContent>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-green-600" />
+              <CardTitle>Module Configuration</CardTitle>
+            </div>
+            <CardDescription>
+              Configure integration settings for enabled modules
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Integration configurations are managed within each module's settings. 
+              Access is automatically granted based on the tenant's subscription plan.
+            </p>
+            <Button variant="outline" className="w-full">
+              <Settings className="h-4 w-4 mr-2" />
+              Module Settings
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="connections" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Module Connections</CardTitle>
-              <CardDescription>
-                Configure and manage connections for enabled integration modules
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Settings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">
-                  Select a module from the Enablement tab to configure its connections
-                </p>
-                <Button 
-                  variant="outline"
-                  onClick={() => setCurrentView('overview')}
-                >
-                  View Module Enablement
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>Migration Notice</CardTitle>
+          <CardDescription>
+            Module access has been simplified
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-900 mb-2">What Changed?</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Manual module overrides have been removed</li>
+              <li>• All module access is now controlled through subscription plans</li>
+              <li>• This provides a more consistent and scalable approach</li>
+              <li>• Contact support if you need help configuring subscriptions</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

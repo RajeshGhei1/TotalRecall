@@ -101,19 +101,33 @@ export class ModuleContextManager {
         .eq('name', moduleName)
         .single();
 
-      // Get tenant-specific module assignment if applicable
+      // Get subscription-based module info if applicable
       if (tenantId) {
-        const { data: assignment } = await supabase
-          .from('tenant_module_assignments')
-          .select('*')
-          .eq('module_id', moduleInfo?.id)
+        const { data: subscription } = await supabase
+          .from('tenant_subscriptions')
+          .select(`
+            *,
+            subscription_plans(*)
+          `)
           .eq('tenant_id', tenantId)
+          .eq('status', 'active')
           .single();
 
-        return {
-          module_info: moduleInfo,
-          tenant_assignment: assignment
-        };
+        if (subscription) {
+          const { data: permission } = await supabase
+            .from('module_permissions')
+            .select('*')
+            .eq('plan_id', subscription.plan_id)
+            .eq('module_name', moduleName)
+            .eq('is_enabled', true)
+            .single();
+
+          return {
+            module_info: moduleInfo,
+            subscription_info: subscription,
+            permission_info: permission
+          };
+        }
       }
 
       return { module_info: moduleInfo };

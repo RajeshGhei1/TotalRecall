@@ -23,13 +23,13 @@ export class ModuleManager {
   }
 
   /**
-   * Initialize modules for a tenant based on their subscriptions
+   * Initialize modules for a tenant based on their subscriptions only
    */
   async initializeTenantModules(tenantId: string, userId: string): Promise<LoadedModule[]> {
     console.log(`Initializing modules for tenant: ${tenantId}`);
 
     try {
-      // Get tenant's available modules
+      // Get tenant's available modules (subscription-only now)
       const availableModules = await this.getTenantAvailableModules(tenantId);
       
       // Create module context
@@ -217,19 +217,15 @@ export class ModuleManager {
   }
 
   /**
-   * Get modules available to a tenant based on subscriptions and overrides
+   * Get modules available to a tenant based on subscriptions only (no overrides)
    */
   async getTenantAvailableModules(tenantId: string): Promise<string[]> {
     try {
       const availableModules: string[] = [];
 
-      // Get subscription-based modules
+      // Get subscription-based modules only
       const subscriptionModules = await this.getSubscriptionModules(tenantId);
       availableModules.push(...subscriptionModules);
-
-      // Get override modules
-      const overrideModules = await this.getOverrideModules(tenantId);
-      availableModules.push(...overrideModules);
 
       // Get core modules from database
       const { data: coreModules } = await supabase
@@ -341,14 +337,29 @@ export class ModuleManager {
    */
   private async getSubscriptionModules(tenantId: string): Promise<string[]> {
     try {
-      // Get tenant's subscription modules from database
-      const { data: subscriptionModules } = await supabase
-        .from('system_modules')
-        .select('name')
-        .eq('is_active', true)
-        .neq('category', 'core');
+      // Get tenant's active subscription
+      const { data: subscription } = await supabase
+        .from('tenant_subscriptions')
+        .select(`
+          *,
+          subscription_plans(*)
+        `)
+        .eq('tenant_id', tenantId)
+        .eq('status', 'active')
+        .single();
 
-      return subscriptionModules?.map(m => m.name) || [];
+      if (!subscription) {
+        return [];
+      }
+
+      // Get modules available via this subscription plan
+      const { data: permissions } = await supabase
+        .from('module_permissions')
+        .select('module_name')
+        .eq('plan_id', subscription.plan_id)
+        .eq('is_enabled', true);
+
+      return permissions?.map(p => p.module_name) || [];
     } catch (error) {
       console.error(`Error getting subscription modules for tenant ${tenantId}:`, error);
       return [];

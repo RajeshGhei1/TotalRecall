@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Blocks, 
-  Users,
   Settings,
   Plus,
   Zap
@@ -15,7 +14,6 @@ import CreateModuleDialog from './modules/CreateModuleDialog';
 import EditModuleDialog from './modules/EditModuleDialog';
 import DeleteModuleDialog from './modules/DeleteModuleDialog';
 import ModulesManagement from './modules/ModulesManagement';
-import TenantModuleManager from './modules/TenantModuleManager';
 
 const ModuleManagement: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -84,60 +82,32 @@ const ModuleManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Module Management */}
-      <Tabs defaultValue="modules" className="w-full">
-        <div className="flex justify-between items-center mb-4">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="modules" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Module Library
-            </TabsTrigger>
-            <TabsTrigger value="assignments" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Tenant Assignments
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Module Management - Simplified to single tab */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-900">System Module Library</h2>
+        <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Module
+        </Button>
+      </div>
 
-          <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add Module
-          </Button>
-        </div>
-
-        <TabsContent value="modules" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Module Library</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Create and manage modules that can be assigned to tenants
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ModulesManagement
-                modules={modules || []}
-                stats={stats}
-                onCreateModule={() => setCreateDialogOpen(true)}
-                onEditModule={handleEditModule}
-                onDeleteModule={handleDeleteModule}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="assignments" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tenant Module Assignments</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Assign modules to tenants and manage their access
-              </p>
-            </CardHeader>
-            <CardContent>
-              <TenantModuleManager />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>System Module Library</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Create and manage modules that can be assigned to subscription plans
+          </p>
+        </CardHeader>
+        <CardContent>
+          <ModulesManagement
+            modules={modules || []}
+            stats={stats}
+            onCreateModule={() => setCreateDialogOpen(true)}
+            onEditModule={handleEditModule}
+            onDeleteModule={handleDeleteModule}
+          />
+        </CardContent>
+      </Card>
 
       {/* Dialogs */}
       <CreateModuleDialog
