@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,10 +14,12 @@ import {
 
 const Navbar = () => {
   const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      navigate('/auth');
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -84,10 +86,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost">
+                <Button variant="ghost" asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button>
+                <Button asChild>
                   <Link to="/auth">Get Started</Link>
                 </Button>
               </div>
