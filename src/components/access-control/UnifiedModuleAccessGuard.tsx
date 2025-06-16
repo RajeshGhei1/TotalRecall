@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Crown, ArrowRight } from 'lucide-react';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
+import { useNavigate } from 'react-router-dom';
 
 interface UnifiedModuleAccessGuardProps {
   children: React.ReactNode;
@@ -22,6 +23,11 @@ const UnifiedModuleAccessGuard: React.FC<UnifiedModuleAccessGuardProps> = ({
   fallback
 }) => {
   const { data: accessResult, isLoading } = useUnifiedModuleAccess(tenantId, moduleName, userId);
+  const navigate = useNavigate();
+
+  const handleUpgradeClick = () => {
+    navigate('/tenant-admin/upgrade');
+  };
 
   if (isLoading) {
     return (
@@ -62,7 +68,7 @@ const UnifiedModuleAccessGuard: React.FC<UnifiedModuleAccessGuardProps> = ({
             <p className="text-sm">
               Upgrade your plan to access <span className="font-medium">{moduleName.replace('_', ' ')}</span>
             </p>
-            <Button className="w-full">
+            <Button className="w-full" onClick={handleUpgradeClick}>
               <Crown className="h-4 w-4 mr-2" />
               Upgrade Plan
               <ArrowRight className="h-4 w-4 ml-2" />
