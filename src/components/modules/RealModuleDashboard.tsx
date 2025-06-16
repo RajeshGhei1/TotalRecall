@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,19 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     activeModules, 
     availableModules 
   } = useOptimizedModuleDiscovery(currentTenantId);
+
+  // Debug effect to track module discovery
+  useEffect(() => {
+    console.log('RealModuleDashboard: Module discovery update', {
+      isLoading,
+      totalModules,
+      activeModules,
+      availableModules,
+      modulesLength: modules.length,
+      tenantContext: tenantData,
+      currentTenantId
+    });
+  }, [modules, isLoading, totalModules, activeModules, availableModules, tenantData, currentTenantId]);
 
   const getStatusColor = (status: OptimizedModuleInfo['status']) => {
     switch (status) {
@@ -116,126 +130,31 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
     </Card>
   );
 
-  const renderModuleDetails = (module: OptimizedModuleInfo) => (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{module.name}</CardTitle>
-          <div className="flex gap-2">
-            <Badge className={getStatusColor(module.status)}>
-              {module.status}
-            </Badge>
-            <Badge className={getAccessColor(module.accessMethod)}>
-              {module.accessMethod}
-            </Badge>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">{module.description}</p>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="overview">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="access">Access Control</TabsTrigger>
-            <TabsTrigger value="config">Configuration</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold mb-2">Module Information</h4>
-                <div className="space-y-1 text-sm">
-                  <p><strong>ID:</strong> {module.id}</p>
-                  <p><strong>Version:</strong> {module.version}</p>
-                  <p><strong>Category:</strong> {module.category}</p>
-                  <p><strong>Route:</strong> {module.route || 'N/A'}</p>
-                  <p><strong>Component:</strong> {module.component || 'N/A'}</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Access Information</h4>
-                <div className="space-y-1 text-sm">
-                  <p><strong>Access Method:</strong> {module.accessMethod}</p>
-                  <p><strong>Tenant Assigned:</strong> {module.tenantAssigned ? 'Yes' : 'No'}</p>
-                  <p><strong>Subscription Required:</strong> {module.subscriptionRequired ? 'Yes' : 'No'}</p>
-                  {module.pricing && (
-                    <p><strong>Pricing Tier:</strong> {module.pricing.tier}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {module.dependencies && module.dependencies.length > 0 && (
-              <div className="mt-4">
-                <h4 className="font-semibold mb-2">Dependencies</h4>
-                <div className="flex flex-wrap gap-1">
-                  {module.dependencies.map(dep => (
-                    <Badge key={dep} variant="outline">{dep}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="access" className="mt-4">
-            <div className="space-y-4">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">Current Access Status</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p><strong>Access Method:</strong> {module.accessMethod}</p>
-                    <p><strong>Tenant Assigned:</strong> {module.tenantAssigned ? 'Yes' : 'No'}</p>
-                  </div>
-                  <div>
-                    <p><strong>Subscription Required:</strong> {module.subscriptionRequired ? 'Yes' : 'No'}</p>
-                    <p><strong>Status:</strong> {module.status}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Test Access
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configure Access
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="config" className="mt-4">
-            <div className="space-y-4">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">Module Configuration</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Configure module settings and parameters
-                </p>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Edit Config
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Reset to Default
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
-  );
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Loading modules...</span>
       </div>
+    );
+  }
+
+  // Show a message if no modules are discovered
+  if (totalModules === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Modules Discovered</h3>
+          <p className="text-muted-foreground mb-4">
+            No modules are currently available in the system.
+          </p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -298,7 +217,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
               <div className="flex items-center justify-between">
                 <CardTitle>Discovered Modules</CardTitle>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
@@ -309,9 +228,16 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 max-h-96 overflow-y-auto">
-                {modules.map(renderModuleCard)}
-              </div>
+              {modules.length > 0 ? (
+                <div className="grid gap-3 max-h-96 overflow-y-auto">
+                  {modules.map(renderModuleCard)}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No modules found</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

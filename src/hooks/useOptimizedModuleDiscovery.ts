@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ModuleAccessService } from '@/services/moduleAccessService';
 import { useEnhancedSystemModules } from '@/hooks/useEnhancedSystemModules';
 import { useTenantModules } from '@/hooks/modules/useTenantModules';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface OptimizedModuleInfo {
   id: string;
@@ -26,6 +27,7 @@ export interface OptimizedModuleInfo {
 }
 
 export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
+  const { bypassAuth } = useAuth();
   const [discoveredModules, setDiscoveredModules] = useState<OptimizedModuleInfo[]>([]);
   
   // Get system modules with stable query
@@ -88,9 +90,20 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
   // Process modules when data changes
   useEffect(() => {
     const processModules = async () => {
-      if (!systemModules) return;
+      if (!systemModules) {
+        console.log('OptimizedModuleDiscovery: No system modules available yet');
+        return;
+      }
+
+      console.log('OptimizedModuleDiscovery: Processing modules', {
+        systemModulesCount: systemModules.length,
+        tenantId,
+        bypassAuth,
+        tenantModulesCount: tenantModules?.length || 0
+      });
 
       const modules: OptimizedModuleInfo[] = [];
+      const isSuperAdmin = bypassAuth || !tenantId;
 
       try {
         // Process system modules
@@ -98,8 +111,12 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
           let accessMethod: OptimizedModuleInfo['accessMethod'] = 'core';
           let tenantAssigned = false;
 
-          // Only check access if we have a valid tenant ID
-          if (tenantId) {
+          // For Super Admin, bypass access checks and mark all as core access
+          if (isSuperAdmin) {
+            console.log('OptimizedModuleDiscovery: Super Admin context - granting core access to', sysModule.name);
+            accessMethod = 'core';
+          } else if (tenantId) {
+            // Only check access if we have a valid tenant ID and not Super Admin
             try {
               const accessResult = await ModuleAccessService.isModuleEnabled(
                 tenantId,
@@ -115,7 +132,7 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
               // Check tenant assignments
               tenantAssigned = tenantModules?.some(tm => tm.module_id === sysModule.name) || false;
             } catch (error) {
-              console.warn(`Access check failed for module ${sysModule.name}:`, error);
+              console.warn(`OptimizedModuleDiscovery: Access check failed for module ${sysModule.name}:`, error);
               accessMethod = 'core';
             }
           }
@@ -125,7 +142,7 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
             rm.id === sysModule.name || rm.name === sysModule.name
           );
 
-          modules.push({
+          const moduleInfo: OptimizedModuleInfo = {
             id: sysModule.name,
             name: sysModule.name,
             category: sysModule.category,
@@ -143,6 +160,13 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
               monthlyPrice: sysModule.monthly_price || undefined,
               annualPrice: sysModule.annual_price || undefined
             }
+          };
+
+          modules.push(moduleInfo);
+          console.log('OptimizedModuleDiscovery: Added system module', {
+            name: moduleInfo.name,
+            status: moduleInfo.status,
+            accessMethod: moduleInfo.accessMethod
           });
         }
 
@@ -151,7 +175,10 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
           if (!modules.find(m => m.id === routeModule.id)) {
             let accessMethod: OptimizedModuleInfo['accessMethod'] = 'core';
             
-            if (tenantId && routeModule.subscriptionRequired) {
+            // For Super Admin, grant core access; otherwise check if subscription required
+            if (isSuperAdmin) {
+              accessMethod = 'core';
+            } else if (tenantId && routeModule.subscriptionRequired) {
               try {
                 const accessResult = await ModuleAccessService.isModuleEnabled(
                   tenantId,
@@ -161,12 +188,12 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
                   (accessResult.source === 'subscription' ? 'subscription' : 'override') : 
                   'unavailable';
               } catch (error) {
-                console.warn(`Access check failed for route module ${routeModule.id}:`, error);
+                console.warn(`OptimizedModuleDiscovery: Access check failed for route module ${routeModule.id}:`, error);
                 accessMethod = 'core';
               }
             }
 
-            modules.push({
+            const moduleInfo: OptimizedModuleInfo = {
               id: routeModule.id,
               name: routeModule.name,
               category: routeModule.category,
@@ -179,13 +206,25 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
               dependencies: [],
               tenantAssigned: false,
               subscriptionRequired: routeModule.subscriptionRequired
+            };
+
+            modules.push(moduleInfo);
+            console.log('OptimizedModuleDiscovery: Added route module', {
+              name: moduleInfo.name,
+              accessMethod: moduleInfo.accessMethod
             });
           }
         }
 
+        console.log('OptimizedModuleDiscovery: Final modules processed', {
+          totalModules: modules.length,
+          activeModules: modules.filter(m => m.status === 'active').length,
+          availableModules: modules.filter(m => m.accessMethod !== 'unavailable').length
+        });
+
         setDiscoveredModules(modules);
       } catch (error) {
-        console.error('Error processing modules:', error);
+        console.error('OptimizedModuleDiscovery: Error processing modules:', error);
         setDiscoveredModules([]);
       }
     };
@@ -193,7 +232,7 @@ export const useOptimizedModuleDiscovery = (tenantId?: string | null) => {
     if (!systemLoading && !tenantLoading) {
       processModules();
     }
-  }, [systemModules, tenantModules, tenantId, systemLoading, tenantLoading, routeModules]);
+  }, [systemModules, tenantModules, tenantId, systemLoading, tenantLoading, routeModules, bypassAuth]);
 
   // Memoized utility functions
   const utilities = useMemo(() => ({
