@@ -1,3 +1,4 @@
+
 import { 
   LayoutDashboard, 
   Users, 
@@ -25,13 +26,22 @@ const defaultNavItems: NavItem[] = [
     id: 'dashboard',
     label: 'Dashboard', 
     icon: LayoutDashboard, 
-    href: '/tenant-admin/dashboard'
+    href: '/tenant-admin/dashboard',
+    requiresModule: 'Dashboard Analytics'
   },
   { 
     id: 'predictive-insights',
     label: 'Predictive Insights', 
     icon: TrendingUp, 
-    href: '/tenant-admin/predictive-insights'
+    href: '/tenant-admin/predictive-insights',
+    requiresModule: 'Predictive Insights'
+  },
+  { 
+    id: 'intelligent-workflows',
+    label: 'Intelligent Workflows', 
+    icon: Zap, 
+    href: '/tenant-admin/intelligent-workflows',
+    requiresModule: 'Workflow Management'
   },
   { 
     id: 'smart-talent-matching',
@@ -83,12 +93,6 @@ const defaultNavItems: NavItem[] = [
     requiresModule: 'LinkedIn Integration'
   },
   { 
-    id: 'intelligent-workflows',
-    label: 'Intelligent Workflows', 
-    icon: Zap, 
-    href: '/tenant-admin/intelligent-workflows'
-  },
-  { 
     id: 'smart-talent-analytics',
     label: 'Smart Talent Analytics', 
     icon: Brain, 
@@ -99,7 +103,8 @@ const defaultNavItems: NavItem[] = [
     id: 'settings',
     label: 'Settings', 
     icon: Settings, 
-    href: '/tenant-admin/settings'
+    href: '/tenant-admin/settings',
+    requiresModule: 'User Management'
   },
 ];
 
@@ -131,6 +136,10 @@ export const useTenantAdminNavigation = () => {
   const currentTenantId = tenantData?.tenant_id || null;
 
   // Get module access for each required module
+  const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'Dashboard Analytics', user?.id);
+  const { data: predictiveAccess } = useUnifiedModuleAccess(currentTenantId, 'Predictive Insights', user?.id);
+  const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
+  const { data: userMgmtAccess } = useUnifiedModuleAccess(currentTenantId, 'User Management', user?.id);
   const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
   const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
   const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
@@ -144,6 +153,14 @@ export const useTenantAdminNavigation = () => {
     }
 
     switch (item.requiresModule) {
+      case 'Dashboard Analytics':
+        return dashboardAccess?.hasAccess === true;
+      case 'Predictive Insights':
+        return predictiveAccess?.hasAccess === true;
+      case 'Workflow Management':
+        return workflowAccess?.hasAccess === true;
+      case 'User Management':
+        return userMgmtAccess?.hasAccess === true;
       case 'ATS Core':
         return atsAccess?.hasAccess === true;
       case 'company_data_access':
@@ -158,6 +175,21 @@ export const useTenantAdminNavigation = () => {
         return true;
     }
   });
+
+  // If no access to any modules, show basic user management only
+  const hasAnyAccess = filteredNavItems.length > 0;
+  
+  if (!hasAnyAccess && currentTenantId) {
+    // Show minimal navigation for tenants without any subscription
+    return useNavigationPreferences('tenant_admin', [
+      { 
+        id: 'upgrade',
+        label: 'Upgrade Plan', 
+        icon: TrendingUp, 
+        href: '/tenant-admin/upgrade'
+      }
+    ]);
+  }
 
   return useNavigationPreferences('tenant_admin', filteredNavItems);
 };

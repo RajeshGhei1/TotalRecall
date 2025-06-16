@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
 import Companies from "@/pages/tenant-admin/Companies";
@@ -22,6 +23,7 @@ import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
 import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
 import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher";
 import AdminLayout from "@/components/AdminLayout";
+import UpgradePlan from "@/pages/tenant-admin/UpgradePlan";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -55,14 +57,38 @@ const TenantAdminRoutes = () => {
       {/* Default redirect to dashboard */}
       <Route index element={<Navigate to="dashboard" replace />} />
       
-      {/* Core Tenant Pages */}
-      <Route path="dashboard" element={<Dashboard />} />
+      {/* Core Dashboard - Now Module Protected */}
+      <Route path="dashboard" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="Dashboard Analytics" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Dashboard />
+        </UnifiedModuleAccessGuard>
+      } />
       
-      {/* Intelligent Workflows - Core Feature */}
-      <Route path="intelligent-workflows" element={<IntelligentWorkflowsPage />} />
+      {/* Intelligent Workflows - Now Module Protected */}
+      <Route path="intelligent-workflows" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="Workflow Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <IntelligentWorkflowsPage />
+        </UnifiedModuleAccessGuard>
+      } />
       
-      {/* Predictive Insights - New Feature */}
-      <Route path="predictive-insights" element={<PredictiveInsights />} />
+      {/* Predictive Insights - Now Module Protected */}
+      <Route path="predictive-insights" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="Predictive Insights" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <PredictiveInsights />
+        </UnifiedModuleAccessGuard>
+      } />
       
       {/* LinkedIn Integration Module Protected Route */}
       <Route path="linkedin-integration" element={
@@ -152,14 +178,73 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Settings */}
-      <Route path="settings" element={<Settings />} />
-      <Route path="settings/general" element={<GeneralSettings />} />
-      <Route path="settings/custom-fields" element={<CustomFieldsSettings />} />
-      <Route path="settings/api" element={<ApiSettings />} />
-      <Route path="settings/communication" element={<CommunicationSettings />} />
-      <Route path="settings/outreach" element={<OutreachSettings />} />
-      <Route path="settings/social-media" element={<SocialMediaSettings />} />
+      {/* Settings - Now Module Protected */}
+      <Route path="settings" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <Settings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/general" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <GeneralSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/custom-fields" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <CustomFieldsSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/api" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <ApiSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/communication" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <CommunicationSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/outreach" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <OutreachSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      <Route path="settings/social-media" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="User Management" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <SocialMediaSettings />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Upgrade Plan - Always accessible */}
+      <Route path="upgrade" element={<UpgradePlan />} />
     </Routes>
   );
 };
