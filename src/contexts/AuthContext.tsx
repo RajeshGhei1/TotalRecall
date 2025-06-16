@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -160,14 +161,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
+      // Clear local state immediately
+      setUser(null);
+      setSession(null);
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Sign out error:', error);
-        throw error;
+        // Don't throw the error, just log it since we already cleared local state
+      } else {
+        console.log('Sign out successful');
       }
-      console.log('Sign out successful');
     } catch (error) {
-      throw error;
+      console.error('Sign out error:', error);
+      // Don't throw the error, the local state is already cleared
     } finally {
       setLoading(false);
     }
