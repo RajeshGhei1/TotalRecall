@@ -13,17 +13,19 @@ interface ModuleDetail {
 
 interface CollapsiblePermissionsSectionProps {
   moduleDetails: ModuleDetail[];
+  expandByDefault?: boolean;
 }
 
 const CollapsiblePermissionsSection: React.FC<CollapsiblePermissionsSectionProps> = ({
-  moduleDetails
+  moduleDetails,
+  expandByDefault = false
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(expandByDefault);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="flex items-center justify-between w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <span>View module details</span>
+        <span>View all module details</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2 space-y-2">
@@ -33,7 +35,11 @@ const CollapsiblePermissionsSection: React.FC<CollapsiblePermissionsSectionProps
             <div className="flex items-center gap-2">
               <Badge 
                 variant={module.isEnabled ? 'default' : 'outline'}
-                className="text-xs"
+                className={`text-xs ${
+                  module.isEnabled 
+                    ? 'bg-green-100 text-green-800 border-green-200' 
+                    : 'bg-gray-100 text-gray-600 border-gray-200'
+                }`}
               >
                 {module.isEnabled ? 'Enabled' : 'Disabled'}
               </Badge>
