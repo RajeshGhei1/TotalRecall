@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useOptimizedModuleDiscovery, OptimizedModuleInfo } from '@/hooks/useOptimizedModuleDiscovery';
 import { useStableTenantContext } from '@/hooks/useStableTenantContext';
+import ModuleStatusViewer from './ModuleStatusViewer';
 
 interface RealModuleDashboardProps {
   tenantId?: string;
@@ -37,6 +37,7 @@ interface RealModuleDashboardProps {
 
 const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) => {
   const [selectedModule, setSelectedModule] = useState<OptimizedModuleInfo | null>(null);
+  const [viewingModule, setViewingModule] = useState<OptimizedModuleInfo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'development'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -86,6 +87,16 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
       currentTenantId
     });
   }, [modules, filteredModules, isLoading, totalModules, activeModules, availableModules, tenantData, currentTenantId]);
+
+  const handleOpenModule = (module: OptimizedModuleInfo) => {
+    if (module.route) {
+      window.open(module.route, '_blank');
+    }
+  };
+
+  const handleViewModuleStatus = (module: OptimizedModuleInfo) => {
+    setViewingModule(module);
+  };
 
   const getStatusColor = (status: OptimizedModuleInfo['status']) => {
     switch (status) {
@@ -164,16 +175,32 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
         </div>
         
         <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-7 text-xs flex-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewModuleStatus(module);
+            }}
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Status
+          </Button>
           {module.route && (
-            <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-7 text-xs flex-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenModule(module);
+              }}
+            >
               <ExternalLink className="h-3 w-3 mr-1" />
               Open
             </Button>
           )}
-          <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-            <Settings className="h-3 w-3 mr-1" />
-            Config
-          </Button>
         </div>
       </CardContent>
     </Card>
@@ -218,16 +245,32 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
           </div>
           
           <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewModuleStatus(module);
+              }}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Status
+            </Button>
             {module.route && (
-              <Button size="sm" variant="outline" className="h-8">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenModule(module);
+                }}
+              >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Open
               </Button>
             )}
-            <Button size="sm" variant="outline" className="h-8">
-              <Settings className="h-4 w-4 mr-2" />
-              Config
-            </Button>
           </div>
         </div>
       </CardContent>
@@ -267,6 +310,14 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
 
   return (
     <div className="space-y-6">
+      {/* Module Status Viewer Modal */}
+      {viewingModule && (
+        <ModuleStatusViewer 
+          module={viewingModule} 
+          onClose={() => setViewingModule(null)} 
+        />
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-blue-500">
@@ -499,16 +550,26 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-2 pt-4 border-t">
-                  <Button size="sm" variant="outline" className="w-full">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Test Access
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handleViewModuleStatus(selectedModule)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Status & Details
                   </Button>
                   <Button size="sm" variant="outline" className="w-full">
                     <Settings className="h-4 w-4 mr-2" />
                     Configure
                   </Button>
                   {selectedModule.route && (
-                    <Button size="sm" variant="default" className="w-full">
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      className="w-full"
+                      onClick={() => handleOpenModule(selectedModule)}
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Open Module
                     </Button>
