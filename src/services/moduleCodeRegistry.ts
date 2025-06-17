@@ -1,4 +1,3 @@
-
 import { ModuleManifest, LoadedModule } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -67,7 +66,7 @@ export class ModuleCodeRegistry {
   }
 
   /**
-   * Dynamically load a module component from the filesystem
+   * Dynamically load a module component from the filesystem using discovery service
    */
   async loadModuleComponent(moduleId: string): Promise<React.ComponentType<any> | null> {
     try {
@@ -76,24 +75,28 @@ export class ModuleCodeRegistry {
         return this.componentCache.get(moduleId)!;
       }
 
-      // Try to dynamically import the module
-      const modulePath = `/src/modules/${moduleId}/index.tsx`;
+      // Use discovery service to get module path
+      const { moduleDiscoveryService } = await import('./moduleDiscoveryService');
+      const moduleInfo = moduleDiscoveryService.getModuleFileInfo(moduleId);
       
-      try {
-        const moduleExports = await import(modulePath);
-        const component = moduleExports.default || moduleExports[moduleId] || moduleExports.Component;
-        
-        if (component) {
-          this.componentCache.set(moduleId, component);
-          console.log(`Dynamically loaded module: ${moduleId}`);
-          return component;
+      if (moduleInfo) {
+        try {
+          const moduleExports = await import(moduleInfo.path);
+          const component = moduleExports.default;
+          
+          if (component) {
+            this.componentCache.set(moduleId, component);
+            console.log(`Dynamically loaded module: ${moduleId}`);
+            return component;
+          }
+        } catch (importError) {
+          console.warn(`Failed to import module from ${moduleInfo.path}:`, importError);
         }
-      } catch (importError) {
-        console.warn(`Failed to import module from ${modulePath}:`, importError);
       }
 
-      // Fallback: try alternative paths
+      // Fallback: try alternative paths (legacy support)
       const alternativePaths = [
+        `/src/modules/${moduleId}/index.tsx`,
         `/src/modules/${moduleId}/Component.tsx`,
         `/src/modules/${moduleId}/${moduleId}.tsx`,
         `/src/components/modules/${moduleId}.tsx`

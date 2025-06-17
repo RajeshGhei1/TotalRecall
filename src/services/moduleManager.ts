@@ -27,13 +27,17 @@ export class ModuleManager {
    * Initialize the module system
    */
   async initializeSystem(): Promise<void> {
-    console.log('Initializing ModuleManager system...');
+    console.log('Initializing ModuleManager system with enhanced discovery...');
     
     try {
+      // Initialize the discovery service
+      const { moduleDiscoveryService } = await import('./moduleDiscoveryService');
+      moduleDiscoveryService.initializeKnownModules();
+      
       // Initialize the module loader (which will discover components)
       await this.moduleLoader.initialize();
       
-      console.log('ModuleManager system initialized successfully');
+      console.log('ModuleManager system initialized successfully with enhanced discovery');
     } catch (error) {
       console.error('Error initializing ModuleManager system:', error);
       throw error;

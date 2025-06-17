@@ -304,14 +304,25 @@ export class ModuleLoader {
    * Initialize the module loader with component discovery
    */
   async initialize(): Promise<void> {
-    console.log('Initializing ModuleLoader with component discovery...');
+    console.log('Initializing ModuleLoader with enhanced component discovery...');
     
     try {
-      const result = await moduleCodeRegistry.discoverAndRegisterModules();
-      console.log(`Module discovery completed: ${result.registered.length} registered, ${result.failed.length} failed`);
+      // Use the new discovery service
+      const { moduleDiscoveryService } = await import('./moduleDiscoveryService');
+      const result = await moduleDiscoveryService.discoverAndLoadModules();
+      
+      console.log(`Enhanced module discovery completed: ${result.loaded.length} loaded, ${result.failed.length} failed`);
       
       if (result.failed.length > 0) {
-        console.warn('Some modules failed to register:', result.failed);
+        console.warn('Some modules failed to load:', result.failed);
+      }
+
+      // Also try database discovery as fallback
+      try {
+        const dbResult = await moduleCodeRegistry.discoverAndRegisterModules();
+        console.log(`Database module discovery: ${dbResult.registered.length} registered, ${dbResult.failed.length} failed`);
+      } catch (dbError) {
+        console.warn('Database module discovery failed:', dbError);
       }
     } catch (error) {
       console.error('Error during module loader initialization:', error);
