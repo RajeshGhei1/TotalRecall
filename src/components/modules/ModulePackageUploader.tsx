@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { moduleRepository, ModulePackage } from '@/services/moduleRepository';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface ModulePackageUploaderProps {
   onUploadComplete?: (moduleId: string) => void;
@@ -34,7 +33,6 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<any>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,15 +51,15 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
 
     setSelectedFile(file);
     
-    // Try to extract manifest (mock implementation for now)
+    // Create mock manifest from file name
     try {
       const mockManifest = {
-        id: file.name.replace(/\.(zip|tar\.gz)$/, ''),
+        id: file.name.replace(/\.(zip|tar\.gz)$/, '').toLowerCase().replace(/[^a-z0-9]/g, '-'),
         name: file.name.replace(/\.(zip|tar\.gz)$/, '').replace(/[_-]/g, ' '),
         version: '1.0.0',
         description: 'Uploaded module package',
         category: 'custom',
-        author: user?.email || 'Unknown',
+        author: 'Unknown',
         license: 'MIT',
         dependencies: [],
         entryPoint: 'index.js',
@@ -90,10 +88,10 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
       });
       setIsValidating(false);
     }
-  }, [user, toast]);
+  }, [toast]);
 
   const handleUpload = async () => {
-    if (!selectedFile || !manifest || !user) return;
+    if (!selectedFile || !manifest) return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -125,8 +123,8 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
         });
       }, 200);
 
-      // Upload module
-      const result = await moduleRepository.uploadModule(modulePackage, user.id);
+      // Upload module (using mock user ID for now)
+      const result = await moduleRepository.uploadModule(modulePackage, 'mock-user-id');
       
       clearInterval(progressInterval);
       setUploadProgress(100);
