@@ -1,94 +1,77 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   Upload, 
-  FileText, 
   CheckCircle, 
-  AlertCircle, 
-  X,
-  Package
+  XCircle, 
+  AlertTriangle,
+  FileText,
+  Package,
+  Info
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { moduleRepository, ModulePackage } from '@/services/moduleRepository';
+import { moduleRepository } from '@/services/moduleRepository';
 
 interface ModulePackageUploaderProps {
-  onUploadComplete?: (moduleId: string) => void;
+  onUploadComplete?: () => void;
   onClose?: () => void;
 }
 
-const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({ 
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  compatibilityIssues: string[];
+}
+
+const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
   onUploadComplete,
-  onClose 
+  onClose
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [manifest, setManifest] = useState<any>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<any>(null);
-  const { toast } = useToast();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadResult, setUploadResult] = useState<any>(null);
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
-    const validTypes = ['application/zip', 'application/x-zip-compressed', 'application/gzip', 'application/x-tar'];
-    if (!validTypes.includes(file.type) && !file.name.endsWith('.zip') && !file.name.endsWith('.tar.gz')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select a ZIP or TAR.GZ file",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setSelectedFile(file);
-    
-    // Create mock manifest from file name
+    setValidationResult(null);
+    setUploadResult(null);
+
+    // Try to extract and validate manifest
     try {
-      const mockManifest = {
-        id: file.name.replace(/\.(zip|tar\.gz)$/, '').toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        name: file.name.replace(/\.(zip|tar\.gz)$/, '').replace(/[_-]/g, ' '),
-        version: '1.0.0',
-        description: 'Uploaded module package',
-        category: 'custom',
-        author: 'Unknown',
-        license: 'MIT',
-        dependencies: [],
-        entryPoint: 'index.js',
-        requiredPermissions: [],
-        subscriptionTiers: ['professional'],
-        loadOrder: 100,
-        autoLoad: true,
-        canUnload: true,
-        minCoreVersion: '1.0.0'
-      };
-      
-      setManifest(mockManifest);
-      
-      // Validate manifest
-      setIsValidating(true);
-      const validation = await moduleRepository.validateManifest(mockManifest);
-      setValidationResult(validation);
-      setIsValidating(false);
-      
+      if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        const manifestData = JSON.parse(text);
+        setManifest(manifestData);
+        
+        // Validate manifest
+        const validation = await moduleRepository.validateManifest(manifestData);
+        setValidationResult(validation);
+      } else {
+        // For other file types, we'd need to extract the manifest from the package
+        setManifest(null);
+      }
     } catch (error) {
-      console.error('Error processing file:', error);
-      toast({
-        title: "Error processing file",
-        description: "Could not extract module manifest",
-        variant: "destructive"
+      console.error('Error reading file:', error);
+      setValidationResult({
+        isValid: false,
+        errors: ['Failed to read or parse file'],
+        warnings: [],
+        compatibilityIssues: []
       });
-      setIsValidating(false);
     }
-  }, [toast]);
+  };
 
   const handleUpload = async () => {
     if (!selectedFile || !manifest) return;
@@ -97,208 +80,244 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
     setUploadProgress(0);
 
     try {
-      // Calculate file hash
-      const buffer = await selectedFile.arrayBuffer();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const packageHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 100);
 
       // Create module package
-      const modulePackage: ModulePackage = {
+      const modulePackage = {
         id: manifest.id,
-        packageHash,
+        packageHash: `hash-${Date.now()}`,
         size: selectedFile.size,
-        manifest,
+        manifest: manifest,
         file: selectedFile
       };
 
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
-
-      // Upload module (using mock user ID for now)
-      const result = await moduleRepository.uploadModule(modulePackage, 'mock-user-id');
+      // Upload to repository
+      const result = await moduleRepository.uploadModule(modulePackage, 'current-user');
       
       clearInterval(progressInterval);
       setUploadProgress(100);
-
-      toast({
-        title: "Module uploaded successfully",
-        description: `Module ${result.moduleId} v${result.version} has been uploaded for review`
-      });
-
-      onUploadComplete?.(result.moduleId);
+      setUploadResult(result);
       
-      // Reset form
+      // Call completion callback after a short delay
       setTimeout(() => {
-        setSelectedFile(null);
-        setManifest(null);
-        setUploadProgress(0);
-        setValidationResult(null);
-      }, 2000);
+        onUploadComplete?.();
+      }, 1000);
 
     } catch (error) {
-      console.error('Error uploading module:', error);
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload module",
-        variant: "destructive"
+      console.error('Upload failed:', error);
+      setUploadResult({
+        error: error instanceof Error ? error.message : 'Upload failed'
       });
     } finally {
       setIsUploading(false);
     }
   };
 
+  const renderValidationResults = () => {
+    if (!validationResult) return null;
+
+    return (
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {validationResult.isValid ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <XCircle className="h-5 w-5 text-red-600" />
+            )}
+            Validation Results
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {validationResult.errors.length > 0 && (
+            <div className="mb-4">
+              <h4 className="font-semibold text-red-600 mb-2">Errors</h4>
+              <div className="space-y-1">
+                {validationResult.errors.map((error, index) => (
+                  <div key={index} className="flex items-center gap-2 text-red-600">
+                    <XCircle className="h-4 w-4" />
+                    <span className="text-sm">{error}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {validationResult.warnings.length > 0 && (
+            <div className="mb-4">
+              <h4 className="font-semibold text-yellow-600 mb-2">Warnings</h4>
+              <div className="space-y-1">
+                {validationResult.warnings.map((warning, index) => (
+                  <div key={index} className="flex items-center gap-2 text-yellow-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="text-sm">{warning}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {validationResult.compatibilityIssues.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-orange-600 mb-2">Compatibility Issues</h4>
+              <div className="space-y-1">
+                {validationResult.compatibilityIssues.map((issue, index) => (
+                  <div key={index} className="flex items-center gap-2 text-orange-600">
+                    <Info className="h-4 w-4" />
+                    <span className="text-sm">{issue}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {validationResult.isValid && (
+            <div className="text-green-600">
+              <p className="text-sm">✓ Module package is valid and ready for upload</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderManifestPreview = () => {
+    if (!manifest) return null;
+
+    return (
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Module Manifest
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Module ID</label>
+              <p className="text-sm text-muted-foreground">{manifest.id}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <p className="text-sm text-muted-foreground">{manifest.name}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Version</label>
+              <p className="text-sm text-muted-foreground">{manifest.version}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Category</label>
+              <Badge variant="outline">{manifest.category}</Badge>
+            </div>
+            <div className="col-span-2">
+              <label className="text-sm font-medium">Description</label>
+              <p className="text-sm text-muted-foreground">{manifest.description}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Author</label>
+              <p className="text-sm text-muted-foreground">{manifest.author}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">License</label>
+              <p className="text-sm text-muted-foreground">{manifest.license}</p>
+            </div>
+          </div>
+
+          {manifest.dependencies && manifest.dependencies.length > 0 && (
+            <div className="mt-4">
+              <label className="text-sm font-medium">Dependencies</label>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {manifest.dependencies.map((dep: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {dep}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            <CardTitle>Upload Module Package</CardTitle>
-          </div>
-          {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* File Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="module-file">Module Package File</Label>
-          <Input
-            id="module-file"
-            type="file"
-            accept=".zip,.tar.gz"
-            onChange={handleFileSelect}
-            disabled={isUploading}
-          />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            Upload Module Package
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Upload a ZIP or TAR.GZ file containing your module
+            Upload a module package (.zip, .tar.gz) or manifest (.json) file
           </p>
-        </div>
-
-        {/* Selected File Info */}
-        {selectedFile && (
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">{selectedFile.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Manifest Info */}
-        {manifest && (
-          <div className="space-y-3">
-            <h4 className="font-medium">Module Information</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <Label className="text-xs text-muted-foreground">Name</Label>
-                <p>{manifest.name}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Version</Label>
-                <p>{manifest.version}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Category</Label>
-                <p className="capitalize">{manifest.category}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Author</Label>
-                <p>{manifest.author}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Validation Results */}
-        {isValidating && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-            Validating module manifest...
-          </div>
-        )}
-
-        {validationResult && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              {validationResult.isValid ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-red-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Input
+                type="file"
+                accept=".zip,.tar.gz,.json"
+                onChange={handleFileSelect}
+                disabled={isUploading}
+              />
+              {selectedFile && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                </p>
               )}
-              <span className="font-medium">
-                Validation {validationResult.isValid ? 'Passed' : 'Failed'}
-              </span>
             </div>
 
-            {validationResult.errors.length > 0 && (
-              <div className="space-y-1">
-                <Label className="text-xs text-red-600">Errors</Label>
-                {validationResult.errors.map((error: string, index: number) => (
-                  <p key={index} className="text-xs text-red-600 bg-red-50 p-2 rounded">
-                    {error}
-                  </p>
-                ))}
+            {isUploading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Uploading...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <Progress value={uploadProgress} />
               </div>
             )}
 
-            {validationResult.warnings.length > 0 && (
-              <div className="space-y-1">
-                <Label className="text-xs text-yellow-600">Warnings</Label>
-                {validationResult.warnings.map((warning: string, index: number) => (
-                  <p key={index} className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded">
-                    {warning}
-                  </p>
-                ))}
+            {uploadResult && (
+              <div className={`p-3 rounded-md ${uploadResult.error ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                {uploadResult.error ? (
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4" />
+                    <span>Upload failed: {uploadResult.error}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Module uploaded successfully!</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Upload Progress */}
-        {isUploading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span>Uploading...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} className="w-full" />
-          </div>
-        )}
+      {renderManifestPreview()}
+      {renderValidationResults()}
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3">
-          {onClose && (
-            <Button variant="outline" onClick={onClose} disabled={isUploading}>
-              Cancel
-            </Button>
-          )}
-          <Button
-            onClick={handleUpload}
-            disabled={!selectedFile || !validationResult?.isValid || isUploading}
-            className="flex items-center gap-2"
-          >
-            <Upload className="h-4 w-4" />
-            {isUploading ? 'Uploading...' : 'Upload Module'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        
+        <Button
+          onClick={handleUpload}
+          disabled={!selectedFile || !validationResult?.isValid || isUploading}
+        >
+          <Package className="h-4 w-4 mr-2" />
+          Upload Module
+        </Button>
+      </div>
+    </div>
   );
 };
 

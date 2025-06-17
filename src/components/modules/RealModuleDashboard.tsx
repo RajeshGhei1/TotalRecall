@@ -1,207 +1,136 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
-  Search,
-  Grid3X3,
-  List,
-  Package,
-  Activity,
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Settings,
-  Eye,
-  Zap,
-  Database,
+  Package, 
+  Play, 
+  Pause, 
+  Settings, 
   BarChart3,
-  MessageSquare,
-  Link,
-  UserCheck,
-  Brain,
-  Shield,
-  Sparkles
+  Users,
+  Download,
+  Star,
+  Search,
+  Filter,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Zap
 } from 'lucide-react';
-import { useRealModuleDiscovery } from '@/hooks/useRealModuleDiscovery';
-import ModuleStatusViewer from './ModuleStatusViewer';
+import { moduleRegistryService, ModuleInstallation } from '@/services/moduleRegistryService';
+import ModuleMarketplace from './ModuleMarketplace';
 
 interface RealModuleDashboardProps {
   tenantId?: string;
 }
 
-interface ModuleData {
-  id: string;
-  name: string;
-  description?: string;
-  category: string;
-  status: string;
-  version: string;
-  accessMethod: string;
-  route?: string;
+interface ModuleStats {
+  total: number;
+  active: number;
+  inactive: number;
+  failed: number;
+  updating: number;
 }
 
 const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) => {
-  const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [installedModules, setInstalledModules] = useState<ModuleInstallation[]>([]);
+  const [moduleStats, setModuleStats] = useState<ModuleStats>({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    failed: 0,
+    updating: 0
+  });
+  const [selectedModule, setSelectedModule] = useState<ModuleInstallation | null>(null);
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: moduleResults, isLoading } = useRealModuleDiscovery(tenantId);
+  useEffect(() => {
+    if (tenantId) {
+      loadInstalledModules();
+    }
+  }, [tenantId]);
 
-  // Transform the results into the expected format
-  const modules: ModuleData[] = useMemo(() => {
-    if (!moduleResults) return [];
+  const loadInstalledModules = async () => {
+    if (!tenantId) return;
     
-    return moduleResults.map((result, index) => ({
-      id: `module-${index}`,
-      name: result.moduleId,
-      description: `${result.moduleId} module`,
-      category: 'business', // Default category
-      status: result.isEnabled ? 'active' : 'inactive',
-      version: '1.0.0',
-      accessMethod: 'subscription', // Simplified to subscription-only
-      route: result.isEnabled ? `/modules/${result.moduleId}` : undefined
-    }));
-  }, [moduleResults]);
-
-  const totalModules = modules.length;
-  const activeModules = modules.filter(m => m.status === 'active').length;
-  const availableModules = modules.filter(m => m.accessMethod === 'subscription').length;
-
-  const filteredModules = useMemo(() => {
-    return modules.filter(module => {
-      const matchesSearch = module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          module.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || module.category === selectedCategory;
-      const matchesStatus = selectedStatus === 'all' || module.status === selectedStatus;
+    setIsLoading(true);
+    try {
+      const modules = await moduleRegistryService.getInstalledModules(tenantId);
+      setInstalledModules(modules);
       
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
-  }, [modules, searchQuery, selectedCategory, selectedStatus]);
-
-  const categories = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(modules.map(m => m.category)));
-    return uniqueCategories.sort();
-  }, [modules]);
-
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, React.ReactNode> = {
-      'core': <Database className="h-4 w-4" />,
-      'analytics': <BarChart3 className="h-4 w-4" />,
-      'communication': <MessageSquare className="h-4 w-4" />,
-      'integration': <Link className="h-4 w-4" />,
-      'integrations': <Link className="h-4 w-4" />,
-      'recruitment': <UserCheck className="h-4 w-4" />,
-      'talent': <UserCheck className="h-4 w-4" />,
-      'ai': <Brain className="h-4 w-4" />,
-      'business': <Package className="h-4 w-4" />,
-      'security': <Shield className="h-4 w-4" />
-    };
-    return icons[category] || <Package className="h-4 w-4" />;
-  };
-
-  const handleOpenModule = (module: ModuleData) => {
-    if (module.route) {
-      // Open module in new tab
-      window.open(module.route, '_blank');
-    } else {
-      // Show a message or fallback action for modules without routes
-      console.log(`Module ${module.name} doesn't have a configured route`);
+      // Calculate stats
+      const stats: ModuleStats = {
+        total: modules.length,
+        active: modules.filter(m => m.status === 'active').length,
+        inactive: modules.filter(m => m.status === 'inactive').length,
+        failed: modules.filter(m => m.status === 'failed').length,
+        updating: modules.filter(m => m.status === 'updating').length
+      };
+      setModuleStats(stats);
+    } catch (error) {
+      console.error('Error loading installed modules:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const renderModuleCard = (module: ModuleData) => (
-    <Card key={module.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${
-              module.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {getCategoryIcon(module.category)}
-            </div>
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                {module.name}
-              </CardTitle>
-              <p className="text-sm text-gray-500 mt-1">v{module.version}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant="outline" 
-              className="text-xs bg-blue-100 text-blue-800 border-blue-200"
-            >
-              <Zap className="h-3 w-3 mr-1" />
-              <span className="capitalize">Subscription</span>
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              <span className="capitalize">{module.category}</span>
-            </Badge>
-            <Badge 
-              variant={module.status === 'active' ? 'default' : 'secondary'}
-              className={`text-xs ${
-                module.status === 'active' 
-                  ? 'bg-green-100 text-green-800 border-green-200' 
-                  : 'bg-gray-100 text-gray-600 border-gray-200'
-              }`}
-            >
-              {module.status === 'active' && <Sparkles className="h-3 w-3 mr-1" />}
-              <span className="capitalize">{module.status}</span>
-            </Badge>
-          </div>
-          
-          {module.description && (
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {module.description}
-            </p>
-          )}
-        </div>
+  const handleModuleAction = async (moduleId: string, action: 'activate' | 'deactivate' | 'uninstall') => {
+    if (!tenantId) return;
 
-        <div className="flex gap-2 pt-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setSelectedModule(module)}
-            className="flex-1"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Status
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleOpenModule(module)}
-            className="flex-1"
-            disabled={!module.route}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            {module.route ? 'Open' : 'No Route'}
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            className="px-3"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+    try {
+      switch (action) {
+        case 'activate':
+          // Update module status to active
+          break;
+        case 'deactivate':
+          // Update module status to inactive
+          break;
+        case 'uninstall':
+          await moduleRegistryService.uninstallModule(moduleId, tenantId);
+          await loadInstalledModules();
+          break;
+      }
+    } catch (error) {
+      console.error(`Error performing ${action} on module ${moduleId}:`, error);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'inactive':
+        return <Pause className="h-4 w-4 text-gray-600" />;
+      case 'failed':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'updating':
+        return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      case 'updating':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -213,140 +142,332 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
 
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Module Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your installed modules and discover new ones
+          </p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={loadInstalledModules}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={() => setMarketplaceOpen(true)}>
+            <Package className="h-4 w-4 mr-2" />
+            Browse Marketplace
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Modules</p>
-                <p className="text-2xl font-bold">{totalModules}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Modules</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{moduleStats.total}</div>
           </CardContent>
         </Card>
+        
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Active Modules</p>
-                <p className="text-2xl font-bold">{activeModules}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{moduleStats.active}</div>
           </CardContent>
         </Card>
+        
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm text-gray-600">Available</p>
-                <p className="text-2xl font-bold">{availableModules}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
+            <Pause className="h-4 w-4 text-gray-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-600">{moduleStats.inactive}</div>
           </CardContent>
         </Card>
+        
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm text-gray-600">Categories</p>
-                <p className="text-2xl font-bold">{categories.length}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Failed</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{moduleStats.failed}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Updating</CardTitle>
+            <RefreshCw className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{moduleStats.updating}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search modules..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      <Tabs defaultValue="installed" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="installed">Installed Modules</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="installed" className="mt-6">
+          {installedModules.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Modules Installed</h3>
+                <p className="text-muted-foreground mb-4">
+                  Get started by installing modules from the marketplace
+                </p>
+                <Button onClick={() => setMarketplaceOpen(true)}>
+                  Browse Marketplace
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {installedModules.map((module) => (
+                <Card key={module.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{module.module_id}</CardTitle>
+                        <p className="text-sm text-muted-foreground">v{module.module_version}</p>
+                      </div>
+                      {getStatusIcon(module.status)}
+                    </div>
+                    <Badge className={getStatusColor(module.status)}>
+                      {module.status}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xs text-muted-foreground mb-4">
+                      Installed: {new Date(module.installed_at).toLocaleDateString()}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedModule(module)}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                      
+                      {module.status === 'active' ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleModuleAction(module.module_id, 'deactivate')}
+                        >
+                          <Pause className="h-4 w-4 mr-2" />
+                          Pause
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => handleModuleAction(module.module_id, 'activate')}
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Activate
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            
-            <div className="flex gap-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </option>
-                ))}
-              </select>
-              
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              
-              <div className="flex border border-gray-300 rounded-md">
-                <Button
-                  size="sm"
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-r-none"
-                >
-                  <Grid3X3 className="h-4 w-4" />
+          )}
+        </TabsContent>
+
+        <TabsContent value="performance" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Module Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {installedModules.filter(m => m.status === 'active').map((module) => (
+                    <div key={module.id}>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm font-medium">{module.module_id}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {Math.floor(Math.random() * 100)}% CPU
+                        </span>
+                      </div>
+                      <Progress value={Math.floor(Math.random() * 100)} />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Module Usage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {installedModules.filter(m => m.status === 'active').map((module) => (
+                    <div key={module.id} className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{module.module_id}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {Math.floor(Math.random() * 50)} users
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.floor(Math.random() * 1000)} req/hr
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module System Settings</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Configure global module system behavior
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked />
+                    <span className="text-sm font-medium">Auto-update modules</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically update modules to their latest versions
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked />
+                    <span className="text-sm font-medium">Enable module analytics</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Collect usage analytics to improve performance
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" />
+                    <span className="text-sm font-medium">Sandbox mode</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Run all modules in isolated environments
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button>Save Settings</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Module Configuration Dialog */}
+      <Dialog open={!!selectedModule} onOpenChange={() => setSelectedModule(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Configure {selectedModule?.module_id}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedModule && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Module ID</label>
+                  <p className="text-sm text-muted-foreground">{selectedModule.module_id}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Version</label>
+                  <p className="text-sm text-muted-foreground">{selectedModule.module_version}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Status</label>
+                  <Badge className={getStatusColor(selectedModule.status)}>
+                    {selectedModule.status}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Installed</label>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(selectedModule.installed_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Module Configuration</label>
+                <textarea
+                  className="w-full h-32 p-3 border rounded-md font-mono text-sm"
+                  value={JSON.stringify(selectedModule.configuration, null, 2)}
+                  readOnly
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setSelectedModule(null)}>
+                  Close
                 </Button>
                 <Button
-                  size="sm"
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  onClick={() => setViewMode('list')}
-                  className="rounded-l-none"
+                  variant="destructive"
+                  onClick={() => {
+                    handleModuleAction(selectedModule.module_id, 'uninstall');
+                    setSelectedModule(null);
+                  }}
                 >
-                  <List className="h-4 w-4" />
+                  Uninstall Module
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Marketplace Dialog */}
+      <Dialog open={marketplaceOpen} onOpenChange={setMarketplaceOpen}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Module Marketplace</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto">
+            <ModuleMarketplace />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Module Grid */}
-      {filteredModules.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No modules found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-          : "space-y-4"
-        }>
-          {filteredModules.map(renderModuleCard)}
-        </div>
-      )}
-
-      {/* Module Status Modal */}
-      {selectedModule && (
-        <ModuleStatusViewer
-          module={selectedModule}
-          onClose={() => setSelectedModule(null)}
-        />
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

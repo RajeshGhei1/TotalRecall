@@ -2586,6 +2586,139 @@ export type Database = {
         }
         Relationships: []
       }
+      module_dependencies: {
+        Row: {
+          created_at: string | null
+          dependency_module_id: string
+          dependency_type: string
+          dependency_version_constraint: string
+          id: string
+          module_id: string
+          module_version: string
+        }
+        Insert: {
+          created_at?: string | null
+          dependency_module_id: string
+          dependency_type?: string
+          dependency_version_constraint?: string
+          id?: string
+          module_id: string
+          module_version: string
+        }
+        Update: {
+          created_at?: string | null
+          dependency_module_id?: string
+          dependency_type?: string
+          dependency_version_constraint?: string
+          id?: string
+          module_id?: string
+          module_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_dependencies_module_id_module_version_fkey"
+            columns: ["module_id", "module_version"]
+            isOneToOne: false
+            referencedRelation: "module_registry"
+            referencedColumns: ["module_id", "version"]
+          },
+        ]
+      }
+      module_installations: {
+        Row: {
+          configuration: Json | null
+          id: string
+          installed_at: string | null
+          installed_by: string | null
+          module_id: string
+          module_version: string
+          status: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          configuration?: Json | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          module_id: string
+          module_version: string
+          status?: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          configuration?: Json | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          module_id?: string
+          module_version?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_installations_module_id_module_version_fkey"
+            columns: ["module_id", "module_version"]
+            isOneToOne: false
+            referencedRelation: "module_registry"
+            referencedColumns: ["module_id", "version"]
+          },
+        ]
+      }
+      module_performance_metrics: {
+        Row: {
+          active_users: number | null
+          cpu_usage_avg_percent: number | null
+          created_at: string | null
+          error_count: number | null
+          feature_usage: Json | null
+          id: string
+          load_time_avg_ms: number | null
+          memory_usage_avg_mb: number | null
+          metric_date: string
+          module_id: string
+          request_count: number | null
+          response_time_avg_ms: number | null
+          tenant_id: string | null
+          total_sessions: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          cpu_usage_avg_percent?: number | null
+          created_at?: string | null
+          error_count?: number | null
+          feature_usage?: Json | null
+          id?: string
+          load_time_avg_ms?: number | null
+          memory_usage_avg_mb?: number | null
+          metric_date?: string
+          module_id: string
+          request_count?: number | null
+          response_time_avg_ms?: number | null
+          tenant_id?: string | null
+          total_sessions?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          cpu_usage_avg_percent?: number | null
+          created_at?: string | null
+          error_count?: number | null
+          feature_usage?: Json | null
+          id?: string
+          load_time_avg_ms?: number | null
+          memory_usage_avg_mb?: number | null
+          metric_date?: string
+          module_id?: string
+          request_count?: number | null
+          response_time_avg_ms?: number | null
+          tenant_id?: string | null
+          total_sessions?: number | null
+        }
+        Relationships: []
+      }
       module_permissions: {
         Row: {
           created_at: string
@@ -2651,6 +2784,164 @@ export type Database = {
           module_name?: string
           tier_pricing?: Json | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      module_ratings: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          module_id: string
+          module_version: string
+          rating: number
+          review_content: string | null
+          review_title: string | null
+          tenant_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          module_id: string
+          module_version: string
+          rating: number
+          review_content?: string | null
+          review_title?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          module_id?: string
+          module_version?: string
+          rating?: number
+          review_content?: string | null
+          review_title?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_ratings_module_id_module_version_fkey"
+            columns: ["module_id", "module_version"]
+            isOneToOne: false
+            referencedRelation: "module_registry"
+            referencedColumns: ["module_id", "version"]
+          },
+        ]
+      }
+      module_registry: {
+        Row: {
+          approved_by: string | null
+          author: string
+          auto_load: boolean | null
+          can_unload: boolean | null
+          category: string
+          created_at: string | null
+          created_by: string | null
+          dependencies: Json | null
+          description: string | null
+          download_count: number | null
+          entry_point: string
+          homepage: string | null
+          id: string
+          license: string | null
+          load_order: number | null
+          manifest_data: Json
+          max_core_version: string | null
+          min_core_version: string
+          module_id: string
+          name: string
+          package_hash: string | null
+          package_size: number | null
+          package_url: string | null
+          peer_dependencies: Json | null
+          published_at: string | null
+          rating_average: number | null
+          rating_count: number | null
+          repository: string | null
+          required_permissions: Json | null
+          status: string
+          subscription_tiers: Json | null
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          approved_by?: string | null
+          author: string
+          auto_load?: boolean | null
+          can_unload?: boolean | null
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          download_count?: number | null
+          entry_point: string
+          homepage?: string | null
+          id?: string
+          license?: string | null
+          load_order?: number | null
+          manifest_data: Json
+          max_core_version?: string | null
+          min_core_version?: string
+          module_id: string
+          name: string
+          package_hash?: string | null
+          package_size?: number | null
+          package_url?: string | null
+          peer_dependencies?: Json | null
+          published_at?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          repository?: string | null
+          required_permissions?: Json | null
+          status?: string
+          subscription_tiers?: Json | null
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          approved_by?: string | null
+          author?: string
+          auto_load?: boolean | null
+          can_unload?: boolean | null
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          download_count?: number | null
+          entry_point?: string
+          homepage?: string | null
+          id?: string
+          license?: string | null
+          load_order?: number | null
+          manifest_data?: Json
+          max_core_version?: string | null
+          min_core_version?: string
+          module_id?: string
+          name?: string
+          package_hash?: string | null
+          package_size?: number | null
+          package_url?: string | null
+          peer_dependencies?: Json | null
+          published_at?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          repository?: string | null
+          required_permissions?: Json | null
+          status?: string
+          subscription_tiers?: Json | null
+          updated_at?: string | null
+          version?: string
         }
         Relationships: []
       }
