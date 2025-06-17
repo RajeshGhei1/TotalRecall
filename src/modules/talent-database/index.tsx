@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -327,6 +326,11 @@ const TalentDatabase: React.FC<TalentDatabaseProps> = ({
     </div>
   );
 
+  // Fix for the TypeScript error: create a wrapper function for tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as typeof activeTab);
+  };
+
   if (view !== 'search') {
     switch (view) {
       case 'favorites':
@@ -350,7 +354,7 @@ const TalentDatabase: React.FC<TalentDatabaseProps> = ({
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
           <TabsTrigger value="search">Search</TabsTrigger>
           <TabsTrigger value="favorites">Favorites</TabsTrigger>

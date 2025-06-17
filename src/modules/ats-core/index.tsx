@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -320,6 +319,11 @@ const AtsCore: React.FC<AtsCoreProps> = ({
     </div>
   );
 
+  // Fix for the TypeScript error: create a wrapper function for tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as typeof activeTab);
+  };
+
   if (view !== 'dashboard') {
     switch (view) {
       case 'jobs':
@@ -341,7 +345,7 @@ const AtsCore: React.FC<AtsCoreProps> = ({
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="jobs">Jobs</TabsTrigger>
