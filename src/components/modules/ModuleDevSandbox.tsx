@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   RefreshCw, 
   Code, 
@@ -14,20 +15,33 @@ import {
   TrendingUp,
   Settings,
   Monitor,
-  Database
+  Database,
+  TestTube,
+  FileText,
+  Wrench
 } from 'lucide-react';
 import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
 import SimplifiedModuleScaling from './SimplifiedModuleScaling';
 import RealModuleDashboard from './RealModuleDashboard';
+import ModuleTestRunner from './ModuleTestRunner';
+import ManifestWizard from './ManifestWizard';
+import LiveDevelopmentSandbox from './LiveDevelopmentSandbox';
 import { useStableTenantContext } from '@/hooks/useStableTenantContext';
+import { moduleTemplateService } from '@/services/moduleTemplates';
 
 const ModuleDevSandbox: React.FC = () => {
   // Use stable tenant context
   const { data: tenantData, isLoading: tenantLoading } = useStableTenantContext();
+  const [testRunnerOpen, setTestRunnerOpen] = useState(false);
+  const [manifestWizardOpen, setManifestWizardOpen] = useState(false);
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [templates, setTemplates] = useState<any[]>([]);
 
   // Add debugging to track component lifecycle
   useEffect(() => {
     console.log('ModuleDevSandbox mounted with stable tenant context');
+    // Load available templates
+    setTemplates(moduleTemplateService.getTemplates());
     return () => {
       console.log('ModuleDevSandbox unmounted');
     };
@@ -47,22 +61,22 @@ const ModuleDevSandbox: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Enhanced Header */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Layers className="h-5 w-5" />
-            Stable Module Development Sandbox
+            Enhanced Module Development Environment
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Development environment with stable tenant context and optimized module discovery
+            Complete development environment with template system, live coding, and comprehensive testing
           </p>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Database className="h-4 w-4 text-green-600" />
-              <span>Connected to System Modules</span>
+              <span>System Modules Connected</span>
             </div>
             <div className="flex items-center gap-2">
               <Monitor className="h-4 w-4 text-blue-600" />
@@ -70,8 +84,61 @@ const ModuleDevSandbox: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-purple-600" />
-              <span>Optimized Module Discovery</span>
+              <span>Live Development Ready</span>
             </div>
+            <div className="flex items-center gap-2">
+              <TestTube className="h-4 w-4 text-orange-600" />
+              <span>Test Framework Active</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-indigo-600" />
+              <span>{templates.length} Templates Available</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wrench className="h-5 w-5" />
+            Quick Development Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
+              onClick={() => setManifestWizardOpen(true)}
+            >
+              <Settings className="h-6 w-6" />
+              <span className="text-sm">Create Manifest</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
+              onClick={() => setSandboxOpen(true)}
+            >
+              <Code className="h-6 w-6" />
+              <span className="text-sm">Live Coding</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
+              onClick={() => setTestRunnerOpen(true)}
+            >
+              <TestTube className="h-6 w-6" />
+              <span className="text-sm">Run Tests</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
+            >
+              <Package className="h-6 w-6" />
+              <span className="text-sm">Deploy Module</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -85,7 +152,7 @@ const ModuleDevSandbox: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="development" className="flex items-center gap-2">
             <Code className="h-4 w-4" />
-            Development Tools
+            Development Hub
           </TabsTrigger>
           <TabsTrigger value="deployment" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
@@ -106,46 +173,74 @@ const ModuleDevSandbox: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Code className="h-5 w-5" />
-                Development Tools
+                Development Hub
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Tools for developing and testing modules with stable context
+                Integrated development environment with templates, live coding, and testing
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Template Gallery */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Access Control Testing</h3>
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Test Module Access
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Database className="h-4 w-4 mr-2" />
-                      Subscription Simulation
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Monitor className="h-4 w-4 mr-2" />
-                      Access Log Viewer
+                  <h3 className="font-semibold">Module Templates</h3>
+                  <div className="space-y-3">
+                    {templates.slice(0, 3).map((template) => (
+                      <div key={template.id} className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{template.name}</h4>
+                            <p className="text-sm text-muted-foreground">{template.description}</p>
+                            <div className="flex gap-1 mt-2">
+                              {template.tags.slice(0, 3).map((tag: string) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <Button variant="outline" className="w-full">
+                      View All Templates ({templates.length})
                     </Button>
                   </div>
                 </div>
                 
+                {/* Development Tools */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Module Debugging</h3>
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Activity className="h-4 w-4 mr-2" />
-                      Performance Monitor
+                  <h3 className="font-semibold">Development Tools</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={() => setSandboxOpen(true)}
+                    >
+                      <Code className="h-6 w-6" />
+                      <span className="text-sm">Live IDE</span>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Package className="h-4 w-4 mr-2" />
-                      Dependency Tracker
+                    <Button 
+                      variant="outline" 
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={() => setTestRunnerOpen(true)}
+                    >
+                      <TestTube className="h-6 w-6" />
+                      <span className="text-sm">Test Suite</span>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Hot Reload Test
+                    <Button 
+                      variant="outline" 
+                      className="h-auto p-4 flex-col gap-2"
+                    >
+                      <Activity className="h-6 w-6" />
+                      <span className="text-sm">Performance</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto p-4 flex-col gap-2"
+                    >
+                      <RefreshCw className="h-6 w-6" />
+                      <span className="text-sm">Hot Reload</span>
                     </Button>
                   </div>
                 </div>
@@ -160,7 +255,7 @@ const ModuleDevSandbox: React.FC = () => {
                   </div>
                   <div>
                     <p><strong>Environment:</strong> {tenantData?.is_development ? 'Development' : 'Production'}</p>
-                    <p><strong>Module System:</strong> Connected</p>
+                    <p><strong>Module System:</strong> Enhanced & Connected</p>
                   </div>
                 </div>
               </div>
@@ -176,6 +271,40 @@ const ModuleDevSandbox: React.FC = () => {
           <SimplifiedModuleScaling />
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <Dialog open={testRunnerOpen} onOpenChange={setTestRunnerOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Module Test Runner</DialogTitle>
+          </DialogHeader>
+          <ModuleTestRunner 
+            moduleId="development-module"
+            onTestComplete={() => setTestRunnerOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={manifestWizardOpen} onOpenChange={setManifestWizardOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Module Manifest</DialogTitle>
+          </DialogHeader>
+          <ManifestWizard 
+            onComplete={() => setManifestWizardOpen(false)}
+            onCancel={() => setManifestWizardOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={sandboxOpen} onOpenChange={setSandboxOpen}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Live Development Sandbox</DialogTitle>
+          </DialogHeader>
+          <LiveDevelopmentSandbox />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
