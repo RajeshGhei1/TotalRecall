@@ -28,9 +28,14 @@ export class ModuleDiscoveryService {
       { path: '/src/modules/email-management/index.tsx', moduleId: 'email-management', directoryName: 'email-management' },
       { path: '/src/modules/ai-orchestration/index.tsx', moduleId: 'ai-orchestration', directoryName: 'ai-orchestration' },
       
-      // ATS Ecosystem
+      // ATS Ecosystem - Core
       { path: '/src/modules/ats-core/index.tsx', moduleId: 'ats-core', directoryName: 'ats-core' },
       { path: '/src/modules/talent-database/index.tsx', moduleId: 'talent-database', directoryName: 'talent-database' },
+      
+      // ATS Ecosystem - New Modules (Phase 2)
+      { path: '/src/modules/ai-recruitment-assistant/index.tsx', moduleId: 'ai-recruitment-assistant', directoryName: 'ai-recruitment-assistant' },
+      { path: '/src/modules/job-posting-management/index.tsx', moduleId: 'job-posting-management', directoryName: 'job-posting-management' },
+      { path: '/src/modules/candidate-scoring-engine/index.tsx', moduleId: 'candidate-scoring-engine', directoryName: 'candidate-scoring-engine' },
       
       // Existing modules (already in src/modules/)
       { path: '/src/modules/dashboard-widget/index.tsx', moduleId: 'dashboard-widget', directoryName: 'dashboard-widget' },
@@ -42,7 +47,7 @@ export class ModuleDiscoveryService {
       this.knownModules.set(module.moduleId, module);
     });
 
-    console.log(`Initialized ${modules.length} known modules`);
+    console.log(`Initialized ${modules.length} known modules for Phase 2`);
   }
 
   /**
@@ -146,7 +151,7 @@ export class ModuleDiscoveryService {
       }
     }
 
-    console.log(`Module discovery completed: ${loaded.length} loaded, ${failed.length} failed`);
+    console.log(`Phase 2 module discovery completed: ${loaded.length} loaded, ${failed.length} failed`);
     return { loaded, failed };
   }
 
