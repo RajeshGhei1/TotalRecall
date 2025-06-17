@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { ModuleManifest, LoadedModule, ModuleContext, ModuleLoadOptions } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
 import { moduleCodeRegistry } from './moduleCodeRegistry';

@@ -199,10 +199,10 @@ export class ModuleCodeRegistry {
           const component = await this.loadModuleComponent(module.name);
           
           if (component) {
-            // Create manifest from database module
+            // Create manifest from database module with correct property mapping
             const manifest: ModuleManifest = {
               id: module.name,
-              name: module.display_name || module.name,
+              name: module.name, // Use name instead of display_name
               version: module.version || '1.0.0',
               description: module.description || '',
               category: module.category as any,
@@ -210,8 +210,8 @@ export class ModuleCodeRegistry {
               license: 'MIT',
               dependencies: module.dependencies || [],
               entryPoint: 'index.tsx',
-              requiredPermissions: module.required_permissions || [],
-              subscriptionTiers: module.pricing_tier ? [module.pricing_tier] : [],
+              requiredPermissions: [], // Set empty array instead of accessing required_permissions
+              subscriptionTiers: [], // Set empty array instead of accessing pricing_tier
               loadOrder: 100,
               autoLoad: module.is_active,
               canUnload: true,
