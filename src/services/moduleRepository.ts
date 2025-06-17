@@ -52,22 +52,6 @@ export class ModuleRepository {
 
   async getRepositoryModules(): Promise<ModuleRepositoryEntry[]> {
     try {
-      // Use raw SQL query to get module registry entries
-      const { data, error } = await supabase
-        .rpc('log_audit_event', {
-          p_user_id: null,
-          p_tenant_id: null,
-          p_action: 'get_module_registry_entries',
-          p_entity_type: 'module_registry',
-          p_additional_context: {}
-        })
-        .then(() => 
-          supabase
-            .from('audit_logs' as any)
-            .select('*')
-            .limit(0)
-        );
-
       // For now, return mock data until we can properly access the new tables
       const mockEntries: ModuleRepositoryEntry[] = [
         {
@@ -171,8 +155,8 @@ export class ModuleRepository {
         packageHash: modulePackage.packageHash
       };
 
-      // Log the upload action
-      await supabase.rpc('log_audit_event', {
+      // Log the upload action using existing audit function
+      const { error } = await supabase.rpc('log_audit_event', {
         p_user_id: uploaderId,
         p_tenant_id: null,
         p_action: 'module_upload',
@@ -180,7 +164,11 @@ export class ModuleRepository {
         p_entity_id: registryEntry.id,
         p_new_values: registryEntry as any,
         p_additional_context: { moduleId: modulePackage.id, size: modulePackage.size }
-      }).catch(err => console.warn('Failed to log upload event:', err));
+      });
+
+      if (error) {
+        console.warn('Failed to log upload event:', error);
+      }
 
       return registryEntry;
     } catch (error) {
@@ -264,15 +252,19 @@ export class ModuleRepository {
     console.log(`Approving module entry ${entryId} by ${approverId}`);
     
     try {
-      // Log the approval action
-      await supabase.rpc('log_audit_event', {
+      // Log the approval action using existing audit function
+      const { error } = await supabase.rpc('log_audit_event', {
         p_user_id: approverId,
         p_tenant_id: null,
         p_action: 'module_approve',
         p_entity_type: 'module',
         p_entity_id: entryId,
         p_additional_context: { action: 'approval' }
-      }).catch(err => console.warn('Failed to log approval event:', err));
+      });
+
+      if (error) {
+        console.warn('Failed to log approval event:', error);
+      }
 
       console.log(`Module ${entryId} approved successfully`);
     } catch (error) {
@@ -288,8 +280,8 @@ export class ModuleRepository {
       // Simulate deployment process
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Log the deployment action
-      await supabase.rpc('log_audit_event', {
+      // Log the deployment action using existing audit function
+      const { error } = await supabase.rpc('log_audit_event', {
         p_user_id: null,
         p_tenant_id: null,
         p_action: 'module_deploy',
@@ -299,7 +291,11 @@ export class ModuleRepository {
           options,
           deploymentId: `deploy-${Date.now()}`
         }
-      }).catch(err => console.warn('Failed to log deployment event:', err));
+      });
+
+      if (error) {
+        console.warn('Failed to log deployment event:', error);
+      }
 
       return {
         success: true,
@@ -356,8 +352,8 @@ export class ModuleRepository {
     try {
       console.log(`Adding dependency ${dependencyModuleId} to module ${moduleId}`);
       
-      // Log the dependency addition
-      await supabase.rpc('log_audit_event', {
+      // Log the dependency addition using existing audit function
+      const { error } = await supabase.rpc('log_audit_event', {
         p_user_id: null,
         p_tenant_id: null,
         p_action: 'module_dependency_add',
@@ -368,7 +364,11 @@ export class ModuleRepository {
           versionConstraint,
           dependencyType
         }
-      }).catch(err => console.warn('Failed to log dependency event:', err));
+      });
+
+      if (error) {
+        console.warn('Failed to log dependency event:', error);
+      }
 
     } catch (error) {
       console.error('Error adding module dependency:', error);
