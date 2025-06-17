@@ -19,7 +19,7 @@ export class ModuleDiscoveryService {
   }
 
   /**
-   * Initialize known modules - hardcoded list of available modules
+   * Initialize known modules - cleaned up list of available modules
    */
   initializeKnownModules(): void {
     const modules: ModuleFileInfo[] = [
@@ -28,14 +28,10 @@ export class ModuleDiscoveryService {
       { path: '/src/modules/email-management/index.tsx', moduleId: 'email-management', directoryName: 'email-management' },
       { path: '/src/modules/ai-orchestration/index.tsx', moduleId: 'ai-orchestration', directoryName: 'ai-orchestration' },
       
-      // ATS Ecosystem - Core
+      // Recruitment Ecosystem - Final Structure (3 modules only)
       { path: '/src/modules/ats-core/index.tsx', moduleId: 'ats-core', directoryName: 'ats-core' },
       { path: '/src/modules/talent-database/index.tsx', moduleId: 'talent-database', directoryName: 'talent-database' },
-      
-      // ATS Ecosystem - New Modules (Phase 2)
-      { path: '/src/modules/ai-recruitment-assistant/index.tsx', moduleId: 'ai-recruitment-assistant', directoryName: 'ai-recruitment-assistant' },
-      { path: '/src/modules/job-posting-management/index.tsx', moduleId: 'job-posting-management', directoryName: 'job-posting-management' },
-      { path: '/src/modules/candidate-scoring-engine/index.tsx', moduleId: 'candidate-scoring-engine', directoryName: 'candidate-scoring-engine' },
+      { path: '/src/modules/smart-talent-analytics/index.tsx', moduleId: 'smart-talent-analytics', directoryName: 'smart-talent-analytics' },
       
       // Existing modules (already in src/modules/)
       { path: '/src/modules/dashboard-widget/index.tsx', moduleId: 'dashboard-widget', directoryName: 'dashboard-widget' },
@@ -47,7 +43,7 @@ export class ModuleDiscoveryService {
       this.knownModules.set(module.moduleId, module);
     });
 
-    console.log(`Initialized ${modules.length} known modules for Phase 2`);
+    console.log(`Initialized ${modules.length} known modules - recruitment ecosystem corrected`);
   }
 
   /**
