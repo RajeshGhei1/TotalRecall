@@ -15,7 +15,7 @@ import {
   Filter,
   SortDesc,
   ExternalLink,
-  Installation,
+  Plus,
   Info
 } from 'lucide-react';
 import { moduleRegistryService, ModuleRegistryEntry } from '@/services/moduleRegistryService';
@@ -175,7 +175,7 @@ const ModuleMarketplace: React.FC = () => {
             className="flex-1"
             onClick={() => handleInstallModule(module)}
           >
-            <Installation className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Install
           </Button>
         </div>
@@ -334,7 +334,7 @@ const ModuleMarketplace: React.FC = () => {
                   className="flex-1"
                   onClick={() => selectedModule && handleInstallModule(selectedModule)}
                 >
-                  <Installation className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Install Module
                 </Button>
                 

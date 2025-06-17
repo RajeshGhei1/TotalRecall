@@ -106,7 +106,7 @@ export class ModuleRegistryService {
         .order('download_count', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ModuleRegistryEntry[];
     } catch (error) {
       console.error('Error fetching published modules:', error);
       return [];
@@ -123,7 +123,7 @@ export class ModuleRegistryService {
         .order('rating_average', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ModuleRegistryEntry[];
     } catch (error) {
       console.error(`Error fetching modules for category ${category}:`, error);
       return [];
@@ -140,7 +140,7 @@ export class ModuleRegistryService {
         .order('rating_average', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ModuleRegistryEntry[];
     } catch (error) {
       console.error('Error searching modules:', error);
       return [];
@@ -163,7 +163,7 @@ export class ModuleRegistryService {
       const { data, error } = await query.single();
 
       if (error) throw error;
-      return data;
+      return data as ModuleRegistryEntry;
     } catch (error) {
       console.error(`Error fetching module details for ${moduleId}:`, error);
       return null;
@@ -179,7 +179,7 @@ export class ModuleRegistryService {
         .eq('module_version', version);
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ModuleDependency[];
     } catch (error) {
       console.error(`Error fetching dependencies for ${moduleId}:`, error);
       return [];
@@ -268,7 +268,7 @@ export class ModuleRegistryService {
         .order('installed_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ModuleInstallation[];
     } catch (error) {
       console.error('Error fetching installed modules:', error);
       return [];
