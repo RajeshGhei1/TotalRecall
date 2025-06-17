@@ -4,7 +4,7 @@ export interface ModuleManifest {
   name: string;
   version: string;
   description: string;
-  category: 'core' | 'business' | 'recruitment' | 'analytics' | 'ai' | 'integration' | 'communication';
+  category: 'core' | 'business' | 'recruitment' | 'analytics' | 'ai' | 'integration' | 'communication' | 'custom';
   
   // Module metadata
   author: string;
