@@ -11,6 +11,7 @@ export const useModuleLoader = () => {
   const [loadedModules, setLoadedModules] = useState<LoadedModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Get current tenant ID
   const { data: tenantData } = useQuery({
@@ -34,10 +35,36 @@ export const useModuleLoader = () => {
     enabled: !!user || bypassAuth,
   });
 
+  // Initialize module system once
   useEffect(() => {
-    if (!tenantData?.tenant_id || !user) return;
+    const initializeSystem = async () => {
+      if (isInitialized) return;
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log('Initializing module system...');
+        await moduleManager.initializeSystem();
+        setIsInitialized(true);
+        
+        console.log('Module system initialized successfully');
+      } catch (err) {
+        console.error('Error initializing module system:', err);
+        setError(err instanceof Error ? err.message : 'Failed to initialize module system');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const initializeModules = async () => {
+    initializeSystem();
+  }, [isInitialized]);
+
+  // Load tenant modules when system is initialized and tenant data is available
+  useEffect(() => {
+    if (!isInitialized || !tenantData?.tenant_id || !user) return;
+
+    const initializeTenantModules = async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -51,15 +78,15 @@ export const useModuleLoader = () => {
         
         setLoadedModules(modules);
       } catch (err) {
-        console.error('Error initializing modules:', err);
+        console.error('Error initializing tenant modules:', err);
         setError(err instanceof Error ? err.message : 'Failed to load modules');
       } finally {
         setIsLoading(false);
       }
     };
 
-    initializeModules();
-  }, [tenantData?.tenant_id, user]);
+    initializeTenantModules();
+  }, [isInitialized, tenantData?.tenant_id, user]);
 
   const reloadModule = async (moduleId: string) => {
     if (!tenantData?.tenant_id) return;
@@ -91,12 +118,30 @@ export const useModuleLoader = () => {
     return module?.status === 'loaded';
   };
 
+  const refreshModules = async () => {
+    if (!isInitialized) {
+      // Re-initialize the whole system
+      setIsInitialized(false);
+      return;
+    }
+
+    if (tenantData?.tenant_id && user) {
+      const modules = await moduleManager.initializeTenantModules(
+        tenantData.tenant_id,
+        user.id
+      );
+      setLoadedModules(modules);
+    }
+  };
+
   return {
     loadedModules,
     isLoading,
     error,
+    isInitialized,
     reloadModule,
     getModule,
-    isModuleLoaded
+    isModuleLoaded,
+    refreshModules
   };
 };

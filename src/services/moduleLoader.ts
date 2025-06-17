@@ -1,5 +1,7 @@
+
 import { ModuleManifest, LoadedModule, ModuleContext, ModuleLoadOptions } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
+import { moduleCodeRegistry } from './moduleCodeRegistry';
 
 export class ModuleLoader {
   private static instance: ModuleLoader;
@@ -62,11 +64,11 @@ export class ModuleLoader {
 
       this.loadedModules.set(moduleId, moduleEntry);
 
-      // Load the actual module code
+      // Load the actual module code using the new registry
       const moduleInstance = await this.loadModuleCode(manifest, context, options);
       
-      // Initialize module
-      if (moduleInstance.initialize) {
+      // Initialize module if it has an initialize method
+      if (moduleInstance && typeof moduleInstance.initialize === 'function') {
         await moduleInstance.initialize(context);
       }
 
@@ -95,6 +97,63 @@ export class ModuleLoader {
   }
 
   /**
+   * Load actual module code using the component registry
+   */
+  private async loadModuleCode(
+    manifest: ModuleManifest, 
+    context: ModuleContext, 
+    options: ModuleLoadOptions
+  ): Promise<any> {
+    const moduleId = manifest.id;
+
+    // Check cache first
+    if (this.moduleCache.has(moduleId) && !options.force) {
+      return this.moduleCache.get(moduleId);
+    }
+
+    try {
+      // Try to get component from registry first
+      let component = moduleCodeRegistry.getComponent(moduleId);
+      
+      // If not in registry, try to load it dynamically
+      if (!component) {
+        console.log(`Component not in registry, attempting dynamic load: ${moduleId}`);
+        component = await moduleCodeRegistry.loadModuleComponent(moduleId);
+      }
+
+      if (!component) {
+        throw new Error(`Component not found for module: ${moduleId}`);
+      }
+
+      // Create module wrapper with context
+      const moduleWrapper = {
+        Component: component,
+        manifest,
+        context,
+        initialize: async (ctx: ModuleContext) => {
+          console.log(`Initializing module ${moduleId} with context:`, ctx);
+        },
+        cleanup: async () => {
+          console.log(`Cleaning up module ${moduleId}`);
+        },
+        getMetadata: () => (component as any).moduleMetadata || {},
+        render: (props: any = {}) => {
+          const mergedProps = { ...props, ...context.config };
+          return React.createElement(component, mergedProps);
+        }
+      };
+      
+      // Cache the wrapped module
+      this.moduleCache.set(moduleId, moduleWrapper);
+      
+      return moduleWrapper;
+    } catch (error) {
+      console.error(`Error loading code for ${moduleId}:`, error);
+      throw new Error(`Failed to load module code: ${error}`);
+    }
+  }
+
+  /**
    * Unload a module and handle dependents
    */
   async unloadModule(moduleId: string): Promise<void> {
@@ -117,8 +176,9 @@ export class ModuleLoader {
         await module.instance.cleanup();
       }
 
-      // Remove from cache
+      // Remove from cache and registry
       this.moduleCache.delete(moduleId);
+      moduleCodeRegistry.unregisterComponent(moduleId);
       
       // Update status
       module.status = 'unloaded';
@@ -172,7 +232,7 @@ export class ModuleLoader {
       const { data: module, error } = await supabase
         .from('system_modules')
         .select('*')
-        .eq('id', moduleId)
+        .eq('name', moduleId)
         .single();
 
       if (error || !module) {
@@ -185,39 +245,6 @@ export class ModuleLoader {
     } catch (error) {
       console.error(`Error loading manifest for ${moduleId}:`, error);
       return null;
-    }
-  }
-
-  /**
-   * Load actual module code
-   */
-  private async loadModuleCode(
-    manifest: ModuleManifest, 
-    context: ModuleContext, 
-    options: ModuleLoadOptions
-  ): Promise<any> {
-    const moduleId = manifest.id;
-
-    // Check cache first
-    if (this.moduleCache.has(moduleId) && !options.force) {
-      return this.moduleCache.get(moduleId);
-    }
-
-    try {
-      // Dynamic import of module
-      const modulePath = options.developmentMode 
-        ? `/src/modules/${moduleId}/${manifest.entryPoint}`
-        : `/modules/${moduleId}/${manifest.entryPoint}`;
-
-      const moduleCode = await import(modulePath);
-      
-      // Cache the module
-      this.moduleCache.set(moduleId, moduleCode);
-      
-      return moduleCode;
-    } catch (error) {
-      console.error(`Error loading code for ${moduleId}:`, error);
-      throw new Error(`Failed to load module code: ${error}`);
     }
   }
 
@@ -255,15 +282,15 @@ export class ModuleLoader {
    */
   private convertDatabaseToManifest(dbModule: any): ModuleManifest {
     return {
-      id: dbModule.id,
-      name: dbModule.name,
+      id: dbModule.name,
+      name: dbModule.display_name || dbModule.name,
       version: dbModule.version || '1.0.0',
       description: dbModule.description || '',
       category: dbModule.category,
       author: 'System',
       license: 'MIT',
       dependencies: dbModule.dependencies || [],
-      entryPoint: 'index.ts',
+      entryPoint: 'index.tsx',
       requiredPermissions: dbModule.required_permissions || [],
       subscriptionTiers: dbModule.pricing_tier ? [dbModule.pricing_tier] : [],
       loadOrder: 100,
@@ -271,6 +298,24 @@ export class ModuleLoader {
       canUnload: true,
       minCoreVersion: '1.0.0'
     };
+  }
+
+  /**
+   * Initialize the module loader with component discovery
+   */
+  async initialize(): Promise<void> {
+    console.log('Initializing ModuleLoader with component discovery...');
+    
+    try {
+      const result = await moduleCodeRegistry.discoverAndRegisterModules();
+      console.log(`Module discovery completed: ${result.registered.length} registered, ${result.failed.length} failed`);
+      
+      if (result.failed.length > 0) {
+        console.warn('Some modules failed to register:', result.failed);
+      }
+    } catch (error) {
+      console.error('Error during module loader initialization:', error);
+    }
   }
 }
 

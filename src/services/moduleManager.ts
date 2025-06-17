@@ -3,6 +3,7 @@ import { ModuleContext, LoadedModule, ModuleManifest } from '@/types/modules';
 import { ModuleAccessService } from './moduleAccessService';
 import { moduleRepository } from './moduleRepository';
 import { moduleVersionManager } from './moduleVersionManager';
+import { moduleCodeRegistry } from './moduleCodeRegistry';
 import { supabase } from '@/integrations/supabase/client';
 
 export class ModuleManager {
@@ -20,6 +21,23 @@ export class ModuleManager {
       ModuleManager.instance = new ModuleManager();
     }
     return ModuleManager.instance;
+  }
+
+  /**
+   * Initialize the module system
+   */
+  async initializeSystem(): Promise<void> {
+    console.log('Initializing ModuleManager system...');
+    
+    try {
+      // Initialize the module loader (which will discover components)
+      await this.moduleLoader.initialize();
+      
+      console.log('ModuleManager system initialized successfully');
+    } catch (error) {
+      console.error('Error initializing ModuleManager system:', error);
+      throw error;
+    }
   }
 
   /**
@@ -91,14 +109,11 @@ export class ModuleManager {
         throw new Error(`No context found for module ${moduleId} in tenant ${tenantId}`);
       }
 
-      // Check if new version is available in repository
-      const repositoryEntry = await moduleRepository.getRepositoryEntryByVersion(moduleId, newVersion);
-      if (!repositoryEntry || repositoryEntry.status !== 'deployed') {
-        throw new Error(`Version ${newVersion} is not available for deployment`);
-      }
-
       // Trigger pre-swap callbacks
       await this.triggerPreSwapCallbacks(moduleId, newVersion);
+
+      // Clear component cache to force reload
+      moduleCodeRegistry.unregisterComponent(moduleId);
 
       // Perform the hot-swap
       const newModule = await this.moduleLoader.reloadModule(moduleId, context);
@@ -175,29 +190,40 @@ export class ModuleManager {
     currentVersion: string;
     availableVersions: string[];
     deploymentHealth: 'healthy' | 'warning' | 'error';
+    isRegistered: boolean;
   }[]> {
     const status: any[] = [];
 
     try {
-      const repositoryModules = await moduleRepository.getRepositoryModules();
-      const moduleGroups = repositoryModules.reduce((acc, entry) => {
-        if (!acc[entry.moduleId]) {
-          acc[entry.moduleId] = [];
-        }
-        acc[entry.moduleId].push(entry);
-        return acc;
-      }, {} as Record<string, any[]>);
+      // Get registered modules from code registry
+      const registeredModules = moduleCodeRegistry.getAllRegisteredModules();
+      const registeredIds = new Set(registeredModules.map(m => m.id));
 
-      for (const [moduleId, entries] of Object.entries(moduleGroups)) {
-        const deployedEntries = entries.filter(e => e.status === 'deployed');
-        const currentVersion = deployedEntries[0]?.version || '1.0.0';
-        const availableVersions = entries.map(e => e.version);
+      // Get database modules
+      const { data: dbModules } = await supabase
+        .from('system_modules')
+        .select('*')
+        .eq('is_active', true);
+
+      const moduleMap = new Map();
+      dbModules?.forEach(module => {
+        const id = module.name;
+        if (!moduleMap.has(id)) {
+          moduleMap.set(id, []);
+        }
+        moduleMap.get(id).push(module);
+      });
+
+      for (const [moduleId, modules] of moduleMap) {
+        const currentVersion = modules[0]?.version || '1.0.0';
+        const availableVersions = modules.map((m: any) => m.version);
+        const isRegistered = registeredIds.has(moduleId);
         
         // Determine health status
         let deploymentHealth: 'healthy' | 'warning' | 'error' = 'healthy';
-        if (deployedEntries.length === 0) {
+        if (!isRegistered) {
           deploymentHealth = 'error';
-        } else if (entries.some(e => e.status === 'pending')) {
+        } else if (modules.some((m: any) => !m.is_active)) {
           deploymentHealth = 'warning';
         }
 
@@ -205,7 +231,8 @@ export class ModuleManager {
           moduleId,
           currentVersion,
           availableVersions,
-          deploymentHealth
+          deploymentHealth,
+          isRegistered
         });
       }
 
@@ -238,8 +265,12 @@ export class ModuleManager {
         availableModules.push(...coreModules.map(m => m.name));
       }
 
-      // Remove duplicates
-      return [...new Set(availableModules)];
+      // Remove duplicates and filter by registered components
+      const uniqueModules = [...new Set(availableModules)];
+      const registeredModules = moduleCodeRegistry.getAllRegisteredModules();
+      const registeredIds = new Set(registeredModules.map(m => m.id));
+      
+      return uniqueModules.filter(moduleId => registeredIds.has(moduleId));
     } catch (error) {
       console.error(`Error getting available modules for tenant ${tenantId}:`, error);
       return [];
@@ -364,14 +395,6 @@ export class ModuleManager {
       console.error(`Error getting subscription modules for tenant ${tenantId}:`, error);
       return [];
     }
-  }
-
-  /**
-   * Get modules available via override
-   */
-  private async getOverrideModules(tenantId: string): Promise<string[]> {
-    // This would integrate with the tenant_module_assignments table
-    return [];
   }
 
   /**

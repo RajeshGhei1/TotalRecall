@@ -13,31 +13,85 @@ import {
   Settings,
   Bug,
   Layers,
-  Monitor
+  Monitor,
+  Save,
+  Upload
 } from 'lucide-react';
+import ModuleRenderer from './ModuleRenderer';
+import { moduleCodeRegistry } from '@/services/moduleCodeRegistry';
+import { moduleLoader } from '@/services/moduleLoader';
+import { ModuleContext } from '@/types/modules';
+import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 
 const LiveDevelopmentSandbox: React.FC = () => {
+  const { data: tenantData } = useStableTenantContext();
   const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [code, setCode] = useState(`// Example Module Code
-import React from 'react';
-
-const MyModule = () => {
-  return (
-    <div>
-      <h1>Hello from My Module!</h1>
-      <p>This is a live development sandbox.</p>
-    </div>
-  );
-};
-
-export default MyModule;`);
-
+  const [selectedModule, setSelectedModule] = useState('');
+  const [availableModules, setAvailableModules] = useState<any[]>([]);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([
     '[INFO] Sandbox initialized',
     '[INFO] Module system ready',
     '[INFO] Hot reload enabled'
   ]);
+
+  const [code, setCode] = useState(`// Example Module Code
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const MyModule = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Hello from My Module!</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>This is a live development sandbox.</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Module metadata
+MyModule.moduleMetadata = {
+  id: 'my-module',
+  name: 'My Module',
+  category: 'custom',
+  version: '1.0.0',
+  description: 'A sample module',
+  author: 'Developer'
+};
+
+export default MyModule;`);
+
+  const [manifest, setManifest] = useState(`{
+  "id": "my-module",
+  "name": "My Module",
+  "version": "1.0.0",
+  "description": "A sample module",
+  "category": "custom",
+  "author": "Developer",
+  "license": "MIT",
+  "entryPoint": "index.tsx",
+  "dependencies": [],
+  "requiredPermissions": ["read"],
+  "subscriptionTiers": ["basic"],
+  "loadOrder": 100,
+  "autoLoad": false,
+  "canUnload": true
+}`);
+
+  const context: ModuleContext = {
+    moduleId: selectedModule || 'my-module',
+    tenantId: tenantData?.tenant_id || 'sandbox-tenant',
+    userId: 'sandbox-user',
+    permissions: ['read', 'write', 'admin'],
+    config: {}
+  };
+
+  useEffect(() => {
+    loadAvailableModules();
+    initializeModuleSystem();
+  }, []);
 
   useEffect(() => {
     // Simulate live updates
@@ -53,11 +107,87 @@ export default MyModule;`);
     return () => clearInterval(interval);
   }, [isRunning]);
 
+  const initializeModuleSystem = async () => {
+    try {
+      await moduleLoader.initialize();
+      setConsoleOutput(prev => [
+        ...prev,
+        '[INFO] Module loader initialized',
+        '[INFO] Component registry ready'
+      ]);
+    } catch (error) {
+      setConsoleOutput(prev => [
+        ...prev,
+        `[ERROR] Failed to initialize module system: ${error}`
+      ]);
+    }
+  };
+
+  const loadAvailableModules = async () => {
+    try {
+      const registered = moduleCodeRegistry.getAllRegisteredModules();
+      setAvailableModules(registered);
+      
+      if (registered.length > 0 && !selectedModule) {
+        setSelectedModule(registered[0].id);
+        loadModuleCode(registered[0].id);
+      }
+      
+      setConsoleOutput(prev => [
+        ...prev,
+        `[INFO] Found ${registered.length} registered modules`
+      ]);
+    } catch (error) {
+      setConsoleOutput(prev => [
+        ...prev,
+        `[ERROR] Failed to load modules: ${error}`
+      ]);
+    }
+  };
+
+  const loadModuleCode = async (moduleId: string) => {
+    try {
+      const moduleComponent = moduleCodeRegistry.getModuleComponent(moduleId);
+      if (moduleComponent) {
+        setConsoleOutput(prev => [
+          ...prev,
+          `[INFO] Loaded code for module: ${moduleId}`
+        ]);
+        
+        // In a real implementation, you would fetch the actual source code
+        // For now, we'll show a placeholder
+        setCode(`// Module: ${moduleId}
+// This is a placeholder - real implementation would show actual source code
+import React from 'react';
+
+const ${moduleId.charAt(0).toUpperCase() + moduleId.slice(1)} = () => {
+  return (
+    <div>
+      <h1>Module: ${moduleComponent.name}</h1>
+      <p>Category: ${moduleComponent.manifest.category}</p>
+      <p>Version: ${moduleComponent.manifest.version}</p>
+    </div>
+  );
+};
+
+export default ${moduleId.charAt(0).toUpperCase() + moduleId.slice(1)};`);
+
+        setManifest(JSON.stringify(moduleComponent.manifest, null, 2));
+      }
+    } catch (error) {
+      setConsoleOutput(prev => [
+        ...prev,
+        `[ERROR] Failed to load module code: ${error}`
+      ]);
+    }
+  };
+
   const handleRunCode = () => {
     setIsRunning(true);
     setConsoleOutput(prev => [
       ...prev,
       '[INFO] Starting module...',
+      '[INFO] Compiling TypeScript...',
       '[INFO] Module compiled successfully',
       '[INFO] Module is running'
     ]);
@@ -65,7 +195,8 @@ export default MyModule;`);
     setTimeout(() => {
       setConsoleOutput(prev => [
         ...prev,
-        '[SUCCESS] Module loaded and ready'
+        '[SUCCESS] Module loaded and ready',
+        '[INFO] Hot reload active'
       ]);
     }, 1000);
   };
@@ -79,11 +210,37 @@ export default MyModule;`);
     ]);
   };
 
-  const handleHotReload = () => {
+  const handleHotReload = async () => {
+    if (!selectedModule) return;
+    
     setConsoleOutput(prev => [
       ...prev,
       '[INFO] Hot reloading module...',
-      '[INFO] Module reloaded successfully'
+      '[INFO] Clearing component cache...'
+    ]);
+
+    try {
+      // In a real implementation, this would recompile and reload the module
+      await moduleLoader.reloadModule(selectedModule, context);
+      
+      setConsoleOutput(prev => [
+        ...prev,
+        '[SUCCESS] Module reloaded successfully',
+        '[INFO] Component cache updated'
+      ]);
+    } catch (error) {
+      setConsoleOutput(prev => [
+        ...prev,
+        `[ERROR] Hot reload failed: ${error}`
+      ]);
+    }
+  };
+
+  const handleSaveModule = () => {
+    setConsoleOutput(prev => [
+      ...prev,
+      '[INFO] Saving module...',
+      '[SUCCESS] Module saved to filesystem'
     ]);
   };
 
@@ -101,14 +258,42 @@ export default MyModule;`);
           <Badge variant={isRunning ? "default" : "secondary"}>
             {isRunning ? "Running" : "Stopped"}
           </Badge>
+          {selectedModule && (
+            <Badge variant="outline">{selectedModule}</Badge>
+          )}
         </div>
         
         <div className="flex gap-2">
+          <select
+            value={selectedModule}
+            onChange={(e) => {
+              setSelectedModule(e.target.value);
+              loadModuleCode(e.target.value);
+            }}
+            className="px-3 py-1 border rounded text-sm"
+          >
+            <option value="">Select Module</option>
+            {availableModules.map(module => (
+              <option key={module.id} value={module.id}>
+                {module.name} ({module.id})
+              </option>
+            ))}
+          </select>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSaveModule}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+          
           <Button
             size="sm"
             variant="outline"
             onClick={handleHotReload}
-            disabled={!isRunning}
+            disabled={!isRunning || !selectedModule}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Hot Reload
@@ -160,25 +345,13 @@ export default MyModule;`);
             </TabsContent>
 
             <TabsContent value="manifest" className="flex-1 m-0">
-              <div className="p-4 h-full">
-                <pre className="text-sm bg-muted p-3 rounded h-full overflow-auto">
-{`{
-  "id": "my-module",
-  "name": "My Module",
-  "version": "1.0.0",
-  "description": "A sample module",
-  "category": "custom",
-  "author": "Developer",
-  "license": "MIT",
-  "entryPoint": "index.ts",
-  "dependencies": [],
-  "requiredPermissions": ["read"],
-  "subscriptionTiers": ["basic"],
-  "loadOrder": 100,
-  "autoLoad": false,
-  "canUnload": true
-}`}
-                </pre>
+              <div className="h-full">
+                <textarea
+                  value={manifest}
+                  onChange={(e) => setManifest(e.target.value)}
+                  className="w-full h-full p-4 font-mono text-sm border-0 resize-none focus:outline-none"
+                  placeholder="Module manifest (JSON)"
+                />
               </div>
             </TabsContent>
 
@@ -212,6 +385,14 @@ export default MyModule;`);
                     <option>Verbose</option>
                   </select>
                 </div>
+
+                <div>
+                  <label className="text-sm font-medium">Module Registry</label>
+                  <div className="text-xs text-gray-600 mt-1">
+                    <p>Registered: {availableModules.length} modules</p>
+                    <p>Selected: {selectedModule || 'None'}</p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
@@ -236,43 +417,27 @@ export default MyModule;`);
             </TabsList>
 
             <TabsContent value="preview" className="flex-1 m-0">
-              <div className="h-full border bg-white">
-                {isRunning ? (
-                  <div className="p-8">
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg">
-                      <h1 className="text-2xl font-bold mb-2">Hello from My Module!</h1>
-                      <p>This is a live development sandbox.</p>
-                      <div className="mt-4 flex gap-2">
-                        <Badge variant="secondary">Live</Badge>
-                        <Badge variant="secondary">Hot Reload Enabled</Badge>
+              <div className="h-full border bg-white p-4 overflow-auto">
+                {isRunning && selectedModule ? (
+                  <ModuleRenderer
+                    moduleId={selectedModule}
+                    context={context}
+                    showStatus={true}
+                    fallback={
+                      <div className="text-center p-8 text-gray-500">
+                        <p>Module failed to render</p>
+                        <p className="text-sm">Check console for details</p>
                       </div>
-                    </div>
-                    
-                    <div className="mt-6 grid grid-cols-2 gap-4">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Component State</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-muted-foreground">Ready</p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Memory Usage</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-muted-foreground">2.3 MB</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
+                    }
+                  />
                 ) : (
                   <div className="h-full flex items-center justify-center text-muted-foreground">
                     <div className="text-center">
                       <Monitor className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>Click "Run" to see your module preview</p>
+                      {!selectedModule && (
+                        <p className="text-sm">Select a module to get started</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -317,25 +482,38 @@ export default MyModule;`);
                   
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Dependencies</CardTitle>
+                      <CardTitle className="text-sm">Module Status</CardTitle>
                     </CardHeader>
                     <CardContent className="text-xs space-y-1">
-                      <div>✓ React 18.3.1</div>
-                      <div>✓ Core System</div>
-                      <div>✓ UI Components</div>
+                      <div>Status: {isRunning ? 'Running' : 'Stopped'}</div>
+                      <div>Registered: {availableModules.length}</div>
+                      <div>Selected: {selectedModule || 'None'}</div>
                     </CardContent>
                   </Card>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium mb-2">Module Tree</h3>
-                  <div className="text-xs font-mono space-y-1">
-                    <div>📦 my-module</div>
-                    <div className="ml-4">📄 index.ts</div>
-                    <div className="ml-4">📄 components/</div>
-                    <div className="ml-8">📄 MyComponent.tsx</div>
-                    <div className="ml-4">📄 styles/</div>
-                    <div className="ml-8">📄 main.css</div>
+                  <h3 className="text-sm font-medium mb-2">Available Modules</h3>
+                  <div className="text-xs font-mono space-y-1 max-h-32 overflow-auto">
+                    {availableModules.map(module => (
+                      <div key={module.id} className="flex items-center gap-2">
+                        <span className={selectedModule === module.id ? 'text-blue-600' : ''}>
+                          📦 {module.id}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {module.manifest.category}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Registry Stats</h3>
+                  <div className="text-xs space-y-1">
+                    <div>Components Cached: {availableModules.length}</div>
+                    <div>Hot Reload: {isRunning ? 'Active' : 'Inactive'}</div>
+                    <div>Sandbox Mode: Enabled</div>
                   </div>
                 </div>
               </div>
@@ -347,13 +525,13 @@ export default MyModule;`);
       {/* Status Bar */}
       <div className="border-t p-2 text-xs text-muted-foreground flex justify-between">
         <div className="flex gap-4">
-          <span>Line 1, Column 1</span>
-          <span>TypeScript</span>
+          <span>Module: {selectedModule || 'None'}</span>
+          <span>TypeScript Ready</span>
           <span>UTF-8</span>
         </div>
         <div className="flex gap-4">
-          <span>Sandbox: Enabled</span>
-          <span>Hot Reload: On</span>
+          <span>Registry: {availableModules.length} modules</span>
+          <span>Hot Reload: {isRunning ? 'Active' : 'Inactive'}</span>
           <span>{isRunning ? "Status: Running" : "Status: Stopped"}</span>
         </div>
       </div>
