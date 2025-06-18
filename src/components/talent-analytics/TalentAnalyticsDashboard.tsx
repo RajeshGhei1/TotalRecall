@@ -20,12 +20,24 @@ import TalentPatternAnalysis from './TalentPatternAnalysis';
 import TalentMatchingEngine from './TalentMatchingEngine';
 import { useTalentAnalytics } from '@/hooks/talent-analytics/useTalentAnalytics';
 
-const TalentAnalyticsDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('insights');
+interface TalentAnalyticsDashboardProps {
+  mode?: 'dashboard' | 'insights' | 'patterns' | 'predictions';
+  showMetrics?: boolean;
+  enableRealTime?: boolean;
+}
+
+const TalentAnalyticsDashboard: React.FC<TalentAnalyticsDashboardProps> = ({ 
+  mode = 'dashboard', 
+  showMetrics = true, 
+  enableRealTime = true 
+}) => {
+  const [activeTab, setActiveTab] = useState(mode === 'dashboard' ? 'insights' : mode);
   const { data: analytics, isLoading, refetch } = useTalentAnalytics();
 
   const handleRefresh = () => {
-    refetch();
+    if (enableRealTime) {
+      refetch();
+    }
   };
 
   const handleExportReport = () => {
@@ -67,10 +79,12 @@ const TalentAnalyticsDashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+          {enableRealTime && (
+            <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          )}
           <Button onClick={handleExportReport} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export Report
@@ -79,59 +93,61 @@ const TalentAnalyticsDashboard: React.FC = () => {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Talent Analyzed</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics?.totalTalentAnalyzed || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last month
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">AI Insights Generated</CardTitle>
-            <Lightbulb className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics?.insightsGenerated || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Last 30 days
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prediction Accuracy</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics?.predictionAccuracy || 0}%</div>
-            <p className="text-xs text-muted-foreground">
-              AI model performance
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Models</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics?.activeModels || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Predictive models running
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {showMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Talent Analyzed</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics?.totalTalentAnalyzed || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                +12% from last month
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">AI Insights Generated</CardTitle>
+              <Lightbulb className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics?.insightsGenerated || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Last 30 days
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Prediction Accuracy</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics?.predictionAccuracy || 0}%</div>
+              <p className="text-xs text-muted-foreground">
+                AI model performance
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Models</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics?.activeModels || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Predictive models running
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Main Analytics Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
