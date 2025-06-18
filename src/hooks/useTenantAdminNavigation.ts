@@ -30,7 +30,7 @@ const defaultNavItems: NavItem[] = [
     label: 'Dashboard', 
     icon: LayoutDashboard, 
     href: '/tenant-admin/dashboard',
-    requiresModule: 'Dashboard Analytics'
+    requiresModule: 'Core Dashboard'
   },
   { 
     id: 'predictive-insights',
@@ -100,14 +100,14 @@ const defaultNavItems: NavItem[] = [
     label: 'Companies', 
     icon: Building2, 
     href: '/tenant-admin/companies',
-    requiresModule: 'company_data_access'
+    requiresModule: 'Company Database'
   },
   { 
     id: 'contacts',
     label: 'Contacts', 
     icon: Users, 
     href: '/tenant-admin/contacts',
-    requiresModule: 'business_contacts_data_access'
+    requiresModule: 'Business Contacts'
   },
   { 
     id: 'linkedin-integration',
@@ -121,7 +121,7 @@ const defaultNavItems: NavItem[] = [
     label: 'Smart Talent Analytics', 
     icon: Brain, 
     href: '/tenant-admin/smart-talent-analytics',
-    requiresModule: 'smart_talent_analytics'
+    requiresModule: 'Advanced Analytics'
   },
   { 
     id: 'settings',
@@ -160,15 +160,15 @@ export const useTenantAdminNavigation = () => {
   const currentTenantId = tenantData?.tenant_id || null;
 
   // Get module access for each required module
-  const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'Dashboard Analytics', user?.id);
+  const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'Core Dashboard', user?.id);
   const { data: predictiveAccess } = useUnifiedModuleAccess(currentTenantId, 'Predictive Insights', user?.id);
   const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
   const { data: userMgmtAccess } = useUnifiedModuleAccess(currentTenantId, 'User Management', user?.id);
   const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
   const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'Talent Database', user?.id);
-  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
-  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
-  const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
+  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'Company Database', user?.id);
+  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'Business Contacts', user?.id);
+  const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'Advanced Analytics', user?.id);
   const { data: linkedinAccess } = useUnifiedModuleAccess(currentTenantId, 'LinkedIn Integration', user?.id);
 
   // Add debugging
@@ -193,7 +193,7 @@ export const useTenantAdminNavigation = () => {
     console.log(`Checking access for ${item.id} (module: ${item.requiresModule})`);
 
     switch (item.requiresModule) {
-      case 'Dashboard Analytics':
+      case 'Core Dashboard':
         return dashboardAccess?.hasAccess === true;
       case 'Predictive Insights':
         return predictiveAccess?.hasAccess === true;
@@ -207,11 +207,11 @@ export const useTenantAdminNavigation = () => {
         const hasAccess = talentDatabaseAccess?.hasAccess === true;
         console.log(`Talent Database access check: ${hasAccess}`, talentDatabaseAccess);
         return hasAccess;
-      case 'company_data_access':
+      case 'Company Database':
         return companiesAccess?.hasAccess === true;
-      case 'business_contacts_data_access':
+      case 'Business Contacts':
         return contactsAccess?.hasAccess === true;
-      case 'smart_talent_analytics':
+      case 'Advanced Analytics':
         return analyticsAccess?.hasAccess === true;
       case 'LinkedIn Integration':
         return linkedinAccess?.hasAccess === true;

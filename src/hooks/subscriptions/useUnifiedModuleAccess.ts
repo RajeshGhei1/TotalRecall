@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AccessCheckResult } from '@/types/subscription-types';
@@ -30,10 +29,10 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
         };
       }
 
-      // Development modules - grant access for core functionality
+      // Development modules - grant access for core functionality using correct database names
       const developmentModules = [
         'Talent Database',
-        'Dashboard Analytics',
+        'Core Dashboard',
         'ATS Core',
         'User Management',
         'Workflow Management',

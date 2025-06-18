@@ -60,7 +60,7 @@ const TenantAdminRoutes = () => {
       {/* Core Dashboard - Now Module Protected */}
       <Route path="dashboard" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Dashboard Analytics" 
+          moduleName="Core Dashboard" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -149,7 +149,7 @@ const TenantAdminRoutes = () => {
       {/* Companies Database Module Protected Routes */}
       <Route path="companies" element={
         <UnifiedModuleAccessGuard 
-          moduleName="company_data_access" 
+          moduleName="Company Database" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -160,7 +160,7 @@ const TenantAdminRoutes = () => {
       {/* Business Contact Database Module Protected Routes */}
       <Route path="contacts" element={
         <UnifiedModuleAccessGuard 
-          moduleName="business_contacts_data_access" 
+          moduleName="Business Contacts" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -171,7 +171,7 @@ const TenantAdminRoutes = () => {
       {/* Smart Talent Analytics - separate module */}
       <Route path="smart-talent-analytics" element={
         <UnifiedModuleAccessGuard 
-          moduleName="smart_talent_analytics" 
+          moduleName="Advanced Analytics" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
