@@ -88,11 +88,62 @@ export const getMaturityStatusVariant = (status: string) => {
  */
 export const getDevelopmentProgress = (module: any): number => {
   try {
-    const stage = typeof module.development_stage === 'string' 
-      ? JSON.parse(module.development_stage) 
-      : module.development_stage;
+    // Handle both string and object formats for development_stage
+    let stage;
+    if (typeof module.development_stage === 'string') {
+      stage = JSON.parse(module.development_stage);
+    } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
+      stage = module.development_stage;
+    } else {
+      return 0;
+    }
+    
+    // Return the progress value, defaulting to 0 if not found
     return stage?.progress || 0;
-  } catch {
+  } catch (error) {
+    console.error('Error parsing development_stage:', error);
     return 0;
+  }
+};
+
+/**
+ * Get development stage name from module
+ */
+export const getDevelopmentStage = (module: any): string => {
+  try {
+    let stage;
+    if (typeof module.development_stage === 'string') {
+      stage = JSON.parse(module.development_stage);
+    } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
+      stage = module.development_stage;
+    } else {
+      return 'planning';
+    }
+    
+    return stage?.stage || 'planning';
+  } catch (error) {
+    console.error('Error parsing development_stage:', error);
+    return 'planning';
+  }
+};
+
+/**
+ * Get remaining requirements for a module
+ */
+export const getModuleRequirements = (module: any): string[] => {
+  try {
+    let stage;
+    if (typeof module.development_stage === 'string') {
+      stage = JSON.parse(module.development_stage);
+    } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
+      stage = module.development_stage;
+    } else {
+      return [];
+    }
+    
+    return stage?.requirements || [];
+  } catch (error) {
+    console.error('Error parsing development_stage:', error);
+    return [];
   }
 };

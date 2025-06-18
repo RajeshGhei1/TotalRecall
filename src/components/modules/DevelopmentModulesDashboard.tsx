@@ -188,7 +188,11 @@ const DevelopmentModulesDashboard: React.FC = () => {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              progress >= 80 ? 'bg-green-600' : 
+                              progress >= 50 ? 'bg-blue-600' : 
+                              progress >= 25 ? 'bg-yellow-600' : 'bg-gray-400'
+                            }`}
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
@@ -206,7 +210,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
                       <Button variant="outline" size="sm">
                         <Settings className="h-4 w-4" />
                       </Button>
-                      {module.maturity_status === 'beta' && (
+                      {module.maturity_status === 'beta' && progress >= 80 && (
                         <Button 
                           size="sm"
                           onClick={() => handlePromoteToProduction(module.id)}
