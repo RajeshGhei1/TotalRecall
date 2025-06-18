@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
@@ -23,6 +22,7 @@ import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher"
 import AdminLayout from "@/components/AdminLayout";
 import UpgradePlan from "@/pages/tenant-admin/UpgradePlan";
 import ATSRoutes from "@/routes/ats/ATSRoutes";
+import TalentDatabase from "@/modules/talent-database";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -108,6 +108,21 @@ const TenantAdminRoutes = () => {
           userId={user?.id}
         >
           <ATSRoutes />
+        </UnifiedModuleAccessGuard>
+      } />
+      
+      {/* Talent Database - Advanced Module Protected Route */}
+      <Route path="talent-database" element={
+        <UnifiedModuleAccessGuard 
+          moduleName="talent-database" 
+          tenantId={currentTenantId}
+          userId={user?.id}
+        >
+          <AdminLayout>
+            <div className="p-6">
+              <TalentDatabase view="search" showFilters={true} allowAdd={true} />
+            </div>
+          </AdminLayout>
         </UnifiedModuleAccessGuard>
       } />
       

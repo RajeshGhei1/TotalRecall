@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Target,
   ClipboardList,
-  GitBranch
+  GitBranch,
+  Database
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
@@ -88,6 +89,13 @@ const defaultNavItems: NavItem[] = [
     requiresModule: 'ATS Core'
   },
   { 
+    id: 'talent-database',
+    label: 'Talent Database', 
+    icon: Database, 
+    href: '/tenant-admin/talent-database',
+    requiresModule: 'talent-database'
+  },
+  { 
     id: 'companies',
     label: 'Companies', 
     icon: Building2, 
@@ -157,6 +165,7 @@ export const useTenantAdminNavigation = () => {
   const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
   const { data: userMgmtAccess } = useUnifiedModuleAccess(currentTenantId, 'User Management', user?.id);
   const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
+  const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'talent-database', user?.id);
   const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
   const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
@@ -179,6 +188,8 @@ export const useTenantAdminNavigation = () => {
         return userMgmtAccess?.hasAccess === true;
       case 'ATS Core':
         return atsAccess?.hasAccess === true;
+      case 'talent-database':
+        return talentDatabaseAccess?.hasAccess === true;
       case 'company_data_access':
         return companiesAccess?.hasAccess === true;
       case 'business_contacts_data_access':
