@@ -2624,6 +2624,60 @@ export type Database = {
           },
         ]
       }
+      module_deployments: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          deployed_by: string | null
+          deployment_config: Json | null
+          deployment_log: Json | null
+          deployment_type: string
+          error_message: string | null
+          id: string
+          module_name: string
+          rolled_back_at: string | null
+          started_at: string | null
+          status: string
+          tenant_id: string | null
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          deployed_by?: string | null
+          deployment_config?: Json | null
+          deployment_log?: Json | null
+          deployment_type?: string
+          error_message?: string | null
+          id?: string
+          module_name: string
+          rolled_back_at?: string | null
+          started_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          deployed_by?: string | null
+          deployment_config?: Json | null
+          deployment_log?: Json | null
+          deployment_type?: string
+          error_message?: string | null
+          id?: string
+          module_name?: string
+          rolled_back_at?: string | null
+          started_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       module_installations: {
         Row: {
           configuration: Json | null
@@ -2945,6 +2999,48 @@ export type Database = {
         }
         Relationships: []
       }
+      module_registry_cache: {
+        Row: {
+          cache_expires_at: string | null
+          cache_key: string
+          compiled_manifest: Json
+          created_at: string | null
+          dependency_tree: Json | null
+          id: string
+          module_name: string
+          processed_files: Json | null
+          updated_at: string | null
+          validation_result: Json
+          version: string
+        }
+        Insert: {
+          cache_expires_at?: string | null
+          cache_key: string
+          compiled_manifest: Json
+          created_at?: string | null
+          dependency_tree?: Json | null
+          id?: string
+          module_name: string
+          processed_files?: Json | null
+          updated_at?: string | null
+          validation_result: Json
+          version: string
+        }
+        Update: {
+          cache_expires_at?: string | null
+          cache_key?: string
+          compiled_manifest?: Json
+          created_at?: string | null
+          dependency_tree?: Json | null
+          id?: string
+          module_name?: string
+          processed_files?: Json | null
+          updated_at?: string | null
+          validation_result?: Json
+          version?: string
+        }
+        Relationships: []
+      }
       module_repository: {
         Row: {
           approved_at: string | null
@@ -2999,6 +3095,96 @@ export type Database = {
           uploaded_by?: string
           validation_result?: Json
           version?: string
+        }
+        Relationships: []
+      }
+      module_settings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_encrypted: boolean | null
+          module_name: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          module_name: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value: Json
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          module_name?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      module_templates: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          dependencies: Json | null
+          description: string | null
+          files: Json
+          id: string
+          is_active: boolean | null
+          is_built_in: boolean | null
+          manifest_template: Json
+          name: string
+          tags: Json | null
+          template_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          files?: Json
+          id?: string
+          is_active?: boolean | null
+          is_built_in?: boolean | null
+          manifest_template?: Json
+          name: string
+          tags?: Json | null
+          template_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          files?: Json
+          id?: string
+          is_active?: boolean | null
+          is_built_in?: boolean | null
+          manifest_template?: Json
+          name?: string
+          tags?: Json | null
+          template_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3546,38 +3732,101 @@ export type Database = {
       }
       system_modules: {
         Row: {
+          author: string | null
+          auto_load: boolean | null
+          can_unload: boolean | null
           category: string
+          components: Json | null
           created_at: string
           default_limits: Json | null
           dependencies: string[] | null
           description: string | null
+          development_mode: boolean | null
+          entry_point: string | null
+          homepage: string | null
+          hooks: Json | null
+          hot_reload: boolean | null
           id: string
           is_active: boolean
+          license: string | null
+          load_order: number | null
+          max_core_version: string | null
+          min_core_version: string | null
           name: string
+          peer_dependencies: Json | null
+          repository: string | null
+          required_permissions: Json | null
+          resource_limits: Json | null
+          routes: Json | null
+          sandboxed: boolean | null
+          services: Json | null
+          subscription_tiers: Json | null
           updated_at: string
           version: string | null
         }
         Insert: {
+          author?: string | null
+          auto_load?: boolean | null
+          can_unload?: boolean | null
           category: string
+          components?: Json | null
           created_at?: string
           default_limits?: Json | null
           dependencies?: string[] | null
           description?: string | null
+          development_mode?: boolean | null
+          entry_point?: string | null
+          homepage?: string | null
+          hooks?: Json | null
+          hot_reload?: boolean | null
           id?: string
           is_active?: boolean
+          license?: string | null
+          load_order?: number | null
+          max_core_version?: string | null
+          min_core_version?: string | null
           name: string
+          peer_dependencies?: Json | null
+          repository?: string | null
+          required_permissions?: Json | null
+          resource_limits?: Json | null
+          routes?: Json | null
+          sandboxed?: boolean | null
+          services?: Json | null
+          subscription_tiers?: Json | null
           updated_at?: string
           version?: string | null
         }
         Update: {
+          author?: string | null
+          auto_load?: boolean | null
+          can_unload?: boolean | null
           category?: string
+          components?: Json | null
           created_at?: string
           default_limits?: Json | null
           dependencies?: string[] | null
           description?: string | null
+          development_mode?: boolean | null
+          entry_point?: string | null
+          homepage?: string | null
+          hooks?: Json | null
+          hot_reload?: boolean | null
           id?: string
           is_active?: boolean
+          license?: string | null
+          load_order?: number | null
+          max_core_version?: string | null
+          min_core_version?: string | null
           name?: string
+          peer_dependencies?: Json | null
+          repository?: string | null
+          required_permissions?: Json | null
+          resource_limits?: Json | null
+          routes?: Json | null
+          sandboxed?: boolean | null
+          services?: Json | null
+          subscription_tiers?: Json | null
           updated_at?: string
           version?: string | null
         }

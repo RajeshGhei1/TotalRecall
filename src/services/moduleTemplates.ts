@@ -1,245 +1,206 @@
 
 import { ModuleManifest } from '@/types/modules';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ModuleTemplate {
   id: string;
+  template_id: string;
   name: string;
   description: string;
   category: string;
-  manifest: Partial<ModuleManifest>;
+  manifest_template: Partial<ModuleManifest>;
   files: Record<string, string>;
   dependencies: string[];
   tags: string[];
+  is_built_in: boolean;
+  is_active: boolean;
 }
 
 class ModuleTemplateService {
   private static instance: ModuleTemplateService;
-  private templates: Map<string, ModuleTemplate> = new Map();
 
   static getInstance(): ModuleTemplateService {
     if (!ModuleTemplateService.instance) {
       ModuleTemplateService.instance = new ModuleTemplateService();
-      ModuleTemplateService.instance.initialize();
     }
     return ModuleTemplateService.instance;
   }
 
-  private initialize(): void {
-    // Load built-in templates
-    this.loadBuiltInTemplates();
-  }
+  async getTemplates(): Promise<ModuleTemplate[]> {
+    try {
+      const { data, error } = await supabase
+        .from('module_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
 
-  private loadBuiltInTemplates(): void {
-    const templates: ModuleTemplate[] = [
-      {
-        id: 'basic-widget',
-        name: 'Basic Widget',
-        description: 'A simple widget module template',
-        category: 'widget',
-        tags: ['widget', 'basic', 'template'],
-        manifest: {
-          category: 'custom',
-          author: 'Developer',
-          license: 'MIT',
-          dependencies: [],
-          requiredPermissions: ['read'],
-          subscriptionTiers: ['basic', 'pro', 'enterprise']
-        },
-        files: {
-          'index.tsx': `import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface BasicWidgetProps {
-  title?: string;
-  content?: string;
-}
-
-const BasicWidget: React.FC<BasicWidgetProps> = ({ 
-  title = 'Basic Widget', 
-  content = 'This is a basic widget module.' 
-}) => {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>{content}</p>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default BasicWidget;`,
-          'manifest.json': `{
-  "id": "basic-widget",
-  "name": "Basic Widget",
-  "version": "1.0.0",
-  "description": "A simple widget module",
-  "category": "widget",
-  "author": "Developer",
-  "license": "MIT",
-  "minCoreVersion": "1.0.0",
-  "entryPoint": "index.tsx",
-  "dependencies": [],
-  "requiredPermissions": ["read"],
-  "subscriptionTiers": ["basic", "pro", "enterprise"],
-  "loadOrder": 100,
-  "autoLoad": false,
-  "canUnload": true
-}`
-        },
-        dependencies: []
-      },
-      {
-        id: 'analytics-dashboard',
-        name: 'Analytics Dashboard',
-        description: 'An analytics dashboard module template',
-        category: 'analytics',
-        tags: ['analytics', 'dashboard', 'charts'],
-        manifest: {
-          category: 'analytics',
-          author: 'Developer',
-          license: 'MIT',
-          dependencies: ['core-dashboard'],
-          requiredPermissions: ['read', 'analytics_access'],
-          subscriptionTiers: ['pro', 'enterprise']
-        },
-        files: {
-          'index.tsx': `import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, Users, Target } from 'lucide-react';
-
-const AnalyticsDashboard: React.FC = () => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">1,234</div>
-          <p className="text-xs text-muted-foreground">+10% from last month</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">12.5%</div>
-          <p className="text-xs text-muted-foreground">+2.1% from last month</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">3.2%</div>
-          <p className="text-xs text-muted-foreground">+0.3% from last month</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Analytics Score</CardTitle>
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">87</div>
-          <p className="text-xs text-muted-foreground">+5 from last month</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default AnalyticsDashboard;`
-        },
-        dependencies: ['core-dashboard']
+      if (error) {
+        console.error('Error fetching templates from database:', error);
+        return [];
       }
-    ];
 
-    templates.forEach(template => {
-      this.templates.set(template.id, template);
-    });
+      return (data || []).map(this.mapDatabaseTemplate);
+    } catch (error) {
+      console.error('Error in getTemplates:', error);
+      return [];
+    }
   }
 
-  getTemplate(templateId: string): ModuleTemplate | undefined {
-    return this.templates.get(templateId);
+  async getTemplate(templateId: string): Promise<ModuleTemplate | undefined> {
+    try {
+      const { data, error } = await supabase
+        .from('module_templates')
+        .select('*')
+        .eq('template_id', templateId)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.error('Error fetching template:', error);
+        return undefined;
+      }
+
+      return this.mapDatabaseTemplate(data);
+    } catch (error) {
+      console.error('Error in getTemplate:', error);
+      return undefined;
+    }
   }
 
-  getAllTemplates(): ModuleTemplate[] {
-    return Array.from(this.templates.values());
+  async getTemplatesByCategory(category: string): Promise<ModuleTemplate[]> {
+    try {
+      const { data, error } = await supabase
+        .from('module_templates')
+        .select('*')
+        .eq('category', category)
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching templates by category:', error);
+        return [];
+      }
+
+      return (data || []).map(this.mapDatabaseTemplate);
+    } catch (error) {
+      console.error('Error in getTemplatesByCategory:', error);
+      return [];
+    }
   }
 
-  getTemplates(): ModuleTemplate[] {
-    return this.getAllTemplates();
-  }
+  async createModuleFromTemplate(
+    templateId: string, 
+    moduleConfig: {
+      id: string;
+      name: string;
+      description?: string;
+    }
+  ): Promise<{ manifest: ModuleManifest; files: Record<string, string> } | null> {
+    try {
+      const template = await this.getTemplate(templateId);
+      if (!template) {
+        return null;
+      }
 
-  getTemplatesByCategory(category: string): ModuleTemplate[] {
-    return this.getAllTemplates().filter(template => 
-      template.category === category
-    );
-  }
+      // Create manifest from template
+      const manifest: ModuleManifest = {
+        id: moduleConfig.id,
+        name: moduleConfig.name,
+        version: '1.0.0',
+        description: moduleConfig.description || template.description,
+        category: template.category as any,
+        author: 'Developer',
+        license: 'MIT',
+        dependencies: template.dependencies,
+        entryPoint: 'index.tsx',
+        requiredPermissions: template.manifest_template.requiredPermissions || ['read'],
+        subscriptionTiers: template.manifest_template.subscriptionTiers || ['basic', 'pro', 'enterprise'],
+        loadOrder: 100,
+        autoLoad: false,
+        canUnload: true,
+        minCoreVersion: '1.0.0',
+        ...template.manifest_template
+      };
 
-  createModuleFromTemplate(templateId: string, moduleConfig: {
-    id: string;
-    name: string;
-    description?: string;
-  }): { manifest: ModuleManifest; files: Record<string, string> } | null {
-    const template = this.getTemplate(templateId);
-    if (!template) {
+      // Process template files with replacements
+      const processedFiles: Record<string, string> = {};
+      Object.entries(template.files).forEach(([filename, content]) => {
+        processedFiles[filename] = content
+          .replace(/{{MODULE_ID}}/g, moduleConfig.id)
+          .replace(/{{MODULE_NAME}}/g, moduleConfig.name)
+          .replace(/{{MODULE_DESCRIPTION}}/g, moduleConfig.description || template.description);
+      });
+
+      return {
+        manifest,
+        files: processedFiles
+      };
+    } catch (error) {
+      console.error('Error creating module from template:', error);
       return null;
     }
+  }
 
-    // Create manifest from template
-    const manifest: ModuleManifest = {
-      id: moduleConfig.id,
-      name: moduleConfig.name,
-      version: '1.0.0',
-      description: moduleConfig.description || template.description,
-      category: template.category as any,
-      author: 'Developer',
-      license: 'MIT',
-      dependencies: template.dependencies,
-      entryPoint: 'index.tsx',
-      requiredPermissions: template.manifest.requiredPermissions || ['read'],
-      subscriptionTiers: template.manifest.subscriptionTiers || ['basic', 'pro', 'enterprise'],
-      loadOrder: 100,
-      autoLoad: false,
-      canUnload: true,
-      minCoreVersion: '1.0.0',
-      ...template.manifest
-    };
+  async registerTemplate(template: Omit<ModuleTemplate, 'id' | 'is_built_in'>): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('module_templates')
+        .insert({
+          template_id: template.template_id,
+          name: template.name,
+          description: template.description,
+          category: template.category,
+          tags: template.tags,
+          manifest_template: template.manifest_template,
+          files: template.files,
+          dependencies: template.dependencies,
+          is_built_in: false,
+          is_active: true
+        });
 
-    // Process template files with replacements
-    const processedFiles: Record<string, string> = {};
-    Object.entries(template.files).forEach(([filename, content]) => {
-      processedFiles[filename] = content
-        .replace(/{{MODULE_ID}}/g, moduleConfig.id)
-        .replace(/{{MODULE_NAME}}/g, moduleConfig.name)
-        .replace(/{{MODULE_DESCRIPTION}}/g, moduleConfig.description || template.description);
-    });
+      if (error) {
+        console.error('Error registering template:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in registerTemplate:', error);
+      throw error;
+    }
+  }
 
+  async unregisterTemplate(templateId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('module_templates')
+        .update({ is_active: false })
+        .eq('template_id', templateId);
+
+      if (error) {
+        console.error('Error unregistering template:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in unregisterTemplate:', error);
+      return false;
+    }
+  }
+
+  private mapDatabaseTemplate(data: any): ModuleTemplate {
     return {
-      manifest,
-      files: processedFiles
+      id: data.id,
+      template_id: data.template_id,
+      name: data.name,
+      description: data.description || '',
+      category: data.category,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      manifest_template: data.manifest_template || {},
+      files: data.files || {},
+      dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
+      is_built_in: data.is_built_in || false,
+      is_active: data.is_active || true
     };
-  }
-
-  registerTemplate(template: ModuleTemplate): void {
-    this.templates.set(template.id, template);
-  }
-
-  unregisterTemplate(templateId: string): boolean {
-    return this.templates.delete(templateId);
   }
 }
 
