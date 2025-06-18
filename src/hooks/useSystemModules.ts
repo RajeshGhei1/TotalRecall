@@ -25,6 +25,8 @@ export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: st
   const query = useQuery({
     queryKey: ['system-modules', activeOnly, maturityFilter],
     queryFn: async () => {
+      console.log('Fetching modules with filter:', maturityFilter);
+      
       let queryBuilder = supabase
         .from('system_modules')
         .select('*')
@@ -48,6 +50,12 @@ export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: st
         console.error('Error fetching system modules:', error);
         throw error;
       }
+
+      console.log('Fetched modules:', data?.length, data?.map(m => ({ 
+        name: m.name, 
+        maturity_status: m.maturity_status, 
+        development_stage: m.development_stage 
+      })));
 
       return data as SystemModule[];
     },

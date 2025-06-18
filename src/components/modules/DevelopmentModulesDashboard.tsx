@@ -24,6 +24,12 @@ const DevelopmentModulesDashboard: React.FC = () => {
   // Fetch development modules (non-production)
   const { data: developmentModules = [], isLoading, promoteToProduction } = useSystemModules(true, 'development');
 
+  console.log('Development modules:', developmentModules.map(m => ({ 
+    name: m.name, 
+    maturity_status: m.maturity_status, 
+    progress: getDevelopmentProgress(m) 
+  })));
+
   const filteredModules = developmentModules.filter(module => {
     const matchesSearch = module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          module.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -162,6 +168,9 @@ const DevelopmentModulesDashboard: React.FC = () => {
           {filteredModules.map((module) => {
             const statusVariant = getMaturityStatusVariant(module.maturity_status || 'planning');
             const progress = getDevelopmentProgress(module);
+            const canPromote = module.maturity_status === 'beta' && progress >= 80;
+            
+            console.log('Module:', module.name, 'Status:', module.maturity_status, 'Progress:', progress, 'Can promote:', canPromote);
             
             return (
               <Card key={module.id}>
@@ -210,11 +219,12 @@ const DevelopmentModulesDashboard: React.FC = () => {
                       <Button variant="outline" size="sm">
                         <Settings className="h-4 w-4" />
                       </Button>
-                      {module.maturity_status === 'beta' && progress >= 80 && (
+                      {canPromote && (
                         <Button 
                           size="sm"
                           onClick={() => handlePromoteToProduction(module.id)}
                           disabled={promoteToProduction.isPending}
+                          className="bg-green-600 hover:bg-green-700"
                         >
                           <Rocket className="h-4 w-4 mr-2" />
                           Promote to Production

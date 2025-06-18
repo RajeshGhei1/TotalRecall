@@ -88,6 +88,8 @@ export const getMaturityStatusVariant = (status: string) => {
  */
 export const getDevelopmentProgress = (module: any): number => {
   try {
+    console.log('Getting progress for module:', module.name, 'development_stage:', module.development_stage);
+    
     // Handle both string and object formats for development_stage
     let stage;
     if (typeof module.development_stage === 'string') {
@@ -95,13 +97,15 @@ export const getDevelopmentProgress = (module: any): number => {
     } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
       stage = module.development_stage;
     } else {
+      console.log('No development_stage found for module:', module.name);
       return 0;
     }
     
-    // Return the progress value, defaulting to 0 if not found
-    return stage?.progress || 0;
+    const progress = stage?.progress || 0;
+    console.log('Progress for', module.name, ':', progress);
+    return progress;
   } catch (error) {
-    console.error('Error parsing development_stage:', error);
+    console.error('Error parsing development_stage for module:', module.name, error);
     return 0;
   }
 };
@@ -117,13 +121,13 @@ export const getDevelopmentStage = (module: any): string => {
     } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
       stage = module.development_stage;
     } else {
-      return 'planning';
+      return module.maturity_status || 'planning';
     }
     
-    return stage?.stage || 'planning';
+    return stage?.stage || module.maturity_status || 'planning';
   } catch (error) {
     console.error('Error parsing development_stage:', error);
-    return 'planning';
+    return module.maturity_status || 'planning';
   }
 };
 
