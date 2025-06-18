@@ -1,46 +1,53 @@
 
-import React, { Suspense, ErrorBoundary } from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { moduleLoader } from '@/services/moduleLoader';
-import { LoadedModule } from '@/types/modules';
+import { LoadedModule, ModuleContext } from '@/types/modules';
 
 interface ModuleRendererProps {
   moduleId: string;
   props?: Record<string, any>;
   fallback?: React.ReactNode;
   showError?: boolean;
+  showStatus?: boolean;
+  containerClassName?: string;
 }
 
-interface ModuleErrorBoundaryProps {
-  children: React.ReactNode;
-  moduleId: string;
-  showError?: boolean;
-}
+class ModuleErrorBoundary extends React.Component<
+  { children: React.ReactNode; moduleId: string; showError?: boolean },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode; moduleId: string; showError?: boolean }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-const ModuleErrorBoundary: React.FC<ModuleErrorBoundaryProps> = ({ 
-  children, 
-  moduleId, 
-  showError = true 
-}) => {
-  return (
-    <ErrorBoundary
-      fallback={
-        showError ? (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Failed to render module: {moduleId}
-            </AlertDescription>
-          </Alert>
-        ) : null
-      }
-    >
-      {children}
-    </ErrorBoundary>
-  );
-};
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error(`Module ${this.props.moduleId} error:`, error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (!this.props.showError) return null;
+      return (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to render module: {this.props.moduleId}
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const ModuleLoadingFallback: React.FC<{ moduleId: string }> = ({ moduleId }) => (
   <Card>
@@ -60,7 +67,9 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
   moduleId, 
   props = {}, 
   fallback,
-  showError = true 
+  showError = true,
+  showStatus = false,
+  containerClassName
 }) => {
   const [loadedModule, setLoadedModule] = React.useState<LoadedModule | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -80,9 +89,10 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
           return;
         }
 
-        // Load the module
-        const context = {
-          tenantId: 'default', // This would come from tenant context
+        // Create context for module loading
+        const context: ModuleContext = {
+          moduleId,
+          tenantId: 'default',
           userId: 'system',
           permissions: ['read', 'write'],
           config: props
@@ -136,13 +146,19 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
       throw new Error('Module component not found');
     }
 
-    return (
+    const content = (
       <ModuleErrorBoundary moduleId={moduleId} showError={showError}>
         <Suspense fallback={fallback || <ModuleLoadingFallback moduleId={moduleId} />}>
           <ModuleComponent {...props} />
         </Suspense>
       </ModuleErrorBoundary>
     );
+
+    if (containerClassName) {
+      return <div className={containerClassName}>{content}</div>;
+    }
+
+    return content;
   } catch (renderError) {
     console.error(`Failed to render module ${moduleId}:`, renderError);
     if (!showError) return null;

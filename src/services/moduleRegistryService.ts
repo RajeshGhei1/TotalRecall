@@ -1,6 +1,5 @@
 
 import { ModuleManifest, LoadedModule } from '@/types/modules';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface ModuleRegistryEntry {
   id: string;
@@ -11,9 +10,20 @@ export interface ModuleRegistryEntry {
   registeredAt: Date;
 }
 
+export interface ModuleInstallation {
+  id: string;
+  moduleId: string;
+  tenantId: string;
+  installedAt: Date;
+  version: string;
+  status: 'active' | 'inactive' | 'error';
+  configuration: Record<string, any>;
+}
+
 class ModuleRegistryService {
   private static instance: ModuleRegistryService;
   private registry: Map<string, ModuleRegistryEntry> = new Map();
+  private installations: Map<string, ModuleInstallation> = new Map();
   private initialized = false;
 
   static getInstance(): ModuleRegistryService {
@@ -27,62 +37,11 @@ class ModuleRegistryService {
     if (this.initialized) return;
 
     try {
-      await this.loadRegistryFromDatabase();
+      this.loadBuiltInModules();
       this.initialized = true;
       console.log('Module registry initialized');
     } catch (error) {
       console.error('Failed to initialize module registry:', error);
-    }
-  }
-
-  private async loadRegistryFromDatabase(): Promise<void> {
-    try {
-      // Load modules from database if the table exists
-      const { data: modules, error } = await supabase
-        .from('system_modules')
-        .select('*')
-        .eq('is_active', true);
-
-      if (error) {
-        console.warn('Could not load modules from database:', error.message);
-        // Fall back to built-in modules
-        this.loadBuiltInModules();
-        return;
-      }
-
-      if (modules) {
-        modules.forEach(module => {
-          const manifest: ModuleManifest = {
-            id: module.name,
-            name: module.display_name || module.name,
-            version: module.version || '1.0.0',
-            description: module.description || '',
-            category: module.category,
-            author: 'System',
-            license: 'MIT',
-            dependencies: module.dependencies || [],
-            entryPoint: 'index.tsx',
-            requiredPermissions: module.required_permissions || [],
-            subscriptionTiers: module.pricing_tier ? [module.pricing_tier] : [],
-            loadOrder: 100,
-            autoLoad: module.is_active,
-            canUnload: true,
-            minCoreVersion: '1.0.0'
-          };
-
-          this.registry.set(module.name, {
-            id: module.name,
-            name: module.display_name || module.name,
-            version: module.version || '1.0.0',
-            manifest,
-            isActive: module.is_active,
-            registeredAt: new Date(module.created_at)
-          });
-        });
-      }
-    } catch (error) {
-      console.error('Error loading modules from database:', error);
-      this.loadBuiltInModules();
     }
   }
 
@@ -138,6 +97,17 @@ class ModuleRegistryService {
         isActive: true,
         registeredAt: new Date()
       });
+
+      // Create mock installation
+      this.installations.set(module.id, {
+        id: module.id,
+        moduleId: module.id,
+        tenantId: 'default',
+        installedAt: new Date(),
+        version: module.version,
+        status: 'active',
+        configuration: {}
+      });
     });
   }
 
@@ -153,9 +123,6 @@ class ModuleRegistryService {
       };
 
       this.registry.set(manifest.id, entry);
-
-      // Optionally persist to database
-      await this.persistToDatabase(entry);
       
       console.log(`Module registered: ${manifest.id}`);
       return true;
@@ -168,17 +135,28 @@ class ModuleRegistryService {
   async unregisterModule(moduleId: string): Promise<boolean> {
     try {
       this.registry.delete(moduleId);
+      this.installations.delete(moduleId);
       
-      // Remove from database if it exists
-      await supabase
-        .from('system_modules')
-        .delete()
-        .eq('name', moduleId);
-
       console.log(`Module unregistered: ${moduleId}`);
       return true;
     } catch (error) {
       console.error(`Failed to unregister module ${moduleId}:`, error);
+      return false;
+    }
+  }
+
+  async uninstallModule(moduleId: string): Promise<boolean> {
+    try {
+      const installation = this.installations.get(moduleId);
+      if (installation) {
+        installation.status = 'inactive';
+        this.installations.set(moduleId, installation);
+      }
+      
+      console.log(`Module uninstalled: ${moduleId}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to uninstall module ${moduleId}:`, error);
       return false;
     }
   }
@@ -189,6 +167,12 @@ class ModuleRegistryService {
 
   getAllModules(): ModuleRegistryEntry[] {
     return Array.from(this.registry.values());
+  }
+
+  getInstalledModules(): ModuleInstallation[] {
+    return Array.from(this.installations.values()).filter(
+      installation => installation.status === 'active'
+    );
   }
 
   getModulesByCategory(category: string): ModuleRegistryEntry[] {
@@ -205,34 +189,9 @@ class ModuleRegistryService {
     return this.registry.get(moduleId)?.manifest;
   }
 
-  private async persistToDatabase(entry: ModuleRegistryEntry): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('system_modules')
-        .upsert({
-          name: entry.id,
-          display_name: entry.name,
-          version: entry.version,
-          description: entry.manifest.description,
-          category: entry.manifest.category,
-          dependencies: entry.manifest.dependencies,
-          required_permissions: entry.manifest.requiredPermissions,
-          pricing_tier: entry.manifest.subscriptionTiers[0] || 'basic',
-          is_active: entry.isActive,
-          created_at: entry.registeredAt.toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) {
-        console.warn('Could not persist module to database:', error.message);
-      }
-    } catch (error) {
-      console.warn('Database persistence failed:', error);
-    }
-  }
-
   async refreshRegistry(): Promise<void> {
     this.registry.clear();
+    this.installations.clear();
     this.initialized = false;
     await this.initialize();
   }

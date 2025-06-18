@@ -1,4 +1,3 @@
-
 import { ModuleManifest } from '@/types/modules';
 
 export interface ModuleTemplate {
@@ -6,617 +5,254 @@ export interface ModuleTemplate {
   name: string;
   description: string;
   category: string;
-  icon: string;
   manifest: Partial<ModuleManifest>;
-  files: ModuleFile[];
+  files: Record<string, string>;
+  dependencies: string[];
   tags: string[];
 }
 
-export interface ModuleFile {
-  path: string;
-  content: string;
-  type: 'component' | 'service' | 'hook' | 'style' | 'config' | 'test';
-}
-
-export class ModuleTemplateService {
+class ModuleTemplateService {
   private static instance: ModuleTemplateService;
+  private templates: Map<string, ModuleTemplate> = new Map();
 
   static getInstance(): ModuleTemplateService {
     if (!ModuleTemplateService.instance) {
       ModuleTemplateService.instance = new ModuleTemplateService();
+      ModuleTemplateService.instance.initialize();
     }
     return ModuleTemplateService.instance;
   }
 
-  getTemplates(): ModuleTemplate[] {
-    return [
-      {
-        id: 'dashboard-widget',
-        name: 'Dashboard Widget',
-        description: 'Create a custom dashboard widget with charts and metrics',
-        category: 'analytics',
-        icon: 'BarChart3',
-        tags: ['dashboard', 'widget', 'analytics', 'charts'],
-        manifest: {
-          category: 'analytics',
-          subscriptionTiers: ['professional', 'enterprise'],
-          requiredPermissions: ['dashboard.read'],
-          loadOrder: 50,
-          autoLoad: true,
-          canUnload: true
-        },
-        files: [
-          {
-            path: 'index.ts',
-            type: 'component',
-            content: `export { default as DashboardWidget } from './components/DashboardWidget';
-export { useDashboardData } from './hooks/useDashboardData';`
-          },
-          {
-            path: 'components/DashboardWidget.tsx',
-            type: 'component',
-            content: `import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3 } from 'lucide-react';
+  private initialize(): void {
+    // Load built-in templates
+    this.loadBuiltInTemplates();
+  }
 
-interface DashboardWidgetProps {
+  private loadBuiltInTemplates(): void {
+    const templates: ModuleTemplate[] = [
+      {
+        id: 'basic-widget',
+        name: 'Basic Widget',
+        description: 'A simple widget module template',
+        category: 'widget',
+        tags: ['widget', 'basic', 'template'],
+        manifest: {
+          category: 'custom',
+          author: 'Developer',
+          license: 'MIT',
+          dependencies: [],
+          requiredPermissions: ['read'],
+          subscriptionTiers: ['basic', 'pro', 'enterprise']
+        },
+        files: {
+          'index.tsx': `import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface BasicWidgetProps {
   title?: string;
-  data?: any[];
-  config?: Record<string, any>;
+  content?: string;
 }
 
-const DashboardWidget: React.FC<DashboardWidgetProps> = ({
-  title = 'Custom Widget',
-  data = [],
-  config = {}
+const BasicWidget: React.FC<BasicWidgetProps> = ({ 
+  title = 'Basic Widget', 
+  content = 'This is a basic widget module.' 
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          {title}
-        </CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            Widget content goes here. Customize this component for your needs.
-          </p>
-          {data.length > 0 && (
-            <div className="text-sm">
-              Data items: {data.length}
-            </div>
-          )}
-        </div>
+        <p>{content}</p>
       </CardContent>
     </Card>
   );
 };
 
-export default DashboardWidget;`
-          },
-          {
-            path: 'hooks/useDashboardData.ts',
-            type: 'hook',
-            content: `import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+// Module metadata for registration
+(BasicWidget as any).moduleMetadata = {
+  id: 'basic-widget',
+  name: 'Basic Widget',
+  category: 'widget',
+  version: '1.0.0',
+  description: 'A simple widget module',
+  author: 'Developer',
+  requiredPermissions: ['read'],
+  dependencies: [],
+  props: {
+    title: { type: 'string', default: 'Basic Widget' },
+    content: { type: 'string', default: 'This is a basic widget module.' }
+  }
+};
 
-export const useDashboardData = (config: Record<string, any> = {}) => {
-  const [data, setData] = useState<any[]>([]);
-
-  const { data: queryData, isLoading, error } = useQuery({
-    queryKey: ['dashboard-data', config],
-    queryFn: async () => {
-      // Implement your data fetching logic here
-      return [];
-    },
-    enabled: !!config
-  });
-
-  useEffect(() => {
-    if (queryData) {
-      setData(queryData);
-    }
-  }, [queryData]);
-
-  return {
-    data,
-    isLoading,
-    error,
-    refetch: () => {
-      // Implement refetch logic
-    }
-  };
-};`
-          }
-        ]
+export default BasicWidget;`,
+          'manifest.json': `{
+  "id": "basic-widget",
+  "name": "Basic Widget",
+  "version": "1.0.0",
+  "description": "A simple widget module",
+  "category": "widget",
+  "author": "Developer",
+  "license": "MIT",
+  "minCoreVersion": "1.0.0",
+  "entryPoint": "index.tsx",
+  "dependencies": [],
+  "requiredPermissions": ["read"],
+  "subscriptionTiers": ["basic", "pro", "enterprise"],
+  "loadOrder": 100,
+  "autoLoad": false,
+  "canUnload": true
+}`
+        },
+        dependencies: [],
+        tags: ['widget', 'basic', 'template']
       },
       {
-        id: 'data-manager',
-        name: 'Data Management Module',
-        description: 'CRUD operations module with forms and tables',
-        category: 'business',
-        icon: 'Database',
-        tags: ['crud', 'forms', 'tables', 'data'],
+        id: 'analytics-dashboard',
+        name: 'Analytics Dashboard',
+        description: 'An analytics dashboard module template',
+        category: 'analytics',
+        tags: ['analytics', 'dashboard', 'charts'],
         manifest: {
-          category: 'business',
-          subscriptionTiers: ['basic', 'professional', 'enterprise'],
-          requiredPermissions: ['data.read', 'data.write'],
-          loadOrder: 75,
-          autoLoad: true,
-          canUnload: true
+          category: 'analytics',
+          author: 'Developer',
+          license: 'MIT',
+          dependencies: ['core-dashboard'],
+          requiredPermissions: ['read', 'analytics_access'],
+          subscriptionTiers: ['pro', 'enterprise']
         },
-        files: [
-          {
-            path: 'index.ts',
-            type: 'component',
-            content: `export { default as DataManager } from './components/DataManager';
-export { useDataOperations } from './hooks/useDataOperations';
-export type { DataItem } from './types';`
-          },
-          {
-            path: 'types/index.ts',
-            type: 'config',
-            content: `export interface DataItem {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  [key: string]: any;
-}`
-          },
-          {
-            path: 'components/DataManager.tsx',
-            type: 'component',
-            content: `import React, { useState } from 'react';
+        files: {
+          'index.tsx': `import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Database } from 'lucide-react';
-import { DataItem } from '../types';
+import { BarChart3, TrendingUp, Users, Target } from 'lucide-react';
 
-const DataManager: React.FC = () => {
-  const [items, setItems] = useState<DataItem[]>([]);
-
-  const handleCreate = () => {
-    // Implement create logic
-    console.log('Create new item');
-  };
-
-  const handleEdit = (item: DataItem) => {
-    // Implement edit logic
-    console.log('Edit item:', item);
-  };
-
-  const handleDelete = (id: string) => {
-    // Implement delete logic
-    console.log('Delete item:', id);
-  };
-
+const AnalyticsDashboard: React.FC = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Data Manager
-          </div>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Item
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {items.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No data items found. Click "Add Item" to get started.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <h4 className="font-medium">{item.name}</h4>
-                    {item.description && (
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
-                    )}
-                  </div>
-                  <div className="space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(item)}>
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default DataManager;`
-          },
-          {
-            path: 'hooks/useDataOperations.ts',
-            type: 'hook',
-            content: `import { useState } from 'react';
-import { DataItem } from '../types';
-
-export const useDataOperations = () => {
-  const [items, setItems] = useState<DataItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const createItem = async (data: Omit<DataItem, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setIsLoading(true);
-    try {
-      const newItem: DataItem = {
-        ...data,
-        id: crypto.randomUUID(),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      setItems(prev => [...prev, newItem]);
-      return newItem;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateItem = async (id: string, updates: Partial<DataItem>) => {
-    setIsLoading(true);
-    try {
-      setItems(prev => prev.map(item => 
-        item.id === id 
-          ? { ...item, ...updates, updatedAt: new Date() }
-          : item
-      ));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteItem = async (id: string) => {
-    setIsLoading(true);
-    try {
-      setItems(prev => prev.filter(item => item.id !== id));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    items,
-    isLoading,
-    createItem,
-    updateItem,
-    deleteItem
-  };
-};`
-          }
-        ]
-      },
-      {
-        id: 'integration-connector',
-        name: 'Integration Connector',
-        description: 'Connect with external APIs and services',
-        category: 'integration',
-        icon: 'Plug',
-        tags: ['api', 'integration', 'connector', 'external'],
-        manifest: {
-          category: 'integration',
-          subscriptionTiers: ['professional', 'enterprise'],
-          requiredPermissions: ['integration.read', 'integration.write'],
-          loadOrder: 90,
-          autoLoad: false,
-          canUnload: true
-        },
-        files: [
-          {
-            path: 'index.ts',
-            type: 'component',
-            content: `export { default as IntegrationConnector } from './components/IntegrationConnector';
-export { useApiConnection } from './hooks/useApiConnection';
-export { ApiService } from './services/ApiService';`
-          },
-          {
-            path: 'components/IntegrationConnector.tsx',
-            type: 'component',
-            content: `import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Plug, CheckCircle, AlertCircle } from 'lucide-react';
-
-const IntegrationConnector: React.FC = () => {
-  const [apiUrl, setApiUrl] = useState('');
-  const [apiKey, setApiKey] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
-
-  const testConnection = async () => {
-    setConnectionStatus('testing');
-    // Simulate API test
-    setTimeout(() => {
-      setConnectionStatus(Math.random() > 0.5 ? 'connected' : 'error');
-    }, 2000);
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plug className="h-5 w-5" />
-          Integration Connector
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="api-url">API Base URL</Label>
-          <Input
-            id="api-url"
-            value={apiUrl}
-            onChange={(e) => setApiUrl(e.target.value)}
-            placeholder="https://api.example.com"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="api-key">API Key</Label>
-          <Input
-            id="api-key"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your API key"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Button onClick={testConnection} disabled={connectionStatus === 'testing'}>
-            {connectionStatus === 'testing' ? 'Testing...' : 'Test Connection'}
-          </Button>
-          
-          {connectionStatus === 'connected' && (
-            <div className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="h-4 w-4" />
-              Connected
-            </div>
-          )}
-          
-          {connectionStatus === 'error' && (
-            <div className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-4 w-4" />
-              Connection Failed
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default IntegrationConnector;`
-          },
-          {
-            path: 'services/ApiService.ts',
-            type: 'service',
-            content: `export class ApiService {
-  private baseUrl: string;
-  private apiKey: string;
-
-  constructor(baseUrl: string, apiKey: string) {
-    this.baseUrl = baseUrl;
-    this.apiKey = apiKey;
-  }
-
-  async get(endpoint: string) {
-    const response = await fetch(\`\${this.baseUrl}\${endpoint}\`, {
-      headers: {
-        'Authorization': \`Bearer \${this.apiKey}\`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(\`API request failed: \${response.statusText}\`);
-    }
-    
-    return response.json();
-  }
-
-  async post(endpoint: string, data: any) {
-    const response = await fetch(\`\${this.baseUrl}\${endpoint}\`, {
-      method: 'POST',
-      headers: {
-        'Authorization': \`Bearer \${this.apiKey}\`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(\`API request failed: \${response.statusText}\`);
-    }
-    
-    return response.json();
-  }
-
-  async testConnection(): Promise<boolean> {
-    try {
-      await this.get('/health');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-}`
-          },
-          {
-            path: 'hooks/useApiConnection.ts',
-            type: 'hook',
-            content: `import { useState, useCallback } from 'react';
-import { ApiService } from '../services/ApiService';
-
-export const useApiConnection = () => {
-  const [apiService, setApiService] = useState<ApiService | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const connect = useCallback(async (baseUrl: string, apiKey: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const service = new ApiService(baseUrl, apiKey);
-      const connectionSuccessful = await service.testConnection();
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">1,234</div>
+          <p className="text-xs text-muted-foreground">+10% from last month</p>
+        </CardContent>
+      </Card>
       
-      if (connectionSuccessful) {
-        setApiService(service);
-        setIsConnected(true);
-      } else {
-        throw new Error('Connection test failed');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Connection failed');
-      setIsConnected(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">12.5%</div>
+          <p className="text-xs text-muted-foreground">+2.1% from last month</p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+          <Target className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">3.2%</div>
+          <p className="text-xs text-muted-foreground">+0.3% from last month</p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Analytics Score</CardTitle>
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">87</div>
+          <p className="text-xs text-muted-foreground">+5 from last month</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
-  const disconnect = useCallback(() => {
-    setApiService(null);
-    setIsConnected(false);
-    setError(null);
-  }, []);
-
-  return {
-    apiService,
-    isConnected,
-    isLoading,
-    error,
-    connect,
-    disconnect
-  };
-};`
-          }
-        ]
+export default AnalyticsDashboard;`
+        },
+        dependencies: ['core-dashboard'],
+        tags: ['analytics', 'dashboard', 'charts']
       }
     ];
+
+    templates.forEach(template => {
+      this.templates.set(template.id, template);
+    });
   }
 
-  getTemplateById(id: string): ModuleTemplate | null {
-    return this.getTemplates().find(template => template.id === id) || null;
+  getTemplate(templateId: string): ModuleTemplate | undefined {
+    return this.templates.get(templateId);
+  }
+
+  getAllTemplates(): ModuleTemplate[] {
+    return Array.from(this.templates.values());
   }
 
   getTemplatesByCategory(category: string): ModuleTemplate[] {
-    return this.getTemplates().filter(template => template.category === category);
+    return this.getAllTemplates().filter(template => 
+      template.category === category
+    );
   }
 
-  generateModuleFromTemplate(template: ModuleTemplate, customizations: Partial<ModuleManifest>): {
-    manifest: ModuleManifest;
-    files: ModuleFile[];
-  } {
+  createModuleFromTemplate(templateId: string, moduleConfig: {
+    id: string;
+    name: string;
+    description?: string;
+  }): { manifest: ModuleManifest; files: Record<string, string> } | null {
+    const template = this.getTemplate(templateId);
+    if (!template) {
+      return null;
+    }
+
+    // Create manifest from template
     const manifest: ModuleManifest = {
-      // Default values
-      id: '',
-      name: '',
+      id: moduleConfig.id,
+      name: moduleConfig.name,
       version: '1.0.0',
-      description: '',
-      category: 'custom',
+      description: moduleConfig.description || template.description,
+      category: template.category as any,
       author: 'Developer',
       license: 'MIT',
-      dependencies: [],
-      entryPoint: 'index.ts',
-      requiredPermissions: [],
-      subscriptionTiers: ['professional'],
+      dependencies: template.dependencies,
+      entryPoint: 'index.tsx',
+      requiredPermissions: template.manifest.requiredPermissions || ['read'],
+      subscriptionTiers: template.manifest.subscriptionTiers || ['basic', 'pro', 'enterprise'],
       loadOrder: 100,
-      autoLoad: true,
+      autoLoad: false,
       canUnload: true,
       minCoreVersion: '1.0.0',
-      // Template defaults
-      ...template.manifest,
-      // User customizations
-      ...customizations
+      ...template.manifest
     };
 
-    // Process template files with customizations
-    const files = template.files.map(file => ({
-      ...file,
-      content: this.processFileTemplate(file.content, manifest)
-    }));
-
-    return { manifest, files };
-  }
-
-  private processFileTemplate(content: string, manifest: ModuleManifest): string {
-    // Replace template variables
-    return content
-      .replace(/\{\{MODULE_NAME\}\}/g, manifest.name)
-      .replace(/\{\{MODULE_ID\}\}/g, manifest.id)
-      .replace(/\{\{MODULE_DESCRIPTION\}\}/g, manifest.description || '')
-      .replace(/\{\{AUTHOR\}\}/g, manifest.author);
-  }
-
-  scaffoldModuleStructure(manifest: ModuleManifest, files: ModuleFile[]): Record<string, string> {
-    const structure: Record<string, string> = {};
-
-    // Add manifest file
-    structure['manifest.json'] = JSON.stringify(manifest, null, 2);
-
-    // Add template files
-    files.forEach(file => {
-      structure[file.path] = file.content;
+    // Process template files with replacements
+    const processedFiles: Record<string, string> = {};
+    Object.entries(template.files).forEach(([filename, content]) => {
+      processedFiles[filename] = content
+        .replace(/{{MODULE_ID}}/g, moduleConfig.id)
+        .replace(/{{MODULE_NAME}}/g, moduleConfig.name)
+        .replace(/{{MODULE_DESCRIPTION}}/g, moduleConfig.description || template.description);
     });
 
-    // Add package.json
-    structure['package.json'] = JSON.stringify({
-      name: manifest.id,
-      version: manifest.version,
-      description: manifest.description,
-      main: manifest.entryPoint,
-      author: manifest.author,
-      license: manifest.license,
-      dependencies: {
-        'react': '^18.0.0',
-        '@types/react': '^18.0.0'
-      }
-    }, null, 2);
+    return {
+      manifest,
+      files: processedFiles
+    };
+  }
 
-    // Add README.md
-    structure['README.md'] = `# ${manifest.name}
+  registerTemplate(template: ModuleTemplate): void {
+    this.templates.set(template.id, template);
+  }
 
-${manifest.description}
-
-## Installation
-
-This module is part of the Total Recall AI platform.
-
-## Usage
-
-\`\`\`typescript
-import { ${manifest.name.replace(/\s+/g, '')} } from './${manifest.entryPoint}';
-\`\`\`
-
-## Author
-
-${manifest.author}
-
-## License
-
-${manifest.license}
-`;
-
-    return structure;
+  unregisterTemplate(templateId: string): boolean {
+    return this.templates.delete(templateId);
   }
 }
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import {
   Filter,
   Package,
   Verified,
-  Trending
+  TrendingUp
 } from 'lucide-react';
 
 interface MarketplaceModule {
@@ -64,22 +63,6 @@ const mockModules: MarketplaceModule[] = [
     isTrending: false,
     tags: ['crm', 'integration', 'sales'],
     screenshots: []
-  },
-  {
-    id: 'social-media-manager',
-    name: 'Social Media Manager',
-    description: 'Schedule, publish, and analyze social media content across multiple platforms',
-    version: '3.0.1',
-    author: 'Social Tools Inc',
-    category: 'marketing',
-    downloads: 12876,
-    rating: 4.4,
-    price: 19.99,
-    isPremium: true,
-    isVerified: false,
-    isTrending: true,
-    tags: ['social', 'marketing', 'automation'],
-    screenshots: []
   }
 ];
 
@@ -99,10 +82,9 @@ const ModuleMarketplace: React.FC = () => {
 
   const handleInstall = (moduleId: string) => {
     console.log(`Installing module: ${moduleId}`);
-    // TODO: Implement actual module installation
   };
 
-  const renderModuleCard = (module: MarketplaceModule) => (
+  const renderModuleCard = (module: any) => (
     <Card key={module.id} className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -114,7 +96,7 @@ const ModuleMarketplace: React.FC = () => {
               )}
               {module.isTrending && (
                 <Badge variant="secondary" className="text-xs">
-                  <Trending className="h-3 w-3 mr-1" />
+                  <TrendingUp className="h-3 w-3 mr-1" />
                   Trending
                 </Badge>
               )}
@@ -151,7 +133,7 @@ const ModuleMarketplace: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap gap-1 mb-4">
-          {module.tags.map(tag => (
+          {module.tags.map((tag: string) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
@@ -193,7 +175,6 @@ const ModuleMarketplace: React.FC = () => {
         </TabsList>
 
         <TabsContent value="browse" className="space-y-6">
-          {/* Search and Filters */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -220,7 +201,6 @@ const ModuleMarketplace: React.FC = () => {
             </div>
           </div>
 
-          {/* Module Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredModules.map(renderModuleCard)}
           </div>
