@@ -3742,6 +3742,7 @@ export type Database = {
           dependencies: string[] | null
           description: string | null
           development_mode: boolean | null
+          development_stage: Json | null
           entry_point: string | null
           homepage: string | null
           hooks: Json | null
@@ -3750,10 +3751,13 @@ export type Database = {
           is_active: boolean
           license: string | null
           load_order: number | null
+          maturity_status: string
           max_core_version: string | null
           min_core_version: string | null
           name: string
           peer_dependencies: Json | null
+          promoted_by: string | null
+          promoted_to_production_at: string | null
           repository: string | null
           required_permissions: Json | null
           resource_limits: Json | null
@@ -3775,6 +3779,7 @@ export type Database = {
           dependencies?: string[] | null
           description?: string | null
           development_mode?: boolean | null
+          development_stage?: Json | null
           entry_point?: string | null
           homepage?: string | null
           hooks?: Json | null
@@ -3783,10 +3788,13 @@ export type Database = {
           is_active?: boolean
           license?: string | null
           load_order?: number | null
+          maturity_status?: string
           max_core_version?: string | null
           min_core_version?: string | null
           name: string
           peer_dependencies?: Json | null
+          promoted_by?: string | null
+          promoted_to_production_at?: string | null
           repository?: string | null
           required_permissions?: Json | null
           resource_limits?: Json | null
@@ -3808,6 +3816,7 @@ export type Database = {
           dependencies?: string[] | null
           description?: string | null
           development_mode?: boolean | null
+          development_stage?: Json | null
           entry_point?: string | null
           homepage?: string | null
           hooks?: Json | null
@@ -3816,10 +3825,13 @@ export type Database = {
           is_active?: boolean
           license?: string | null
           load_order?: number | null
+          maturity_status?: string
           max_core_version?: string | null
           min_core_version?: string | null
           name?: string
           peer_dependencies?: Json | null
+          promoted_by?: string | null
+          promoted_to_production_at?: string | null
           repository?: string | null
           required_permissions?: Json | null
           resource_limits?: Json | null
@@ -3830,7 +3842,15 @@ export type Database = {
           updated_at?: string
           version?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_system_modules_promoted_by"
+            columns: ["promoted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_notifications: {
         Row: {

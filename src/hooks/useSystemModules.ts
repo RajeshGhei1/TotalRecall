@@ -13,13 +13,17 @@ export interface SystemModule {
   default_limits?: Record<string, any>;
   created_at: string;
   updated_at: string;
+  maturity_status?: 'planning' | 'alpha' | 'beta' | 'production';
+  development_stage?: Record<string, any>;
+  promoted_to_production_at?: string;
+  promoted_by?: string;
 }
 
-export const useSystemModules = (activeOnly: boolean = true) => {
+export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['system-modules', activeOnly],
+    queryKey: ['system-modules', activeOnly, maturityFilter],
     queryFn: async () => {
       let queryBuilder = supabase
         .from('system_modules')
@@ -28,6 +32,14 @@ export const useSystemModules = (activeOnly: boolean = true) => {
 
       if (activeOnly) {
         queryBuilder = queryBuilder.eq('is_active', true);
+      }
+
+      if (maturityFilter) {
+        if (maturityFilter === 'production') {
+          queryBuilder = queryBuilder.eq('maturity_status', 'production');
+        } else if (maturityFilter === 'development') {
+          queryBuilder = queryBuilder.in('maturity_status', ['planning', 'alpha', 'beta']);
+        }
       }
 
       const { data, error } = await queryBuilder;
@@ -51,7 +63,14 @@ export const useSystemModules = (activeOnly: boolean = true) => {
         description: moduleData.description,
         version: moduleData.version,
         dependencies: moduleData.dependencies,
-        default_limits: moduleData.default_limits
+        default_limits: moduleData.default_limits,
+        maturity_status: moduleData.maturity_status || 'planning',
+        development_stage: moduleData.development_stage || {
+          stage: 'planning',
+          progress: 0,
+          milestones: [],
+          requirements: []
+        }
       };
 
       const { data, error } = await supabase
@@ -80,11 +99,40 @@ export const useSystemModules = (activeOnly: boolean = true) => {
       if (updates.version !== undefined) updateData.version = updates.version;
       if (updates.dependencies !== undefined) updateData.dependencies = updates.dependencies;
       if (updates.default_limits !== undefined) updateData.default_limits = updates.default_limits;
+      if (updates.maturity_status !== undefined) updateData.maturity_status = updates.maturity_status;
+      if (updates.development_stage !== undefined) updateData.development_stage = updates.development_stage;
 
       const { data, error } = await supabase
         .from('system_modules')
         .update(updateData)
         .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-modules'] });
+    },
+  });
+
+  const promoteToProduction = useMutation({
+    mutationFn: async (moduleId: string) => {
+      const { data, error } = await supabase
+        .from('system_modules')
+        .update({
+          maturity_status: 'production',
+          promoted_to_production_at: new Date().toISOString(),
+          promoted_by: (await supabase.auth.getUser()).data.user?.id,
+          development_stage: {
+            stage: 'production',
+            progress: 100,
+            milestones: ['requirements_defined', 'development_complete', 'testing_complete', 'production_ready'],
+            requirements: []
+          }
+        })
+        .eq('id', moduleId)
         .select()
         .single();
 
@@ -114,6 +162,7 @@ export const useSystemModules = (activeOnly: boolean = true) => {
     ...query,
     createModule,
     updateModule,
+    promoteToProduction,
     deleteModule
   };
 };

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleCard from './ModuleCard';
-import { getFunctionalModuleCount } from '@/utils/moduleUtils';
+import { getProductionModuleCount } from '@/utils/moduleUtils';
 
 interface ModulesManagementProps {
   modules: SystemModule[];
@@ -24,6 +24,7 @@ interface ModulesManagementProps {
   onCreateModule: () => void;
   onEditModule: (module: SystemModule) => void;
   onDeleteModule: (module: SystemModule) => void;
+  showOnlyProduction?: boolean;
 }
 
 const ModulesManagement: React.FC<ModulesManagementProps> = ({
@@ -31,14 +32,15 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
   stats,
   onCreateModule,
   onEditModule,
-  onDeleteModule
+  onDeleteModule,
+  showOnlyProduction = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Calculate functional modules count
-  const functionalCount = getFunctionalModuleCount(modules || []);
+  // Calculate production modules count
+  const productionCount = getProductionModuleCount(modules || []);
 
   const categories = [
     { value: 'all', label: 'All Modules', count: stats.total },
@@ -66,9 +68,14 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">System Module Library</h3>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {showOnlyProduction ? 'Production Module Library' : 'System Module Library'}
+          </h3>
           <p className="text-gray-600 mt-1">
-            View and configure system modules for your platform
+            {showOnlyProduction 
+              ? 'View and configure production-ready modules for your platform'
+              : 'View and configure system modules for your platform'
+            }
           </p>
         </div>
         <div className="flex gap-2">
@@ -85,25 +92,27 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
 
       {/* Stats Overview */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500 rounded-lg">
-              <Package className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
-              <p className="text-blue-700 font-medium">Total Modules</p>
-            </div>
-          </div>
-        </div>
         <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-500 rounded-lg">
+              <Package className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-green-900">{stats.total}</p>
+              <p className="text-green-700 font-medium">
+                {showOnlyProduction ? 'Production Modules' : 'Total Modules'}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-500 rounded-lg">
               <CheckCircle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-green-900">{functionalCount}</p>
-              <p className="text-green-700 font-medium">Functional Modules</p>
+              <p className="text-3xl font-bold text-blue-900">{stats.active}</p>
+              <p className="text-blue-700 font-medium">Active Modules</p>
             </div>
           </div>
         </div>
@@ -113,8 +122,8 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
               <AlertCircle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-orange-900">{stats.total - functionalCount}</p>
-              <p className="text-orange-700 font-medium">Placeholder Modules</p>
+              <p className="text-3xl font-bold text-orange-900">{stats.inactive}</p>
+              <p className="text-orange-700 font-medium">Inactive Modules</p>
             </div>
           </div>
         </div>

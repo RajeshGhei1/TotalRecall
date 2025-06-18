@@ -21,7 +21,8 @@ const ModuleManagement: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState<any>(null);
 
-  const { data: modules, isLoading } = useSystemModules(false);
+  // Only fetch production modules for the System Module Library
+  const { data: modules, isLoading } = useSystemModules(true, 'production');
 
   const handleEditModule = (module: any) => {
     setSelectedModule(module);
@@ -59,18 +60,18 @@ const ModuleManagement: React.FC = () => {
     <div className="space-y-6">
       {/* Quick Stats Overview */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border">
-          <Blocks className="h-8 w-8 text-blue-600" />
+        <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border">
+          <Blocks className="h-8 w-8 text-green-600" />
           <div>
-            <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
-            <p className="text-sm text-blue-700">Total Modules</p>
+            <p className="text-2xl font-bold text-green-900">{stats.total}</p>
+            <p className="text-sm text-green-700">Production Modules</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border">
-          <Zap className="h-8 w-8 text-green-600" />
+        <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border">
+          <Zap className="h-8 w-8 text-blue-600" />
           <div>
-            <p className="text-2xl font-bold text-green-900">{stats.active}</p>
-            <p className="text-sm text-green-700">Active Modules</p>
+            <p className="text-2xl font-bold text-blue-900">{stats.active}</p>
+            <p className="text-sm text-blue-700">Active Modules</p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border">
@@ -93,9 +94,9 @@ const ModuleManagement: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>System Module Library</CardTitle>
+          <CardTitle>Production Modules</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configure and manage modules that can be assigned to subscription plans
+            Configure and manage production-ready modules that can be assigned to subscription plans
           </p>
         </CardHeader>
         <CardContent>
@@ -105,6 +106,7 @@ const ModuleManagement: React.FC = () => {
             onCreateModule={() => setCreateDialogOpen(true)}
             onEditModule={handleEditModule}
             onDeleteModule={handleDeleteModule}
+            showOnlyProduction={true}
           />
         </CardContent>
       </Card>
