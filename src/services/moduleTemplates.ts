@@ -143,6 +143,9 @@ class ModuleTemplateService {
 
   async registerTemplate(template: Omit<ModuleTemplate, 'id' | 'is_built_in'>): Promise<void> {
     try {
+      // Serialize the manifest_template to ensure JSON compatibility
+      const serializedManifest = JSON.parse(JSON.stringify(template.manifest_template));
+      
       const { error } = await supabase
         .from('module_templates')
         .insert({
@@ -151,7 +154,7 @@ class ModuleTemplateService {
           description: template.description,
           category: template.category,
           tags: template.tags,
-          manifest_template: template.manifest_template,
+          manifest_template: serializedManifest,
           files: template.files,
           dependencies: template.dependencies,
           is_built_in: false,

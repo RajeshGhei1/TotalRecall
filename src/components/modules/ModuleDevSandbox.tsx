@@ -27,21 +27,19 @@ import ModuleTestRunner from './ModuleTestRunner';
 import ManifestWizard from './ManifestWizard';
 import LiveDevelopmentSandbox from './LiveDevelopmentSandbox';
 import { useStableTenantContext } from '@/hooks/useStableTenantContext';
-import { moduleTemplateService } from '@/services/moduleTemplates';
+import { useModuleTemplates } from '@/hooks/useModuleTemplates';
 
 const ModuleDevSandbox: React.FC = () => {
   // Use stable tenant context
   const { data: tenantData, isLoading: tenantLoading } = useStableTenantContext();
+  const { data: templates = [], isLoading: templatesLoading } = useModuleTemplates();
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [manifestWizardOpen, setManifestWizardOpen] = useState(false);
   const [sandboxOpen, setSandboxOpen] = useState(false);
-  const [templates, setTemplates] = useState<any[]>([]);
 
   // Add debugging to track component lifecycle
   useEffect(() => {
     console.log('ModuleDevSandbox mounted with stable tenant context');
-    // Load available templates
-    setTemplates(moduleTemplateService.getTemplates());
     return () => {
       console.log('ModuleDevSandbox unmounted');
     };
@@ -51,7 +49,7 @@ const ModuleDevSandbox: React.FC = () => {
     console.log('ModuleDevSandbox - stable tenant context:', tenantData);
   }, [tenantData]);
 
-  if (tenantLoading) {
+  if (tenantLoading || templatesLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

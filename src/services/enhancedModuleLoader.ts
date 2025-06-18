@@ -157,6 +157,15 @@ class EnhancedModuleLoader {
 
   private async logDeploymentEvent(moduleId: string, type: string, context: ModuleContext): Promise<void> {
     try {
+      // Serialize the context to be JSON-compatible
+      const serializedContext = {
+        moduleId: context.moduleId,
+        tenantId: context.tenantId,
+        userId: context.userId,
+        permissions: context.permissions,
+        config: context.config
+      };
+
       await supabase
         .from('module_deployments')
         .insert({
@@ -166,11 +175,11 @@ class EnhancedModuleLoader {
           status: 'completed',
           tenant_id: context.tenantId,
           deployed_by: context.userId,
-          deployment_config: context.config,
+          deployment_config: serializedContext.config,
           deployment_log: [{
             timestamp: new Date().toISOString(),
             event: `Module ${type} completed`,
-            details: { moduleId, context }
+            details: { moduleId, context: serializedContext }
           }]
         });
     } catch (error) {
