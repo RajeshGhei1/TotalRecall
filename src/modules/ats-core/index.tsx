@@ -8,8 +8,8 @@ interface AtsCoreProps {
   allowCreate?: boolean;
 }
 
-const AtsCore: React.FC<AtsCoreProps> = (props) => {
-  return <ATSDashboard {...props} />;
+const AtsCore: React.FC<AtsCoreProps> = ({ view, showMetrics, allowCreate }) => {
+  return <ATSDashboard view={view} showMetrics={showMetrics} allowCreate={allowCreate} />;
 };
 
 // Module metadata for registration

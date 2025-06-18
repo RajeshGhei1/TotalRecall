@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { atsService } from '@/services/atsService';
@@ -8,8 +9,18 @@ import ATSDashboardHeader from './dashboard/ATSDashboardHeader';
 import ATSSearchFilters from './dashboard/ATSSearchFilters';
 import ATSTabsContent from './dashboard/ATSTabsContent';
 
-const ATSDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+interface ATSDashboardProps {
+  view?: 'dashboard' | 'jobs' | 'candidates' | 'pipeline';
+  showMetrics?: boolean;
+  allowCreate?: boolean;
+}
+
+const ATSDashboard: React.FC<ATSDashboardProps> = ({ 
+  view = 'dashboard', 
+  showMetrics = true, 
+  allowCreate = true 
+}) => {
+  const [activeTab, setActiveTab] = useState(view === 'dashboard' ? 'overview' : view);
   const [searchTerm, setSearchTerm] = useState('');
   const [createJobOpen, setCreateJobOpen] = useState(false);
   const [createCandidateOpen, setCreateCandidateOpen] = useState(false);
@@ -32,9 +43,11 @@ const ATSDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <ATSDashboardHeader onCreateJob={() => setCreateJobOpen(true)} />
+      <ATSDashboardHeader onCreateJob={() => allowCreate && setCreateJobOpen(true)} />
       
-      <ATSMetrics jobs={jobs} candidates={candidates} applications={applications} />
+      {showMetrics && (
+        <ATSMetrics jobs={jobs} candidates={candidates} applications={applications} />
+      )}
       
       <ATSSearchFilters 
         searchTerm={searchTerm}
@@ -48,16 +61,20 @@ const ATSDashboard = () => {
         candidates={candidates}
         applications={applications}
         searchTerm={searchTerm}
-        onCreateCandidate={() => setCreateCandidateOpen(true)}
-        onCreateJob={() => setCreateJobOpen(true)}
+        onCreateCandidate={() => allowCreate && setCreateCandidateOpen(true)}
+        onCreateJob={() => allowCreate && setCreateJobOpen(true)}
         jobsLoading={jobsLoading}
         candidatesLoading={candidatesLoading}
         applicationsLoading={applicationsLoading}
       />
 
       {/* Dialogs */}
-      <CreateJobDialog open={createJobOpen} onOpenChange={setCreateJobOpen} />
-      <CreateCandidateDialog open={createCandidateOpen} onOpenChange={setCreateCandidateOpen} />
+      {allowCreate && (
+        <>
+          <CreateJobDialog open={createJobOpen} onOpenChange={setCreateJobOpen} />
+          <CreateCandidateDialog open={createCandidateOpen} onOpenChange={setCreateCandidateOpen} />
+        </>
+      )}
     </div>
   );
 };

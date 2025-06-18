@@ -8,8 +8,8 @@ interface TalentDatabaseProps {
   allowAdd?: boolean;
 }
 
-const TalentDatabase: React.FC<TalentDatabaseProps> = (props) => {
-  return <TalentList {...props} />;
+const TalentDatabase: React.FC<TalentDatabaseProps> = ({ view, showFilters, allowAdd }) => {
+  return <TalentList view={view} showFilters={showFilters} allowAdd={allowAdd} />;
 };
 
 // Module metadata for registration

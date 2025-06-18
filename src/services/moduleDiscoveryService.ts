@@ -16,6 +16,7 @@ export class ModuleDiscoveryService {
   private static instance: ModuleDiscoveryService;
   private modules: Map<string, LoadedModule> = new Map();
   private templates: Record<string, any> = {};
+  private moduleFileInfo: Map<string, { path: string; exists: boolean }> = new Map();
 
   private constructor() {
     this.initializeBuiltInModules();
@@ -94,11 +95,56 @@ export class ModuleDiscoveryService {
         };
 
         this.modules.set(moduleConfig.id, loadedModule);
+        this.moduleFileInfo.set(moduleConfig.id, { 
+          path: moduleConfig.path, 
+          exists: true 
+        });
+        
         console.log(`Initialized built-in module: ${moduleConfig.name}`);
       } catch (error) {
         console.error(`Failed to initialize module ${moduleConfig.id}:`, error);
       }
     }
+  }
+
+  /**
+   * Initialize known modules (called by module manager)
+   */
+  initializeKnownModules(): void {
+    console.log('Initializing known modules...');
+    // This method is called to ensure modules are ready
+    // The actual initialization happens in the constructor
+  }
+
+  /**
+   * Get module file information
+   */
+  getModuleFileInfo(moduleId: string): { path: string; exists: boolean } | null {
+    return this.moduleFileInfo.get(moduleId) || null;
+  }
+
+  /**
+   * Discover and load all available modules
+   */
+  async discoverAndLoadModules(): Promise<{
+    loaded: string[];
+    failed: { moduleId: string; error: string }[];
+  }> {
+    const loaded: string[] = [];
+    const failed: { moduleId: string; error: string }[] = [];
+
+    for (const [moduleId, module] of this.modules) {
+      if (module.status === 'loaded') {
+        loaded.push(moduleId);
+      } else {
+        failed.push({
+          moduleId,
+          error: 'Module not properly loaded'
+        });
+      }
+    }
+
+    return { loaded, failed };
   }
 
   async loadModule(moduleId: string, options?: any): Promise<LoadedModule | undefined> {
@@ -173,8 +219,8 @@ export class ModuleDiscoveryService {
   }
 
   getModulePath(moduleId: string): string | undefined {
-    const module = this.modules.get(moduleId);
-    return module?.manifest?.entryPoint;
+    const fileInfo = this.moduleFileInfo.get(moduleId);
+    return fileInfo?.path;
   }
 
   registerTemplate(templateId: string, template: any): void {
