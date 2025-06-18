@@ -91,8 +91,8 @@ const defaultNavItems: NavItem[] = [
     id: 'talent-database',
     label: 'Talent Database', 
     icon: Database, 
-    href: '/tenant-admin/talent-database',
-    requiresModule: 'talent-database'
+    href: '/tenant-admin/talent-database'
+    // Temporarily remove requiresModule to test if navigation item appears
   },
   { 
     id: 'companies',
@@ -185,6 +185,7 @@ export const useTenantAdminNavigation = () => {
   // Filter navigation items based on module access
   const filteredNavItems = defaultNavItems.filter(item => {
     if (!item.requiresModule) {
+      console.log(`Item ${item.id} has no module requirement, showing it`);
       return true; // Always show items that don't require modules
     }
 
