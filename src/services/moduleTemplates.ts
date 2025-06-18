@@ -14,6 +14,8 @@ export interface ModuleTemplate {
   tags: string[];
   is_built_in: boolean;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 class ModuleTemplateService {
@@ -141,11 +143,8 @@ class ModuleTemplateService {
     }
   }
 
-  async registerTemplate(template: Omit<ModuleTemplate, 'id' | 'is_built_in'>): Promise<void> {
+  async registerTemplate(template: Omit<ModuleTemplate, 'id' | 'is_built_in' | 'created_at' | 'updated_at'>): Promise<void> {
     try {
-      // Serialize the manifest_template to ensure JSON compatibility
-      const serializedManifest = JSON.parse(JSON.stringify(template.manifest_template));
-      
       const { error } = await supabase
         .from('module_templates')
         .insert({
@@ -154,7 +153,7 @@ class ModuleTemplateService {
           description: template.description,
           category: template.category,
           tags: template.tags,
-          manifest_template: serializedManifest,
+          manifest_template: template.manifest_template,
           files: template.files,
           dependencies: template.dependencies,
           is_built_in: false,
@@ -202,7 +201,9 @@ class ModuleTemplateService {
       files: data.files || {},
       dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
       is_built_in: data.is_built_in || false,
-      is_active: data.is_active || true
+      is_active: data.is_active || true,
+      created_at: data.created_at,
+      updated_at: data.updated_at
     };
   }
 }

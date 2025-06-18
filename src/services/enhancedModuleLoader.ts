@@ -2,7 +2,6 @@
 import React from 'react';
 import { LoadedModule, ModuleContext, ModuleLoadOptions } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
-import { useModuleDeployments } from '@/hooks/useModuleDeployments';
 
 class EnhancedModuleLoader {
   private static instance: EnhancedModuleLoader;
@@ -106,7 +105,7 @@ class EnhancedModuleLoader {
     try {
       const context: ModuleContext = {
         moduleId,
-        tenantId: 'system',
+        tenantId: '00000000-0000-0000-0000-000000000001', // Use proper UUID format
         userId: 'system',
         permissions: ['read'],
         config: {}
@@ -140,10 +139,10 @@ class EnhancedModuleLoader {
         category: data.category,
         author: data.author || 'System',
         license: data.license || 'MIT',
-        dependencies: data.dependencies || [],
+        dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
         entryPoint: data.entry_point || 'index.tsx',
-        requiredPermissions: data.required_permissions || ['read'],
-        subscriptionTiers: data.subscription_tiers || ['basic', 'pro', 'enterprise'],
+        requiredPermissions: Array.isArray(data.required_permissions) ? data.required_permissions : ['read'],
+        subscriptionTiers: Array.isArray(data.subscription_tiers) ? data.subscription_tiers : ['basic', 'pro', 'enterprise'],
         loadOrder: data.load_order || 100,
         autoLoad: data.auto_load || false,
         canUnload: data.can_unload !== false,
@@ -157,34 +156,37 @@ class EnhancedModuleLoader {
 
   private async logDeploymentEvent(moduleId: string, type: string, context: ModuleContext): Promise<void> {
     try {
-      // Serialize the context to be JSON-compatible
-      const serializedContext = {
-        moduleId: context.moduleId,
-        tenantId: context.tenantId,
-        userId: context.userId,
-        permissions: context.permissions,
-        config: context.config
-      };
+      // Validate tenant_id is a proper UUID
+      const tenantId = this.validateUUID(context.tenantId) ? context.tenantId : '00000000-0000-0000-0000-000000000001';
 
-      await supabase
+      const { error } = await supabase
         .from('module_deployments')
         .insert({
           module_name: moduleId,
           version: '1.0.0',
           deployment_type: type,
           status: 'completed',
-          tenant_id: context.tenantId,
+          tenant_id: tenantId,
           deployed_by: context.userId,
-          deployment_config: serializedContext.config,
+          deployment_config: context.config || {},
           deployment_log: [{
             timestamp: new Date().toISOString(),
             event: `Module ${type} completed`,
-            details: { moduleId, context: serializedContext }
+            details: { moduleId, tenantId }
           }]
         });
+
+      if (error) {
+        console.warn('Failed to log deployment event:', error);
+      }
     } catch (error) {
       console.warn('Failed to log deployment event:', error);
     }
+  }
+
+  private validateUUID(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 
   private async dynamicImport(moduleId: string): Promise<any> {
