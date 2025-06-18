@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,12 @@ import {
   TestTube,
   Rocket,
   Shield,
-  Users
+  Users,
+  Database,
+  ArrowRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useSystemModules } from '@/hooks/useSystemModules';
 
 interface DeploymentStep {
   id: string;
@@ -27,17 +29,41 @@ interface DeploymentStep {
   details?: string;
 }
 
-const ModuleDeploymentPipeline: React.FC = () => {
+interface ModuleData {
+  name: string;
+  description: string;
+  category: string;
+  version: string;
+  templateId: string;
+  features: string[];
+  dependencies: string[];
+  configuration: Record<string, any>;
+}
+
+interface ModuleDeploymentPipelineProps {
+  moduleData?: ModuleData;
+  onDeploymentComplete?: (moduleId: string) => void;
+}
+
+const ModuleDeploymentPipeline: React.FC<ModuleDeploymentPipelineProps> = ({ 
+  moduleData,
+  onDeploymentComplete 
+}) => {
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
   const [deploymentProgress, setDeploymentProgress] = useState(0);
+  const [deployedModuleId, setDeployedModuleId] = useState<string | null>(null);
   const [deploymentSteps, setDeploymentSteps] = useState<DeploymentStep[]>([
     { id: 'validation', name: 'Code Validation', status: 'pending' },
     { id: 'build', name: 'Build Module', status: 'pending' },
     { id: 'test', name: 'Run Tests', status: 'pending' },
     { id: 'security', name: 'Security Scan', status: 'pending' },
     { id: 'package', name: 'Package Module', status: 'pending' },
-    { id: 'deploy', name: 'Deploy to System', status: 'pending' }
+    { id: 'deploy', name: 'Deploy to Sandbox', status: 'pending' },
+    { id: 'register', name: 'Register in System Library', status: 'pending' }
   ]);
+
+  const { createModule } = useSystemModules(false);
 
   const deploymentHistory = [
     {
@@ -67,50 +93,136 @@ const ModuleDeploymentPipeline: React.FC = () => {
   ];
 
   const handleDeploy = async () => {
+    if (!moduleData) {
+      toast({
+        title: 'No Module Data',
+        description: 'Please create a module first before deploying.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsDeploying(true);
     setDeploymentProgress(0);
 
-    // Simulate deployment steps
-    for (let i = 0; i < deploymentSteps.length; i++) {
-      const step = deploymentSteps[i];
-      
-      // Update step to running
-      setDeploymentSteps(prev => prev.map(s => 
-        s.id === step.id ? { ...s, status: 'running' } : s
-      ));
+    try {
+      // Simulate deployment steps
+      for (let i = 0; i < deploymentSteps.length; i++) {
+        const step = deploymentSteps[i];
+        
+        // Update step to running
+        setDeploymentSteps(prev => prev.map(s => 
+          s.id === step.id ? { ...s, status: 'running' } : s
+        ));
 
-      // Simulate step duration
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+        // Simulate step duration
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
-      // Update step to completed (or failed randomly)
-      const success = Math.random() > 0.1; // 90% success rate
-      setDeploymentSteps(prev => prev.map(s => 
-        s.id === step.id ? { 
-          ...s, 
-          status: success ? 'completed' : 'failed',
-          duration: Math.floor(1000 + Math.random() * 2000),
-          details: success ? 'Step completed successfully' : 'Step failed with errors'
-        } : s
-      ));
+        // Handle special steps
+        if (step.id === 'register') {
+          try {
+            // Register module in system library
+            const newModule = await createModule.mutateAsync({
+              name: moduleData.name,
+              description: moduleData.description,
+              category: moduleData.category,
+              version: moduleData.version,
+              is_active: false, // Start as inactive until promoted
+              dependencies: moduleData.dependencies,
+              default_limits: {}
+            });
 
-      setDeploymentProgress(((i + 1) / deploymentSteps.length) * 100);
+            setDeployedModuleId(newModule.id);
+            
+            setDeploymentSteps(prev => prev.map(s => 
+              s.id === step.id ? { 
+                ...s, 
+                status: 'completed',
+                duration: Math.floor(1000 + Math.random() * 2000),
+                details: `Module registered with ID: ${newModule.id}`
+              } : s
+            ));
+          } catch (error) {
+            setDeploymentSteps(prev => prev.map(s => 
+              s.id === step.id ? { 
+                ...s, 
+                status: 'failed',
+                duration: Math.floor(1000 + Math.random() * 2000),
+                details: `Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+              } : s
+            ));
+            throw error;
+          }
+        } else {
+          // Regular step completion
+          const success = Math.random() > 0.05; // 95% success rate
+          setDeploymentSteps(prev => prev.map(s => 
+            s.id === step.id ? { 
+              ...s, 
+              status: success ? 'completed' : 'failed',
+              duration: Math.floor(1000 + Math.random() * 2000),
+              details: success ? 'Step completed successfully' : 'Step failed with errors'
+            } : s
+          ));
 
-      if (!success) {
-        setIsDeploying(false);
-        toast({
-          title: 'Deployment Failed',
-          description: `Failed at step: ${step.name}`,
-          variant: 'destructive',
-        });
-        return;
+          if (!success) {
+            throw new Error(`Deployment failed at step: ${step.name}`);
+          }
+        }
+
+        setDeploymentProgress(((i + 1) / deploymentSteps.length) * 100);
       }
+
+      setIsDeploying(false);
+      toast({
+        title: 'Deployment Successful',
+        description: 'Your module has been deployed and registered in the system library.',
+      });
+
+      onDeploymentComplete?.(deployedModuleId || '');
+
+    } catch (error) {
+      setIsDeploying(false);
+      toast({
+        title: 'Deployment Failed',
+        description: error instanceof Error ? error.message : 'Unknown deployment error',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePromoteToProduction = async () => {
+    if (!deployedModuleId) {
+      toast({
+        title: 'No Module to Promote',
+        description: 'Please deploy a module first before promoting to production.',
+        variant: 'destructive',
+      });
+      return;
     }
 
-    setIsDeploying(false);
-    toast({
-      title: 'Deployment Successful',
-      description: 'Your module has been deployed to the system.',
-    });
+    setIsPromoting(true);
+
+    try {
+      // Update module to active status
+      await createModule.mutateAsync({
+        name: moduleData!.name,
+        is_active: true
+      });
+
+      toast({
+        title: 'Module Promoted',
+        description: 'Your module is now active and available for subscription assignment.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Promotion Failed',
+        description: 'Failed to promote module to production.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPromoting(false);
+    }
   };
 
   const resetDeployment = () => {
@@ -121,6 +233,7 @@ const ModuleDeploymentPipeline: React.FC = () => {
       details: undefined
     })));
     setDeploymentProgress(0);
+    setDeployedModuleId(null);
   };
 
   const getStatusIcon = (status: DeploymentStep['status']) => {
@@ -154,6 +267,7 @@ const ModuleDeploymentPipeline: React.FC = () => {
       <Tabs defaultValue="deploy" className="w-full">
         <TabsList>
           <TabsTrigger value="deploy">Deploy Module</TabsTrigger>
+          <TabsTrigger value="promote">Promote to Production</TabsTrigger>
           <TabsTrigger value="history">Deployment History</TabsTrigger>
           <TabsTrigger value="environments">Environments</TabsTrigger>
         </TabsList>
@@ -171,9 +285,14 @@ const ModuleDeploymentPipeline: React.FC = () => {
                 {/* Deployment Controls */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">Ready to Deploy</h3>
+                    <h3 className="font-semibold">
+                      {moduleData ? `Deploy: ${moduleData.name}` : 'Ready to Deploy'}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Deploy your module to the production environment
+                      {moduleData 
+                        ? `Deploy ${moduleData.name} v${moduleData.version} to the system`
+                        : 'Create a module first to enable deployment'
+                      }
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -186,7 +305,7 @@ const ModuleDeploymentPipeline: React.FC = () => {
                     </Button>
                     <Button 
                       onClick={handleDeploy}
-                      disabled={isDeploying}
+                      disabled={isDeploying || !moduleData}
                     >
                       {isDeploying ? (
                         <>
@@ -225,6 +344,9 @@ const ModuleDeploymentPipeline: React.FC = () => {
                           <Badge variant="outline" className={getStatusColor(step.status)}>
                             {step.status}
                           </Badge>
+                          {step.id === 'register' && (
+                            <Database className="h-4 w-4 text-blue-500" />
+                          )}
                         </div>
                         {step.details && (
                           <p className="text-sm text-muted-foreground mt-1">{step.details}</p>
@@ -238,6 +360,59 @@ const ModuleDeploymentPipeline: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="promote" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ArrowRight className="h-5 w-5" />
+                Promote to Production
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h4 className="font-medium text-yellow-800">Production Promotion</h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    This will make your module available for subscription assignment and tenant access.
+                  </p>
+                </div>
+
+                {deployedModuleId ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>Module deployed and ready for promotion</span>
+                    </div>
+                    <Button 
+                      onClick={handlePromoteToProduction}
+                      disabled={isPromoting}
+                      className="w-full"
+                    >
+                      {isPromoting ? (
+                        <>
+                          <Clock className="h-4 w-4 mr-2 animate-spin" />
+                          Promoting...
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="h-4 w-4 mr-2" />
+                          Promote to Production
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">No Module Ready for Promotion</p>
+                    <p className="text-sm">Deploy a module first to enable promotion</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

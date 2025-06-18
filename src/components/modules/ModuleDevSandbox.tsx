@@ -1,446 +1,286 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { 
-  RefreshCw, 
   Code, 
-  Layers,
-  Activity,
-  Package,
-  Zap,
-  TrendingUp,
+  FileText, 
+  Play, 
   Settings,
-  Monitor,
-  Database,
-  TestTube,
-  FileText,
-  Wrench,
-  File,
-  BookOpen,
+  Rocket,
   Plus,
-  Rocket
+  CheckCircle
 } from 'lucide-react';
-import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
-import SimplifiedModuleScaling from './SimplifiedModuleScaling';
-import RealModuleDashboard from './RealModuleDashboard';
-import ModuleTestRunner from './ModuleTestRunner';
-import ManifestWizard from './ManifestWizard';
-import ModuleTemplateManager from './ModuleTemplateManager';
+import { toast } from '@/hooks/use-toast';
 import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
 import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
-import { useStableTenantContext } from '@/hooks/useStableTenantContext';
-import { useModuleTemplates } from '@/hooks/useModuleTemplates';
-import { useSystemModules } from '@/hooks/useSystemModules';
-import { useModuleDeployments } from '@/hooks/useModuleDeployments';
-import { getFunctionalModuleCount } from '@/utils/moduleUtils';
+
+interface ModuleData {
+  name: string;
+  description: string;
+  category: string;
+  version: string;
+  templateId: string;
+  features: string[];
+  dependencies: string[];
+  configuration: Record<string, any>;
+}
 
 const ModuleDevSandbox: React.FC = () => {
-  // Use stable tenant context
-  const { data: tenantData, isLoading: tenantLoading } = useStableTenantContext();
-  const { data: templates = [], isLoading: templatesLoading } = useModuleTemplates();
-  const { data: modules = [], isLoading: modulesLoading } = useSystemModules();
-  const { data: deployments = [], isLoading: deploymentsLoading } = useModuleDeployments(tenantData?.tenant_id);
-  
-  const [testRunnerOpen, setTestRunnerOpen] = useState(false);
-  const [manifestWizardOpen, setManifestWizardOpen] = useState(false);
-  const [sandboxOpen, setSandboxOpen] = useState(false);
-  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
-  const [newModuleWizardOpen, setNewModuleWizardOpen] = useState(false);
-  const [deploymentPipelineOpen, setDeploymentPipelineOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isCreatingModule, setIsCreatingModule] = useState(false);
+  const [currentModule, setCurrentModule] = useState<ModuleData | null>(null);
+  const [deployedModules, setDeployedModules] = useState<string[]>([]);
 
-  // Add debugging to track component lifecycle
-  useEffect(() => {
-    console.log('ModuleDevSandbox mounted with stable tenant context');
-    return () => {
-      console.log('ModuleDevSandbox unmounted');
-    };
-  }, []);
+  const handleCreateModule = () => {
+    setIsCreatingModule(true);
+    setActiveTab('create');
+  };
 
-  useEffect(() => {
-    console.log('ModuleDevSandbox - stable tenant context:', tenantData);
-  }, [tenantData]);
+  const handleModuleCreated = (moduleData: ModuleData) => {
+    setCurrentModule(moduleData);
+    setIsCreatingModule(false);
+    setActiveTab('code');
+    
+    toast({
+      title: 'Module Created',
+      description: `${moduleData.name} is ready for development.`,
+    });
+  };
 
-  if (tenantLoading || templatesLoading || modulesLoading || deploymentsLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const handleCancelCreation = () => {
+    setIsCreatingModule(false);
+    setActiveTab('overview');
+  };
 
-  const stats = {
-    modules: modules.length,
-    functionalModules: getFunctionalModuleCount(modules),
-    templates: templates.length,
-    recentDeployments: deployments.length
+  const handleDeploymentComplete = (moduleId: string) => {
+    setDeployedModules(prev => [...prev, moduleId]);
+    toast({
+      title: 'Module Deployed',
+      description: 'Your module has been successfully deployed to the system.',
+    });
+  };
+
+  const resetSandbox = () => {
+    setCurrentModule(null);
+    setIsCreatingModule(false);
+    setActiveTab('overview');
   };
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5" />
-            Enhanced Module Development Environment
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Complete development environment with guided workflows, live coding, and deployment pipeline
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Module Development Sandbox</h2>
+          <p className="text-gray-600 mt-1">
+            Create, develop, and deploy new modules for the Total Recall system
           </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-green-600" />
-              <span>System Modules Connected</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Monitor className="h-4 w-4 text-blue-600" />
-              <span>Stable Tenant Context</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-purple-600" />
-              <span>Live Development Ready</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TestTube className="h-4 w-4 text-orange-600" />
-              <span>Test Framework Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-indigo-600" />
-              <span>{stats.templates} Templates Available</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
-            Module Development Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setNewModuleWizardOpen(true)}
-            >
-              <Plus className="h-6 w-6" />
-              <span className="text-sm">Create Module</span>
+        </div>
+        <div className="flex gap-2">
+          {currentModule && (
+            <Button variant="outline" onClick={resetSandbox}>
+              Reset Sandbox
             </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setManifestWizardOpen(true)}
-            >
-              <Settings className="h-6 w-6" />
-              <span className="text-sm">Create Manifest</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setSandboxOpen(true)}
-            >
-              <Code className="h-6 w-6" />
-              <span className="text-sm">Live Coding</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setTestRunnerOpen(true)}
-            >
-              <TestTube className="h-6 w-6" />
-              <span className="text-sm">Run Tests</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setDeploymentPipelineOpen(true)}
-            >
-              <Rocket className="h-6 w-6" />
-              <span className="text-sm">Deploy</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 flex-col gap-2"
-              onClick={() => setTemplateManagerOpen(true)}
-            >
-              <File className="h-6 w-6" />
-              <span className="text-sm">Templates</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Statistics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Package className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.modules}</p>
-                <p className="text-sm text-muted-foreground">Total Modules</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Zap className="h-8 w-8 text-green-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.functionalModules}</p>
-                <p className="text-sm text-muted-foreground">Functional Modules</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <File className="h-8 w-8 text-purple-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.templates}</p>
-                <p className="text-sm text-muted-foreground">Templates</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Activity className="h-8 w-8 text-orange-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.recentDeployments}</p>
-                <p className="text-sm text-muted-foreground">Deployments</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          )}
+          <Button onClick={handleCreateModule} disabled={isCreatingModule}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Module
+          </Button>
+        </div>
       </div>
 
-      {/* Main Tabs */}
-      <Tabs defaultValue="modules" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="modules" className="flex items-center gap-2">
-            <Package className="h-4 w-4" />
-            Module Discovery
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-2">
-            <File className="h-4 w-4" />
-            Templates
-          </TabsTrigger>
-          <TabsTrigger value="development" className="flex items-center gap-2">
-            <Code className="h-4 w-4" />
-            Development Hub
-          </TabsTrigger>
-          <TabsTrigger value="testing" className="flex items-center gap-2">
-            <TestTube className="h-4 w-4" />
-            Testing & QA
-          </TabsTrigger>
-          <TabsTrigger value="deployment" className="flex items-center gap-2">
-            <Rocket className="h-4 w-4" />
-            Deployment
-          </TabsTrigger>
-          <TabsTrigger value="scaling" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Performance Insights
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="modules" className="mt-6">
-          <RealModuleDashboard tenantId={tenantData?.tenant_id} />
-        </TabsContent>
-
-        <TabsContent value="templates" className="mt-6">
-          <ModuleTemplateManager />
-        </TabsContent>
-
-        <TabsContent value="development" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5" />
-                Development Hub
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Integrated development environment with guided workflows and live coding
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Quick Start */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Quick Start</h3>
-                  <div className="space-y-3">
-                    <Button 
-                      className="w-full justify-start" 
-                      onClick={() => setNewModuleWizardOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Module
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => setSandboxOpen(true)}
-                    >
-                      <Code className="h-4 w-4 mr-2" />
-                      Open Live Code Editor
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => setTemplateManagerOpen(true)}
-                    >
-                      <File className="h-4 w-4 mr-2" />
-                      Browse Templates
-                    </Button>
-                  </div>
+      {/* Current Module Status */}
+      {currentModule && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Code className="h-5 w-5 text-blue-600" />
                 </div>
-                
-                {/* Development Tools */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Development Tools</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="h-auto p-4 flex-col gap-2"
-                      onClick={() => setSandboxOpen(true)}
-                    >
-                      <Code className="h-6 w-6" />
-                      <span className="text-sm">Live IDE</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-auto p-4 flex-col gap-2"
-                      onClick={() => setTestRunnerOpen(true)}
-                    >
-                      <TestTube className="h-6 w-6" />
-                      <span className="text-sm">Test Suite</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-auto p-4 flex-col gap-2"
-                      onClick={() => setDeploymentPipelineOpen(true)}
-                    >
-                      <Rocket className="h-6 w-6" />
-                      <span className="text-sm">Deploy</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-auto p-4 flex-col gap-2"
-                    >
-                      <Activity className="h-6 w-6" />
-                      <span className="text-sm">Performance</span>
-                    </Button>
-                  </div>
+                <div>
+                  <h3 className="font-semibold">{currentModule.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    v{currentModule.version} • {currentModule.category}
+                  </p>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">In Development</Badge>
+                {deployedModules.length > 0 && (
+                  <Badge variant="default">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Deployed
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Development Environment Status</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p><strong>Tenant Context:</strong> {tenantData?.tenant_name || 'Loading...'}</p>
-                    <p><strong>Tenant ID:</strong> {tenantData?.tenant_id || 'N/A'}</p>
+      {/* Main Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule}>
+            Create Module
+          </TabsTrigger>
+          <TabsTrigger value="code" disabled={!currentModule}>
+            Code Editor
+          </TabsTrigger>
+          <TabsTrigger value="deploy" disabled={!currentModule}>
+            Deploy
+          </TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Development Workflow
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+                      1
+                    </div>
+                    <span className="text-sm">Create module manifest and configuration</span>
                   </div>
-                  <div>
-                    <p><strong>Environment:</strong> {tenantData?.is_development ? 'Development' : 'Production'}</p>
-                    <p><strong>Module System:</strong> Enhanced & Connected</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+                      2
+                    </div>
+                    <span className="text-sm">Develop and test module code</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+                      3
+                    </div>
+                    <span className="text-sm">Deploy to system module library</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+                      4
+                    </div>
+                    <span className="text-sm">Promote to production for tenant access</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Sandbox Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li>• Live code editing with preview</li>
+                  <li>• Module manifest generation</li>
+                  <li>• Built-in testing environment</li>
+                  <li>• Deployment pipeline integration</li>
+                  <li>• Version control and history</li>
+                  <li>• Template-based scaffolding</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {!currentModule && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Code className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Module in Development</h3>
+                <p className="text-muted-foreground mb-6">
+                  Start by creating a new module to begin development
+                </p>
+                <Button onClick={handleCreateModule}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Module
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="create">
+          {isCreatingModule && (
+            <NewModuleWizard
+              onComplete={handleModuleCreated}
+              onCancel={handleCancelCreation}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="code">
+          {currentModule && (
+            <EnhancedLiveCodeEditor />
+          )}
+        </TabsContent>
+
+        <TabsContent value="deploy">
+          {currentModule && (
+            <ModuleDeploymentPipeline
+              moduleData={currentModule}
+              onDeploymentComplete={handleDeploymentComplete}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sandbox Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Development Options</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      <span className="text-sm">Auto-save module changes</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      <span className="text-sm">Enable hot reload</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      <span className="text-sm">Debug mode</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Deployment Settings</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      <span className="text-sm">Require approval before production</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      <span className="text-sm">Auto-promote after successful deployment</span>
+                    </label>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="testing" className="mt-6">
-          <SimplifiedModuleDeployment />
-        </TabsContent>
-
-        <TabsContent value="deployment" className="mt-6">
-          <ModuleDeploymentPipeline />
-        </TabsContent>
-
-        <TabsContent value="scaling" className="mt-6">
-          <SimplifiedModuleScaling />
-        </TabsContent>
       </Tabs>
-
-      {/* Dialogs */}
-      <Dialog open={newModuleWizardOpen} onOpenChange={setNewModuleWizardOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Module</DialogTitle>
-          </DialogHeader>
-          <NewModuleWizard 
-            onComplete={() => setNewModuleWizardOpen(false)}
-            onCancel={() => setNewModuleWizardOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={testRunnerOpen} onOpenChange={setTestRunnerOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Module Test Runner</DialogTitle>
-          </DialogHeader>
-          <ModuleTestRunner 
-            moduleId="development-module"
-            onTestComplete={() => setTestRunnerOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={manifestWizardOpen} onOpenChange={setManifestWizardOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create Module Manifest</DialogTitle>
-          </DialogHeader>
-          <ManifestWizard 
-            onComplete={() => setManifestWizardOpen(false)}
-            onCancel={() => setManifestWizardOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={sandboxOpen} onOpenChange={setSandboxOpen}>
-        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Enhanced Live Development Sandbox</DialogTitle>
-          </DialogHeader>
-          <EnhancedLiveCodeEditor />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={deploymentPipelineOpen} onOpenChange={setDeploymentPipelineOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Module Deployment Pipeline</DialogTitle>
-          </DialogHeader>
-          <ModuleDeploymentPipeline />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={templateManagerOpen} onOpenChange={setTemplateManagerOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Module Template Manager</DialogTitle>
-          </DialogHeader>
-          <ModuleTemplateManager />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
