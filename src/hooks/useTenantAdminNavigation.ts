@@ -91,8 +91,8 @@ const defaultNavItems: NavItem[] = [
     id: 'talent-database',
     label: 'Talent Database', 
     icon: Database, 
-    href: '/tenant-admin/talent-database'
-    // Temporarily remove requiresModule to test if navigation item appears
+    href: '/tenant-admin/talent-database',
+    requiresModule: 'talent-database'
   },
   { 
     id: 'companies',

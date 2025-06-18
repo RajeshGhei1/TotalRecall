@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AccessCheckResult } from '@/types/subscription-types';
 
 export interface UnifiedAccessResult extends AccessCheckResult {
-  accessSource: 'subscription' | 'none';
+  accessSource: 'subscription' | 'development' | 'none';
   subscriptionDetails?: {
     subscriptionType: 'user' | 'tenant';
     planName: string;
@@ -30,29 +30,17 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
         };
       }
 
-      // For development/testing - allow access to talent-database module
-      if (moduleName === 'talent-database' && tenantId === 'mock-tenant-id') {
-        console.log('Development mode: granting access to talent-database');
-        return {
-          hasAccess: true,
-          module: {
-            module_name: moduleName,
-            is_enabled: true,
-            limits: {}
-          },
-          plan: null,
-          subscription: null,
-          subscriptionType: 'tenant',
-          accessSource: 'subscription',
-          subscriptionDetails: {
-            subscriptionType: 'tenant',
-            planName: 'Development Plan',
-            status: 'active'
-          }
-        };
-      }
+      // Development modules - grant access for core functionality
+      const developmentModules = [
+        'talent-database',
+        'Dashboard Analytics',
+        'ATS Core',
+        'User Management',
+        'Workflow Management',
+        'Predictive Insights'
+      ];
 
-      // Check subscription-based access only
+      // Check subscription-based access first
       const subscriptionAccess = await checkSubscriptionAccess(tenantId, moduleName, userId);
       
       if (subscriptionAccess.hasAccess) {
@@ -63,8 +51,29 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
         };
       }
 
+      // If no subscription access and module is in development list, grant development access
+      if (developmentModules.includes(moduleName)) {
+        console.log(`Development mode: granting access to ${moduleName}`);
+        return {
+          hasAccess: true,
+          module: {
+            module_name: moduleName,
+            is_enabled: true,
+            limits: {}
+          },
+          plan: null,
+          subscription: null,
+          subscriptionType: 'tenant',
+          accessSource: 'development',
+          subscriptionDetails: {
+            subscriptionType: 'tenant',
+            planName: 'Development Access',
+            status: 'active'
+          }
+        };
+      }
+
       console.log(`Access denied for ${moduleName}`);
-      // No access found
       return {
         hasAccess: false,
         module: null,
