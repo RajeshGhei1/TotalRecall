@@ -18,7 +18,8 @@ import {
   Database,
   TestTube,
   FileText,
-  Wrench
+  Wrench,
+  Template
 } from 'lucide-react';
 import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
 import SimplifiedModuleScaling from './SimplifiedModuleScaling';
@@ -26,16 +27,23 @@ import RealModuleDashboard from './RealModuleDashboard';
 import ModuleTestRunner from './ModuleTestRunner';
 import ManifestWizard from './ManifestWizard';
 import LiveDevelopmentSandbox from './LiveDevelopmentSandbox';
+import ModuleTemplateManager from './ModuleTemplateManager';
 import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 import { useModuleTemplates } from '@/hooks/useModuleTemplates';
+import { useSystemModules } from '@/hooks/useSystemModules';
+import { useModuleDeployments } from '@/hooks/useModuleDeployments';
 
 const ModuleDevSandbox: React.FC = () => {
   // Use stable tenant context
   const { data: tenantData, isLoading: tenantLoading } = useStableTenantContext();
   const { data: templates = [], isLoading: templatesLoading } = useModuleTemplates();
+  const { data: modules = [], isLoading: modulesLoading } = useSystemModules();
+  const { data: deployments = [], isLoading: deploymentsLoading } = useModuleDeployments(tenantData?.tenant_id);
+  
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [manifestWizardOpen, setManifestWizardOpen] = useState(false);
   const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
 
   // Add debugging to track component lifecycle
   useEffect(() => {
@@ -49,13 +57,20 @@ const ModuleDevSandbox: React.FC = () => {
     console.log('ModuleDevSandbox - stable tenant context:', tenantData);
   }, [tenantData]);
 
-  if (tenantLoading || templatesLoading) {
+  if (tenantLoading || templatesLoading || modulesLoading || deploymentsLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
+
+  const stats = {
+    modules: modules.length,
+    activeModules: modules.filter(m => m.is_active).length,
+    templates: templates.length,
+    recentDeployments: deployments.length
+  };
 
   return (
     <div className="space-y-6">
@@ -90,7 +105,7 @@ const ModuleDevSandbox: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-indigo-600" />
-              <span>{templates.length} Templates Available</span>
+              <span>{stats.templates} Templates Available</span>
             </div>
           </div>
         </CardContent>
@@ -105,7 +120,7 @@ const ModuleDevSandbox: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
@@ -133,6 +148,14 @@ const ModuleDevSandbox: React.FC = () => {
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
+              onClick={() => setTemplateManagerOpen(true)}
+            >
+              <Template className="h-6 w-6" />
+              <span className="text-sm">Templates</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
             >
               <Package className="h-6 w-6" />
               <span className="text-sm">Deploy Module</span>
@@ -141,12 +164,64 @@ const ModuleDevSandbox: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Statistics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Package className="h-8 w-8 text-blue-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.modules}</p>
+                <p className="text-sm text-muted-foreground">Total Modules</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Zap className="h-8 w-8 text-green-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.activeModules}</p>
+                <p className="text-sm text-muted-foreground">Active Modules</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Template className="h-8 w-8 text-purple-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.templates}</p>
+                <p className="text-sm text-muted-foreground">Templates</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Activity className="h-8 w-8 text-orange-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.recentDeployments}</p>
+                <p className="text-sm text-muted-foreground">Deployments</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Main Tabs */}
       <Tabs defaultValue="modules" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="modules" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Module Discovery
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <Template className="h-4 w-4" />
+            Templates
           </TabsTrigger>
           <TabsTrigger value="development" className="flex items-center gap-2">
             <Code className="h-4 w-4" />
@@ -164,6 +239,10 @@ const ModuleDevSandbox: React.FC = () => {
 
         <TabsContent value="modules" className="mt-6">
           <RealModuleDashboard tenantId={tenantData?.tenant_id} />
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-6">
+          <ModuleTemplateManager />
         </TabsContent>
 
         <TabsContent value="development" className="mt-6">
@@ -200,7 +279,11 @@ const ModuleDevSandbox: React.FC = () => {
                         </div>
                       </div>
                     ))}
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setTemplateManagerOpen(true)}
+                    >
                       View All Templates ({templates.length})
                     </Button>
                   </div>
@@ -301,6 +384,15 @@ const ModuleDevSandbox: React.FC = () => {
             <DialogTitle>Live Development Sandbox</DialogTitle>
           </DialogHeader>
           <LiveDevelopmentSandbox />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={templateManagerOpen} onOpenChange={setTemplateManagerOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Module Template Manager</DialogTitle>
+          </DialogHeader>
+          <ModuleTemplateManager />
         </DialogContent>
       </Dialog>
     </div>
