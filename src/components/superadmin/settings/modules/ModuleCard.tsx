@@ -16,8 +16,10 @@ import {
   Brain,
   Shield,
   Database,
-  Sparkles
+  Sparkles,
+  CheckCircle
 } from 'lucide-react';
+import { isFunctionalModule, getFunctionalModuleColors } from '@/utils/moduleUtils';
 
 interface ModuleCardProps {
   module: {
@@ -35,7 +37,16 @@ interface ModuleCardProps {
 }
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => {
+  const isFunction = isFunctionalModule(module.name);
+  const functionalColors = getFunctionalModuleColors();
+
   const getCategoryColor = (category: string) => {
+    // If it's a functional module, return green colors
+    if (isFunction) {
+      return `${functionalColors.background} ${functionalColors.border} ${functionalColors.text}`;
+    }
+
+    // Original category colors for non-functional modules
     const colors: Record<string, string> = {
       'core': 'bg-blue-50 border-blue-200 text-blue-700',
       'analytics': 'bg-green-50 border-green-200 text-green-700',
@@ -65,10 +76,17 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => 
     return icons[category] || <Package className="h-4 w-4" />;
   };
 
+  const getBorderColor = () => {
+    if (isFunction) {
+      return functionalColors.leftBorder;
+    }
+    return getCategoryColor(module.category).split(' ')[1]; // Extract border color from category color
+  };
+
   return (
     <Card className={`group transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
       !module.is_active ? 'opacity-60 bg-gray-50' : 'bg-white'
-    } border-l-4 ${getCategoryColor(module.category).split(' ')[1]}`}>
+    } border-l-4 ${getBorderColor()}`}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-3">
@@ -95,6 +113,18 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => 
               >
                 <span className="capitalize">{module.category.replace('-', ' ')}</span>
               </Badge>
+              
+              {/* Functional Module Badge */}
+              {isFunction && (
+                <Badge 
+                  variant="default"
+                  className="bg-green-100 text-green-800 border-green-200"
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Functional
+                </Badge>
+              )}
+              
               <Badge 
                 variant={module.is_active ? 'default' : 'secondary'} 
                 className={`${module.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}

@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, BarChart, Brain, Zap, Package, BookOpen } from 'lucide-react';
+import { Building2, BarChart, Brain, Zap, Package, BookOpen, CheckCircle } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
+import { isFunctionalModule, getFunctionalModuleColors } from '@/utils/moduleUtils';
 
 const categoryIcons = {
   core: Package,
@@ -34,6 +35,7 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
   onAssignModule
 }) => {
   const { data: allModules, isLoading } = useSystemModules(false);
+  const functionalColors = getFunctionalModuleColors();
 
   if (isLoading) {
     return (
@@ -59,9 +61,17 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
   const renderModule = (module: any, isAssignable: boolean = false) => {
     const IconComponent = categoryIcons[module.category as keyof typeof categoryIcons] || Package;
     const isCore = coreModules.includes(module);
+    const isFunction = isFunctionalModule(module.name);
+    
+    // Use green colors for functional modules, otherwise use category colors
+    const cardBackground = isFunction 
+      ? functionalColors.background 
+      : categoryColors[module.category as keyof typeof categoryColors] || 'bg-gray-100';
+    
+    const borderColor = isFunction ? functionalColors.leftBorder : 'border-l-blue-500';
     
     return (
-      <Card key={module.id} className={`${categoryColors[module.category as keyof typeof categoryColors] || 'bg-gray-100'} border-l-4 border-l-blue-500`}>
+      <Card key={module.id} className={`${cardBackground} border-l-4 ${borderColor}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -69,6 +79,14 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
               <CardTitle className="text-lg">{module.name}</CardTitle>
             </div>
             <div className="flex items-center space-x-2">
+              {/* Functional Module Badge */}
+              {isFunction && (
+                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Functional
+                </Badge>
+              )}
+              
               <Badge variant={isCore ? 'default' : 'secondary'}>
                 {isCore ? 'Core' : 'Module'}
               </Badge>
