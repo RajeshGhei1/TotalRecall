@@ -13,7 +13,9 @@ import {
   Users2,
   Zap,
   TrendingUp,
-  Target
+  Target,
+  ClipboardList,
+  GitBranch
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
@@ -51,24 +53,38 @@ const defaultNavItems: NavItem[] = [
     requiresModule: 'ATS Core'
   },
   { 
-    id: 'ats',
-    label: 'Applicant Tracking', 
+    id: 'ats-dashboard',
+    label: 'ATS Dashboard', 
     icon: UserCheck, 
-    href: '/tenant-admin/ats',
+    href: '/tenant-admin/ats/dashboard',
     requiresModule: 'ATS Core'
   },
   { 
-    id: 'jobs',
-    label: 'Jobs', 
+    id: 'ats-jobs',
+    label: 'Jobs Management', 
     icon: Briefcase, 
-    href: '/tenant-admin/jobs',
+    href: '/tenant-admin/ats/jobs',
     requiresModule: 'ATS Core'
   },
   { 
-    id: 'talent',
+    id: 'ats-candidates',
+    label: 'Candidates', 
+    icon: Users2, 
+    href: '/tenant-admin/ats/candidates',
+    requiresModule: 'ATS Core'
+  },
+  { 
+    id: 'ats-talent',
     label: 'Talent Pool', 
     icon: Users2, 
-    href: '/tenant-admin/talent',
+    href: '/tenant-admin/ats/talent',
+    requiresModule: 'ATS Core'
+  },
+  { 
+    id: 'ats-pipeline',
+    label: 'Applications Pipeline', 
+    icon: GitBranch, 
+    href: '/tenant-admin/ats/pipeline',
     requiresModule: 'ATS Core'
   },
   { 

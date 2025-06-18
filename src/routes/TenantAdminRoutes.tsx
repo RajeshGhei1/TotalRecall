@@ -1,11 +1,9 @@
 
+import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
 import Companies from "@/pages/tenant-admin/Companies";
 import Contacts from "@/pages/tenant-admin/Contacts";
-import Jobs from "@/pages/tenant-admin/Jobs";
-import Talent from "@/pages/tenant-admin/Talent";
-import ATS from "@/pages/tenant-admin/ATS";
 import SmartTalentAnalytics from "@/pages/tenant-admin/SmartTalentAnalytics";
 import Settings from "@/pages/tenant-admin/Settings";
 import GeneralSettings from "@/pages/tenant-admin/settings/GeneralSettings";
@@ -24,6 +22,7 @@ import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
 import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher";
 import AdminLayout from "@/components/AdminLayout";
 import UpgradePlan from "@/pages/tenant-admin/UpgradePlan";
+import ATSRoutes from "@/routes/ats/ATSRoutes";
 
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
@@ -101,32 +100,33 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* ATS Core Module Protected Routes */}
-      <Route path="ats" element={
+      {/* ATS Core Module Protected Routes - Now with comprehensive sub-routes */}
+      <Route path="ats/*" element={
         <UnifiedModuleAccessGuard 
           moduleName="ATS Core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <ATS />
+          <ATSRoutes />
         </UnifiedModuleAccessGuard>
       } />
-      <Route path="jobs" element={
+      
+      {/* Legacy ATS routes - redirect to new structure */}
+      <Route path="jobs" element={<Navigate to="ats/jobs" replace />} />
+      <Route path="talent/*" element={<Navigate to="ats/talent" replace />} />
+      
+      {/* Smart Talent Matching - AI Feature */}
+      <Route path="smart-talent-matching" element={
         <UnifiedModuleAccessGuard 
           moduleName="ATS Core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <Jobs />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="talent/*" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="ATS Core" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <Talent />
+          <AdminLayout>
+            <div className="p-6">
+              <SmartTalentMatcher />
+            </div>
+          </AdminLayout>
         </UnifiedModuleAccessGuard>
       } />
       
@@ -160,21 +160,6 @@ const TenantAdminRoutes = () => {
           userId={user?.id}
         >
           <SmartTalentAnalytics />
-        </UnifiedModuleAccessGuard>
-      } />
-      
-      {/* Smart Talent Matching - AI Feature */}
-      <Route path="smart-talent-matching" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="ATS Core" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <AdminLayout>
-            <div className="p-6">
-              <SmartTalentMatcher />
-            </div>
-          </AdminLayout>
         </UnifiedModuleAccessGuard>
       } />
       
