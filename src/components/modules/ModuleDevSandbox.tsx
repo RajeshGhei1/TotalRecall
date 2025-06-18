@@ -11,12 +11,14 @@ import {
   Settings,
   Rocket,
   Plus,
-  CheckCircle
+  CheckCircle,
+  Package
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
 import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
+import DevelopmentModulesDashboard from './DevelopmentModulesDashboard';
 
 interface ModuleData {
   name: string;
@@ -30,7 +32,7 @@ interface ModuleData {
 }
 
 const ModuleDevSandbox: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('development');
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [currentModule, setCurrentModule] = useState<ModuleData | null>(null);
   const [deployedModules, setDeployedModules] = useState<string[]>([]);
@@ -53,7 +55,7 @@ const ModuleDevSandbox: React.FC = () => {
 
   const handleCancelCreation = () => {
     setIsCreatingModule(false);
-    setActiveTab('overview');
+    setActiveTab('development');
   };
 
   const handleDeploymentComplete = (moduleId: string) => {
@@ -67,7 +69,7 @@ const ModuleDevSandbox: React.FC = () => {
   const resetSandbox = () => {
     setCurrentModule(null);
     setIsCreatingModule(false);
-    setActiveTab('overview');
+    setActiveTab('development');
   };
 
   return (
@@ -75,9 +77,9 @@ const ModuleDevSandbox: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Module Development Sandbox</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Module Development Environment</h2>
           <p className="text-gray-600 mt-1">
-            Create, develop, and deploy new modules for the Total Recall system
+            Manage development modules and create new ones for the Total Recall system
           </p>
         </div>
         <div className="flex gap-2">
@@ -126,7 +128,10 @@ const ModuleDevSandbox: React.FC = () => {
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="development">
+            <Package className="h-4 w-4 mr-2" />
+            Development Modules
+          </TabsTrigger>
           <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule}>
             Create Module
           </TabsTrigger>
@@ -139,80 +144,8 @@ const ModuleDevSandbox: React.FC = () => {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Development Workflow
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
-                      1
-                    </div>
-                    <span className="text-sm">Create module manifest and configuration</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
-                      2
-                    </div>
-                    <span className="text-sm">Develop and test module code</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
-                      3
-                    </div>
-                    <span className="text-sm">Deploy to system module library</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
-                      4
-                    </div>
-                    <span className="text-sm">Promote to production for tenant access</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Sandbox Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  <li>• Live code editing with preview</li>
-                  <li>• Module manifest generation</li>
-                  <li>• Built-in testing environment</li>
-                  <li>• Deployment pipeline integration</li>
-                  <li>• Version control and history</li>
-                  <li>• Template-based scaffolding</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          {!currentModule && (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Code className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Module in Development</h3>
-                <p className="text-muted-foreground mb-6">
-                  Start by creating a new module to begin development
-                </p>
-                <Button onClick={handleCreateModule}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Module
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+        <TabsContent value="development" className="space-y-6">
+          <DevelopmentModulesDashboard />
         </TabsContent>
 
         <TabsContent value="create">
@@ -242,7 +175,7 @@ const ModuleDevSandbox: React.FC = () => {
         <TabsContent value="settings">
           <Card>
             <CardHeader>
-              <CardTitle>Sandbox Settings</CardTitle>
+              <CardTitle>Development Environment Settings</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
