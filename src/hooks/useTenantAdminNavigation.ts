@@ -159,7 +159,7 @@ export const useTenantAdminNavigation = () => {
 
   const currentTenantId = tenantData?.tenant_id || null;
 
-  // Get module access for each required module
+  // Get module access for each required module - Fix remaining mismatches
   const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'Core Dashboard', user?.id);
   const { data: predictiveAccess } = useUnifiedModuleAccess(currentTenantId, 'Predictive Insights', user?.id);
   const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
