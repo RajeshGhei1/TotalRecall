@@ -1,365 +1,261 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Search, 
-  Star, 
   Download, 
-  Shield, 
-  Package,
+  Star, 
   Filter,
-  SortDesc,
-  ExternalLink,
-  Plus,
-  Info
+  Package,
+  Verified,
+  Trending
 } from 'lucide-react';
-import { moduleRegistryService, ModuleRegistryEntry } from '@/services/moduleRegistryService';
-import { useStableTenantContext } from '@/hooks/useStableTenantContext';
+
+interface MarketplaceModule {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  category: string;
+  downloads: number;
+  rating: number;
+  price: number;
+  isPremium: boolean;
+  isVerified: boolean;
+  isTrending: boolean;
+  tags: string[];
+  screenshots: string[];
+}
+
+const mockModules: MarketplaceModule[] = [
+  {
+    id: 'advanced-analytics',
+    name: 'Advanced Analytics Suite',
+    description: 'Comprehensive analytics dashboard with AI-powered insights and predictive modeling',
+    version: '2.1.0',
+    author: 'Analytics Pro',
+    category: 'analytics',
+    downloads: 15420,
+    rating: 4.8,
+    price: 0,
+    isPremium: false,
+    isVerified: true,
+    isTrending: true,
+    tags: ['analytics', 'ai', 'dashboard'],
+    screenshots: []
+  },
+  {
+    id: 'crm-integration',
+    name: 'CRM Integration Hub',
+    description: 'Connect with popular CRM systems including Salesforce, HubSpot, and Pipedrive',
+    version: '1.5.2',
+    author: 'Integration Solutions',
+    category: 'integration',
+    downloads: 8932,
+    rating: 4.6,
+    price: 29.99,
+    isPremium: true,
+    isVerified: true,
+    isTrending: false,
+    tags: ['crm', 'integration', 'sales'],
+    screenshots: []
+  },
+  {
+    id: 'social-media-manager',
+    name: 'Social Media Manager',
+    description: 'Schedule, publish, and analyze social media content across multiple platforms',
+    version: '3.0.1',
+    author: 'Social Tools Inc',
+    category: 'marketing',
+    downloads: 12876,
+    rating: 4.4,
+    price: 19.99,
+    isPremium: true,
+    isVerified: false,
+    isTrending: true,
+    tags: ['social', 'marketing', 'automation'],
+    screenshots: []
+  }
+];
 
 const ModuleMarketplace: React.FC = () => {
-  const { data: tenantData } = useStableTenantContext();
-  const [modules, setModules] = useState<ModuleRegistryEntry[]>([]);
-  const [filteredModules, setFilteredModules] = useState<ModuleRegistryEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('popular');
-  const [selectedModule, setSelectedModule] = useState<ModuleRegistryEntry | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('browse');
 
-  const categories = [
-    { id: 'all', label: 'All Categories', icon: Package },
-    { id: 'core', label: 'Core', icon: Shield },
-    { id: 'business', label: 'Business', icon: Package },
-    { id: 'recruitment', label: 'Recruitment', icon: Package },
-    { id: 'analytics', label: 'Analytics', icon: Package },
-    { id: 'ai', label: 'AI & ML', icon: Package },
-    { id: 'integration', label: 'Integrations', icon: Package },
-    { id: 'communication', label: 'Communication', icon: Package },
-    { id: 'custom', label: 'Custom', icon: Package }
-  ];
+  const categories = ['all', 'analytics', 'integration', 'marketing', 'ai', 'workflow'];
 
-  useEffect(() => {
-    loadModules();
-  }, []);
+  const filteredModules = mockModules.filter(module => {
+    const matchesSearch = module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         module.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || module.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-  useEffect(() => {
-    filterAndSortModules();
-  }, [modules, searchQuery, selectedCategory, sortBy]);
-
-  const loadModules = async () => {
-    setIsLoading(true);
-    try {
-      const moduleData = await moduleRegistryService.getPublishedModules();
-      setModules(moduleData);
-    } catch (error) {
-      console.error('Error loading modules:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleInstall = (moduleId: string) => {
+    console.log(`Installing module: ${moduleId}`);
+    // TODO: Implement actual module installation
   };
 
-  const filterAndSortModules = () => {
-    let filtered = modules;
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(module => module.category === selectedCategory);
-    }
-
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(module =>
-        module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        module.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        module.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Sort modules
-    switch (sortBy) {
-      case 'popular':
-        filtered.sort((a, b) => b.download_count - a.download_count);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating_average - a.rating_average);
-        break;
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        break;
-      case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-
-    setFilteredModules(filtered);
-  };
-
-  const handleInstallModule = async (module: ModuleRegistryEntry) => {
-    if (!tenantData?.tenant_id) return;
-
-    try {
-      const success = await moduleRegistryService.installModule(
-        module.module_id,
-        module.version,
-        tenantData.tenant_id
-      );
-
-      if (success) {
-        console.log(`Module ${module.name} installed successfully`);
-        // Refresh modules to update download count
-        loadModules();
-      }
-    } catch (error) {
-      console.error('Error installing module:', error);
-    }
-  };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-      />
-    ));
-  };
-
-  const renderModuleCard = (module: ModuleRegistryEntry) => (
-    <Card key={module.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-      <CardHeader className="pb-3">
+  const renderModuleCard = (module: MarketplaceModule) => (
+    <Card key={module.id} className="hover:shadow-lg transition-shadow">
+      <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg">{module.name}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">by {module.author}</p>
-            <Badge variant="outline" className="mt-2">
-              {module.category}
-            </Badge>
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-lg">{module.name}</CardTitle>
+              {module.isVerified && (
+                <Verified className="h-4 w-4 text-blue-500" />
+              )}
+              {module.isTrending && (
+                <Badge variant="secondary" className="text-xs">
+                  <Trending className="h-3 w-3 mr-1" />
+                  Trending
+                </Badge>
+              )}
+            </div>
+            <CardDescription className="text-sm text-gray-600">
+              by {module.author} • v{module.version}
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-1">
-            {renderStars(module.rating_average)}
-            <span className="text-sm text-muted-foreground ml-1">
-              ({module.rating_count})
-            </span>
+          <div className="text-right">
+            {module.isPremium ? (
+              <div className="text-lg font-bold text-green-600">
+                ${module.price}
+              </div>
+            ) : (
+              <Badge variant="outline" className="text-green-600 border-green-600">
+                Free
+              </Badge>
+            )}
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {module.description}
-        </p>
+        <p className="text-sm text-gray-700 mb-4">{module.description}</p>
         
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-          <div className="flex items-center gap-2">
-            <Download className="h-3 w-3" />
-            <span>{module.download_count.toLocaleString()} downloads</span>
+        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            {module.rating}
           </div>
-          <div>v{module.version}</div>
+          <div className="flex items-center gap-1">
+            <Download className="h-4 w-4" />
+            {module.downloads.toLocaleString()}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1 mb-4">
+          {module.tags.map(tag => (
+            <Badge key={tag} variant="secondary" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+          <Button 
+            onClick={() => handleInstall(module.id)}
             className="flex-1"
-            onClick={() => setSelectedModule(module)}
           >
-            <Info className="h-4 w-4 mr-2" />
-            Details
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1"
-            onClick={() => handleInstallModule(module)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
+            <Package className="h-4 w-4 mr-2" />
             Install
+          </Button>
+          <Button variant="outline" size="sm">
+            Details
           </Button>
         </div>
       </CardContent>
     </Card>
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Module Marketplace</h1>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl font-bold">Module Marketplace</h2>
+          <p className="text-gray-600 mt-1">
             Discover and install modules to extend your platform capabilities
           </p>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search modules..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="browse">Browse</TabsTrigger>
+          <TabsTrigger value="installed">Installed</TabsTrigger>
+          <TabsTrigger value="updates">Updates</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="browse" className="space-y-6">
+          {/* Search and Filters */}
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search modules..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            
-            <div className="flex gap-2">
-              <select
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <select 
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-background"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
               >
                 {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.label}
+                  <option key={category} value={category}>
+                    {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                   </option>
                 ))}
               </select>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-background"
-              >
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-                <option value="newest">Newest</option>
-                <option value="name">Name A-Z</option>
-              </select>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Results */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {filteredModules.length} modules found
-        </p>
-      </div>
+          {/* Module Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredModules.map(renderModuleCard)}
+          </div>
 
-      {/* Module Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredModules.map(renderModuleCard)}
-      </div>
-
-      {/* Module Details Dialog */}
-      <Dialog open={!!selectedModule} onOpenChange={() => setSelectedModule(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              {selectedModule?.name}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedModule && (
-            <div className="space-y-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-muted-foreground">by {selectedModule.author}</p>
-                  <p className="text-sm text-muted-foreground">Version {selectedModule.version}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline">{selectedModule.category}</Badge>
-                    <Badge variant="outline">{selectedModule.license}</Badge>
-                  </div>
-                </div>
-                
-                <div className="text-right">
-                  <div className="flex items-center gap-1 justify-end">
-                    {renderStars(selectedModule.rating_average)}
-                    <span className="text-sm ml-1">({selectedModule.rating_count})</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedModule.download_count.toLocaleString()} downloads
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-muted-foreground">{selectedModule.description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Dependencies</h3>
-                  <div className="space-y-1">
-                    {selectedModule.dependencies?.length > 0 ? (
-                      selectedModule.dependencies.map((dep, index) => (
-                        <Badge key={index} variant="secondary" className="mr-1">
-                          {dep}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No dependencies</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-2">Required Permissions</h3>
-                  <div className="space-y-1">
-                    {selectedModule.required_permissions?.length > 0 ? (
-                      selectedModule.required_permissions.map((perm, index) => (
-                        <Badge key={index} variant="outline" className="mr-1">
-                          {perm}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No special permissions</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t">
-                <Button 
-                  className="flex-1"
-                  onClick={() => selectedModule && handleInstallModule(selectedModule)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Install Module
-                </Button>
-                
-                {selectedModule.homepage && (
-                  <Button variant="outline" asChild>
-                    <a href={selectedModule.homepage} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Homepage
-                    </a>
-                  </Button>
-                )}
-                
-                {selectedModule.repository && (
-                  <Button variant="outline" asChild>
-                    <a href={selectedModule.repository} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Repository
-                    </a>
-                  </Button>
-                )}
-              </div>
+          {filteredModules.length === 0 && (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No modules found</h3>
+              <p className="text-gray-600">
+                Try adjusting your search terms or category filter
+              </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </TabsContent>
+
+        <TabsContent value="installed">
+          <div className="text-center py-12">
+            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No installed modules</h3>
+            <p className="text-gray-600">
+              Modules you install will appear here
+            </p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="updates">
+          <div className="text-center py-12">
+            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No updates available</h3>
+            <p className="text-gray-600">
+              All your modules are up to date
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
