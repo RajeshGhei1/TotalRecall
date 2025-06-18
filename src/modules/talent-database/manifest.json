@@ -1,0 +1,47 @@
+
+{
+  "id": "talent-database",
+  "name": "Talent Database",
+  "version": "1.0.0",
+  "description": "Comprehensive talent database with search, favorites, and analytics",
+  "category": "recruitment",
+  "author": "System",
+  "license": "MIT",
+  "minCoreVersion": "1.0.0",
+  "entryPoint": "index.tsx",
+  "dependencies": ["ats-core"],
+  "requiredPermissions": ["read", "write"],
+  "subscriptionTiers": ["pro", "enterprise"],
+  "loadOrder": 20,
+  "autoLoad": true,
+  "canUnload": true,
+  "routes": [
+    {
+      "path": "/talent-database",
+      "component": "index",
+      "exact": true
+    }
+  ],
+  "components": [
+    {
+      "name": "TalentDatabase",
+      "path": "index.tsx",
+      "exports": ["default"]
+    }
+  ],
+  "props": {
+    "view": {
+      "type": "string",
+      "options": ["search", "favorites", "recent", "analytics"],
+      "default": "search"
+    },
+    "showFilters": {
+      "type": "boolean",
+      "default": true
+    },
+    "allowAdd": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

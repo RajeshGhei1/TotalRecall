@@ -1,9 +1,10 @@
 
 import React from "react";
-import TalentListContainer from "./TalentListContainer";
+// Import the new modular Talent Database
+import TalentDatabase from '@/modules/talent-database';
 
 const TalentList: React.FC = () => {
-  return <TalentListContainer />;
+  return <TalentDatabase view="search" showFilters={true} allowAdd={true} />;
 };
 
 export default TalentList;

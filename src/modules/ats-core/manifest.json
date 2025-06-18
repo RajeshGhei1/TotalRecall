@@ -1,0 +1,47 @@
+
+{
+  "id": "ats-core",
+  "name": "ATS Core",
+  "version": "1.0.0",
+  "description": "Core Applicant Tracking System with job and candidate management",
+  "category": "recruitment",
+  "author": "System",
+  "license": "MIT",
+  "minCoreVersion": "1.0.0",
+  "entryPoint": "index.tsx",
+  "dependencies": [],
+  "requiredPermissions": ["read", "write"],
+  "subscriptionTiers": ["basic", "pro", "enterprise"],
+  "loadOrder": 10,
+  "autoLoad": true,
+  "canUnload": true,
+  "routes": [
+    {
+      "path": "/ats",
+      "component": "index",
+      "exact": true
+    }
+  ],
+  "components": [
+    {
+      "name": "AtsCore",
+      "path": "index.tsx",
+      "exports": ["default"]
+    }
+  ],
+  "props": {
+    "view": {
+      "type": "string",
+      "options": ["dashboard", "jobs", "candidates", "pipeline"],
+      "default": "dashboard"
+    },
+    "showMetrics": {
+      "type": "boolean",
+      "default": true
+    },
+    "allowCreate": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

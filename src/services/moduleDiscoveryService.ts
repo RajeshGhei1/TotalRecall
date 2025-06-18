@@ -1,182 +1,191 @@
-import { ModuleManifest } from '@/types/modules';
-import { moduleCodeRegistry } from './moduleCodeRegistry';
+import { ModuleManifest, LoadedModule } from '@/types/modules';
 
-export interface ModuleFileInfo {
+export interface BuiltInModuleConfig {
+  id: string;
+  name: string;
   path: string;
-  moduleId: string;
-  directoryName: string;
+  category: 'core' | 'business' | 'recruitment' | 'analytics' | 'ai' | 'integration' | 'communication' | 'custom';
+  version: string;
+  description: string;
+  author: string;
+  dependencies: string[];
+  loadOrder: number;
 }
 
 export class ModuleDiscoveryService {
   private static instance: ModuleDiscoveryService;
-  private knownModules: Map<string, ModuleFileInfo> = new Map();
+  private modules: Map<string, LoadedModule> = new Map();
+  private templates: Record<string, any> = {};
 
-  static getInstance(): ModuleDiscoveryService {
+  private constructor() {
+    this.initializeBuiltInModules();
+  }
+
+  public static getInstance(): ModuleDiscoveryService {
     if (!ModuleDiscoveryService.instance) {
       ModuleDiscoveryService.instance = new ModuleDiscoveryService();
     }
     return ModuleDiscoveryService.instance;
   }
 
-  /**
-   * Initialize known modules - cleaned up list of available modules
-   */
-  initializeKnownModules(): void {
-    const modules: ModuleFileInfo[] = [
-      // Core Infrastructure
-      { path: '/src/modules/core-dashboard/index.tsx', moduleId: 'core-dashboard', directoryName: 'core-dashboard' },
-      { path: '/src/modules/email-management/index.tsx', moduleId: 'email-management', directoryName: 'email-management' },
-      { path: '/src/modules/ai-orchestration/index.tsx', moduleId: 'ai-orchestration', directoryName: 'ai-orchestration' },
-      
-      // Recruitment Ecosystem - Final Structure (3 modules only)
-      { path: '/src/modules/ats-core/index.tsx', moduleId: 'ats-core', directoryName: 'ats-core' },
-      { path: '/src/modules/talent-database/index.tsx', moduleId: 'talent-database', directoryName: 'talent-database' },
-      { path: '/src/modules/smart-talent-analytics/index.tsx', moduleId: 'smart-talent-analytics', directoryName: 'smart-talent-analytics' },
-      
-      // Existing modules (already in src/modules/)
-      { path: '/src/modules/dashboard-widget/index.tsx', moduleId: 'dashboard-widget', directoryName: 'dashboard-widget' },
-      { path: '/src/modules/contact-form/index.tsx', moduleId: 'contact-form', directoryName: 'contact-form' },
-      { path: '/src/modules/analytics-panel/index.tsx', moduleId: 'analytics-panel', directoryName: 'analytics-panel' },
+  private async initializeBuiltInModules() {
+    const builtInModules = [
+      {
+        id: 'ats-core',
+        name: 'ATS Core',
+        path: '/src/modules/ats-core/index.tsx',
+        category: 'recruitment' as const,
+        version: '1.0.0',
+        description: 'Core Applicant Tracking System with job and candidate management',
+        author: 'System',
+        dependencies: [],
+        loadOrder: 10
+      },
+      {
+        id: 'talent-database',
+        name: 'Talent Database',
+        path: '/src/modules/talent-database/index.tsx',
+        category: 'recruitment' as const,
+        version: '1.0.0',
+        description: 'Comprehensive talent database with search, favorites, and analytics',
+        author: 'System',
+        dependencies: ['ats-core'],
+        loadOrder: 20
+      },
+      {
+        id: 'smart-talent-analytics',
+        name: 'Smart Talent Analytics',
+        path: '/src/modules/smart-talent-analytics/index.tsx',
+        category: 'analytics' as const,
+        version: '1.0.0',
+        description: 'AI-powered talent analytics with predictive insights, pattern analysis, and talent matching',
+        author: 'System',
+        dependencies: ['ats-core', 'talent-database'],
+        loadOrder: 30
+      }
     ];
 
-    modules.forEach(module => {
-      this.knownModules.set(module.moduleId, module);
-    });
-
-    console.log(`Initialized ${modules.length} known modules - recruitment ecosystem corrected`);
-  }
-
-  /**
-   * Discover and load all known modules
-   */
-  async discoverAndLoadModules(): Promise<{
-    loaded: string[];
-    failed: { moduleId: string; error: string }[];
-  }> {
-    const loaded: string[] = [];
-    const failed: { moduleId: string; error: string }[] = [];
-
-    if (this.knownModules.size === 0) {
-      this.initializeKnownModules();
-    }
-
-    for (const [moduleId, moduleInfo] of this.knownModules) {
+    for (const moduleConfig of builtInModules) {
       try {
-        console.log(`Attempting to load module: ${moduleId}`);
-        
-        // Try to dynamically import the module
-        const moduleExports = await import(moduleInfo.path);
-        const component = moduleExports.default;
-        
-        if (component) {
-          // Extract metadata from component
-          const metadata = (component as any).moduleMetadata;
-          
-          if (metadata) {
-            // Create manifest from metadata
-            const manifest: ModuleManifest = {
-              id: metadata.id || moduleId,
-              name: metadata.name || moduleId,
-              version: metadata.version || '1.0.0',
-              description: metadata.description || '',
-              category: metadata.category || 'custom',
-              author: metadata.author || 'System',
-              license: 'MIT',
-              dependencies: metadata.dependencies || [],
-              entryPoint: 'index.tsx',
-              requiredPermissions: metadata.requiredPermissions || [],
-              subscriptionTiers: [],
-              loadOrder: 100,
-              autoLoad: true,
-              canUnload: true,
-              minCoreVersion: '1.0.0'
-            };
+        const manifest: ModuleManifest = {
+          id: moduleConfig.id,
+          name: moduleConfig.name,
+          version: moduleConfig.version,
+          description: moduleConfig.description,
+          category: moduleConfig.category,
+          author: moduleConfig.author,
+          license: 'MIT',
+          dependencies: moduleConfig.dependencies,
+          minCoreVersion: '1.0.0',
+          entryPoint: 'index.tsx',
+          requiredPermissions: ['read'],
+          subscriptionTiers: ['basic', 'pro', 'enterprise'],
+          loadOrder: moduleConfig.loadOrder,
+          autoLoad: true,
+          canUnload: true
+        };
 
-            // Register the component
-            moduleCodeRegistry.registerComponent(
-              moduleId,
-              component,
-              manifest,
-              moduleInfo.path
-            );
+        const loadedModule: LoadedModule = {
+          manifest,
+          instance: null,
+          status: 'loaded',
+          loadedAt: new Date(),
+          dependencies: []
+        };
 
-            loaded.push(moduleId);
-            console.log(`Successfully loaded module: ${moduleId}`);
-          } else {
-            console.warn(`Module ${moduleId} missing metadata`);
-            // Still register without full metadata
-            const basicManifest: ModuleManifest = {
-              id: moduleId,
-              name: moduleId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              version: '1.0.0',
-              description: `Module: ${moduleId}`,
-              category: 'custom',
-              author: 'System',
-              license: 'MIT',
-              dependencies: [],
-              entryPoint: 'index.tsx',
-              requiredPermissions: [],
-              subscriptionTiers: [],
-              loadOrder: 100,
-              autoLoad: true,
-              canUnload: true,
-              minCoreVersion: '1.0.0'
-            };
-
-            moduleCodeRegistry.registerComponent(
-              moduleId,
-              component,
-              basicManifest,
-              moduleInfo.path
-            );
-
-            loaded.push(moduleId);
-          }
-        } else {
-          failed.push({
-            moduleId,
-            error: 'No default export found'
-          });
-        }
+        this.modules.set(moduleConfig.id, loadedModule);
+        console.log(`Initialized built-in module: ${moduleConfig.name}`);
       } catch (error) {
-        console.error(`Error loading module ${moduleId}:`, error);
-        failed.push({
-          moduleId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
+        console.error(`Failed to initialize module ${moduleConfig.id}:`, error);
       }
     }
-
-    console.log(`Phase 2 module discovery completed: ${loaded.length} loaded, ${failed.length} failed`);
-    return { loaded, failed };
   }
 
-  /**
-   * Get all known module IDs
-   */
-  getKnownModuleIds(): string[] {
-    return Array.from(this.knownModules.keys());
+  async loadModule(moduleId: string, options?: any): Promise<LoadedModule | undefined> {
+    const existingModule = this.modules.get(moduleId);
+    if (existingModule && !options?.force) {
+      console.warn(`Module "${moduleId}" already loaded. Use force option to reload.`);
+      return existingModule;
+    }
+
+    try {
+      // Simulate dynamic import
+      const modulePath = this.getModulePath(moduleId);
+      if (!modulePath) {
+        throw new Error(`Module path not found for ${moduleId}`);
+      }
+
+      const module = await import(/* webpackIgnore: true */ modulePath);
+      const manifest = this.getModuleManifest(moduleId);
+
+      if (!manifest) {
+        throw new Error(`Manifest not found for module ${moduleId}`);
+      }
+
+      const loadedModule: LoadedModule = {
+        manifest: manifest,
+        instance: module,
+        status: 'loaded',
+        loadedAt: new Date(),
+        dependencies: []
+      };
+
+      this.modules.set(moduleId, loadedModule);
+      console.log(`Module "${moduleId}" loaded successfully.`);
+      return loadedModule;
+    } catch (error) {
+      console.error(`Failed to load module "${moduleId}":`, error);
+      return undefined;
+    }
   }
 
-  /**
-   * Add a new module to the known modules list
-   */
-  addKnownModule(moduleInfo: ModuleFileInfo): void {
-    this.knownModules.set(moduleInfo.moduleId, moduleInfo);
+  async unloadModule(moduleId: string): Promise<boolean> {
+    if (!this.modules.has(moduleId)) {
+      console.warn(`Module "${moduleId}" is not loaded.`);
+      return false;
+    }
+
+    try {
+      this.modules.delete(moduleId);
+      console.log(`Module "${moduleId}" unloaded successfully.`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to unload module "${moduleId}":`, error);
+      return false;
+    }
   }
 
-  /**
-   * Check if a module is known
-   */
-  isKnownModule(moduleId: string): boolean {
-    return this.knownModules.has(moduleId);
+  getModule(moduleId: string): LoadedModule | undefined {
+    return this.modules.get(moduleId);
   }
 
-  /**
-   * Get module file info
-   */
-  getModuleFileInfo(moduleId: string): ModuleFileInfo | null {
-    return this.knownModules.get(moduleId) || null;
+  getModules(): Map<string, LoadedModule> {
+    return this.modules;
+  }
+
+  getModuleList(): LoadedModule[] {
+    return Array.from(this.modules.values());
+  }
+
+  getModuleManifest(moduleId: string): ModuleManifest | undefined {
+    const module = this.modules.get(moduleId);
+    return module?.manifest;
+  }
+
+  getModulePath(moduleId: string): string | undefined {
+    const module = this.modules.get(moduleId);
+    return module?.manifest?.entryPoint;
+  }
+
+  registerTemplate(templateId: string, template: any): void {
+    if (this.templates[templateId]) {
+      console.warn(`Template with id "${templateId}" already registered.`);
+    }
+    this.templates[templateId] = template;
+  }
+
+  getTemplate(templateId: string): any | undefined {
+    return this.templates[templateId];
   }
 }
 

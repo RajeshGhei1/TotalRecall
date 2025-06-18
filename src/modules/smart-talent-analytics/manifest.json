@@ -1,0 +1,47 @@
+
+{
+  "id": "smart-talent-analytics",
+  "name": "Smart Talent Analytics",
+  "version": "1.0.0",
+  "description": "AI-powered talent analytics with predictive insights, pattern analysis, and talent matching",
+  "category": "analytics",
+  "author": "System",
+  "license": "MIT",
+  "minCoreVersion": "1.0.0",
+  "entryPoint": "index.tsx",
+  "dependencies": ["ats-core", "talent-database"],
+  "requiredPermissions": ["read", "analytics_access"],
+  "subscriptionTiers": ["enterprise"],
+  "loadOrder": 30,
+  "autoLoad": true,
+  "canUnload": true,
+  "routes": [
+    {
+      "path": "/smart-talent-analytics",
+      "component": "index",
+      "exact": true
+    }
+  ],
+  "components": [
+    {
+      "name": "SmartTalentAnalytics",
+      "path": "index.tsx",
+      "exports": ["default"]
+    }
+  ],
+  "props": {
+    "mode": {
+      "type": "string",
+      "options": ["dashboard", "insights", "patterns", "predictions"],
+      "default": "dashboard"
+    },
+    "showMetrics": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableRealTime": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
