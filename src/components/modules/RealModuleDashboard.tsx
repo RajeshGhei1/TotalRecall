@@ -39,6 +39,9 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
   const { data: templates = [], isLoading: templatesLoading } = useModuleTemplates();
   const { data: deployments = [], isLoading: deploymentsLoading } = useModuleDeployments(tenantId);
 
+  // Calculate functional modules count
+  const functionalModulesCount = getFunctionalModuleCount(modules);
+
   const filteredModules = modules.filter(module => {
     const matchesSearch = module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          module.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -143,7 +146,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
               <Package className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{modules.length}</p>
-                <p className="text-sm text-muted-foreground">Installed Modules</p>
+                <p className="text-sm text-muted-foreground">Total Modules</p>
               </div>
             </div>
           </CardContent>
@@ -164,7 +167,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
             <div className="flex items-center gap-3">
               <Play className="h-8 w-8 text-purple-500" />
               <div>
-                <p className="text-2xl font-bold">{getFunctionalModuleCount(modules)}</p>
+                <p className="text-2xl font-bold">{functionalModulesCount}</p>
                 <p className="text-sm text-muted-foreground">Functional Modules</p>
               </div>
             </div>
