@@ -1,3 +1,4 @@
+
 import { ModuleManifest } from '@/types/modules';
 
 export interface ModuleTemplate {
@@ -69,22 +70,6 @@ const BasicWidget: React.FC<BasicWidgetProps> = ({
   );
 };
 
-// Module metadata for registration
-(BasicWidget as any).moduleMetadata = {
-  id: 'basic-widget',
-  name: 'Basic Widget',
-  category: 'widget',
-  version: '1.0.0',
-  description: 'A simple widget module',
-  author: 'Developer',
-  requiredPermissions: ['read'],
-  dependencies: [],
-  props: {
-    title: { type: 'string', default: 'Basic Widget' },
-    content: { type: 'string', default: 'This is a basic widget module.' }
-  }
-};
-
 export default BasicWidget;`,
           'manifest.json': `{
   "id": "basic-widget",
@@ -104,8 +89,7 @@ export default BasicWidget;`,
   "canUnload": true
 }`
         },
-        dependencies: [],
-        tags: ['widget', 'basic', 'template']
+        dependencies: []
       },
       {
         id: 'analytics-dashboard',
@@ -178,8 +162,7 @@ const AnalyticsDashboard: React.FC = () => {
 
 export default AnalyticsDashboard;`
         },
-        dependencies: ['core-dashboard'],
-        tags: ['analytics', 'dashboard', 'charts']
+        dependencies: ['core-dashboard']
       }
     ];
 
@@ -194,6 +177,10 @@ export default AnalyticsDashboard;`
 
   getAllTemplates(): ModuleTemplate[] {
     return Array.from(this.templates.values());
+  }
+
+  getTemplates(): ModuleTemplate[] {
+    return this.getAllTemplates();
   }
 
   getTemplatesByCategory(category: string): ModuleTemplate[] {

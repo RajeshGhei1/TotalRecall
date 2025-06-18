@@ -8,6 +8,7 @@ import { LoadedModule, ModuleContext } from '@/types/modules';
 
 interface ModuleRendererProps {
   moduleId: string;
+  context?: ModuleContext;
   props?: Record<string, any>;
   fallback?: React.ReactNode;
   showError?: boolean;
@@ -65,6 +66,7 @@ const ModuleLoadingFallback: React.FC<{ moduleId: string }> = ({ moduleId }) => 
 
 const ModuleRenderer: React.FC<ModuleRendererProps> = ({ 
   moduleId, 
+  context,
   props = {}, 
   fallback,
   showError = true,
@@ -90,7 +92,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
         }
 
         // Create context for module loading
-        const context: ModuleContext = {
+        const moduleContext: ModuleContext = context || {
           moduleId,
           tenantId: 'default',
           userId: 'system',
@@ -98,7 +100,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
           config: props
         };
 
-        const module = await moduleLoader.loadModule(moduleId, context);
+        const module = await moduleLoader.loadModule(moduleId, moduleContext);
         setLoadedModule(module);
       } catch (err) {
         console.error(`Failed to load module ${moduleId}:`, err);
@@ -109,7 +111,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
     };
 
     loadModule();
-  }, [moduleId, props]);
+  }, [moduleId, context, props]);
 
   if (loading) {
     return fallback || <ModuleLoadingFallback moduleId={moduleId} />;

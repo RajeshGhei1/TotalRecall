@@ -3,572 +3,274 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  Download, 
-  CheckCircle,
-  Plus,
-  X,
-  Info
-} from 'lucide-react';
-import { ModuleManifest } from '@/types/modules';
+import { X, Plus } from 'lucide-react';
 
 interface ManifestWizardProps {
-  onComplete?: (manifest: ModuleManifest) => void;
-  onCancel?: () => void;
+  onComplete: () => void;
+  onCancel: () => void;
 }
 
 const ManifestWizard: React.FC<ManifestWizardProps> = ({
   onComplete,
   onCancel
 }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [manifest, setManifest] = useState<Partial<ModuleManifest>>({
-    category: 'custom',
+  const [formData, setFormData] = useState({
+    id: '',
+    name: '',
+    version: '1.0.0',
+    description: '',
+    category: '',
+    author: '',
     license: 'MIT',
-    dependencies: [],
-    requiredPermissions: [],
-    subscriptionTiers: [],
-    loadOrder: 100,
-    autoLoad: false,
-    canUnload: true,
-    minCoreVersion: '1.0.0'
+    dependencies: [] as string[],
+    requiredPermissions: [] as string[],
+    subscriptionTiers: ['basic'] as string[]
   });
 
   const [newDependency, setNewDependency] = useState('');
   const [newPermission, setNewPermission] = useState('');
-  const [newTier, setNewTier] = useState('');
-
-  const steps = [
-    { id: 'basic', title: 'Basic Information', description: 'Module name, description, and category' },
-    { id: 'metadata', title: 'Metadata', description: 'Author, license, and links' },
-    { id: 'dependencies', title: 'Dependencies', description: 'Required modules and permissions' },
-    { id: 'configuration', title: 'Configuration', description: 'Module behavior and settings' },
-    { id: 'review', title: 'Review', description: 'Review and generate manifest' }
-  ];
 
   const categories = [
-    { id: 'core', label: 'Core System' },
-    { id: 'business', label: 'Business Logic' },
-    { id: 'recruitment', label: 'Recruitment' },
-    { id: 'analytics', label: 'Analytics' },
-    { id: 'ai', label: 'AI & Machine Learning' },
-    { id: 'integration', label: 'Integration' },
-    { id: 'communication', label: 'Communication' },
-    { id: 'custom', label: 'Custom' }
+    'recruitment',
+    'analytics', 
+    'core',
+    'business',
+    'ai',
+    'integration',
+    'communication',
+    'custom'
   ];
 
-  const updateManifest = (updates: Partial<ModuleManifest>) => {
-    setManifest(prev => ({ ...prev, ...updates }));
+  const permissions = ['read', 'write', 'admin', 'analytics_access'];
+  const tiers = ['basic', 'pro', 'enterprise'];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Generated manifest:', formData);
+    onComplete();
   };
 
   const addDependency = () => {
-    if (newDependency.trim()) {
-      updateManifest({
-        dependencies: [...(manifest.dependencies || []), newDependency.trim()]
-      });
+    if (newDependency && !formData.dependencies.includes(newDependency)) {
+      setFormData(prev => ({
+        ...prev,
+        dependencies: [...prev.dependencies, newDependency]
+      }));
       setNewDependency('');
     }
   };
 
-  const removeDependency = (index: number) => {
-    const updated = [...(manifest.dependencies || [])];
-    updated.splice(index, 1);
-    updateManifest({ dependencies: updated });
+  const removeDependency = (dep: string) => {
+    setFormData(prev => ({
+      ...prev,
+      dependencies: prev.dependencies.filter(d => d !== dep)
+    }));
   };
 
   const addPermission = () => {
-    if (newPermission.trim()) {
-      updateManifest({
-        requiredPermissions: [...(manifest.requiredPermissions || []), newPermission.trim()]
-      });
+    if (newPermission && !formData.requiredPermissions.includes(newPermission)) {
+      setFormData(prev => ({
+        ...prev,
+        requiredPermissions: [...prev.requiredPermissions, newPermission]
+      }));
       setNewPermission('');
     }
   };
 
-  const removePermission = (index: number) => {
-    const updated = [...(manifest.requiredPermissions || [])];
-    updated.splice(index, 1);
-    updateManifest({ requiredPermissions: updated });
+  const removePermission = (perm: string) => {
+    setFormData(prev => ({
+      ...prev,
+      requiredPermissions: prev.requiredPermissions.filter(p => p !== perm)
+    }));
   };
 
-  const addTier = () => {
-    if (newTier.trim()) {
-      updateManifest({
-        subscriptionTiers: [...(manifest.subscriptionTiers || []), newTier.trim()]
-      });
-      setNewTier('');
-    }
+  const toggleTier = (tier: string) => {
+    setFormData(prev => ({
+      ...prev,
+      subscriptionTiers: prev.subscriptionTiers.includes(tier)
+        ? prev.subscriptionTiers.filter(t => t !== tier)
+        : [...prev.subscriptionTiers, tier]
+    }));
   };
-
-  const removeTier = (index: number) => {
-    const updated = [...(manifest.subscriptionTiers || [])];
-    updated.splice(index, 1);
-    updateManifest({ subscriptionTiers: updated });
-  };
-
-  const generateManifest = (): ModuleManifest => {
-    return {
-      id: manifest.id || '',
-      name: manifest.name || '',
-      version: manifest.version || '1.0.0',
-      description: manifest.description || '',
-      category: manifest.category as any || 'custom',
-      author: manifest.author || '',
-      license: manifest.license || 'MIT',
-      homepage: manifest.homepage,
-      repository: manifest.repository,
-      dependencies: manifest.dependencies || [],
-      peerDependencies: manifest.peerDependencies,
-      minCoreVersion: manifest.minCoreVersion || '1.0.0',
-      maxCoreVersion: manifest.maxCoreVersion,
-      entryPoint: manifest.entryPoint || 'index.ts',
-      routes: manifest.routes,
-      components: manifest.components,
-      services: manifest.services,
-      hooks: manifest.hooks,
-      requiredPermissions: manifest.requiredPermissions || [],
-      subscriptionTiers: manifest.subscriptionTiers || [],
-      resourceLimits: manifest.resourceLimits,
-      loadOrder: manifest.loadOrder || 100,
-      autoLoad: manifest.autoLoad || false,
-      canUnload: manifest.canUnload !== false,
-      developmentMode: manifest.developmentMode,
-      hotReload: manifest.hotReload,
-      sandboxed: manifest.sandboxed
-    };
-  };
-
-  const downloadManifest = () => {
-    const fullManifest = generateManifest();
-    const blob = new Blob([JSON.stringify(fullManifest, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${manifest.id || 'module'}-manifest.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleComplete = () => {
-    const fullManifest = generateManifest();
-    onComplete?.(fullManifest);
-  };
-
-  const canProceed = (step: number): boolean => {
-    switch (step) {
-      case 0:
-        return !!(manifest.id && manifest.name && manifest.version && manifest.category);
-      case 1:
-        return !!(manifest.author);
-      case 2:
-        return true; // Dependencies are optional
-      case 3:
-        return !!(manifest.entryPoint);
-      case 4:
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  const renderBasicStep = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-2">Module ID *</label>
-        <Input
-          value={manifest.id || ''}
-          onChange={(e) => updateManifest({ id: e.target.value })}
-          placeholder="my-awesome-module"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Unique identifier for your module (lowercase, hyphens allowed)
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Module Name *</label>
-        <Input
-          value={manifest.name || ''}
-          onChange={(e) => updateManifest({ name: e.target.value })}
-          placeholder="My Awesome Module"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Version *</label>
-        <Input
-          value={manifest.version || '1.0.0'}
-          onChange={(e) => updateManifest({ version: e.target.value })}
-          placeholder="1.0.0"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Semantic version (e.g., 1.0.0, 1.2.3-beta)
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Category *</label>
-        <select
-          value={manifest.category || 'custom'}
-          onChange={(e) => updateManifest({ category: e.target.value as any })}
-          className="w-full px-3 py-2 border rounded-md bg-background"
-        >
-          {categories.map(cat => (
-            <option key={cat.id} value={cat.id}>
-              {cat.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Description</label>
-        <Textarea
-          value={manifest.description || ''}
-          onChange={(e) => updateManifest({ description: e.target.value })}
-          placeholder="A brief description of what your module does..."
-          rows={3}
-        />
-      </div>
-    </div>
-  );
-
-  const renderMetadataStep = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-2">Author *</label>
-        <Input
-          value={manifest.author || ''}
-          onChange={(e) => updateManifest({ author: e.target.value })}
-          placeholder="Your Name or Organization"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">License</label>
-        <Input
-          value={manifest.license || 'MIT'}
-          onChange={(e) => updateManifest({ license: e.target.value })}
-          placeholder="MIT"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Homepage URL</label>
-        <Input
-          value={manifest.homepage || ''}
-          onChange={(e) => updateManifest({ homepage: e.target.value })}
-          placeholder="https://example.com"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Repository URL</label>
-        <Input
-          value={manifest.repository || ''}
-          onChange={(e) => updateManifest({ repository: e.target.value })}
-          placeholder="https://github.com/user/repo"
-        />
-      </div>
-    </div>
-  );
-
-  const renderDependenciesStep = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium mb-2">Module Dependencies</label>
-        <div className="flex gap-2 mb-2">
-          <Input
-            value={newDependency}
-            onChange={(e) => setNewDependency(e.target.value)}
-            placeholder="dependency-module-id"
-            onKeyPress={(e) => e.key === 'Enter' && addDependency()}
-          />
-          <Button onClick={addDependency} size="sm">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {manifest.dependencies?.map((dep, index) => (
-            <Badge key={index} variant="secondary" className="flex items-center gap-1">
-              {dep}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => removeDependency(index)}
-              />
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Required Permissions</label>
-        <div className="flex gap-2 mb-2">
-          <Input
-            value={newPermission}
-            onChange={(e) => setNewPermission(e.target.value)}
-            placeholder="read, write, admin"
-            onKeyPress={(e) => e.key === 'Enter' && addPermission()}
-          />
-          <Button onClick={addPermission} size="sm">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {manifest.requiredPermissions?.map((perm, index) => (
-            <Badge key={index} variant="outline" className="flex items-center gap-1">
-              {perm}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => removePermission(index)}
-              />
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Subscription Tiers</label>
-        <div className="flex gap-2 mb-2">
-          <Input
-            value={newTier}
-            onChange={(e) => setNewTier(e.target.value)}
-            placeholder="basic, premium, enterprise"
-            onKeyPress={(e) => e.key === 'Enter' && addTier()}
-          />
-          <Button onClick={addTier} size="sm">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {manifest.subscriptionTiers?.map((tier, index) => (
-            <Badge key={index} variant="default" className="flex items-center gap-1">
-              {tier}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => removeTier(index)}
-              />
-            </Badge>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderConfigurationStep = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-2">Entry Point *</label>
-        <Input
-          value={manifest.entryPoint || 'index.ts'}
-          onChange={(e) => updateManifest({ entryPoint: e.target.value })}
-          placeholder="index.ts"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Main file that exports your module
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Load Order</label>
-        <Input
-          type="number"
-          value={manifest.loadOrder || 100}
-          onChange={(e) => updateManifest({ loadOrder: parseInt(e.target.value) || 100 })}
-          placeholder="100"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Lower numbers load first (0-1000)
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={manifest.autoLoad || false}
-            onChange={(e) => updateManifest({ autoLoad: e.target.checked })}
-          />
-          <span className="text-sm font-medium">Auto Load</span>
-        </label>
-        <p className="text-xs text-muted-foreground">
-          Automatically load this module when the system starts
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={manifest.canUnload !== false}
-            onChange={(e) => updateManifest({ canUnload: e.target.checked })}
-          />
-          <span className="text-sm font-medium">Can Unload</span>
-        </label>
-        <p className="text-xs text-muted-foreground">
-          Allow this module to be unloaded at runtime
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={manifest.sandboxed || false}
-            onChange={(e) => updateManifest({ sandboxed: e.target.checked })}
-          />
-          <span className="text-sm font-medium">Sandboxed</span>
-        </label>
-        <p className="text-xs text-muted-foreground">
-          Run this module in a sandboxed environment
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderReviewStep = () => (
-    <div className="space-y-4">
-      <div className="bg-muted p-4 rounded-lg">
-        <h3 className="font-semibold mb-2">Generated Manifest Preview</h3>
-        <pre className="text-xs bg-background p-3 rounded border overflow-auto max-h-96">
-          {JSON.stringify(generateManifest(), null, 2)}
-        </pre>
-      </div>
-
-      <div className="flex gap-2">
-        <Button onClick={downloadManifest} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Download Manifest
-        </Button>
-        <Button onClick={handleComplete}>
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Complete & Save
-        </Button>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Module Manifest Wizard</h2>
-          <p className="text-muted-foreground">
-            Create a module manifest file step by step
+    <div className="max-w-4xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Create Module Manifest</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Configure your module's metadata and requirements
           </p>
-        </div>
-      </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="id">Module ID</Label>
+                <Input
+                  id="id"
+                  value={formData.id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, id: e.target.value }))}
+                  placeholder="my-custom-module"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Module Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="My Custom Module"
+                  required
+                />
+              </div>
+            </div>
 
-      <Tabs value={steps[currentStep].id} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          {steps.map((step, index) => (
-            <TabsTrigger
-              key={step.id}
-              value={step.id}
-              disabled={index > currentStep}
-              className="text-xs"
-            >
-              {step.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  value={formData.version}
+                  onChange={(e) => setFormData(prev => ({ ...prev, version: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="license">License</Label>
+                <Input
+                  id="license"
+                  value={formData.license}
+                  onChange={(e) => setFormData(prev => ({ ...prev, license: e.target.value }))}
+                />
+              </div>
+            </div>
 
-        <TabsContent value="basic" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Enter the basic information about your module
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderBasicStep()}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe what your module does..."
+                rows={3}
+              />
+            </div>
 
-        <TabsContent value="metadata" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Metadata
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Add metadata about the module author and links
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderMetadataStep()}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                value={formData.author}
+                onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                placeholder="Your name or organization"
+              />
+            </div>
 
-        <TabsContent value="dependencies" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dependencies & Permissions</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Specify module dependencies and required permissions
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderDependenciesStep()}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <div className="space-y-3">
+              <Label>Dependencies</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newDependency}
+                  onChange={(e) => setNewDependency(e.target.value)}
+                  placeholder="module-name"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDependency())}
+                />
+                <Button type="button" onClick={addDependency}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.dependencies.map(dep => (
+                  <Badge key={dep} variant="secondary" className="flex items-center gap-1">
+                    {dep}
+                    <X 
+                      className="h-3 w-3 cursor-pointer" 
+                      onClick={() => removeDependency(dep)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-        <TabsContent value="configuration" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure module behavior and settings
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderConfigurationStep()}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <div className="space-y-3">
+              <Label>Required Permissions</Label>
+              <div className="flex gap-2">
+                <Select value={newPermission} onValueChange={setNewPermission}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select permission" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {permissions.map(perm => (
+                      <SelectItem key={perm} value={perm}>{perm}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" onClick={addPermission}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.requiredPermissions.map(perm => (
+                  <Badge key={perm} variant="secondary" className="flex items-center gap-1">
+                    {perm}
+                    <X 
+                      className="h-3 w-3 cursor-pointer" 
+                      onClick={() => removePermission(perm)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-        <TabsContent value="review" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Review & Generate</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Review your manifest and download or save it
-              </p>
-            </CardHeader>
-            <CardContent>
-              {renderReviewStep()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <div className="space-y-3">
+              <Label>Subscription Tiers</Label>
+              <div className="flex gap-2">
+                {tiers.map(tier => (
+                  <Badge
+                    key={tier}
+                    variant={formData.subscriptionTiers.includes(tier) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleTier(tier)}
+                  >
+                    {tier}
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : onCancel?.()}
-        >
-          {currentStep === 0 ? 'Cancel' : 'Previous'}
-        </Button>
-
-        <Button
-          onClick={() => setCurrentStep(currentStep + 1)}
-          disabled={currentStep >= steps.length - 1 || !canProceed(currentStep)}
-        >
-          Next
-        </Button>
-      </div>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Generate Manifest
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

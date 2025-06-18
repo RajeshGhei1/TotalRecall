@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { LoadedModule, ModuleContext, ModuleLoadOptions } from '@/types/modules';
 import { moduleRegistryService } from './moduleRegistryService';
 
@@ -11,6 +12,11 @@ class ModuleLoader {
       ModuleLoader.instance = new ModuleLoader();
     }
     return ModuleLoader.instance;
+  }
+
+  async initialize(): Promise<void> {
+    console.log('Initializing ModuleLoader...');
+    await moduleRegistryService.initialize();
   }
 
   async loadModule(moduleId: string, context: ModuleContext, options?: ModuleLoadOptions): Promise<LoadedModule> {
@@ -55,6 +61,13 @@ class ModuleLoader {
     }
   }
 
+  async reloadModule(moduleId: string, context: ModuleContext): Promise<LoadedModule> {
+    // Unload existing module
+    this.unloadModule(moduleId);
+    // Load fresh version
+    return this.loadModule(moduleId, context, { force: true });
+  }
+
   private async dynamicImport(moduleId: string): Promise<any> {
     // Mock implementation - in reality this would dynamically import modules
     try {
@@ -90,3 +103,4 @@ class ModuleLoader {
 }
 
 export const moduleLoader = ModuleLoader.getInstance();
+export { ModuleLoader };
