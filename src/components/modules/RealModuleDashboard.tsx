@@ -8,16 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Package, 
   Search, 
-  Filter, 
   Play, 
   Pause, 
   Settings,
-  Download,
-  Upload,
-  Trash2,
   Eye,
   Code,
-  Database
+  Database,
+  BookOpen,
+  TestTube
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useModuleTemplates } from '@/hooks/useModuleTemplates';
@@ -123,17 +121,17 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
         <div>
           <h3 className="text-2xl font-bold">Module Discovery & Management</h3>
           <p className="text-muted-foreground">
-            Discover, install, and manage system modules
+            Discover and manage system modules
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Import Module
+            <BookOpen className="h-4 w-4 mr-2" />
+            Documentation
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Config
+            <TestTube className="h-4 w-4 mr-2" />
+            Test Module
           </Button>
         </div>
       </div>
@@ -322,7 +320,7 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
                         <Code className="h-4 w-4" />
                       </Button>
                       <Button size="sm">
-                        Use Template
+                        View Details
                       </Button>
                     </div>
                   </div>

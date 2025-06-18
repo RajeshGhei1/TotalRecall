@@ -19,7 +19,8 @@ import {
   TestTube,
   FileText,
   Wrench,
-  File
+  File,
+  BookOpen
 } from 'lucide-react';
 import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
 import SimplifiedModuleScaling from './SimplifiedModuleScaling';
@@ -121,7 +122,7 @@ const ModuleDevSandbox: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="gri d grid-cols-2 md:grid-cols-5 gap-3">
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
@@ -158,8 +159,8 @@ const ModuleDevSandbox: React.FC = () => {
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
             >
-              <Package className="h-6 w-6" />
-              <span className="text-sm">Deploy Module</span>
+              <BookOpen className="h-6 w-6" />
+              <span className="text-sm">Documentation</span>
             </Button>
           </div>
         </CardContent>
@@ -228,9 +229,9 @@ const ModuleDevSandbox: React.FC = () => {
             <Code className="h-4 w-4" />
             Development Hub
           </TabsTrigger>
-          <TabsTrigger value="deployment" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Package Management
+          <TabsTrigger value="testing" className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            Testing & QA
           </TabsTrigger>
           <TabsTrigger value="scaling" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
@@ -345,7 +346,7 @@ const ModuleDevSandbox: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="deployment" className="mt-6">
+        <TabsContent value="testing" className="mt-6">
           <SimplifiedModuleDeployment />
         </TabsContent>
 

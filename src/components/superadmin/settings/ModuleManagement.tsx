@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Blocks, 
   Settings,
-  Plus,
-  Zap
+  Zap,
+  BookOpen
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import CreateModuleDialog from './modules/CreateModuleDialog';
@@ -85,9 +85,9 @@ const ModuleManagement: React.FC = () => {
       {/* Main Module Management - Simplified to single tab */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-gray-900">System Module Library</h2>
-        <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Module
+        <Button variant="outline" size="sm">
+          <BookOpen className="h-4 w-4 mr-2" />
+          Documentation
         </Button>
       </div>
 
@@ -95,7 +95,7 @@ const ModuleManagement: React.FC = () => {
         <CardHeader>
           <CardTitle>System Module Library</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Create and manage modules that can be assigned to subscription plans
+            Configure and manage modules that can be assigned to subscription plans
           </p>
         </CardHeader>
         <CardContent>

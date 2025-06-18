@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, 
   Search, 
   Blocks,
   AlertCircle,
   CheckCircle,
   Package,
-  Filter,
   Grid3X3,
-  List
+  List,
+  Settings,
+  BookOpen
 } from 'lucide-react';
 import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleCard from './ModuleCard';
@@ -68,13 +68,19 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
         <div>
           <h3 className="text-2xl font-bold text-gray-900">System Module Library</h3>
           <p className="text-gray-600 mt-1">
-            Manage and configure system modules for your platform
+            View and configure system modules for your platform
           </p>
         </div>
-        <Button onClick={onCreateModule} size="lg" className="shadow-sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Module
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Documentation
+          </Button>
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Global Config
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -176,13 +182,9 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
           <p className="text-gray-600 mb-6">
             {searchTerm || selectedCategory !== 'all' 
               ? "Try adjusting your search criteria or filters" 
-              : "Get started by creating your first module"
+              : "No modules available to display"
             }
           </p>
-          <Button onClick={onCreateModule} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Module
-          </Button>
         </div>
       ) : (
         <div className={
