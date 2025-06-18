@@ -1,9 +1,10 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AccessCheckResult } from '@/types/subscription-types';
 
 export interface UnifiedAccessResult extends AccessCheckResult {
-  accessSource: 'subscription' | 'development' | 'none';
+  accessSource: 'subscription' | 'none';
   subscriptionDetails?: {
     subscriptionType: 'user' | 'tenant';
     planName: string;
@@ -29,17 +30,7 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
         };
       }
 
-      // Development modules - grant access for core functionality using correct database names
-      const developmentModules = [
-        'Talent Database',
-        'Core Dashboard',
-        'ATS Core',
-        'User Management',
-        'Workflow Management',
-        'Predictive Insights'
-      ];
-
-      // Check subscription-based access first
+      // Check subscription-based access only
       const subscriptionAccess = await checkSubscriptionAccess(tenantId, moduleName, userId);
       
       if (subscriptionAccess.hasAccess) {
@@ -50,29 +41,7 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
         };
       }
 
-      // If no subscription access and module is in development list, grant development access
-      if (developmentModules.includes(moduleName)) {
-        console.log(`Development mode: granting access to ${moduleName}`);
-        return {
-          hasAccess: true,
-          module: {
-            module_name: moduleName,
-            is_enabled: true,
-            limits: {}
-          },
-          plan: null,
-          subscription: null,
-          subscriptionType: 'tenant',
-          accessSource: 'development',
-          subscriptionDetails: {
-            subscriptionType: 'tenant',
-            planName: 'Development Access',
-            status: 'active'
-          }
-        };
-      }
-
-      console.log(`Access denied for ${moduleName}`);
+      console.log(`Access denied for ${moduleName} - no subscription access`);
       return {
         hasAccess: false,
         module: null,
