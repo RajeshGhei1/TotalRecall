@@ -1,4 +1,3 @@
-
 // List of functional modules that should be highlighted in green
 const FUNCTIONAL_MODULES = [
   'Company Database',
@@ -84,13 +83,19 @@ export const getMaturityStatusVariant = (status: string) => {
 };
 
 /**
- * Get progress percentage for development stage
+ * Get development progress from module using the new progress tracking system
  */
 export const getDevelopmentProgress = (module: any): number => {
   try {
     console.log('Getting progress for module:', module.name, 'development_stage:', module.development_stage);
     
-    // Handle both string and object formats for development_stage
+    // First, try to get from new progress tracking system
+    if (module.overall_progress !== undefined) {
+      console.log('Using overall_progress for', module.name, ':', module.overall_progress);
+      return module.overall_progress;
+    }
+    
+    // Fallback to development_stage for backwards compatibility
     let stage;
     if (typeof module.development_stage === 'string') {
       stage = JSON.parse(module.development_stage);
@@ -111,10 +116,19 @@ export const getDevelopmentProgress = (module: any): number => {
 };
 
 /**
- * Get development stage name from module
+ * Get development stage name from module using the new progress tracking system
  */
 export const getDevelopmentStage = (module: any): string => {
   try {
+    // First, try to get from new progress tracking system
+    if (module.overall_progress !== undefined) {
+      if (module.overall_progress >= 90) return 'production';
+      if (module.overall_progress >= 80) return 'beta';
+      if (module.overall_progress >= 40) return 'alpha';
+      return 'planning';
+    }
+    
+    // Fallback to development_stage for backwards compatibility
     let stage;
     if (typeof module.development_stage === 'string') {
       stage = JSON.parse(module.development_stage);
@@ -132,10 +146,23 @@ export const getDevelopmentStage = (module: any): string => {
 };
 
 /**
- * Get remaining requirements for a module
+ * Get remaining requirements for a module using the new progress tracking system
  */
 export const getModuleRequirements = (module: any): string[] => {
   try {
+    // First, try to get from new progress tracking system
+    if (module.overall_progress !== undefined) {
+      const progress = module.overall_progress;
+      
+      if (progress >= 90) return ['Ready for production deployment'];
+      if (progress >= 80) return ['Complete integration testing', 'Performance optimization', 'Security review'];
+      if (progress >= 60) return ['Complete documentation', 'Fix critical bugs', 'Achieve 85%+ test coverage'];
+      if (progress >= 40) return ['Complete feature development', 'Add comprehensive test coverage'];
+      if (progress >= 20) return ['Implement core features', 'Add basic test coverage'];
+      return ['Complete initial code structure', 'Define test cases'];
+    }
+    
+    // Fallback to development_stage for backwards compatibility
     let stage;
     if (typeof module.development_stage === 'string') {
       stage = JSON.parse(module.development_stage);
