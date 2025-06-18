@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ import {
   TestTube,
   FileText,
   Wrench,
-  Template
+  FileTemplate
 } from 'lucide-react';
 import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
 import SimplifiedModuleScaling from './SimplifiedModuleScaling';
@@ -150,7 +149,7 @@ const ModuleDevSandbox: React.FC = () => {
               className="h-auto p-4 flex-col gap-2"
               onClick={() => setTemplateManagerOpen(true)}
             >
-              <Template className="h-6 w-6" />
+              <FileTemplate className="h-6 w-6" />
               <span className="text-sm">Templates</span>
             </Button>
             <Button 
@@ -191,7 +190,7 @@ const ModuleDevSandbox: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Template className="h-8 w-8 text-purple-500" />
+              <FileTemplate className="h-8 w-8 text-purple-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.templates}</p>
                 <p className="text-sm text-muted-foreground">Templates</p>
@@ -220,7 +219,7 @@ const ModuleDevSandbox: React.FC = () => {
             Module Discovery
           </TabsTrigger>
           <TabsTrigger value="templates" className="flex items-center gap-2">
-            <Template className="h-4 w-4" />
+            <FileTemplate className="h-4 w-4" />
             Templates
           </TabsTrigger>
           <TabsTrigger value="development" className="flex items-center gap-2">
