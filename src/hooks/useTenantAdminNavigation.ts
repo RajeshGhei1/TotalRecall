@@ -1,4 +1,3 @@
-
 import { 
   LayoutDashboard, 
   Users, 
@@ -171,11 +170,25 @@ export const useTenantAdminNavigation = () => {
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
   const { data: linkedinAccess } = useUnifiedModuleAccess(currentTenantId, 'LinkedIn Integration', user?.id);
 
+  // Add debugging
+  console.log('Navigation Debug:', {
+    currentTenantId,
+    talentDatabaseAccess,
+    allAccess: {
+      dashboard: dashboardAccess?.hasAccess,
+      ats: atsAccess?.hasAccess,
+      talentDatabase: talentDatabaseAccess?.hasAccess,
+      companies: companiesAccess?.hasAccess
+    }
+  });
+
   // Filter navigation items based on module access
   const filteredNavItems = defaultNavItems.filter(item => {
     if (!item.requiresModule) {
       return true; // Always show items that don't require modules
     }
+
+    console.log(`Checking access for ${item.id} (module: ${item.requiresModule})`);
 
     switch (item.requiresModule) {
       case 'Dashboard Analytics':
@@ -189,7 +202,9 @@ export const useTenantAdminNavigation = () => {
       case 'ATS Core':
         return atsAccess?.hasAccess === true;
       case 'talent-database':
-        return talentDatabaseAccess?.hasAccess === true;
+        const hasAccess = talentDatabaseAccess?.hasAccess === true;
+        console.log(`Talent Database access check: ${hasAccess}`, talentDatabaseAccess);
+        return hasAccess;
       case 'company_data_access':
         return companiesAccess?.hasAccess === true;
       case 'business_contacts_data_access':
@@ -199,9 +214,12 @@ export const useTenantAdminNavigation = () => {
       case 'LinkedIn Integration':
         return linkedinAccess?.hasAccess === true;
       default:
+        console.warn(`Unknown module requirement: ${item.requiresModule}`);
         return true;
     }
   });
+
+  console.log('Filtered nav items:', filteredNavItems.map(item => ({ id: item.id, label: item.label, module: item.requiresModule })));
 
   // If no access to any modules, show basic user management only
   const hasAnyAccess = filteredNavItems.length > 0;
