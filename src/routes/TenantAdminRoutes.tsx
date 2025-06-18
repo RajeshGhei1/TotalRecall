@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/tenant-admin/Dashboard";
@@ -114,7 +115,7 @@ const TenantAdminRoutes = () => {
       {/* Talent Database - Advanced Module Protected Route */}
       <Route path="talent-database" element={
         <UnifiedModuleAccessGuard 
-          moduleName="talent-database" 
+          moduleName="Talent Database" 
           tenantId={currentTenantId}
           userId={user?.id}
         >

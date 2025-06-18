@@ -32,7 +32,7 @@ export const useUnifiedModuleAccess = (tenantId: string | null, moduleName: stri
 
       // Development modules - grant access for core functionality
       const developmentModules = [
-        'talent-database',
+        'Talent Database',
         'Dashboard Analytics',
         'ATS Core',
         'User Management',

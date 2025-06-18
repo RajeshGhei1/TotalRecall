@@ -1,3 +1,4 @@
+
 import { 
   LayoutDashboard, 
   Users, 
@@ -92,7 +93,7 @@ const defaultNavItems: NavItem[] = [
     label: 'Talent Database', 
     icon: Database, 
     href: '/tenant-admin/talent-database',
-    requiresModule: 'talent-database'
+    requiresModule: 'Talent Database'
   },
   { 
     id: 'companies',
@@ -164,7 +165,7 @@ export const useTenantAdminNavigation = () => {
   const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
   const { data: userMgmtAccess } = useUnifiedModuleAccess(currentTenantId, 'User Management', user?.id);
   const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
-  const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'talent-database', user?.id);
+  const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'Talent Database', user?.id);
   const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'company_data_access', user?.id);
   const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'business_contacts_data_access', user?.id);
   const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
@@ -202,7 +203,7 @@ export const useTenantAdminNavigation = () => {
         return userMgmtAccess?.hasAccess === true;
       case 'ATS Core':
         return atsAccess?.hasAccess === true;
-      case 'talent-database':
+      case 'Talent Database':
         const hasAccess = talentDatabaseAccess?.hasAccess === true;
         console.log(`Talent Database access check: ${hasAccess}`, talentDatabaseAccess);
         return hasAccess;
