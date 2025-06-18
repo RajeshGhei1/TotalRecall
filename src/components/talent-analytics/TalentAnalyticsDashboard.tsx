@@ -31,7 +31,7 @@ const TalentAnalyticsDashboard: React.FC<TalentAnalyticsDashboardProps> = ({
   showMetrics = true, 
   enableRealTime = true 
 }) => {
-  const [activeTab, setActiveTab] = useState(mode === 'dashboard' ? 'insights' : mode);
+  const [activeTab, setActiveTab] = useState<string>(mode === 'dashboard' ? 'insights' : mode);
   const { data: analytics, isLoading, refetch } = useTalentAnalytics();
 
   const handleRefresh = () => {
