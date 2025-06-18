@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleCard from './ModuleCard';
+import { getFunctionalModuleCount } from '@/utils/moduleUtils';
 
 interface ModulesManagementProps {
   modules: SystemModule[];
@@ -35,6 +36,9 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Calculate functional modules count
+  const functionalCount = getFunctionalModuleCount(modules || []);
 
   const categories = [
     { value: 'all', label: 'All Modules', count: stats.total },
@@ -92,8 +96,8 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
               <CheckCircle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-green-900">{stats.active}</p>
-              <p className="text-green-700 font-medium">Active Modules</p>
+              <p className="text-3xl font-bold text-green-900">{functionalCount}</p>
+              <p className="text-green-700 font-medium">Functional Modules</p>
             </div>
           </div>
         </div>
@@ -103,8 +107,8 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
               <AlertCircle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-orange-900">{stats.inactive}</p>
-              <p className="text-orange-700 font-medium">Inactive Modules</p>
+              <p className="text-3xl font-bold text-orange-900">{stats.total - functionalCount}</p>
+              <p className="text-orange-700 font-medium">Placeholder Modules</p>
             </div>
           </div>
         </div>

@@ -9,7 +9,8 @@ const FUNCTIONAL_MODULES = [
   'Core Dashboard',
   'Smart Talent Analytics',
   'Document Management',
-  'AI Orchestration'
+  'AI Orchestration',
+  'Custom Field Management'
 ];
 
 /**
@@ -17,6 +18,13 @@ const FUNCTIONAL_MODULES = [
  */
 export const isFunctionalModule = (moduleName: string): boolean => {
   return FUNCTIONAL_MODULES.includes(moduleName);
+};
+
+/**
+ * Get count of functional modules from a list of modules
+ */
+export const getFunctionalModuleCount = (modules: any[]): number => {
+  return modules?.filter(module => isFunctionalModule(module.name)).length || 0;
 };
 
 /**

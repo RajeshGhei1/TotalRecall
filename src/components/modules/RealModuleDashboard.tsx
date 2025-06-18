@@ -24,6 +24,7 @@ import { useModuleTemplates } from '@/hooks/useModuleTemplates';
 import { useModuleDeployments } from '@/hooks/useModuleDeployments';
 import { enhancedModuleLoader } from '@/services/enhancedModuleLoader';
 import { toast } from '@/hooks/use-toast';
+import { getFunctionalModuleCount } from '@/utils/moduleUtils';
 
 interface RealModuleDashboardProps {
   tenantId?: string;
@@ -163,8 +164,8 @@ const RealModuleDashboard: React.FC<RealModuleDashboardProps> = ({ tenantId }) =
             <div className="flex items-center gap-3">
               <Play className="h-8 w-8 text-purple-500" />
               <div>
-                <p className="text-2xl font-bold">{modules.filter(m => m.is_active).length}</p>
-                <p className="text-sm text-muted-foreground">Active Modules</p>
+                <p className="text-2xl font-bold">{getFunctionalModuleCount(modules)}</p>
+                <p className="text-sm text-muted-foreground">Functional Modules</p>
               </div>
             </div>
           </CardContent>

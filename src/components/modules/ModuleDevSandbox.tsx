@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 import { useModuleTemplates } from '@/hooks/useModuleTemplates';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useModuleDeployments } from '@/hooks/useModuleDeployments';
+import { getFunctionalModuleCount } from '@/utils/moduleUtils';
 
 const ModuleDevSandbox: React.FC = () => {
   // Use stable tenant context
@@ -66,7 +68,7 @@ const ModuleDevSandbox: React.FC = () => {
 
   const stats = {
     modules: modules.length,
-    activeModules: modules.filter(m => m.is_active).length,
+    functionalModules: getFunctionalModuleCount(modules),
     templates: templates.length,
     recentDeployments: deployments.length
   };
@@ -181,8 +183,8 @@ const ModuleDevSandbox: React.FC = () => {
             <div className="flex items-center gap-3">
               <Zap className="h-8 w-8 text-green-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.activeModules}</p>
-                <p className="text-sm text-muted-foreground">Active Modules</p>
+                <p className="text-2xl font-bold">{stats.functionalModules}</p>
+                <p className="text-sm text-muted-foreground">Functional Modules</p>
               </div>
             </div>
           </CardContent>
