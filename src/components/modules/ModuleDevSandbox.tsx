@@ -20,15 +20,19 @@ import {
   FileText,
   Wrench,
   File,
-  BookOpen
+  BookOpen,
+  Plus,
+  Rocket
 } from 'lucide-react';
 import SimplifiedModuleDeployment from './SimplifiedModuleDeployment';
 import SimplifiedModuleScaling from './SimplifiedModuleScaling';
 import RealModuleDashboard from './RealModuleDashboard';
 import ModuleTestRunner from './ModuleTestRunner';
 import ManifestWizard from './ManifestWizard';
-import LiveDevelopmentSandbox from './LiveDevelopmentSandbox';
 import ModuleTemplateManager from './ModuleTemplateManager';
+import NewModuleWizard from './NewModuleWizard';
+import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
+import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
 import { useStableTenantContext } from '@/hooks/useStableTenantContext';
 import { useModuleTemplates } from '@/hooks/useModuleTemplates';
 import { useSystemModules } from '@/hooks/useSystemModules';
@@ -46,6 +50,8 @@ const ModuleDevSandbox: React.FC = () => {
   const [manifestWizardOpen, setManifestWizardOpen] = useState(false);
   const [sandboxOpen, setSandboxOpen] = useState(false);
   const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
+  const [newModuleWizardOpen, setNewModuleWizardOpen] = useState(false);
+  const [deploymentPipelineOpen, setDeploymentPipelineOpen] = useState(false);
 
   // Add debugging to track component lifecycle
   useEffect(() => {
@@ -84,7 +90,7 @@ const ModuleDevSandbox: React.FC = () => {
             Enhanced Module Development Environment
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Complete development environment with template system, live coding, and comprehensive testing
+            Complete development environment with guided workflows, live coding, and deployment pipeline
           </p>
         </CardHeader>
         <CardContent>
@@ -118,11 +124,19 @@ const ModuleDevSandbox: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wrench className="h-5 w-5" />
-            Quick Development Actions
+            Module Development Actions
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="gri d grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex-col gap-2"
+              onClick={() => setNewModuleWizardOpen(true)}
+            >
+              <Plus className="h-6 w-6" />
+              <span className="text-sm">Create Module</span>
+            </Button>
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
@@ -150,17 +164,18 @@ const ModuleDevSandbox: React.FC = () => {
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
-              onClick={() => setTemplateManagerOpen(true)}
+              onClick={() => setDeploymentPipelineOpen(true)}
             >
-              <File className="h-6 w-6" />
-              <span className="text-sm">Templates</span>
+              <Rocket className="h-6 w-6" />
+              <span className="text-sm">Deploy</span>
             </Button>
             <Button 
               variant="outline" 
               className="h-auto p-4 flex-col gap-2"
+              onClick={() => setTemplateManagerOpen(true)}
             >
-              <BookOpen className="h-6 w-6" />
-              <span className="text-sm">Documentation</span>
+              <File className="h-6 w-6" />
+              <span className="text-sm">Templates</span>
             </Button>
           </div>
         </CardContent>
@@ -216,7 +231,7 @@ const ModuleDevSandbox: React.FC = () => {
 
       {/* Main Tabs */}
       <Tabs defaultValue="modules" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="modules" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Module Discovery
@@ -232,6 +247,10 @@ const ModuleDevSandbox: React.FC = () => {
           <TabsTrigger value="testing" className="flex items-center gap-2">
             <TestTube className="h-4 w-4" />
             Testing & QA
+          </TabsTrigger>
+          <TabsTrigger value="deployment" className="flex items-center gap-2">
+            <Rocket className="h-4 w-4" />
+            Deployment
           </TabsTrigger>
           <TabsTrigger value="scaling" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
@@ -255,38 +274,37 @@ const ModuleDevSandbox: React.FC = () => {
                 Development Hub
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Integrated development environment with templates, live coding, and testing
+                Integrated development environment with guided workflows and live coding
               </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Template Gallery */}
+                {/* Quick Start */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Module Templates</h3>
+                  <h3 className="font-semibold">Quick Start</h3>
                   <div className="space-y-3">
-                    {templates.slice(0, 3).map((template) => (
-                      <div key={template.id} className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{template.name}</h4>
-                            <p className="text-sm text-muted-foreground">{template.description}</p>
-                            <div className="flex gap-1 mt-2">
-                              {template.tags.slice(0, 3).map((tag: string) => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                    <Button 
+                      className="w-full justify-start" 
+                      onClick={() => setNewModuleWizardOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New Module
+                    </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full justify-start"
+                      onClick={() => setSandboxOpen(true)}
+                    >
+                      <Code className="h-4 w-4 mr-2" />
+                      Open Live Code Editor
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
                       onClick={() => setTemplateManagerOpen(true)}
                     >
-                      View All Templates ({templates.length})
+                      <File className="h-4 w-4 mr-2" />
+                      Browse Templates
                     </Button>
                   </div>
                 </div>
@@ -314,16 +332,17 @@ const ModuleDevSandbox: React.FC = () => {
                     <Button 
                       variant="outline" 
                       className="h-auto p-4 flex-col gap-2"
+                      onClick={() => setDeploymentPipelineOpen(true)}
                     >
-                      <Activity className="h-6 w-6" />
-                      <span className="text-sm">Performance</span>
+                      <Rocket className="h-6 w-6" />
+                      <span className="text-sm">Deploy</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       className="h-auto p-4 flex-col gap-2"
                     >
-                      <RefreshCw className="h-6 w-6" />
-                      <span className="text-sm">Hot Reload</span>
+                      <Activity className="h-6 w-6" />
+                      <span className="text-sm">Performance</span>
                     </Button>
                   </div>
                 </div>
@@ -350,12 +369,28 @@ const ModuleDevSandbox: React.FC = () => {
           <SimplifiedModuleDeployment />
         </TabsContent>
 
+        <TabsContent value="deployment" className="mt-6">
+          <ModuleDeploymentPipeline />
+        </TabsContent>
+
         <TabsContent value="scaling" className="mt-6">
           <SimplifiedModuleScaling />
         </TabsContent>
       </Tabs>
 
       {/* Dialogs */}
+      <Dialog open={newModuleWizardOpen} onOpenChange={setNewModuleWizardOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Module</DialogTitle>
+          </DialogHeader>
+          <NewModuleWizard 
+            onComplete={() => setNewModuleWizardOpen(false)}
+            onCancel={() => setNewModuleWizardOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={testRunnerOpen} onOpenChange={setTestRunnerOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -383,9 +418,18 @@ const ModuleDevSandbox: React.FC = () => {
       <Dialog open={sandboxOpen} onOpenChange={setSandboxOpen}>
         <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Live Development Sandbox</DialogTitle>
+            <DialogTitle>Enhanced Live Development Sandbox</DialogTitle>
           </DialogHeader>
-          <LiveDevelopmentSandbox />
+          <EnhancedLiveCodeEditor />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deploymentPipelineOpen} onOpenChange={setDeploymentPipelineOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Module Deployment Pipeline</DialogTitle>
+          </DialogHeader>
+          <ModuleDeploymentPipeline />
         </DialogContent>
       </Dialog>
 
