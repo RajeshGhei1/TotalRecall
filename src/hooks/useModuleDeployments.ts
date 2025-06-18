@@ -39,7 +39,20 @@ export const useModuleDeployments = (tenantId?: string) => {
           return [];
         }
 
-        return data || [];
+        // Transform the data to match our interface
+        return (data || []).map((item: any) => ({
+          id: item.id,
+          module_name: item.module_name,
+          version: item.version,
+          deployment_type: item.deployment_type,
+          status: item.status,
+          tenant_id: item.tenant_id,
+          deployed_by: item.deployed_by,
+          started_at: item.started_at,
+          completed_at: item.completed_at,
+          deployment_config: item.deployment_config || {},
+          deployment_log: Array.isArray(item.deployment_log) ? item.deployment_log : []
+        }));
       } catch (error) {
         console.error('Error in useModuleDeployments:', error);
         return [];

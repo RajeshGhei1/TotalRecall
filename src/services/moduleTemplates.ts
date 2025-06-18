@@ -152,10 +152,10 @@ class ModuleTemplateService {
           name: template.name,
           description: template.description,
           category: template.category,
-          tags: template.tags,
-          manifest_template: template.manifest_template,
-          files: template.files,
-          dependencies: template.dependencies,
+          tags: template.tags as any,
+          manifest_template: template.manifest_template as any,
+          files: template.files as any,
+          dependencies: template.dependencies as any,
           is_built_in: false,
           is_active: true
         });
