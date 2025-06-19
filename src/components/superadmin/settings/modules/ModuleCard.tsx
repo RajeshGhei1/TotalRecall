@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,21 +27,12 @@ import { moduleNavigationService } from '@/services/moduleNavigationService';
 import { normalizeModuleName } from '@/utils/moduleNameMapping';
 import ModuleSettingsDialog from './ModuleSettingsDialog';
 import { toast } from '@/hooks/use-toast';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleCardProps {
-  module: {
-    id: string;
-    name: string;
-    description?: string;
-    category: string;
-    is_active: boolean;
-    version?: string;
-    default_limits?: any;
-    dependencies?: string[];
-    maturity_status?: string;
-  };
-  onEdit: (module: any) => void;
-  onDelete: (module: any) => void;
+  module: SystemModule;
+  onEdit: (module: SystemModule) => void;
+  onDelete: (module: SystemModule) => void;
 }
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => {
