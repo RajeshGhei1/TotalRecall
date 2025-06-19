@@ -34,6 +34,30 @@ export interface ProgressUpdate {
   metadata: Record<string, any>;
 }
 
+// Type guard to ensure metrics_data has the correct structure
+const ensureMetricsData = (data: any): ModuleProgressMetrics['metrics_data'] => {
+  const defaultMetrics = {
+    total_files_planned: 0,
+    files_implemented: 0,
+    total_tests_planned: 0,
+    tests_written: 0,
+    tests_passing: 0,
+    features_planned: 0,
+    features_completed: 0,
+    docs_sections_planned: 0,
+    docs_sections_completed: 0,
+    code_review_score: 0,
+    bug_count: 0,
+    performance_score: 0
+  };
+
+  if (typeof data === 'object' && data !== null) {
+    return { ...defaultMetrics, ...data };
+  }
+  
+  return defaultMetrics;
+};
+
 export const useModuleProgress = (moduleId: string) => {
   return useQuery({
     queryKey: ['module-progress', moduleId],
@@ -48,7 +72,12 @@ export const useModuleProgress = (moduleId: string) => {
         throw error;
       }
 
-      return data as ModuleProgressMetrics | null;
+      if (!data) return null;
+
+      return {
+        ...data,
+        metrics_data: ensureMetricsData(data.metrics_data)
+      } as ModuleProgressMetrics;
     },
   });
 };
@@ -63,7 +92,11 @@ export const useAllModulesProgress = () => {
         .order('overall_progress', { ascending: false });
 
       if (error) throw error;
-      return data as ModuleProgressMetrics[];
+      
+      return data.map(item => ({
+        ...item,
+        metrics_data: ensureMetricsData(item.metrics_data)
+      })) as ModuleProgressMetrics[];
     },
   });
 };
