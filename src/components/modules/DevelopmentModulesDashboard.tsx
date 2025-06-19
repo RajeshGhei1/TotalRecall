@@ -12,14 +12,20 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  Code
+  Code,
+  Eye,
+  Play,
+  Edit
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useAllModulesProgress } from '@/hooks/useModuleProgress';
 import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, convertSystemModulesToModules } from '@/utils/moduleUtils';
 import { getDisplayName, normalizeModuleName } from '@/utils/moduleNameMapping';
+import { toast } from '@/hooks/use-toast';
 
 const DevelopmentModulesDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
@@ -75,10 +81,55 @@ const DevelopmentModulesDashboard: React.FC = () => {
     beta: developmentModules.filter(m => m.maturity_status === 'beta').length,
   };
 
+  const handlePreviewModule = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-development', { 
+      state: { 
+        action: 'preview', 
+        moduleId: normalizeModuleName(moduleName),
+        moduleName: getDisplayName(moduleName)
+      } 
+    });
+    toast({
+      title: 'Opening Module Preview',
+      description: `Loading preview for ${getDisplayName(moduleName)}`,
+    });
+  };
+
+  const handleTestModule = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-testing', { 
+      state: { 
+        moduleId: normalizeModuleName(moduleName),
+        moduleName: getDisplayName(moduleName)
+      } 
+    });
+    toast({
+      title: 'Opening Module Testing',
+      description: `Loading test environment for ${getDisplayName(moduleName)}`,
+    });
+  };
+
+  const handleEditModule = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-development', { 
+      state: { 
+        action: 'edit', 
+        moduleId: normalizeModuleName(moduleName),
+        moduleName: getDisplayName(moduleName)
+      } 
+    });
+    toast({
+      title: 'Opening Module Editor',
+      description: `Loading editor for ${getDisplayName(moduleName)}`,
+    });
+  };
+
   const handlePromoteToProduction = async (moduleId: string) => {
     try {
       console.log('Would promote module to production:', moduleId);
       // Implementation would go here
+      toast({
+        title: 'Module Promotion',
+        description: 'Module promotion workflow will be implemented.',
+      });
     } catch (error) {
       console.error('Failed to promote module:', error);
     }
@@ -253,6 +304,37 @@ const DevelopmentModulesDashboard: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2 ml-4">
+                      {/* Interactive Module Buttons */}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handlePreviewModule(module.id, module.name)}
+                        className="hover:bg-blue-50 hover:text-blue-600"
+                        title="Preview Module"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleTestModule(module.id, module.name)}
+                        className="hover:bg-green-50 hover:text-green-600"
+                        title="Test Module"
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Test
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditModule(module.id, module.name)}
+                        className="hover:bg-purple-50 hover:text-purple-600"
+                        title="Edit Module"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
                       <Button variant="outline" size="sm">
                         <Settings className="h-4 w-4" />
                       </Button>
