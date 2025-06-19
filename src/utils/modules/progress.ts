@@ -3,26 +3,8 @@
 
 import { Module, ModuleDevelopmentStage } from './types';
 import { isProductionReadyModule, isBetaReadyModule } from './classification';
+import { parseDevelopmentStage } from './conversion';
 import { PROGRESS_THRESHOLDS } from './config';
-
-/**
- * Parse development stage from module data
- */
-export const parseDevelopmentStage = (developmentStage: any): ModuleDevelopmentStage | null => {
-  try {
-    if (typeof developmentStage === 'string') {
-      return JSON.parse(developmentStage);
-    } else if (typeof developmentStage === 'object' && developmentStage !== null) {
-      // Ensure it has the required properties
-      if (developmentStage.stage && typeof developmentStage.progress === 'number') {
-        return developmentStage as ModuleDevelopmentStage;
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
-};
 
 /**
  * Get development progress from module using the new progress tracking system
