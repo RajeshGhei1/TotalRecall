@@ -18,12 +18,14 @@ import AuditLogs from '@/pages/superadmin/AuditLogs';
 import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import ModuleDevelopment from '@/pages/superadmin/ModuleDevelopment';
+import ModuleTesting from '@/pages/superadmin/ModuleTesting';
 
 const SuperAdminRoutes = () => {
   return (
     <Routes>
       <Route path="/dashboard" element={<SuperAdminDashboard />} />
       <Route path="/module-development" element={<ModuleDevelopment />} />
+      <Route path="/module-testing" element={<ModuleTesting />} />
       <Route path="/tenants" element={<Tenants />} />
       <Route path="/users" element={<Users />} />
       <Route path="/subscription-plans" element={<SubscriptionPlans />} />

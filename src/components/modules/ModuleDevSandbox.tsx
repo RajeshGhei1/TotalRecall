@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +14,7 @@ import {
   CheckCircle,
   Package
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
@@ -32,10 +33,53 @@ interface ModuleData {
 }
 
 const ModuleDevSandbox: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('development');
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [currentModule, setCurrentModule] = useState<ModuleData | null>(null);
   const [deployedModules, setDeployedModules] = useState<string[]>([]);
+
+  // Handle navigation state from other pages
+  useEffect(() => {
+    const state = location.state as {
+      action?: 'preview' | 'edit' | 'test';
+      moduleId?: string;
+      moduleName?: string;
+    };
+
+    if (state?.action && state?.moduleId && state?.moduleName) {
+      console.log('Received navigation state:', state);
+      
+      // Create a temporary module data for the selected module
+      const moduleData: ModuleData = {
+        name: state.moduleName,
+        description: `Module: ${state.moduleName}`,
+        category: 'development',
+        version: '1.0.0',
+        templateId: 'default',
+        features: [],
+        dependencies: [],
+        configuration: {}
+      };
+
+      setCurrentModule(moduleData);
+      
+      // Switch to appropriate tab based on action
+      if (state.action === 'preview') {
+        setActiveTab('development'); // Show in development tab with preview
+        toast({
+          title: 'Module Preview Mode',
+          description: `Previewing ${state.moduleName}`,
+        });
+      } else if (state.action === 'edit') {
+        setActiveTab('code');
+        toast({
+          title: 'Module Edit Mode',
+          description: `Editing ${state.moduleName}`,
+        });
+      }
+    }
+  }, [location.state]);
 
   const handleCreateModule = () => {
     setIsCreatingModule(true);
@@ -159,7 +203,16 @@ const ModuleDevSandbox: React.FC = () => {
 
         <TabsContent value="code">
           {currentModule && (
-            <EnhancedLiveCodeEditor />
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Code Editor - {currentModule.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EnhancedLiveCodeEditor />
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
 

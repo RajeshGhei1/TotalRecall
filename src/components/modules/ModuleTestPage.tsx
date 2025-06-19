@@ -12,17 +12,39 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  ArrowLeft
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import ModuleRenderer from './ModuleRenderer';
 import { ModuleContext } from '@/types/modules';
+import { toast } from '@/hooks/use-toast';
 
 const ModuleTestPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { loadedModules, isLoading, refreshModules } = useModuleLoader();
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [moduleProps, setModuleProps] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState('test');
+
+  // Handle navigation state from development dashboard
+  useEffect(() => {
+    const state = location.state as {
+      moduleId?: string;
+      moduleName?: string;
+    };
+
+    if (state?.moduleId && state?.moduleName) {
+      console.log('Testing module:', state.moduleId, state.moduleName);
+      setSelectedModule(state.moduleId);
+      toast({
+        title: 'Module Testing',
+        description: `Loading test environment for ${state.moduleName}`,
+      });
+    }
+  }, [location.state]);
 
   // Create a test context
   const testContext: ModuleContext = {
@@ -46,6 +68,10 @@ const ModuleTestPage: React.FC = () => {
       ...prev,
       [propName]: value
     }));
+  };
+
+  const handleBackToDevelopment = () => {
+    navigate('/superadmin/module-development');
   };
 
   const renderModuleList = () => (
@@ -248,11 +274,17 @@ const ModuleTestPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Module Testing Lab</h1>
-          <p className="text-muted-foreground">
-            Test and configure modules in a safe environment
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleBackToDevelopment}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Development
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Module Testing Lab</h1>
+            <p className="text-muted-foreground">
+              Test and configure modules in a safe environment
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-sm">

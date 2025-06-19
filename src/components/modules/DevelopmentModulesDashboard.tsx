@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,11 +22,14 @@ import { useAllModulesProgress } from '@/hooks/useModuleProgress';
 import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, convertSystemModulesToModules } from '@/utils/moduleUtils';
 import { getDisplayName, normalizeModuleName } from '@/utils/moduleNameMapping';
 import { toast } from '@/hooks/use-toast';
+import ModuleSettingsDialog from '@/components/superadmin/settings/modules/ModuleSettingsDialog';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [settingsModule, setSettingsModule] = useState<any>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Fetch all system modules and progress data
   const { data: systemModules = [], isLoading: modulesLoading } = useSystemModules(true);
@@ -122,6 +124,15 @@ const DevelopmentModulesDashboard: React.FC = () => {
     });
   };
 
+  const handleSettingsModule = (module: any) => {
+    setSettingsModule(module);
+    setIsSettingsOpen(true);
+    toast({
+      title: 'Opening Module Settings',
+      description: `Configuring settings for ${getDisplayName(module.name)}`,
+    });
+  };
+
   const handlePromoteToProduction = async (moduleId: string) => {
     try {
       console.log('Would promote module to production:', moduleId);
@@ -133,6 +144,15 @@ const DevelopmentModulesDashboard: React.FC = () => {
     } catch (error) {
       console.error('Failed to promote module:', error);
     }
+  };
+
+  const handleSettingsSave = (updatedSettings: any) => {
+    console.log('Saving module settings:', updatedSettings);
+    toast({
+      title: 'Settings Saved',
+      description: 'Module settings have been updated successfully.',
+    });
+    setIsSettingsOpen(false);
   };
 
   if (isLoading) {
@@ -335,7 +355,13 @@ const DevelopmentModulesDashboard: React.FC = () => {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleSettingsModule(module)}
+                        className="hover:bg-gray-50 hover:text-gray-600"
+                        title="Module Settings"
+                      >
                         <Settings className="h-4 w-4" />
                       </Button>
                       {canPromote && (
@@ -355,6 +381,15 @@ const DevelopmentModulesDashboard: React.FC = () => {
             );
           })}
         </div>
+      )}
+      {/* Module Settings Dialog */}
+      {settingsModule && (
+        <ModuleSettingsDialog
+          open={isSettingsOpen}
+          onOpenChange={setIsSettingsOpen}
+          module={settingsModule}
+          onSave={handleSettingsSave}
+        />
       )}
     </div>
   );
