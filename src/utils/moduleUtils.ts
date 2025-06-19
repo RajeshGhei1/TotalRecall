@@ -1,64 +1,89 @@
 
-// List of functional modules that should be highlighted in green
+import { MODULE_NAME_MAPPING, getDisplayName, getTechnicalName } from './moduleNameMapping';
+
+// List of functional modules that should be highlighted in green (using technical names)
 const FUNCTIONAL_MODULES = [
-  'Company Database',
-  'Business Contacts', 
-  'ATS Core',
-  'User Management',
-  'Talent Database',
-  'Core Dashboard',
-  'Smart Talent Analytics',
-  'Document Management',
-  'AI Orchestration',
-  'Custom Field Management'
+  'company_database',
+  'business_contacts_data_access', 
+  'ats_core',
+  'user_management',
+  'talent_database',
+  'core_dashboard',
+  'smart_talent_analytics',
+  'document_management',
+  'ai_orchestration',
+  'custom_field_management'
 ];
 
-// Production-ready modules with 90%+ completion
+// Production-ready modules with 90%+ completion (using technical names)
 const PRODUCTION_READY_MODULES = [
-  'Business Contacts',
-  'Company Database'
+  'business_contacts_data_access',
+  'company_database'
 ];
 
-// Beta-ready modules with 80%+ completion  
+// Beta-ready modules with 80%+ completion (using technical names)
 const BETA_READY_MODULES = [
-  'ATS Core',
-  'User Management', 
-  'Talent Database',
-  'Core Dashboard',
-  'Smart Talent Analytics',
-  'Document Management',
-  'AI Orchestration',
-  'Custom Field Management'
+  'ats_core',
+  'user_management', 
+  'talent_database',
+  'core_dashboard',
+  'smart_talent_analytics',
+  'document_management',
+  'ai_orchestration',
+  'custom_field_management'
 ];
+
+/**
+ * Normalize module name to technical format for consistency
+ */
+export const normalizeModuleName = (moduleName: string): string => {
+  // If it's already a technical name, return as is
+  if (moduleName in MODULE_NAME_MAPPING) {
+    return moduleName;
+  }
+  
+  // If it's a display name, convert to technical
+  const technicalName = getTechnicalName(moduleName);
+  if (technicalName !== moduleName) {
+    return technicalName;
+  }
+  
+  // Fallback: convert to lowercase with underscores
+  return moduleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+};
 
 /**
  * Check if a module is functional (fully implemented)
  */
 export const isFunctionalModule = (moduleName: string): boolean => {
-  return FUNCTIONAL_MODULES.includes(moduleName);
+  const normalizedName = normalizeModuleName(moduleName);
+  return FUNCTIONAL_MODULES.includes(normalizedName);
 };
 
 /**
  * Check if a module is production ready (94%+ progress)
  */
 export const isProductionReadyModule = (moduleName: string): boolean => {
-  return PRODUCTION_READY_MODULES.includes(moduleName);
+  const normalizedName = normalizeModuleName(moduleName);
+  return PRODUCTION_READY_MODULES.includes(normalizedName);
 };
 
 /**
  * Check if a module is beta ready (85%+ progress)
  */
 export const isBetaReadyModule = (moduleName: string): boolean => {
-  return BETA_READY_MODULES.includes(moduleName);
+  const normalizedName = normalizeModuleName(moduleName);
+  return BETA_READY_MODULES.includes(normalizedName);
 };
 
 /**
  * Check if a module is in production status
  */
 export const isProductionModule = (module: any): boolean => {
+  const moduleName = module.name || module.module_id;
   return module.maturity_status === 'production' || 
          (module.overall_progress && module.overall_progress >= 90) ||
-         isProductionReadyModule(module.name || module.module_id);
+         isProductionReadyModule(moduleName);
 };
 
 /**
@@ -152,11 +177,12 @@ export const getMaturityStatusVariant = (status: string, progress?: number) => {
  */
 export const getDevelopmentProgress = (module: any): number => {
   try {
-    console.log('Getting progress for module:', module.name || module.module_id, 'overall_progress:', module.overall_progress);
+    const moduleName = module.name || module.module_id;
+    console.log('Getting progress for module:', moduleName, 'overall_progress:', module.overall_progress);
     
     // First, try to get from new progress tracking system
     if (module.overall_progress !== undefined) {
-      console.log('Using overall_progress for', module.name || module.module_id, ':', module.overall_progress);
+      console.log('Using overall_progress for', moduleName, ':', module.overall_progress);
       return module.overall_progress;
     }
     
@@ -167,10 +193,9 @@ export const getDevelopmentProgress = (module: any): number => {
     } else if (typeof module.development_stage === 'object' && module.development_stage !== null) {
       stage = module.development_stage;
     } else {
-      console.log('No development_stage found for module:', module.name || module.module_id);
+      console.log('No development_stage found for module:', moduleName);
       
       // Use hardcoded values for known functional modules as fallback
-      const moduleName = module.name || module.module_id;
       if (isProductionReadyModule(moduleName)) {
         return 94.5;
       } else if (isBetaReadyModule(moduleName)) {
@@ -180,7 +205,7 @@ export const getDevelopmentProgress = (module: any): number => {
     }
     
     const progress = stage?.progress || 0;
-    console.log('Progress for', module.name || module.module_id, ':', progress);
+    console.log('Progress for', moduleName, ':', progress);
     return progress;
   } catch (error) {
     console.error('Error parsing development_stage for module:', module.name || module.module_id, error);
@@ -252,6 +277,8 @@ export const getModuleStatusSummary = (module: any) => {
     isPlanning: progress < 40,
     isFunctional: isFunctionalModule(moduleName),
     isProductionReady: isProductionReadyModule(moduleName),
-    isBetaReady: isBetaReadyModule(moduleName)
+    isBetaReady: isBetaReadyModule(moduleName),
+    displayName: getDisplayName(moduleName),
+    technicalName: normalizeModuleName(moduleName)
   };
 };

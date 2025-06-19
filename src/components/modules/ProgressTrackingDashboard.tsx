@@ -17,6 +17,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useAllModulesProgress, useUpdateModuleProgress, getProgressStatus, getNextMilestoneRequirements } from '@/hooks/useModuleProgress';
+import { getDisplayName } from '@/utils/moduleNameMapping';
 import ProgressUpdateDialog from './ProgressUpdateDialog';
 import ModuleProgressCard from './ModuleProgressCard';
 
@@ -174,7 +175,7 @@ const ProgressTrackingDashboard: React.FC = () => {
             <Card key={module.module_id}>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">{module.module_id}</CardTitle>
+                  <CardTitle className="text-lg">{getDisplayName(module.module_id)}</CardTitle>
                   <Badge variant="outline">{getProgressStatus(module.overall_progress).status}</Badge>
                 </div>
               </CardHeader>
@@ -238,7 +239,7 @@ const ProgressTrackingDashboard: React.FC = () => {
               <Card key={module.module_id}>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{module.module_id}</CardTitle>
+                    <CardTitle className="text-lg">{getDisplayName(module.module_id)}</CardTitle>
                     <div className="flex items-center gap-2">
                       <Progress value={module.overall_progress} className="w-24 h-2" />
                       <span className="text-sm font-medium">{module.overall_progress.toFixed(1)}%</span>

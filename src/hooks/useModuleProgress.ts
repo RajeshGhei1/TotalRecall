@@ -1,6 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeModuleName, getDisplayName } from '@/utils/moduleNameMapping';
 
 export interface ModuleProgressMetrics {
   module_id: string;
@@ -59,13 +59,15 @@ const ensureMetricsData = (data: any): ModuleProgressMetrics['metrics_data'] => 
 };
 
 export const useModuleProgress = (moduleId: string) => {
+  const normalizedModuleId = normalizeModuleName(moduleId);
+  
   return useQuery({
-    queryKey: ['module-progress', moduleId],
+    queryKey: ['module-progress', normalizedModuleId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('module_progress_tracking')
         .select('*')
-        .eq('module_id', moduleId)
+        .eq('module_id', normalizedModuleId)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -76,7 +78,8 @@ export const useModuleProgress = (moduleId: string) => {
 
       return {
         ...data,
-        metrics_data: ensureMetricsData(data.metrics_data)
+        metrics_data: ensureMetricsData(data.metrics_data),
+        display_name: getDisplayName(data.module_id)
       } as ModuleProgressMetrics;
     },
   });
@@ -95,7 +98,8 @@ export const useAllModulesProgress = () => {
       
       return data.map(item => ({
         ...item,
-        metrics_data: ensureMetricsData(item.metrics_data)
+        metrics_data: ensureMetricsData(item.metrics_data),
+        display_name: getDisplayName(item.module_id)
       })) as ModuleProgressMetrics[];
     },
   });
@@ -106,12 +110,13 @@ export const useUpdateModuleProgress = () => {
 
   return useMutation({
     mutationFn: async (update: ProgressUpdate) => {
-      console.log('Updating module progress:', update);
+      const normalizedModuleId = normalizeModuleName(update.module_id);
+      console.log('Updating module progress:', { ...update, module_id: normalizedModuleId });
 
       // Call the stored procedure to update progress
       const { data, error } = await supabase
         .rpc('update_module_progress', {
-          p_module_id: update.module_id,
+          p_module_id: normalizedModuleId,
           p_metric_type: update.metric_type,
           p_increment_value: update.increment_value,
           p_metadata: update.metadata
@@ -121,8 +126,9 @@ export const useUpdateModuleProgress = () => {
       return data;
     },
     onSuccess: (data, variables) => {
+      const normalizedModuleId = normalizeModuleName(variables.module_id);
       // Invalidate and refetch progress data
-      queryClient.invalidateQueries({ queryKey: ['module-progress', variables.module_id] });
+      queryClient.invalidateQueries({ queryKey: ['module-progress', normalizedModuleId] });
       queryClient.invalidateQueries({ queryKey: ['all-modules-progress'] });
       queryClient.invalidateQueries({ queryKey: ['system-modules'] });
     },
@@ -142,9 +148,11 @@ export const useInitializeModuleProgress = () => {
         docs_sections_planned: number;
       };
     }) => {
+      const normalizedModuleId = normalizeModuleName(params.module_id);
+      
       const { data, error } = await supabase
         .rpc('initialize_module_progress', {
-          p_module_id: params.module_id,
+          p_module_id: normalizedModuleId,
           p_planning_data: params.initial_planning_data
         });
 

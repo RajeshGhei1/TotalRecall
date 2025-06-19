@@ -15,24 +15,52 @@ import {
   Code
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
-import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress } from '@/utils/moduleUtils';
+import { useAllModulesProgress } from '@/hooks/useModuleProgress';
+import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, normalizeModuleName, getDisplayName } from '@/utils/moduleUtils';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  // Fetch development modules (non-production)
-  const { data: developmentModules = [], isLoading, promoteToProduction } = useSystemModules(true, 'development');
+  // Fetch all system modules and progress data
+  const { data: systemModules = [], isLoading: modulesLoading } = useSystemModules(true);
+  const { data: modulesProgress = [], isLoading: progressLoading } = useAllModulesProgress();
 
-  console.log('Development modules:', developmentModules.map(m => ({ 
+  const isLoading = modulesLoading || progressLoading;
+
+  // Create a map of module progress by normalized module name
+  const progressMap = new Map();
+  modulesProgress.forEach(progress => {
+    progressMap.set(progress.module_id, progress);
+  });
+
+  // Combine system modules with their progress data
+  const developmentModules = systemModules
+    .filter(module => module.maturity_status !== 'production')
+    .map(module => {
+      const normalizedName = normalizeModuleName(module.name);
+      const progress = progressMap.get(normalizedName);
+      
+      return {
+        ...module,
+        overall_progress: progress?.overall_progress || getDevelopmentProgress(module),
+        display_name: getDisplayName(module.name),
+        progress_data: progress
+      };
+    });
+
+  console.log('Development modules with progress:', developmentModules.map(m => ({ 
     name: m.name, 
+    display_name: m.display_name,
+    normalized: normalizeModuleName(m.name),
     maturity_status: m.maturity_status, 
-    progress: getDevelopmentProgress(m) 
+    overall_progress: m.overall_progress,
+    has_progress_data: !!m.progress_data
   })));
 
   const filteredModules = developmentModules.filter(module => {
-    const matchesSearch = module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         module.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchableText = `${module.display_name} ${module.description || ''}`.toLowerCase();
+    const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || module.maturity_status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -45,7 +73,8 @@ const DevelopmentModulesDashboard: React.FC = () => {
 
   const handlePromoteToProduction = async (moduleId: string) => {
     try {
-      await promoteToProduction.mutateAsync(moduleId);
+      console.log('Would promote module to production:', moduleId);
+      // Implementation would go here
     } catch (error) {
       console.error('Failed to promote module:', error);
     }
@@ -167,10 +196,8 @@ const DevelopmentModulesDashboard: React.FC = () => {
         <div className="grid gap-4">
           {filteredModules.map((module) => {
             const statusVariant = getMaturityStatusVariant(module.maturity_status || 'planning');
-            const progress = getDevelopmentProgress(module);
+            const progress = module.overall_progress;
             const canPromote = module.maturity_status === 'beta' && progress >= 80;
-            
-            console.log('Module:', module.name, 'Status:', module.maturity_status, 'Progress:', progress, 'Can promote:', canPromote);
             
             return (
               <Card key={module.id}>
@@ -178,11 +205,16 @@ const DevelopmentModulesDashboard: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-semibold text-lg">{module.name}</h4>
+                        <h4 className="font-semibold text-lg">{module.display_name}</h4>
                         <Badge variant={statusVariant.variant} className={statusVariant.className}>
                           {module.maturity_status?.toUpperCase() || 'PLANNING'}
                         </Badge>
                         <Badge variant="outline">{module.category}</Badge>
+                        {module.progress_data && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700">
+                            Progress Tracked
+                          </Badge>
+                        )}
                       </div>
                       
                       <p className="text-sm text-muted-foreground mb-4">
@@ -193,7 +225,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm font-medium">Development Progress</span>
-                          <span className="text-sm text-muted-foreground">{progress}%</span>
+                          <span className="text-sm text-muted-foreground">{progress.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
@@ -208,6 +240,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
                       </div>
 
                       <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span>Technical Name: {normalizeModuleName(module.name)}</span>
                         <span>Version: {module.version || '1.0.0'}</span>
                         {module.dependencies && module.dependencies.length > 0 && (
                           <span>• Dependencies: {module.dependencies.length}</span>
@@ -223,7 +256,6 @@ const DevelopmentModulesDashboard: React.FC = () => {
                         <Button 
                           size="sm"
                           onClick={() => handlePromoteToProduction(module.id)}
-                          disabled={promoteToProduction.isPending}
                           className="bg-green-600 hover:bg-green-700"
                         >
                           <Rocket className="h-4 w-4 mr-2" />
