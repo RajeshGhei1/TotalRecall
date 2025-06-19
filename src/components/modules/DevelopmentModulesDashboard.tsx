@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useAllModulesProgress } from '@/hooks/useModuleProgress';
-import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, normalizeModuleName, getDisplayName } from '@/utils/moduleUtils';
-import { getDisplayName } from '@/utils/moduleNameMapping';
+import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress } from '@/utils/moduleUtils';
+import { getDisplayName, normalizeModuleName } from '@/utils/moduleNameMapping';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');

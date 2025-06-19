@@ -1,5 +1,4 @@
-
-import { MODULE_NAME_MAPPING, getDisplayName, getTechnicalName } from './moduleNameMapping';
+import { MODULE_NAME_MAPPING, getDisplayName, getTechnicalName, normalizeModuleName } from './moduleNameMapping';
 
 // List of functional modules that should be highlighted in green (using technical names)
 const FUNCTIONAL_MODULES = [
