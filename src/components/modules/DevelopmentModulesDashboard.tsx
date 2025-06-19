@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useAllModulesProgress } from '@/hooks/useModuleProgress';
 import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, normalizeModuleName, getDisplayName } from '@/utils/moduleUtils';
+import { getDisplayName } from '@/utils/moduleNameMapping';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
