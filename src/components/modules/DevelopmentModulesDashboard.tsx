@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { useAllModulesProgress } from '@/hooks/useModuleProgress';
-import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress } from '@/utils/moduleUtils';
+import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, convertSystemModulesToModules } from '@/utils/moduleUtils';
 import { getDisplayName, normalizeModuleName } from '@/utils/moduleNameMapping';
 
 const DevelopmentModulesDashboard: React.FC = () => {
@@ -28,6 +29,9 @@ const DevelopmentModulesDashboard: React.FC = () => {
 
   const isLoading = modulesLoading || progressLoading;
 
+  // Convert SystemModules to Module format
+  const modules = convertSystemModulesToModules(systemModules);
+
   // Create a map of module progress by normalized module name
   const progressMap = new Map();
   modulesProgress.forEach(progress => {
@@ -35,7 +39,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
   });
 
   // Combine system modules with their progress data
-  const developmentModules = systemModules
+  const developmentModules = modules
     .filter(module => module.maturity_status !== 'production')
     .map(module => {
       const normalizedName = normalizeModuleName(module.name);

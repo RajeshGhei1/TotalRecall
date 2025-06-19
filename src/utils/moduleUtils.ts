@@ -21,5 +21,8 @@ export {
   getDevelopmentProgress,
   getDevelopmentStage,
   getModuleRequirements,
-  getModuleStatusSummary
+  getModuleStatusSummary,
+  convertSystemModuleToModule,
+  convertSystemModulesToModules,
+  parseDevelopmentStage
 } from './modules';

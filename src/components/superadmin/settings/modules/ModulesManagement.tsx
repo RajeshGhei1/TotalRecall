@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleCard from './ModuleCard';
-import { getProductionModuleCount } from '@/utils/moduleUtils';
+import { getProductionModuleCount, convertSystemModulesToModules } from '@/utils/moduleUtils';
 
 interface ModulesManagementProps {
   modules: SystemModule[];
@@ -39,8 +39,11 @@ const ModulesManagement: React.FC<ModulesManagementProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Convert SystemModules to Module format for utility functions
+  const convertedModules = convertSystemModulesToModules(modules);
+  
   // Calculate production modules count
-  const productionCount = getProductionModuleCount(modules || []);
+  const productionCount = getProductionModuleCount(convertedModules);
 
   const categories = [
     { value: 'all', label: 'All Modules', count: stats.total },
