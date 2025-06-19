@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -47,8 +47,28 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
     default_limits: module.default_limits || {}
   });
 
+  // Reset settings when module changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setSettings({
+        name: module.name,
+        description: module.description || '',
+        version: module.version || '1.0.0',
+        is_active: module.is_active,
+        dependencies: module.dependencies || [],
+        default_limits: module.default_limits || {}
+      });
+    }
+  }, [open, module]);
+
   const handleSave = () => {
+    console.log('Saving settings:', settings);
     onSave?.(settings);
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    console.log('Settings dialog cancelled');
     onOpenChange(false);
   };
 
@@ -72,6 +92,8 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
       dependencies: prev.dependencies.map((dep, i) => i === index ? value : dep)
     }));
   };
+
+  console.log('ModuleSettingsDialog render - open:', open, 'module:', module.name);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -234,7 +256,7 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave}>

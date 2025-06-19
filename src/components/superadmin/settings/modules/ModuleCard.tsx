@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -104,16 +103,22 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => 
   };
 
   const handleSettingsClick = () => {
+    console.log('Settings button clicked for module:', module.name);
     setSettingsOpen(true);
   };
 
-  const handleSettingsSave = (updatedSettings: any) => {
-    // In a real implementation, this would update the module
+  const handleSettingsSave = (updatedSettings: Partial<SystemModule>) => {
     console.log('Saving module settings:', updatedSettings);
     toast({
       title: 'Settings Saved',
       description: 'Module settings have been updated successfully.',
     });
+    setSettingsOpen(false);
+  };
+
+  const handleSettingsClose = () => {
+    console.log('Settings dialog closed');
+    setSettingsOpen(false);
   };
 
   return (
@@ -302,7 +307,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => 
       {/* Module Settings Dialog */}
       <ModuleSettingsDialog
         open={settingsOpen}
-        onOpenChange={setSettingsOpen}
+        onOpenChange={handleSettingsClose}
         module={module}
         onSave={handleSettingsSave}
       />
