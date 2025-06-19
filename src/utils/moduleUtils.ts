@@ -1,3 +1,4 @@
+
 import { MODULE_NAME_MAPPING, getDisplayName, getTechnicalName, normalizeModuleName } from './moduleNameMapping';
 
 // List of functional modules that should be highlighted in green (using technical names)
@@ -31,25 +32,6 @@ const BETA_READY_MODULES = [
   'ai_orchestration',
   'custom_field_management'
 ];
-
-/**
- * Normalize module name to technical format for consistency
- */
-export const normalizeModuleName = (moduleName: string): string => {
-  // If it's already a technical name, return as is
-  if (moduleName in MODULE_NAME_MAPPING) {
-    return moduleName;
-  }
-  
-  // If it's a display name, convert to technical
-  const technicalName = getTechnicalName(moduleName);
-  if (technicalName !== moduleName) {
-    return technicalName;
-  }
-  
-  // Fallback: convert to lowercase with underscores
-  return moduleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-};
 
 /**
  * Check if a module is functional (fully implemented)
