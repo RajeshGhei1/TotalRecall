@@ -1,67 +1,84 @@
 
-// Module name mapping between technical names and display names
-export const MODULE_NAME_MAPPING = {
-  // Technical name -> Display name
-  'business_contacts_data_access': 'Business Contacts',
-  'company_database': 'Company Database',
-  'ats_core': 'ATS Core',
-  'user_management': 'User Management',
-  'talent_database': 'Talent Database',
-  'core_dashboard': 'Core Dashboard',
-  'smart_talent_analytics': 'Smart Talent Analytics',
-  'document_management': 'Document Management',
-  'ai_orchestration': 'AI Orchestration',
-  'custom_field_management': 'Custom Field Management'
-} as const;
-
-// Reverse mapping for display name -> technical name
-export const DISPLAY_TO_TECHNICAL_MAPPING = Object.fromEntries(
-  Object.entries(MODULE_NAME_MAPPING).map(([tech, display]) => [display, tech])
-) as Record<string, string>;
+// Module name mapping utilities for display names and normalization
 
 /**
- * Get display name from technical module name
+ * Mapping of technical module names to display names
  */
-export const getDisplayName = (technicalName: string): string => {
-  return MODULE_NAME_MAPPING[technicalName as keyof typeof MODULE_NAME_MAPPING] || technicalName;
+const MODULE_DISPLAY_NAMES: Record<string, string> = {
+  // Core modules
+  'user_management': 'User Management',
+  'core_dashboard': 'Core Dashboard',
+  'ai_orchestration': 'AI Orchestration',
+  'document_management': 'Document Management',
+  'custom_field_management': 'Custom Field Management',
+  
+  // Business modules
+  'company_database': 'Company Database',
+  'business_contacts_data_access': 'Business Contacts & Data Access',
+  'talent_database': 'Talent Database',
+  'smart_talent_analytics': 'Smart Talent Analytics',
+  
+  // ATS modules
+  'ats_core': 'ATS Core',
+  'candidate_management': 'Candidate Management',
+  'job_posting_management': 'Job Posting Management',
+  'interview_scheduling': 'Interview Scheduling',
+  
+  // Communication modules
+  'email_management': 'Email Management',
+  'notification_system': 'Notification System',
+  'collaboration_tools': 'Collaboration Tools',
+  
+  // Analytics modules
+  'reporting_analytics': 'Reporting & Analytics',
+  'business_intelligence': 'Business Intelligence',
+  'performance_metrics': 'Performance Metrics',
+  
+  // Integration modules
+  'api_integrations': 'API Integrations',
+  'third_party_connectors': 'Third Party Connectors',
+  'data_sync_services': 'Data Sync Services'
+};
+
+/**
+ * Get display name for a module
+ */
+export const getDisplayName = (moduleName: string): string => {
+  const normalizedName = normalizeModuleName(moduleName);
+  return MODULE_DISPLAY_NAMES[normalizedName] || formatModuleName(moduleName);
+};
+
+/**
+ * Normalize module name to technical format
+ */
+export const normalizeModuleName = (moduleName: string): string => {
+  if (!moduleName) return '';
+  
+  return moduleName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+};
+
+/**
+ * Format module name for display (fallback)
+ */
+const formatModuleName = (moduleName: string): string => {
+  if (!moduleName) return 'Unknown Module';
+  
+  return moduleName
+    .split(/[_\s-]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 /**
  * Get technical name from display name
  */
 export const getTechnicalName = (displayName: string): string => {
-  return DISPLAY_TO_TECHNICAL_MAPPING[displayName] || displayName;
-};
-
-/**
- * Check if a module name is a technical name
- */
-export const isTechnicalName = (name: string): boolean => {
-  return name in MODULE_NAME_MAPPING;
-};
-
-/**
- * Check if a module name is a display name
- */
-export const isDisplayName = (name: string): boolean => {
-  return name in DISPLAY_TO_TECHNICAL_MAPPING;
-};
-
-/**
- * Normalize module name to technical format for consistency
- */
-export const normalizeModuleName = (moduleName: string): string => {
-  // If it's already a technical name, return as is
-  if (moduleName in MODULE_NAME_MAPPING) {
-    return moduleName;
-  }
+  const reverseMap = Object.entries(MODULE_DISPLAY_NAMES)
+    .find(([_, display]) => display === displayName);
   
-  // If it's a display name, convert to technical
-  const technicalName = getTechnicalName(moduleName);
-  if (technicalName !== moduleName) {
-    return technicalName;
-  }
-  
-  // Fallback: convert to lowercase with underscores
-  return moduleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  return reverseMap ? reverseMap[0] : normalizeModuleName(displayName);
 };

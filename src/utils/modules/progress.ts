@@ -8,12 +8,15 @@ import { PROGRESS_THRESHOLDS } from './config';
 /**
  * Parse development stage from module data
  */
-const parseDevelopmentStage = (developmentStage: any): ModuleDevelopmentStage | null => {
+export const parseDevelopmentStage = (developmentStage: any): ModuleDevelopmentStage | null => {
   try {
     if (typeof developmentStage === 'string') {
       return JSON.parse(developmentStage);
     } else if (typeof developmentStage === 'object' && developmentStage !== null) {
-      return developmentStage;
+      // Ensure it has the required properties
+      if (developmentStage.stage && typeof developmentStage.progress === 'number') {
+        return developmentStage as ModuleDevelopmentStage;
+      }
     }
     return null;
   } catch {
