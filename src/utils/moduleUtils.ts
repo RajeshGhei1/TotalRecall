@@ -1,3 +1,4 @@
+
 // List of functional modules that should be highlighted in green
 const FUNCTIONAL_MODULES = [
   'Company Database',

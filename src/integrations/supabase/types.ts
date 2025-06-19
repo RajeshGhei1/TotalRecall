@@ -2841,6 +2841,90 @@ export type Database = {
         }
         Relationships: []
       }
+      module_progress_history: {
+        Row: {
+          change_reason: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          increment_value: number
+          metadata: Json | null
+          metric_type: string
+          module_id: string
+          new_value: number
+          old_value: number | null
+        }
+        Insert: {
+          change_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          increment_value: number
+          metadata?: Json | null
+          metric_type: string
+          module_id: string
+          new_value: number
+          old_value?: number | null
+        }
+        Update: {
+          change_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          increment_value?: number
+          metadata?: Json | null
+          metric_type?: string
+          module_id?: string
+          new_value?: number
+          old_value?: number | null
+        }
+        Relationships: []
+      }
+      module_progress_tracking: {
+        Row: {
+          code_completion: number
+          created_at: string
+          documentation_completion: number
+          feature_completion: number
+          id: string
+          last_updated: string
+          metrics_data: Json
+          module_id: string
+          overall_progress: number
+          quality_score: number
+          test_coverage: number
+          updated_at: string
+        }
+        Insert: {
+          code_completion?: number
+          created_at?: string
+          documentation_completion?: number
+          feature_completion?: number
+          id?: string
+          last_updated?: string
+          metrics_data?: Json
+          module_id: string
+          overall_progress?: number
+          quality_score?: number
+          test_coverage?: number
+          updated_at?: string
+        }
+        Update: {
+          code_completion?: number
+          created_at?: string
+          documentation_completion?: number
+          feature_completion?: number
+          id?: string
+          last_updated?: string
+          metrics_data?: Json
+          module_id?: string
+          overall_progress?: number
+          quality_score?: number
+          test_coverage?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       module_ratings: {
         Row: {
           created_at: string | null
@@ -4896,6 +4980,10 @@ export type Database = {
         Args: { p_entity_type: string; p_entity_id: string }
         Returns: number
       }
+      initialize_module_progress: {
+        Args: { p_module_id: string; p_planning_data: Json }
+        Returns: undefined
+      }
       is_current_user_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -4937,6 +5025,15 @@ export type Database = {
           starts_at: string
           ends_at: string
         }[]
+      }
+      update_module_progress: {
+        Args: {
+          p_module_id: string
+          p_metric_type: string
+          p_increment_value: number
+          p_metadata?: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {
