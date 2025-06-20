@@ -3,16 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Blocks, 
+  Grid, 
+  List,
   Play, 
+  Eye, 
   Settings, 
-  TestTube,
+  Code, 
+  Package,
+  AlertTriangle,
+  CheckCircle,
   ArrowLeft,
-  Eye,
-  Code,
-  RefreshCw,
-  Grid3X3,
-  List
+  ExternalLink,
+  Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
@@ -26,378 +28,161 @@ const DevelopmentModulesDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { loadedModules, isLoading, refreshModules } = useModuleLoader();
   const [previewingModule, setPreviewingModule] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [selectedModuleForSettings, setSelectedModuleForSettings] = useState<any>(null);
 
-  const handlePreview = (moduleId: string, moduleName: string) => {
-    console.log(`Previewing module: ${moduleId} (${moduleName})`);
+  const handlePreviewModule = (moduleId: string) => {
     setPreviewingModule(moduleId);
   };
 
-  const handleTest = (moduleId: string, moduleName: string) => {
-    navigate('/superadmin/module-testing', {
-      state: { moduleId, moduleName }
+  const handleClosePreview = () => {
+    setPreviewingModule(null);
+  };
+
+  const handleEditModuleCode = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-development', { 
+      state: { action: 'edit', moduleId: moduleId, moduleName: moduleName } 
     });
   };
 
-  const handleEdit = (moduleId: string, moduleName: string) => {
-    navigate('/superadmin/module-development', {
-      state: { action: 'edit', moduleId, moduleName }
-    });
+  const handleOpenSettings = (module: any) => {
+    setSelectedModuleForSettings(module);
+    setSettingsDialogOpen(true);
   };
 
-  const handleSettings = (moduleId: string, moduleName: string) => {
-    console.log(`Opening settings for module: ${moduleId} (${moduleName})`);
-    // Find the module data to pass to the settings dialog
-    const moduleData = loadedModules.find(m => m.manifest.id === moduleId);
-    if (moduleData) {
-      // Convert LoadedModule to SystemModule format for the dialog
-      const systemModule = {
-        id: moduleData.manifest.id,
-        name: moduleData.manifest.name,
-        description: moduleData.manifest.description,
-        version: moduleData.manifest.version,
-        category: moduleData.manifest.category,
-        is_active: moduleData.manifest.autoLoad,
-        dependencies: moduleData.manifest.dependencies,
-        default_limits: {},
-        maturity_status: 'production',
-        created_at: moduleData.loadedAt?.toISOString() || new Date().toISOString(),
-        updated_at: moduleData.loadedAt?.toISOString() || new Date().toISOString()
-      };
-      setSelectedModuleForSettings(systemModule);
-      setSettingsDialogOpen(true);
-    }
-  };
-
-  const handleSettingsSave = (updatedModule: any) => {
-    console.log('Settings saved for module:', updatedModule);
-    // TODO: Implement actual save logic here
+  const handleCloseSettings = () => {
     setSettingsDialogOpen(false);
     setSelectedModuleForSettings(null);
   };
 
-  const handleBackToList = () => {
-    setPreviewingModule(null);
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'business': 'bg-blue-50 border-blue-200 text-blue-700',
-      'integration': 'bg-green-50 border-green-200 text-green-700',
-      'analytics': 'bg-purple-50 border-purple-200 text-purple-700',
-      'communication': 'bg-orange-50 border-orange-200 text-orange-700',
-    };
-    return colors[category] || 'bg-gray-50 border-gray-200 text-gray-700';
-  };
-
-  // Test context for module preview
-  const createTestContext = (moduleId: string): ModuleContext => ({
-    moduleId,
-    tenantId: 'dev-tenant',
-    userId: 'dev-user',
-    permissions: ['read', 'write', 'admin'],
-    config: {
-      environment: 'development',
-      debugMode: true
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
-          <p>Loading development modules...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show module preview if one is selected
-  if (previewingModule) {
-    const module = loadedModules.find(m => m.manifest.id === previewingModule);
-    if (!module) {
-      setPreviewingModule(null);
-      return null;
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBackToList}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Modules
-          </Button>
-          <div>
-            <h2 className="text-2xl font-bold">Module Preview: {module.manifest.name}</h2>
-            <p className="text-gray-600">Live preview of the module component</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Module Component Preview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ModuleRenderer
-                moduleId={previewingModule}
-                context={createTestContext(previewingModule)}
-                props={{}}
-                showStatus={true}
-                showError={true}
-                containerClassName="border rounded-lg p-6 bg-gray-50"
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Module Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Module ID:</span>
-                  <p className="text-gray-600">{module.manifest.id}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Version:</span>
-                  <p className="text-gray-600">{module.manifest.version}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Category:</span>
-                  <p className="text-gray-600 capitalize">{module.manifest.category}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Status:</span>
-                  <Badge variant="secondary">{module.status}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Development Modules</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Development Modules</h2>
           <p className="text-gray-600 mt-1">
-            All modules in the system - both implemented and requiring development
+            Manage and test your development modules
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex border rounded-lg">
+          <div className="flex items-center border rounded-lg p-1">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
-              className="rounded-r-none"
             >
-              <Grid3X3 className="h-4 w-4" />
+              <Grid className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className="rounded-l-none"
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={refreshModules}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+          <Button onClick={refreshModules} variant="outline">
+            Refresh Modules
           </Button>
         </div>
       </div>
 
-      {viewMode === 'grid' ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loadedModules.map((module) => {
-            const isImplemented = module.status === 'loaded';
-            
-            return (
-              <Card key={module.manifest.id} className="group hover:shadow-lg transition-shadow">
+      {/* Preview Section */}
+      {previewingModule && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Module Preview
+              <Button variant="ghost" size="sm" onClick={handleClosePreview}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ModuleRenderer moduleId={previewingModule} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <Card>
+          <CardContent>
+            <div className="flex items-center justify-center">
+              <Zap className="h-6 w-6 animate-spin mr-2" />
+              Loading modules...
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Module List */}
+      {!isLoading && !previewingModule && (
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+          {loadedModules.map((module) => (
+            <Card key={module.manifest.id} className={viewMode === 'list' ? 'flex flex-row items-center' : ''}>
+              {viewMode === 'list' && (
+                <div className="w-24 h-24 p-4">
+                  <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+                </div>
+              )}
+              <CardContent className={viewMode === 'list' ? 'flex-1' : ''}>
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Blocks className="h-5 w-5 text-blue-600" />
-                        <h3 className="font-semibold">{module.manifest.name}</h3>
-                      </div>
-                      <p className="text-sm text-gray-500">v{module.manifest.version}</p>
+                  <CardTitle className="flex items-center justify-between">
+                    {module.manifest.name}
+                    <div className="flex items-center gap-2">
+                      {module.status === 'error' && (
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                      )}
+                      {module.status === 'loaded' && (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      )}
+                      <Badge variant="secondary">{module.manifest.category}</Badge>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <Badge 
-                        variant="outline" 
-                        className={getCategoryColor(module.manifest.category)}
-                      >
-                        {module.manifest.category}
-                      </Badge>
-                      <Badge 
-                        variant={isImplemented ? "default" : "secondary"}
-                        className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
-                      >
-                        {isImplemented ? "Implemented" : "Needs Dev"}
-                      </Badge>
-                    </div>
-                  </div>
+                  </CardTitle>
                 </CardHeader>
-                
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {module.manifest.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                    <span>By {module.manifest.author}</span>
-                    <span>Status: {module.status}</span>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
-                      className="flex-1"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Preview
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleSettings(module.manifest.id, module.manifest.name)}
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleTest(module.manifest.id, module.manifest.name)}
-                    >
-                      <TestTube className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
-                    >
-                      <Code className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {loadedModules.map((module) => {
-            const isImplemented = module.status === 'loaded';
-            
-            return (
-              <Card key={module.manifest.id} className="group hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="flex items-center gap-2">
-                        <Blocks className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <h3 className="font-semibold">{module.manifest.name}</h3>
-                          <p className="text-sm text-gray-500">v{module.manifest.version}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 px-4">
-                        <p className="text-sm text-gray-600 line-clamp-1">
-                          {module.manifest.description}
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant="outline" 
-                          className={getCategoryColor(module.manifest.category)}
-                        >
-                          {module.manifest.category}
-                        </Badge>
-                        <Badge 
-                          variant={isImplemented ? "default" : "secondary"}
-                          className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
-                        >
-                          {isImplemented ? "Implemented" : "Needs Dev"}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleSettings(module.manifest.id, module.manifest.name)}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleTest(module.manifest.id, module.manifest.name)}
-                      >
-                        <TestTube className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
-                      >
-                        <Code className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                <p className="text-sm text-muted-foreground">{module.manifest.description}</p>
+                <div className="mt-4 flex items-center justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handlePreviewModule(module.manifest.id)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleEditModuleCode(module.manifest.id, module.manifest.name)}
+                  >
+                    <Code className="h-4 w-4 mr-2" />
+                    Edit Code
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleOpenSettings(module)}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {loadedModules.length === 0 && (
-        <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <Blocks className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No development modules found</h3>
-          <p className="text-gray-600">
-            No modules found in the database. Check your database connection.
-          </p>
-        </div>
-      )}
-
-      {/* Settings Dialog */}
-      {selectedModuleForSettings && (
-        <ModuleSettingsDialog
-          open={settingsDialogOpen}
-          onOpenChange={setSettingsDialogOpen}
-          module={selectedModuleForSettings}
-          onSave={handleSettingsSave}
-        />
-      )}
+      {/* Module Settings Dialog */}
+      <ModuleSettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
+        module={selectedModuleForSettings}
+        onClose={handleCloseSettings}
+      />
     </div>
   );
 };
