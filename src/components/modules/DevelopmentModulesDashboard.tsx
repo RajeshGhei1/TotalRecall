@@ -17,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import ModuleRenderer from './ModuleRenderer';
+import ModuleSettingsDialog from '@/components/superadmin/settings/modules/ModuleSettingsDialog';
 import { ModuleContext } from '@/types/modules';
 
 type ViewMode = 'grid' | 'list';
@@ -26,6 +27,8 @@ const DevelopmentModulesDashboard: React.FC = () => {
   const { loadedModules, isLoading, refreshModules } = useModuleLoader();
   const [previewingModule, setPreviewingModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [selectedModuleForSettings, setSelectedModuleForSettings] = useState<any>(null);
 
   const handlePreview = (moduleId: string, moduleName: string) => {
     console.log(`Previewing module: ${moduleId} (${moduleName})`);
@@ -46,7 +49,33 @@ const DevelopmentModulesDashboard: React.FC = () => {
 
   const handleSettings = (moduleId: string, moduleName: string) => {
     console.log(`Opening settings for module: ${moduleId} (${moduleName})`);
-    // TODO: Implement settings dialog or navigate to settings page
+    // Find the module data to pass to the settings dialog
+    const moduleData = loadedModules.find(m => m.manifest.id === moduleId);
+    if (moduleData) {
+      // Convert LoadedModule to SystemModule format for the dialog
+      const systemModule = {
+        id: moduleData.manifest.id,
+        name: moduleData.manifest.name,
+        description: moduleData.manifest.description,
+        version: moduleData.manifest.version,
+        category: moduleData.manifest.category,
+        is_active: moduleData.manifest.autoLoad,
+        dependencies: moduleData.manifest.dependencies,
+        default_limits: {},
+        maturity_status: 'production',
+        created_at: moduleData.loadedAt?.toISOString() || new Date().toISOString(),
+        updated_at: moduleData.loadedAt?.toISOString() || new Date().toISOString()
+      };
+      setSelectedModuleForSettings(systemModule);
+      setSettingsDialogOpen(true);
+    }
+  };
+
+  const handleSettingsSave = (updatedModule: any) => {
+    console.log('Settings saved for module:', updatedModule);
+    // TODO: Implement actual save logic here
+    setSettingsDialogOpen(false);
+    setSelectedModuleForSettings(null);
   };
 
   const handleBackToList = () => {
@@ -358,6 +387,16 @@ const DevelopmentModulesDashboard: React.FC = () => {
             No modules found in the database. Check your database connection.
           </p>
         </div>
+      )}
+
+      {/* Settings Dialog */}
+      {selectedModuleForSettings && (
+        <ModuleSettingsDialog
+          open={settingsDialogOpen}
+          onOpenChange={setSettingsDialogOpen}
+          module={selectedModuleForSettings}
+          onSave={handleSettingsSave}
+        />
       )}
     </div>
   );
