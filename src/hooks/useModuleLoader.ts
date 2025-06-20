@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { LoadedModule } from '@/types/modules';
-import { moduleRegistryService } from '@/services/moduleRegistryService';
+import { moduleCodeRegistry } from '@/services/moduleCodeRegistry';
 
 export const useModuleLoader = () => {
   const [loadedModules, setLoadedModules] = useState<LoadedModule[]>([]);
@@ -10,23 +10,32 @@ export const useModuleLoader = () => {
   const refreshModules = async () => {
     setIsLoading(true);
     try {
-      await moduleRegistryService.initialize();
-      const registryModules = moduleRegistryService.getAllModules();
+      console.log('Refreshing modules...');
       
-      // Convert registry entries to loaded modules
-      const modules: LoadedModule[] = registryModules.map(entry => ({
-        manifest: entry.manifest,
+      // Discover and register all available modules
+      const result = await moduleCodeRegistry.discoverAndRegisterModules();
+      console.log('Module discovery result:', result);
+      
+      // Get all registered modules
+      const registeredModules = moduleCodeRegistry.getAllRegisteredModules();
+      console.log('Registered modules:', registeredModules);
+      
+      // Convert to LoadedModule format
+      const modules: LoadedModule[] = registeredModules.map(moduleComponent => ({
+        manifest: moduleComponent.manifest,
         instance: {
-          Component: null // This would be dynamically loaded in a real implementation
+          Component: moduleComponent.component
         },
         status: 'loaded' as const,
-        loadedAt: entry.registeredAt,
-        dependencies: []
+        loadedAt: new Date(),
+        dependencies: moduleComponent.manifest.dependencies || []
       }));
       
       setLoadedModules(modules);
+      console.log('Loaded modules:', modules);
     } catch (error) {
       console.error('Failed to load modules:', error);
+      setLoadedModules([]);
     } finally {
       setIsLoading(false);
     }
