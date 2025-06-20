@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import { LoadedModule } from '@/types/modules';
+import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleSettingsDialog from '@/components/superadmin/settings/modules/ModuleSettingsDialog';
 import DevelopmentModulesDashboardHeader from './dashboard/DevelopmentModulesDashboardHeader';
 import ModuleCard from './dashboard/ModuleCard';
@@ -17,7 +18,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
   const [previewingModule, setPreviewingModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
-  const [selectedModuleForSettings, setSelectedModuleForSettings] = useState<LoadedModule | null>(null);
+  const [selectedModuleForSettings, setSelectedModuleForSettings] = useState<SystemModule | null>(null);
 
   const handlePreviewModule = (moduleId: string) => {
     setPreviewingModule(moduleId);
@@ -34,7 +35,21 @@ const DevelopmentModulesDashboard: React.FC = () => {
   };
 
   const handleOpenSettings = (module: LoadedModule) => {
-    setSelectedModuleForSettings(module);
+    // Convert LoadedModule to SystemModule format for the settings dialog
+    const systemModule: SystemModule = {
+      id: module.manifest.id,
+      name: module.manifest.name,
+      category: module.manifest.category as any,
+      description: module.manifest.description,
+      version: module.manifest.version,
+      is_active: module.status === 'loaded',
+      dependencies: module.manifest.dependencies,
+      default_limits: {},
+      created_at: module.loadedAt.toISOString(),
+      updated_at: module.loadedAt.toISOString()
+    };
+    
+    setSelectedModuleForSettings(systemModule);
     setSettingsDialogOpen(true);
   };
 

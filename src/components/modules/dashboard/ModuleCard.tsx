@@ -8,7 +8,8 @@ import {
   Settings, 
   Code, 
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Play
 } from 'lucide-react';
 import { LoadedModule } from '@/types/modules';
 import ModuleRenderer from '../ModuleRenderer';
@@ -56,6 +57,12 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       );
     }
     return null;
+  };
+
+  const handleRunTest = () => {
+    // Navigate to module testing page with this module's ID
+    const testUrl = `/superadmin/module-testing?moduleId=${module.manifest.id}`;
+    window.open(testUrl, '_blank');
   };
 
   if (viewMode === 'list') {
@@ -123,6 +130,15 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <Settings className="h-4 w-4" />
                 Settings
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRunTest}
+                className="flex items-center gap-2 border-green-200 text-green-700 hover:bg-green-50"
+              >
+                <Play className="h-4 w-4" />
+                Test
+              </Button>
             </div>
           </div>
         </div>
@@ -147,7 +163,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
           <ModuleRenderer moduleId={module.manifest.id} showError={false} />
         </div>
         <p className="text-sm text-muted-foreground mb-4">{module.manifest.description}</p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             size="sm"
             variant="outline"
@@ -170,6 +186,15 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
           >
             <Settings className="h-4 w-4 mr-2" />
             Settings
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRunTest}
+            className="border-green-200 text-green-700 hover:bg-green-50"
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Test
           </Button>
         </div>
       </CardContent>
