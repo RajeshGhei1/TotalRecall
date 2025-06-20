@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,52 +122,81 @@ const DevelopmentModulesDashboard: React.FC = () => {
 
       {/* Module List */}
       {!isLoading && !previewingModule && (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
           {loadedModules.map((module) => (
-            <Card key={module.manifest.id} className={viewMode === 'list' ? 'overflow-hidden' : ''}>
+            <Card key={module.manifest.id} className={viewMode === 'list' ? 'hover:shadow-lg transition-shadow duration-200' : ''}>
               {viewMode === 'list' ? (
-                <div className="flex">
-                  <div className="w-32 h-32 flex-shrink-0 p-4 bg-gray-50 flex items-center justify-center">
-                    <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+                <div className="flex items-center p-6">
+                  {/* Module Preview */}
+                  <div className="w-24 h-24 flex-shrink-0 mr-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+                    </div>
                   </div>
-                  <div className="flex-1 p-6">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{module.manifest.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          {module.status === 'error' && (
-                            <AlertTriangle className="h-4 w-4 text-red-500" />
-                          )}
-                          {module.status === 'loaded' && (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          )}
-                          <Badge variant="secondary">{module.manifest.category}</Badge>
+                  
+                  {/* Module Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                            {module.manifest.name}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            {module.status === 'error' && (
+                              <div className="flex items-center text-red-600">
+                                <AlertTriangle className="h-4 w-4 mr-1" />
+                                <span className="text-xs font-medium">Error</span>
+                              </div>
+                            )}
+                            {module.status === 'loaded' && (
+                              <div className="flex items-center text-green-600">
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                <span className="text-xs font-medium">Active</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="secondary" className="text-xs">
+                            {module.manifest.category}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            v{module.manifest.version || '1.0.0'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {module.manifest.description}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">{module.manifest.description}</p>
+                    
+                    {/* Action Buttons */}
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handlePreviewModule(module.manifest.id)}
+                        className="flex items-center gap-2"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="h-4 w-4" />
                         Preview
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => handleEditModuleCode(module.manifest.id, module.manifest.name)}
+                        className="flex items-center gap-2"
                       >
-                        <Code className="h-4 w-4 mr-2" />
+                        <Code className="h-4 w-4" />
                         Edit Code
                       </Button>
                       <Button
                         size="sm"
                         variant="secondary"
                         onClick={() => handleOpenSettings(module)}
+                        className="flex items-center gap-2"
                       >
-                        <Settings className="h-4 w-4 mr-2" />
+                        <Settings className="h-4 w-4" />
                         Settings
                       </Button>
                     </div>
@@ -241,4 +269,3 @@ const DevelopmentModulesDashboard: React.FC = () => {
 };
 
 export default DevelopmentModulesDashboard;
-
