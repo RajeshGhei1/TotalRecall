@@ -39,24 +39,28 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     return null;
   };
 
-  const getStatusText = () => {
+  const getStatusBadge = () => {
     if (module.status === 'error') {
       return (
-        <div className="flex items-center text-red-600">
-          <AlertTriangle className="h-4 w-4 mr-1" />
-          <span className="text-xs font-medium">Error</span>
-        </div>
+        <Badge variant="destructive" className="flex items-center gap-1">
+          <AlertTriangle className="h-3 w-3" />
+          Error
+        </Badge>
       );
     }
     if (module.status === 'loaded') {
       return (
-        <div className="flex items-center text-green-600">
-          <CheckCircle className="h-4 w-4 mr-1" />
-          <span className="text-xs font-medium">Active</span>
-        </div>
+        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+          <CheckCircle className="h-3 w-3" />
+          Active
+        </Badge>
       );
     }
-    return null;
+    return (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        Loading...
+      </Badge>
+    );
   };
 
   const handleRunTest = () => {
@@ -67,48 +71,46 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
   if (viewMode === 'list') {
     return (
-      <Card className="hover:shadow-lg transition-shadow duration-200 border border-gray-200">
+      <Card className="group hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-gray-300 bg-white">
         <div className="flex items-center p-6">
           {/* Module Preview */}
-          <div className="w-24 h-24 flex-shrink-0 mr-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
-            <div className="w-full h-full flex items-center justify-center">
+          <div className="w-28 h-28 flex-shrink-0 mr-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-xl border-2 border-gray-100 group-hover:border-gray-200 transition-all duration-300 flex items-center justify-center overflow-hidden shadow-sm">
+            <div className="w-full h-full flex items-center justify-center scale-75">
               <ModuleRenderer moduleId={module.manifest.id} showError={false} />
             </div>
           </div>
           
           {/* Module Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                <div className="flex items-center gap-3 mb-3">
+                  <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                     {module.manifest.name}
                   </h3>
-                  <div className="flex items-center gap-2">
-                    {getStatusText()}
-                  </div>
+                  {getStatusBadge()}
                 </div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
                     {module.manifest.category}
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
                     v{module.manifest.version || '1.0.0'}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
                   {module.manifest.description}
                 </p>
               </div>
             </div>
             
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onPreview(module.manifest.id)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
               >
                 <Eye className="h-4 w-4" />
                 Preview
@@ -116,7 +118,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
               <Button
                 size="sm"
                 onClick={() => onEditCode(module.manifest.id, module.manifest.name)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-md transition-all"
               >
                 <Code className="h-4 w-4" />
                 Edit Code
@@ -125,7 +127,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 size="sm"
                 variant="secondary"
                 onClick={() => onOpenSettings(module)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-gray-100 transition-all"
               >
                 <Settings className="h-4 w-4" />
                 Settings
@@ -134,7 +136,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 size="sm"
                 variant="outline"
                 onClick={handleRunTest}
-                className="flex items-center gap-2 border-green-200 text-green-700 hover:bg-green-50"
+                className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400 transition-all"
               >
                 <Play className="h-4 w-4" />
                 Test
@@ -148,52 +150,76 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
   // Grid view
   return (
-    <Card>
-      <CardHeader>
+    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-gray-300 bg-white overflow-hidden">
+      <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-white">
         <CardTitle className="flex items-center justify-between">
-          {module.manifest.name}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+              {module.manifest.name}
+            </span>
             {getStatusIcon()}
-            <Badge variant="secondary">{module.manifest.category}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
+              {module.manifest.category}
+            </Badge>
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
+      <CardContent className="space-y-4">
+        {/* Module Preview */}
+        <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-lg border-2 border-gray-100 p-4 min-h-[120px] flex items-center justify-center">
           <ModuleRenderer moduleId={module.manifest.id} showError={false} />
         </div>
-        <p className="text-sm text-muted-foreground mb-4">{module.manifest.description}</p>
-        <div className="flex items-center gap-2 flex-wrap">
+        
+        {/* Description */}
+        <p className="text-sm text-gray-600 leading-relaxed min-h-[2.5rem]">
+          {module.manifest.description}
+        </p>
+        
+        {/* Version and Status */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+            v{module.manifest.version || '1.0.0'}
+          </Badge>
+          {getStatusBadge()}
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-2 pt-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => onPreview(module.manifest.id)}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
           >
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="h-4 w-4" />
             Preview
           </Button>
           <Button
             size="sm"
             onClick={() => onEditCode(module.manifest.id, module.manifest.name)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-md transition-all"
           >
-            <Code className="h-4 w-4 mr-2" />
-            Edit Code
+            <Code className="h-4 w-4" />
+            Edit
           </Button>
           <Button
             size="sm"
             variant="secondary"
             onClick={() => onOpenSettings(module)}
+            className="flex items-center gap-2 hover:bg-gray-100 transition-all"
           >
-            <Settings className="h-4 w-4 mr-2" />
+            <Settings className="h-4 w-4" />
             Settings
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={handleRunTest}
-            className="border-green-200 text-green-700 hover:bg-green-50"
+            className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400 transition-all"
           >
-            <Play className="h-4 w-4 mr-2" />
+            <Play className="h-4 w-4" />
             Test
           </Button>
         </div>
