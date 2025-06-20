@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -124,54 +125,104 @@ const DevelopmentModulesDashboard: React.FC = () => {
       {!isLoading && !previewingModule && (
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
           {loadedModules.map((module) => (
-            <Card key={module.manifest.id} className={viewMode === 'list' ? 'flex flex-row items-center' : ''}>
-              {viewMode === 'list' && (
-                <div className="w-24 h-24 p-4">
-                  <ModuleRenderer moduleId={module.manifest.id} showError={false} />
-                </div>
-              )}
-              <CardContent className={viewMode === 'list' ? 'flex-1' : ''}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {module.manifest.name}
-                    <div className="flex items-center gap-2">
-                      {module.status === 'error' && (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                      )}
-                      {module.status === 'loaded' && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      )}
-                      <Badge variant="secondary">{module.manifest.category}</Badge>
+            <Card key={module.manifest.id} className={viewMode === 'list' ? 'overflow-hidden' : ''}>
+              {viewMode === 'list' ? (
+                <div className="flex">
+                  <div className="w-32 h-32 flex-shrink-0 p-4 bg-gray-50 flex items-center justify-center">
+                    <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+                  </div>
+                  <div className="flex-1 p-6">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{module.manifest.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          {module.status === 'error' && (
+                            <AlertTriangle className="h-4 w-4 text-red-500" />
+                          )}
+                          {module.status === 'loaded' && (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                          <Badge variant="secondary">{module.manifest.category}</Badge>
+                        </div>
+                      </div>
                     </div>
-                  </CardTitle>
-                </CardHeader>
-                <p className="text-sm text-muted-foreground">{module.manifest.description}</p>
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handlePreviewModule(module.manifest.id)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleEditModuleCode(module.manifest.id, module.manifest.name)}
-                  >
-                    <Code className="h-4 w-4 mr-2" />
-                    Edit Code
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handleOpenSettings(module)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
+                    <p className="text-sm text-muted-foreground mb-4">{module.manifest.description}</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePreviewModule(module.manifest.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleEditModuleCode(module.manifest.id, module.manifest.name)}
+                      >
+                        <Code className="h-4 w-4 mr-2" />
+                        Edit Code
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleOpenSettings(module)}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
+              ) : (
+                <>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {module.manifest.name}
+                      <div className="flex items-center gap-2">
+                        {module.status === 'error' && (
+                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                        )}
+                        {module.status === 'loaded' && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                        <Badge variant="secondary">{module.manifest.category}</Badge>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4">
+                      <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{module.manifest.description}</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePreviewModule(module.manifest.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleEditModuleCode(module.manifest.id, module.manifest.name)}
+                      >
+                        <Code className="h-4 w-4 mr-2" />
+                        Edit Code
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleOpenSettings(module)}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Button>
+                    </div>
+                  </CardContent>
+                </>
+              )}
             </Card>
           ))}
         </div>
@@ -190,3 +241,4 @@ const DevelopmentModulesDashboard: React.FC = () => {
 };
 
 export default DevelopmentModulesDashboard;
+
