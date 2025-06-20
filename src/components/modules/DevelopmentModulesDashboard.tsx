@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,11 @@ const DevelopmentModulesDashboard: React.FC = () => {
     navigate('/superadmin/module-development', {
       state: { action: 'edit', moduleId, moduleName }
     });
+  };
+
+  const handleSettings = (moduleId: string, moduleName: string) => {
+    console.log(`Opening settings for module: ${moduleId} (${moduleName})`);
+    // TODO: Implement settings dialog or navigate to settings page
   };
 
   const handleBackToList = () => {
@@ -244,6 +248,13 @@ const DevelopmentModulesDashboard: React.FC = () => {
                     <Button 
                       size="sm" 
                       variant="outline"
+                      onClick={() => handleSettings(module.manifest.id, module.manifest.name)}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
                       onClick={() => handleTest(module.manifest.id, module.manifest.name)}
                     >
                       <TestTube className="h-4 w-4" />
@@ -308,6 +319,13 @@ const DevelopmentModulesDashboard: React.FC = () => {
                         onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
                       >
                         <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleSettings(module.manifest.id, module.manifest.name)}
+                      >
+                        <Settings className="h-4 w-4" />
                       </Button>
                       <Button 
                         size="sm" 
