@@ -59,7 +59,7 @@ export const useModuleLoader = () => {
         return {
           manifest,
           instance: hasImplementation ? { Component: hasImplementation.component } : null,
-          status: hasImplementation ? 'loaded' as const : 'not-implemented' as const,
+          status: hasImplementation ? 'loaded' as const : 'error' as const,
           loadedAt: new Date(),
           dependencies: [],
           error: hasImplementation ? undefined : 'Component implementation not found'

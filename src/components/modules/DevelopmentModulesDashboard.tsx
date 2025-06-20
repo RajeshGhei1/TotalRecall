@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,51 +11,22 @@ import {
   ArrowLeft,
   Eye,
   Code,
-  RefreshCw
+  RefreshCw,
+  Grid3X3,
+  List
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useModuleLoader } from '@/hooks/useModuleLoader';
 import ModuleRenderer from './ModuleRenderer';
 import { ModuleContext } from '@/types/modules';
 
+type ViewMode = 'grid' | 'list';
+
 const DevelopmentModulesDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { loadedModules, isLoading, refreshModules } = useModuleLoader();
   const [previewingModule, setPreviewingModule] = useState<string | null>(null);
-
-  // Development modules - these would come from your database or development registry
-  const developmentModules = [
-    {
-      id: 'business_contacts_data_access',
-      name: 'Business Contacts & Data Access',
-      description: 'Comprehensive contact management and data access functionality',
-      category: 'business',
-      version: '1.0.0',
-      status: 'development',
-      author: 'System',
-      lastUpdated: '2024-01-15'
-    },
-    {
-      id: 'linkedin_enrichment',
-      name: 'LinkedIn Profile Enrichment',
-      description: 'Enhance contact profiles with LinkedIn data',
-      category: 'integration',
-      version: '1.2.0',
-      status: 'development',
-      author: 'System',
-      lastUpdated: '2024-01-14'
-    },
-    {
-      id: 'talent_analytics',
-      name: 'Talent Analytics Dashboard',
-      description: 'Advanced analytics for talent management',
-      category: 'analytics',
-      version: '2.1.0',
-      status: 'development',
-      author: 'System',
-      lastUpdated: '2024-01-13'
-    }
-  ];
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const handlePreview = (moduleId: string, moduleName: string) => {
     console.log(`Previewing module: ${moduleId} (${moduleName})`);
@@ -112,7 +84,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
 
   // Show module preview if one is selected
   if (previewingModule) {
-    const module = developmentModules.find(m => m.id === previewingModule);
+    const module = loadedModules.find(m => m.manifest.id === previewingModule);
     if (!module) {
       setPreviewingModule(null);
       return null;
@@ -126,7 +98,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
             Back to Modules
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">Module Preview: {module.name}</h2>
+            <h2 className="text-2xl font-bold">Module Preview: {module.manifest.name}</h2>
             <p className="text-gray-600">Live preview of the module component</p>
           </div>
         </div>
@@ -159,15 +131,15 @@ const DevelopmentModulesDashboard: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Module ID:</span>
-                  <p className="text-gray-600">{module.id}</p>
+                  <p className="text-gray-600">{module.manifest.id}</p>
                 </div>
                 <div>
                   <span className="font-medium">Version:</span>
-                  <p className="text-gray-600">{module.version}</p>
+                  <p className="text-gray-600">{module.manifest.version}</p>
                 </div>
                 <div>
                   <span className="font-medium">Category:</span>
-                  <p className="text-gray-600 capitalize">{module.category}</p>
+                  <p className="text-gray-600 capitalize">{module.manifest.category}</p>
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
@@ -190,84 +162,175 @@ const DevelopmentModulesDashboard: React.FC = () => {
             All modules in the system - both implemented and requiring development
           </p>
         </div>
-        <Button onClick={refreshModules}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex border rounded-lg">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="rounded-r-none"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="rounded-l-none"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={refreshModules}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {loadedModules.map((module) => {
-          const isImplemented = module.status === 'loaded';
-          
-          return (
-            <Card key={module.manifest.id} className="group hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Blocks className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-semibold">{module.manifest.name}</h3>
+      {viewMode === 'grid' ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loadedModules.map((module) => {
+            const isImplemented = module.status === 'loaded';
+            
+            return (
+              <Card key={module.manifest.id} className="group hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Blocks className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-semibold">{module.manifest.name}</h3>
+                      </div>
+                      <p className="text-sm text-gray-500">v{module.manifest.version}</p>
                     </div>
-                    <p className="text-sm text-gray-500">v{module.manifest.version}</p>
+                    <div className="flex flex-col gap-1">
+                      <Badge 
+                        variant="outline" 
+                        className={getCategoryColor(module.manifest.category)}
+                      >
+                        {module.manifest.category}
+                      </Badge>
+                      <Badge 
+                        variant={isImplemented ? "default" : "secondary"}
+                        className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
+                      >
+                        {isImplemented ? "Implemented" : "Needs Dev"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <Badge 
-                      variant="outline" 
-                      className={getCategoryColor(module.manifest.category)}
-                    >
-                      {module.manifest.category}
-                    </Badge>
-                    <Badge 
-                      variant={isImplemented ? "default" : "secondary"}
-                      className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
-                    >
-                      {isImplemented ? "Implemented" : "Needs Dev"}
-                    </Badge>
+                </CardHeader>
+                
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {module.manifest.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                    <span>By {module.manifest.author}</span>
+                    <span>Status: {module.status}</span>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
-                  {module.manifest.description}
-                </p>
-                
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <span>By {module.manifest.author}</span>
-                  <span>Status: {module.status}</span>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
-                    className="flex-1"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Preview
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleTest(module.manifest.id, module.manifest.name)}
-                  >
-                    <TestTube className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
-                  >
-                    <Code className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
+                      className="flex-1"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Preview
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleTest(module.manifest.id, module.manifest.name)}
+                    >
+                      <TestTube className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
+                    >
+                      <Code className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {loadedModules.map((module) => {
+            const isImplemented = module.status === 'loaded';
+            
+            return (
+              <Card key={module.manifest.id} className="group hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Blocks className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <h3 className="font-semibold">{module.manifest.name}</h3>
+                          <p className="text-sm text-gray-500">v{module.manifest.version}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 px-4">
+                        <p className="text-sm text-gray-600 line-clamp-1">
+                          {module.manifest.description}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={getCategoryColor(module.manifest.category)}
+                        >
+                          {module.manifest.category}
+                        </Badge>
+                        <Badge 
+                          variant={isImplemented ? "default" : "secondary"}
+                          className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
+                        >
+                          {isImplemented ? "Implemented" : "Needs Dev"}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 ml-4">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleTest(module.manifest.id, module.manifest.name)}
+                      >
+                        <TestTube className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
+                      >
+                        <Code className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {loadedModules.length === 0 && (
         <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
