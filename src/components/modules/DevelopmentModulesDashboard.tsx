@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -177,12 +178,13 @@ const DevelopmentModulesDashboard: React.FC = () => {
       )}
 
       {/* Module Settings Dialog */}
-      <ModuleSettingsDialog
-        open={settingsDialogOpen}
-        onOpenChange={setSettingsDialogOpen}
-        module={selectedModuleForSettings}
-        onClose={handleCloseSettings}
-      />
+      {selectedModuleForSettings && (
+        <ModuleSettingsDialog
+          open={settingsDialogOpen}
+          onOpenChange={setSettingsDialogOpen}
+          module={selectedModuleForSettings}
+        />
+      )}
     </div>
   );
 };
