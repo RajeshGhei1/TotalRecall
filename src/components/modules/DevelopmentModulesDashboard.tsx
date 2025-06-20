@@ -1,395 +1,271 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { 
-  Search, 
-  Package, 
+  Blocks, 
+  Play, 
   Settings, 
-  Rocket,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Code,
+  TestTube,
+  ArrowLeft,
   Eye,
-  Play,
-  Edit
+  Code,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useSystemModules } from '@/hooks/useSystemModules';
-import { useAllModulesProgress } from '@/hooks/useModuleProgress';
-import { getDevelopmentModuleCount, getMaturityStatusVariant, getDevelopmentProgress, convertSystemModulesToModules } from '@/utils/moduleUtils';
-import { getDisplayName, normalizeModuleName } from '@/utils/moduleNameMapping';
-import { toast } from '@/hooks/use-toast';
-import ModuleSettingsDialog from '@/components/superadmin/settings/modules/ModuleSettingsDialog';
+import { useModuleLoader } from '@/hooks/useModuleLoader';
+import ModuleRenderer from './ModuleRenderer';
+import { ModuleContext } from '@/types/modules';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [settingsModule, setSettingsModule] = useState<any>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { loadedModules, isLoading, refreshModules } = useModuleLoader();
+  const [previewingModule, setPreviewingModule] = useState<string | null>(null);
 
-  // Fetch all system modules and progress data
-  const { data: systemModules = [], isLoading: modulesLoading } = useSystemModules(true);
-  const { data: modulesProgress = [], isLoading: progressLoading } = useAllModulesProgress();
-
-  const isLoading = modulesLoading || progressLoading;
-
-  // Convert SystemModules to Module format
-  const modules = convertSystemModulesToModules(systemModules);
-
-  // Create a map of module progress by normalized module name
-  const progressMap = new Map();
-  modulesProgress.forEach(progress => {
-    progressMap.set(progress.module_id, progress);
-  });
-
-  // Combine system modules with their progress data
-  const developmentModules = modules
-    .filter(module => module.maturity_status !== 'production')
-    .map(module => {
-      const normalizedName = normalizeModuleName(module.name);
-      const progress = progressMap.get(normalizedName);
-      
-      return {
-        ...module,
-        overall_progress: progress?.overall_progress || getDevelopmentProgress(module),
-        display_name: getDisplayName(module.name),
-        progress_data: progress
-      };
-    });
-
-  console.log('Development modules with progress:', developmentModules.map(m => ({ 
-    name: m.name, 
-    display_name: m.display_name,
-    normalized: normalizeModuleName(m.name),
-    maturity_status: m.maturity_status, 
-    overall_progress: m.overall_progress,
-    has_progress_data: !!m.progress_data
-  })));
-
-  const filteredModules = developmentModules.filter(module => {
-    const searchableText = `${module.display_name} ${module.description || ''}`.toLowerCase();
-    const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || module.maturity_status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
-
-  const statusCounts = {
-    planning: developmentModules.filter(m => m.maturity_status === 'planning').length,
-    alpha: developmentModules.filter(m => m.maturity_status === 'alpha').length,
-    beta: developmentModules.filter(m => m.maturity_status === 'beta').length,
-  };
-
-  const handlePreviewModule = (moduleId: string, moduleName: string) => {
-    navigate('/superadmin/module-development', { 
-      state: { 
-        action: 'preview', 
-        moduleId: normalizeModuleName(moduleName),
-        moduleName: getDisplayName(moduleName)
-      } 
-    });
-    toast({
-      title: 'Opening Module Preview',
-      description: `Loading preview for ${getDisplayName(moduleName)}`,
-    });
-  };
-
-  const handleTestModule = (moduleId: string, moduleName: string) => {
-    navigate('/superadmin/module-testing', { 
-      state: { 
-        moduleId: normalizeModuleName(moduleName),
-        moduleName: getDisplayName(moduleName)
-      } 
-    });
-    toast({
-      title: 'Opening Module Testing',
-      description: `Loading test environment for ${getDisplayName(moduleName)}`,
-    });
-  };
-
-  const handleEditModule = (moduleId: string, moduleName: string) => {
-    navigate('/superadmin/module-development', { 
-      state: { 
-        action: 'edit', 
-        moduleId: normalizeModuleName(moduleName),
-        moduleName: getDisplayName(moduleName)
-      } 
-    });
-    toast({
-      title: 'Opening Module Editor',
-      description: `Loading editor for ${getDisplayName(moduleName)}`,
-    });
-  };
-
-  const handleSettingsModule = (module: any) => {
-    setSettingsModule(module);
-    setIsSettingsOpen(true);
-    toast({
-      title: 'Opening Module Settings',
-      description: `Configuring settings for ${getDisplayName(module.name)}`,
-    });
-  };
-
-  const handlePromoteToProduction = async (moduleId: string) => {
-    try {
-      console.log('Would promote module to production:', moduleId);
-      // Implementation would go here
-      toast({
-        title: 'Module Promotion',
-        description: 'Module promotion workflow will be implemented.',
-      });
-    } catch (error) {
-      console.error('Failed to promote module:', error);
+  // Development modules - these would come from your database or development registry
+  const developmentModules = [
+    {
+      id: 'business_contacts_data_access',
+      name: 'Business Contacts & Data Access',
+      description: 'Comprehensive contact management and data access functionality',
+      category: 'business',
+      version: '1.0.0',
+      status: 'development',
+      author: 'System',
+      lastUpdated: '2024-01-15'
+    },
+    {
+      id: 'linkedin_enrichment',
+      name: 'LinkedIn Profile Enrichment',
+      description: 'Enhance contact profiles with LinkedIn data',
+      category: 'integration',
+      version: '1.2.0',
+      status: 'development',
+      author: 'System',
+      lastUpdated: '2024-01-14'
+    },
+    {
+      id: 'talent_analytics',
+      name: 'Talent Analytics Dashboard',
+      description: 'Advanced analytics for talent management',
+      category: 'analytics',
+      version: '2.1.0',
+      status: 'development',
+      author: 'System',
+      lastUpdated: '2024-01-13'
     }
+  ];
+
+  const handlePreview = (moduleId: string, moduleName: string) => {
+    console.log(`Previewing module: ${moduleId} (${moduleName})`);
+    setPreviewingModule(moduleId);
   };
 
-  const handleSettingsSave = (updatedSettings: any) => {
-    console.log('Saving module settings:', updatedSettings);
-    toast({
-      title: 'Settings Saved',
-      description: 'Module settings have been updated successfully.',
+  const handleTest = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-testing', {
+      state: { moduleId, moduleName }
     });
-    setIsSettingsOpen(false);
   };
+
+  const handleEdit = (moduleId: string, moduleName: string) => {
+    navigate('/superadmin/module-development', {
+      state: { action: 'edit', moduleId, moduleName }
+    });
+  };
+
+  const handleBackToList = () => {
+    setPreviewingModule(null);
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'business': 'bg-blue-50 border-blue-200 text-blue-700',
+      'integration': 'bg-green-50 border-green-200 text-green-700',
+      'analytics': 'bg-purple-50 border-purple-200 text-purple-700',
+      'communication': 'bg-orange-50 border-orange-200 text-orange-700',
+    };
+    return colors[category] || 'bg-gray-50 border-gray-200 text-gray-700';
+  };
+
+  // Test context for module preview
+  const createTestContext = (moduleId: string): ModuleContext => ({
+    moduleId,
+    tenantId: 'dev-tenant',
+    userId: 'dev-user',
+    permissions: ['read', 'write', 'admin'],
+    config: {
+      environment: 'development',
+      debugMode: true
+    }
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+          <p>Loading development modules...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show module preview if one is selected
+  if (previewingModule) {
+    const module = developmentModules.find(m => m.id === previewingModule);
+    if (!module) {
+      setPreviewingModule(null);
+      return null;
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleBackToList}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Modules
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Module Preview: {module.name}</h2>
+            <p className="text-gray-600">Live preview of the module component</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Module Component Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ModuleRenderer
+                moduleId={previewingModule}
+                context={createTestContext(previewingModule)}
+                props={{}}
+                showStatus={true}
+                showError={true}
+                containerClassName="border rounded-lg p-6 bg-gray-50"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Module Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Module ID:</span>
+                  <p className="text-gray-600">{module.id}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Version:</span>
+                  <p className="text-gray-600">{module.version}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Category:</span>
+                  <p className="text-gray-600 capitalize">{module.category}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span>
+                  <Badge variant="secondary">{module.status}</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold">Development Modules</h3>
-          <p className="text-muted-foreground">
-            Modules currently in development that can be promoted to production
+          <h2 className="text-2xl font-bold">Development Modules</h2>
+          <p className="text-gray-600 mt-1">
+            Modules currently under development and testing
           </p>
         </div>
+        <Button onClick={refreshModules}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Package className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">{developmentModules.length}</p>
-                <p className="text-sm text-muted-foreground">Total in Development</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="h-8 w-8 text-gray-500" />
-              <div>
-                <p className="text-2xl font-bold">{statusCounts.planning}</p>
-                <p className="text-sm text-muted-foreground">Planning Stage</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-8 w-8 text-yellow-500" />
-              <div>
-                <p className="text-2xl font-bold">{statusCounts.alpha}</p>
-                <p className="text-sm text-muted-foreground">Alpha Stage</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">{statusCounts.beta}</p>
-                <p className="text-sm text-muted-foreground">Beta Stage</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search development modules..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex gap-2">
-          {[
-            { value: 'all', label: 'All Stages' },
-            { value: 'planning', label: 'Planning' },
-            { value: 'alpha', label: 'Alpha' },
-            { value: 'beta', label: 'Beta' }
-          ].map((status) => (
-            <Button
-              key={status.value}
-              variant={selectedStatus === status.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedStatus(status.value)}
-            >
-              {status.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Development Modules List */}
-      {filteredModules.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Code className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2">No Development Modules Found</h3>
-            <p className="text-muted-foreground">
-              {searchTerm || selectedStatus !== 'all' 
-                ? "Try adjusting your search criteria or filters" 
-                : "No modules are currently in development"
-              }
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredModules.map((module) => {
-            const statusVariant = getMaturityStatusVariant(module.maturity_status || 'planning');
-            const progress = module.overall_progress;
-            const canPromote = module.maturity_status === 'beta' && progress >= 80;
-            
-            return (
-              <Card key={module.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-semibold text-lg">{module.display_name}</h4>
-                        <Badge variant={statusVariant.variant} className={statusVariant.className}>
-                          {module.maturity_status?.toUpperCase() || 'PLANNING'}
-                        </Badge>
-                        <Badge variant="outline">{module.category}</Badge>
-                        {module.progress_data && (
-                          <Badge variant="outline" className="bg-green-50 text-green-700">
-                            Progress Tracked
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {module.description || 'No description available'}
-                      </p>
-
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">Development Progress</span>
-                          <span className="text-sm text-muted-foreground">{progress.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              progress >= 80 ? 'bg-green-600' : 
-                              progress >= 50 ? 'bg-blue-600' : 
-                              progress >= 25 ? 'bg-yellow-600' : 'bg-gray-400'
-                            }`}
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 text-xs text-muted-foreground">
-                        <span>Technical Name: {normalizeModuleName(module.name)}</span>
-                        <span>Version: {module.version || '1.0.0'}</span>
-                        {module.dependencies && module.dependencies.length > 0 && (
-                          <span>• Dependencies: {module.dependencies.length}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 ml-4">
-                      {/* Interactive Module Buttons */}
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handlePreviewModule(module.id, module.name)}
-                        className="hover:bg-blue-50 hover:text-blue-600"
-                        title="Preview Module"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Preview
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleTestModule(module.id, module.name)}
-                        className="hover:bg-green-50 hover:text-green-600"
-                        title="Test Module"
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Test
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleEditModule(module.id, module.name)}
-                        className="hover:bg-purple-50 hover:text-purple-600"
-                        title="Edit Module"
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleSettingsModule(module)}
-                        className="hover:bg-gray-50 hover:text-gray-600"
-                        title="Module Settings"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      {canPromote && (
-                        <Button 
-                          size="sm"
-                          onClick={() => handlePromoteToProduction(module.id)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Rocket className="h-4 w-4 mr-2" />
-                          Promote to Production
-                        </Button>
-                      )}
-                    </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {developmentModules.map((module) => (
+          <Card key={module.id} className="group hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Blocks className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold">{module.name}</h3>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <p className="text-sm text-gray-500">v{module.version}</p>
+                </div>
+                <Badge 
+                  variant="outline" 
+                  className={getCategoryColor(module.category)}
+                >
+                  {module.category}
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                {module.description}
+              </p>
+              
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                <span>By {module.author}</span>
+                <span>Updated {module.lastUpdated}</span>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handlePreview(module.id, module.name)}
+                  className="flex-1"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Preview
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleTest(module.id, module.name)}
+                >
+                  <TestTube className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleEdit(module.id, module.name)}
+                >
+                  <Code className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {developmentModules.length === 0 && (
+        <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <Blocks className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No development modules</h3>
+          <p className="text-gray-600">
+            Development modules will appear here once they are registered in the system.
+          </p>
         </div>
-      )}
-      {/* Module Settings Dialog */}
-      {settingsModule && (
-        <ModuleSettingsDialog
-          open={isSettingsOpen}
-          onOpenChange={setIsSettingsOpen}
-          module={settingsModule}
-          onSave={handleSettingsSave}
-        />
       )}
     </div>
   );
