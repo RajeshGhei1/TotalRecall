@@ -37,17 +37,17 @@ function App() {
               } 
             />
             
-            {/* Default route redirects based on user role */}
+            {/* Default route redirects to superadmin for testing */}
             <Route path="/" element={
-              <AuthGuard>
-                <Navigate to="/tenant-admin/dashboard" replace />
+              <AuthGuard requiresSuperAdmin={true}>
+                <Navigate to="/superadmin/module-development" replace />
               </AuthGuard>
             } />
 
-            {/* Catch all other routes and redirect to tenant admin */}
+            {/* Catch all other routes and redirect to superadmin module development */}
             <Route path="*" element={
-              <AuthGuard>
-                <Navigate to="/tenant-admin/dashboard" replace />
+              <AuthGuard requiresSuperAdmin={true}>
+                <Navigate to="/superadmin/module-development" replace />
               </AuthGuard>
             } />
           </Routes>
