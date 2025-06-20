@@ -28,7 +28,7 @@ export const useModuleLoader = () => {
         },
         status: 'loaded' as const,
         loadedAt: new Date(),
-        dependencies: moduleComponent.manifest.dependencies || []
+        dependencies: [] // Empty array of LoadedModule[] type instead of string[]
       }));
       
       setLoadedModules(modules);
