@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -188,7 +187,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold">Development Modules</h2>
           <p className="text-gray-600 mt-1">
-            Modules currently under development and testing
+            All modules in the system - both implemented and requiring development
           </p>
         </div>
         <Button onClick={refreshModules}>
@@ -198,72 +197,84 @@ const DevelopmentModulesDashboard: React.FC = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {developmentModules.map((module) => (
-          <Card key={module.id} className="group hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Blocks className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-semibold">{module.name}</h3>
+        {loadedModules.map((module) => {
+          const isImplemented = module.status === 'loaded';
+          
+          return (
+            <Card key={module.manifest.id} className="group hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Blocks className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-semibold">{module.manifest.name}</h3>
+                    </div>
+                    <p className="text-sm text-gray-500">v{module.manifest.version}</p>
                   </div>
-                  <p className="text-sm text-gray-500">v{module.version}</p>
+                  <div className="flex flex-col gap-1">
+                    <Badge 
+                      variant="outline" 
+                      className={getCategoryColor(module.manifest.category)}
+                    >
+                      {module.manifest.category}
+                    </Badge>
+                    <Badge 
+                      variant={isImplemented ? "default" : "secondary"}
+                      className={isImplemented ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
+                    >
+                      {isImplemented ? "Implemented" : "Needs Dev"}
+                    </Badge>
+                  </div>
                 </div>
-                <Badge 
-                  variant="outline" 
-                  className={getCategoryColor(module.category)}
-                >
-                  {module.category}
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                {module.description}
-              </p>
+              </CardHeader>
               
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                <span>By {module.author}</span>
-                <span>Updated {module.lastUpdated}</span>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handlePreview(module.id, module.name)}
-                  className="flex-1"
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Preview
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleTest(module.id, module.name)}
-                >
-                  <TestTube className="h-4 w-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleEdit(module.id, module.name)}
-                >
-                  <Code className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  {module.manifest.description}
+                </p>
+                
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                  <span>By {module.manifest.author}</span>
+                  <span>Status: {module.status}</span>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handlePreview(module.manifest.id, module.manifest.name)}
+                    className="flex-1"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Preview
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleTest(module.manifest.id, module.manifest.name)}
+                  >
+                    <TestTube className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleEdit(module.manifest.id, module.manifest.name)}
+                  >
+                    <Code className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {developmentModules.length === 0 && (
+      {loadedModules.length === 0 && (
         <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <Blocks className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No development modules</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No development modules found</h3>
           <p className="text-gray-600">
-            Development modules will appear here once they are registered in the system.
+            No modules found in the database. Check your database connection.
           </p>
         </div>
       )}
