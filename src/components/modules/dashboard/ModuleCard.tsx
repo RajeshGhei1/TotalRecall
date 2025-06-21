@@ -9,10 +9,10 @@ import {
   Code, 
   AlertTriangle,
   CheckCircle,
-  Play
+  Play,
+  Package
 } from 'lucide-react';
 import { LoadedModule } from '@/types/modules';
-import ModuleRenderer from '../ModuleRenderer';
 
 interface ModuleCardProps {
   module: LoadedModule;
@@ -63,8 +63,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     );
   };
 
+  const getCategoryIcon = () => {
+    return <Package className="h-8 w-8 text-gray-400" />;
+  };
+
   const handleRunTest = () => {
-    // Navigate to module testing page with this module's ID
     const testUrl = `/superadmin/module-testing?moduleId=${module.manifest.id}`;
     window.open(testUrl, '_blank');
   };
@@ -73,11 +76,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     return (
       <Card className="group hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-gray-300 bg-white">
         <div className="flex items-center p-6">
-          {/* Module Preview */}
-          <div className="w-28 h-28 flex-shrink-0 mr-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-xl border-2 border-gray-100 group-hover:border-gray-200 transition-all duration-300 flex items-center justify-center overflow-hidden shadow-sm">
-            <div className="w-full h-full flex items-center justify-center scale-75">
-              <ModuleRenderer moduleId={module.manifest.id} showError={false} />
-            </div>
+          {/* Module Icon */}
+          <div className="w-28 h-28 flex-shrink-0 mr-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-xl border-2 border-gray-100 group-hover:border-gray-200 transition-all duration-300 flex items-center justify-center shadow-sm">
+            {getCategoryIcon()}
           </div>
           
           {/* Module Info */}
@@ -167,9 +168,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Module Preview */}
+        {/* Module Icon */}
         <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-lg border-2 border-gray-100 p-4 min-h-[120px] flex items-center justify-center">
-          <ModuleRenderer moduleId={module.manifest.id} showError={false} />
+          {getCategoryIcon()}
         </div>
         
         {/* Description */}
