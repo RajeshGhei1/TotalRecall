@@ -1,4 +1,3 @@
-
 import { ModuleManifest, LoadedModule } from '@/types/modules';
 
 export interface BuiltInModuleConfig {
@@ -37,7 +36,7 @@ export class ModuleDiscoveryService {
       {
         id: 'ats-core',
         name: 'ATS Core',
-        path: '/src/modules/ats-core/index.tsx',
+        path: '../modules/ats-core/index.tsx',
         category: 'recruitment' as const,
         version: '1.0.0',
         description: 'Core Applicant Tracking System with job and candidate management',
@@ -48,7 +47,7 @@ export class ModuleDiscoveryService {
       {
         id: 'talent-database',
         name: 'Talent Database',
-        path: '/src/modules/talent-database/index.tsx',
+        path: '../modules/talent-database/index.tsx',
         category: 'recruitment' as const,
         version: '1.0.0',
         description: 'Comprehensive talent database with search, favorites, and analytics',
@@ -59,7 +58,7 @@ export class ModuleDiscoveryService {
       {
         id: 'smart-talent-analytics',
         name: 'Smart Talent Analytics',
-        path: '/src/modules/smart-talent-analytics/index.tsx',
+        path: '../modules/smart-talent-analytics/index.tsx',
         category: 'analytics' as const,
         version: '1.0.0',
         description: 'AI-powered talent analytics with predictive insights, pattern analysis, and talent matching',
@@ -70,7 +69,7 @@ export class ModuleDiscoveryService {
       {
         id: 'companies',
         name: 'Companies',
-        path: '/src/modules/companies/index.tsx',
+        path: '../modules/companies/index.tsx',
         category: 'business' as const,
         version: '1.0.0',
         description: 'Comprehensive company management and relationship tracking with advanced features including hierarchical relationships, bulk operations, and analytics',
@@ -81,7 +80,7 @@ export class ModuleDiscoveryService {
       {
         id: 'people',
         name: 'People',
-        path: '/src/modules/people/index.tsx',
+        path: '../modules/people/index.tsx',
         category: 'business' as const,
         version: '1.0.0',
         description: 'Advanced people and contact management system with talent database, business contacts, and relationship tracking capabilities',

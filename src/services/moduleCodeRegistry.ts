@@ -1,4 +1,3 @@
-
 import { ModuleManifest, LoadedModule } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -79,12 +78,12 @@ export class ModuleCodeRegistry {
         return this.componentCache.get(moduleId)!;
       }
 
-      // Use proper Vite import paths (relative to src/)
+      // Use proper Vite-compatible import paths (relative from src/)
       const importPaths = [
-        `/src/modules/${moduleId}/index.tsx`,
-        `/src/modules/${moduleId}/Component.tsx`,
-        `/src/modules/${moduleId}/${moduleId}.tsx`,
-        `/src/components/modules/${moduleId}.tsx`
+        `../modules/${moduleId}/index.tsx`,
+        `../modules/${moduleId}/Component.tsx`,
+        `../modules/${moduleId}/${moduleId}.tsx`,
+        `./modules/${moduleId}.tsx`
       ];
 
       for (const importPath of importPaths) {
@@ -225,7 +224,7 @@ export class ModuleCodeRegistry {
               module.name,
               component,
               manifest,
-              `/src/modules/${module.name}/index.tsx`
+              `src/modules/${module.name}/index.tsx`
             );
 
             registered.push(module.name);
