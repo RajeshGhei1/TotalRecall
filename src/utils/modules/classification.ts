@@ -1,4 +1,3 @@
-
 // Module classification utilities
 
 import { normalizeModuleName } from '../moduleNameMapping';
@@ -10,7 +9,7 @@ import { Module } from './types';
  */
 export const isFunctionalModule = (moduleName: string): boolean => {
   const normalizedName = normalizeModuleName(moduleName);
-  return FUNCTIONAL_MODULES.includes(normalizedName as any);
+  return (FUNCTIONAL_MODULES as readonly string[]).includes(normalizedName);
 };
 
 /**
@@ -18,7 +17,7 @@ export const isFunctionalModule = (moduleName: string): boolean => {
  */
 export const isProductionReadyModule = (moduleName: string): boolean => {
   const normalizedName = normalizeModuleName(moduleName);
-  return PRODUCTION_READY_MODULES.includes(normalizedName as any);
+  return (PRODUCTION_READY_MODULES as readonly string[]).includes(normalizedName);
 };
 
 /**
@@ -26,7 +25,7 @@ export const isProductionReadyModule = (moduleName: string): boolean => {
  */
 export const isBetaReadyModule = (moduleName: string): boolean => {
   const normalizedName = normalizeModuleName(moduleName);
-  return BETA_READY_MODULES.includes(normalizedName as any);
+  return (BETA_READY_MODULES as readonly string[]).includes(normalizedName);
 };
 
 /**
