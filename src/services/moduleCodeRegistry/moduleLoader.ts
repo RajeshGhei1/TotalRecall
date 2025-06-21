@@ -15,12 +15,14 @@ export class ModuleLoader {
         return this.componentCache.get(moduleId)!;
       }
 
-      // Use proper Vite-compatible import paths (relative from src/)
+      // Use proper Vite-compatible import paths (absolute from src/)
       const importPaths = [
-        `../modules/${moduleId}/index.tsx`,
-        `../modules/${moduleId}/Component.tsx`,
-        `../modules/${moduleId}/${moduleId}.tsx`,
-        `./modules/${moduleId}.tsx`
+        `/src/modules/${moduleId}/index.tsx`,
+        `/src/modules/${moduleId}/Component.tsx`,
+        `/src/modules/${moduleId}/${moduleId}.tsx`,
+        `../../modules/${moduleId}/index.tsx`,
+        `../../modules/${moduleId}/Component.tsx`,
+        `../../modules/${moduleId}/${moduleId}.tsx`
       ];
 
       for (const importPath of importPaths) {
