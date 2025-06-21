@@ -13,8 +13,6 @@ export const PROGRESS_THRESHOLDS: ModuleProgressThresholds = {
 
 // List of functional modules that should be highlighted in green (using technical names)
 export const FUNCTIONAL_MODULES = [
-  'company_database',
-  'business_contacts_data_access', 
   'ats_core',
   'user_management',
   'talent_database',
@@ -27,8 +25,7 @@ export const FUNCTIONAL_MODULES = [
 
 // Production-ready modules with 90%+ completion (using technical names)
 export const PRODUCTION_READY_MODULES = [
-  'business_contacts_data_access',
-  'company_database'
+  // Currently no modules are production-ready
 ] as const;
 
 // Beta-ready modules with 80%+ completion (using technical names)

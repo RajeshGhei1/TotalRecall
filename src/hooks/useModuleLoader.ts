@@ -13,6 +13,9 @@ export const useModuleLoader = () => {
     try {
       console.log('🔄 Refreshing modules...');
       
+      // Clear the module cache first to remove any references to deleted modules
+      moduleCodeRegistry.clearAll();
+      
       // Get all system modules from database
       const { data: dbModules, error } = await supabase
         .from('system_modules')
