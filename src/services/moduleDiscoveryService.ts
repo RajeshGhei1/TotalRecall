@@ -1,3 +1,4 @@
+
 import { ModuleManifest, LoadedModule } from '@/types/modules';
 
 export interface BuiltInModuleConfig {
@@ -65,6 +66,28 @@ export class ModuleDiscoveryService {
         author: 'System',
         dependencies: ['ats-core', 'talent-database'],
         loadOrder: 30
+      },
+      {
+        id: 'companies',
+        name: 'Companies',
+        path: '/src/modules/companies/index.tsx',
+        category: 'business' as const,
+        version: '1.0.0',
+        description: 'Comprehensive company management and relationship tracking with advanced features including hierarchical relationships, bulk operations, and analytics',
+        author: 'System',
+        dependencies: [],
+        loadOrder: 40
+      },
+      {
+        id: 'people',
+        name: 'People',
+        path: '/src/modules/people/index.tsx',
+        category: 'business' as const,
+        version: '1.0.0',
+        description: 'Advanced people and contact management system with talent database, business contacts, and relationship tracking capabilities',
+        author: 'System',
+        dependencies: [],
+        loadOrder: 50
       }
     ];
 
