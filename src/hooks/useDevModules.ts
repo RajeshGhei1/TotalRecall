@@ -52,33 +52,41 @@ export const useDevModules = () => {
     try {
       console.log('🔄 Refreshing development modules...');
       
-      // Get modules with progress tracking data using a JOIN
-      const { data: moduleData, error } = await supabase
+      // Fetch system modules separately
+      const { data: systemModules, error: modulesError } = await supabase
         .from('system_modules')
-        .select(`
-          *,
-          module_progress_tracking (
-            overall_progress,
-            code_completion,
-            test_coverage,
-            feature_completion,
-            documentation_completion,
-            quality_score,
-            last_updated
-          )
-        `)
+        .select('*')
         .eq('is_active', true);
 
-      if (error) {
-        console.error('❌ Error fetching development modules:', error);
+      if (modulesError) {
+        console.error('❌ Error fetching system modules:', modulesError);
         setLoadedModules([]);
         return;
       }
 
-      console.log(`📋 All modules found: ${moduleData?.length || 0}`);
-      
+      console.log(`📋 All modules found: ${systemModules?.length || 0}`);
+
+      // Fetch progress tracking data separately
+      const { data: progressData, error: progressError } = await supabase
+        .from('module_progress_tracking')
+        .select('*');
+
+      if (progressError) {
+        console.warn('⚠️ Error fetching progress data (continuing without):', progressError);
+      }
+
+      console.log(`📊 Progress records found: ${progressData?.length || 0}`);
+
+      // Create a map of progress data by module_id for efficient lookup
+      const progressMap = new Map();
+      if (progressData) {
+        progressData.forEach(progress => {
+          progressMap.set(progress.module_id, progress);
+        });
+      }
+
       // Filter out production modules
-      const developmentModules = (moduleData || []).filter(dbModule => {
+      const developmentModules = (systemModules || []).filter(dbModule => {
         const developmentStage = parseDevelopmentStage(dbModule.development_stage);
         const stage = developmentStage.stage || 'planning';
         
@@ -98,9 +106,12 @@ export const useDevModules = () => {
         const registeredModules = moduleCodeRegistry.getAllRegisteredModules();
         const hasImplementation = registeredModules.find(rm => rm.id === dbModule.name);
         
-        // Parse development stage and progress data
+        // Parse development stage
         const developmentStage = parseDevelopmentStage(dbModule.development_stage);
-        const progressData = parseProgressData(dbModule.module_progress_tracking?.[0]);
+        
+        // Get progress data from the map or use defaults
+        const moduleProgress = progressMap.get(dbModule.name);
+        const progressData = parseProgressData(moduleProgress);
         
         // Create manifest from database module
         const manifest = {
