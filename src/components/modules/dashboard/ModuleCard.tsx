@@ -11,11 +11,13 @@ import {
   CheckCircle,
   Play,
   Package,
-  TrendingUp
+  TrendingUp,
+  ExternalLink
 } from 'lucide-react';
 import { LoadedModule } from '@/types/modules';
 import ModuleProgressIndicator from './ModuleProgressIndicator';
 import ModulePromotionButton from './ModulePromotionButton';
+import { useNavigate } from 'react-router-dom';
 
 interface ModuleCardProps {
   module: LoadedModule;
@@ -36,6 +38,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   onPromotionSuccess,
   showPromotionControls = true
 }) => {
+  const navigate = useNavigate();
+  
   // Extract real development stage and progress from module data
   const developmentStage = module.developmentStage?.stage || 'planning';
   const progress = module.progressData?.overall_progress || 0;
@@ -81,6 +85,23 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   const handleRunTest = () => {
     const testUrl = `/superadmin/module-testing?moduleId=${module.manifest.id}`;
     window.open(testUrl, '_blank');
+  };
+
+  const handleOpenModuleInterface = () => {
+    // Special handling for AI Orchestration - navigate to dedicated interface
+    if (module.manifest.id === 'ai_orchestration') {
+      // Navigate to a dedicated AI orchestration development interface
+      navigate('/superadmin/module-development', { 
+        state: { 
+          action: 'interface', 
+          moduleId: module.manifest.id, 
+          moduleName: module.manifest.name 
+        } 
+      });
+    } else {
+      // For other modules, use the preview functionality
+      onPreview(module.manifest.id);
+    }
   };
 
   if (viewMode === 'list') {
@@ -132,11 +153,20 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onPreview(module.manifest.id)}
+                onClick={handleOpenModuleInterface}
                 className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
               >
-                <Eye className="h-4 w-4" />
-                Preview
+                {module.manifest.id === 'ai_orchestration' ? (
+                  <>
+                    <ExternalLink className="h-4 w-4" />
+                    Open Interface
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </>
+                )}
               </Button>
               <Button
                 size="sm"
@@ -243,11 +273,20 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onPreview(module.manifest.id)}
+            onClick={handleOpenModuleInterface}
             className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
           >
-            <Eye className="h-4 w-4" />
-            Preview
+            {module.manifest.id === 'ai_orchestration' ? (
+              <>
+                <ExternalLink className="h-4 w-4" />
+                Interface
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" />
+                Preview
+              </>
+            )}
           </Button>
           <Button
             size="sm"

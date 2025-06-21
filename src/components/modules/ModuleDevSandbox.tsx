@@ -12,7 +12,8 @@ import {
   Rocket,
   Plus,
   CheckCircle,
-  Package
+  Package,
+  Brain
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
 import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
 import DevelopmentModulesDashboard from './DevelopmentModulesDashboard';
+import { AIOrchestrationManager } from '@/components/superadmin/ai/AIOrchestrationManager';
 
 interface ModuleData {
   name: string;
@@ -38,17 +40,29 @@ const ModuleDevSandbox: React.FC = () => {
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [currentModule, setCurrentModule] = useState<ModuleData | null>(null);
   const [deployedModules, setDeployedModules] = useState<string[]>([]);
+  const [showAIOrchestrationInterface, setShowAIOrchestrationInterface] = useState(false);
 
   // Handle navigation state from other pages
   useEffect(() => {
     const state = location.state as {
-      action?: 'preview' | 'edit' | 'test';
+      action?: 'preview' | 'edit' | 'test' | 'interface';
       moduleId?: string;
       moduleName?: string;
     };
 
     if (state?.action && state?.moduleId && state?.moduleName) {
       console.log('Received navigation state:', state);
+      
+      if (state.action === 'interface' && state.moduleId === 'ai_orchestration') {
+        // Show AI Orchestration interface
+        setShowAIOrchestrationInterface(true);
+        setActiveTab('ai-orchestration');
+        toast({
+          title: 'AI Orchestration Interface',
+          description: 'Opening AI Orchestration development interface',
+        });
+        return;
+      }
       
       // Create a temporary module data for the selected module
       const moduleData: ModuleData = {
@@ -66,7 +80,7 @@ const ModuleDevSandbox: React.FC = () => {
       
       // Switch to appropriate tab based on action
       if (state.action === 'preview') {
-        setActiveTab('development'); // Show in development tab with preview
+        setActiveTab('development');
         toast({
           title: 'Module Preview Mode',
           description: `Previewing ${state.moduleName}`,
@@ -113,6 +127,7 @@ const ModuleDevSandbox: React.FC = () => {
   const resetSandbox = () => {
     setCurrentModule(null);
     setIsCreatingModule(false);
+    setShowAIOrchestrationInterface(false);
     setActiveTab('development');
   };
 
@@ -127,7 +142,7 @@ const ModuleDevSandbox: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {currentModule && (
+          {(currentModule || showAIOrchestrationInterface) && (
             <Button variant="outline" onClick={resetSandbox}>
               Reset Sandbox
             </Button>
@@ -140,18 +155,24 @@ const ModuleDevSandbox: React.FC = () => {
       </div>
 
       {/* Current Module Status */}
-      {currentModule && (
+      {(currentModule || showAIOrchestrationInterface) && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Code className="h-5 w-5 text-blue-600" />
+                  {showAIOrchestrationInterface ? (
+                    <Brain className="h-5 w-5 text-blue-600" />
+                  ) : (
+                    <Code className="h-5 w-5 text-blue-600" />
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-semibold">{currentModule.name}</h3>
+                  <h3 className="font-semibold">
+                    {showAIOrchestrationInterface ? 'AI Orchestration' : currentModule?.name}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    v{currentModule.version} • {currentModule.category}
+                    {showAIOrchestrationInterface ? 'v1.0.0 • ai' : `v${currentModule?.version} • ${currentModule?.category}`}
                   </p>
                 </div>
               </div>
@@ -171,12 +192,18 @@ const ModuleDevSandbox: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className={`grid w-full ${showAIOrchestrationInterface ? 'grid-cols-6' : 'grid-cols-5'}`}>
           <TabsTrigger value="development">
             <Package className="h-4 w-4 mr-2" />
             Development Modules
           </TabsTrigger>
-          <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule}>
+          {showAIOrchestrationInterface && (
+            <TabsTrigger value="ai-orchestration">
+              <Brain className="h-4 w-4 mr-2" />
+              AI Orchestration
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule && !showAIOrchestrationInterface}>
             Create Module
           </TabsTrigger>
           <TabsTrigger value="code" disabled={!currentModule}>
@@ -191,6 +218,25 @@ const ModuleDevSandbox: React.FC = () => {
         <TabsContent value="development" className="space-y-6">
           <DevelopmentModulesDashboard />
         </TabsContent>
+
+        {showAIOrchestrationInterface && (
+          <TabsContent value="ai-orchestration" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-blue-600" />
+                  AI Orchestration Development Interface
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Configure and manage AI agents, models, and orchestration workflows
+                </p>
+              </CardHeader>
+              <CardContent>
+                <AIOrchestrationManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         <TabsContent value="create">
           {isCreatingModule && (
