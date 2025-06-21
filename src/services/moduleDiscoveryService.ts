@@ -30,6 +30,8 @@ export class ModuleDiscoveryService {
   }
 
   private async initializeBuiltInModules() {
+    console.log('🔧 Initializing built-in modules...');
+    
     const builtInModules = [
       {
         id: 'ats-core',
@@ -100,27 +102,36 @@ export class ModuleDiscoveryService {
           exists: true 
         });
         
-        console.log(`Initialized built-in module: ${moduleConfig.name}`);
+        console.log(`✅ Initialized built-in module: ${moduleConfig.name}`);
       } catch (error) {
-        console.error(`Failed to initialize module ${moduleConfig.id}:`, error);
+        console.error(`❌ Failed to initialize module ${moduleConfig.id}:`, error);
       }
     }
+    
+    console.log(`🎯 Built-in modules initialization complete: ${this.modules.size} modules`);
   }
 
   /**
    * Initialize known modules (called by module manager)
    */
   initializeKnownModules(): void {
-    console.log('Initializing known modules...');
+    console.log('🔧 Initializing known modules...');
     // This method is called to ensure modules are ready
     // The actual initialization happens in the constructor
   }
 
   /**
-   * Get module file information
+   * Get module file information with proper import path
    */
   getModuleFileInfo(moduleId: string): { path: string; exists: boolean } | null {
-    return this.moduleFileInfo.get(moduleId) || null;
+    const info = this.moduleFileInfo.get(moduleId);
+    if (info) {
+      console.log(`📂 Module file info for ${moduleId}: ${info.path}`);
+      return info;
+    }
+    
+    console.log(`❌ No file info found for module: ${moduleId}`);
+    return null;
   }
 
   /**
@@ -130,38 +141,44 @@ export class ModuleDiscoveryService {
     loaded: string[];
     failed: { moduleId: string; error: string }[];
   }> {
+    console.log('🔍 Starting module discovery...');
+    
     const loaded: string[] = [];
     const failed: { moduleId: string; error: string }[] = [];
 
     for (const [moduleId, module] of this.modules) {
       if (module.status === 'loaded') {
         loaded.push(moduleId);
+        console.log(`✅ Module loaded: ${moduleId}`);
       } else {
-        failed.push({
-          moduleId,
-          error: 'Module not properly loaded'
-        });
+        const error = 'Module not properly loaded';
+        failed.push({ moduleId, error });
+        console.log(`❌ Module failed: ${moduleId} - ${error}`);
       }
     }
 
+    console.log(`🎯 Discovery complete: ${loaded.length} loaded, ${failed.length} failed`);
     return { loaded, failed };
   }
 
   async loadModule(moduleId: string, options?: any): Promise<LoadedModule | undefined> {
     const existingModule = this.modules.get(moduleId);
     if (existingModule && !options?.force) {
-      console.warn(`Module "${moduleId}" already loaded. Use force option to reload.`);
+      console.warn(`⚠️ Module "${moduleId}" already loaded. Use force option to reload.`);
       return existingModule;
     }
 
     try {
-      // Simulate dynamic import
+      console.log(`🔄 Loading module: ${moduleId}`);
+      
+      // Get the proper module path
       const modulePath = this.getModulePath(moduleId);
       if (!modulePath) {
         throw new Error(`Module path not found for ${moduleId}`);
       }
 
-      const module = await import(/* webpackIgnore: true */ modulePath);
+      console.log(`📂 Attempting to load from: ${modulePath}`);
+      const module = await import(/* @vite-ignore */ modulePath);
       const manifest = this.getModuleManifest(moduleId);
 
       if (!manifest) {
@@ -177,26 +194,26 @@ export class ModuleDiscoveryService {
       };
 
       this.modules.set(moduleId, loadedModule);
-      console.log(`Module "${moduleId}" loaded successfully.`);
+      console.log(`✅ Module "${moduleId}" loaded successfully.`);
       return loadedModule;
     } catch (error) {
-      console.error(`Failed to load module "${moduleId}":`, error);
+      console.error(`❌ Failed to load module "${moduleId}":`, error);
       return undefined;
     }
   }
 
   async unloadModule(moduleId: string): Promise<boolean> {
     if (!this.modules.has(moduleId)) {
-      console.warn(`Module "${moduleId}" is not loaded.`);
+      console.warn(`⚠️ Module "${moduleId}" is not loaded.`);
       return false;
     }
 
     try {
       this.modules.delete(moduleId);
-      console.log(`Module "${moduleId}" unloaded successfully.`);
+      console.log(`✅ Module "${moduleId}" unloaded successfully.`);
       return true;
     } catch (error) {
-      console.error(`Failed to unload module "${moduleId}":`, error);
+      console.error(`❌ Failed to unload module "${moduleId}":`, error);
       return false;
     }
   }
@@ -225,7 +242,7 @@ export class ModuleDiscoveryService {
 
   registerTemplate(templateId: string, template: any): void {
     if (this.templates[templateId]) {
-      console.warn(`Template with id "${templateId}" already registered.`);
+      console.warn(`⚠️ Template with id "${templateId}" already registered.`);
     }
     this.templates[templateId] = template;
   }

@@ -2,7 +2,7 @@
 import React, { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, Code, Database } from 'lucide-react';
 import { moduleCodeRegistry } from '@/services/moduleCodeRegistry';
 import { LoadedModule, ModuleContext } from '@/types/modules';
 
@@ -30,7 +30,7 @@ class ModuleErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`Module ${this.props.moduleId} error:`, error, errorInfo);
+    console.error(`❌ Module ${this.props.moduleId} error:`, error, errorInfo);
   }
 
   render() {
@@ -40,7 +40,9 @@ class ModuleErrorBoundary extends React.Component<
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Failed to render module: {this.props.moduleId}
+            Module render error: {this.props.moduleId}
+            <br />
+            <span className="text-xs">{this.state.error?.message}</span>
           </AlertDescription>
         </Alert>
       );
@@ -64,6 +66,58 @@ const ModuleLoadingFallback: React.FC<{ moduleId: string }> = ({ moduleId }) => 
   </Card>
 );
 
+const ModuleNotFoundComponent: React.FC<{ moduleId: string; error?: string }> = ({ moduleId, error }) => (
+  <Card className="border-2 border-red-200 bg-red-50">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2 text-red-700">
+        <AlertTriangle className="h-5 w-5" />
+        Module Not Found: {moduleId}
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-4">
+        <div className="bg-red-100 p-3 rounded border border-red-200">
+          <p className="text-sm text-red-800 font-medium mb-2">
+            ❌ Module Loading Failed
+          </p>
+          <p className="text-xs text-red-700">
+            The module "{moduleId}" exists in the database but its React component could not be loaded.
+          </p>
+          {error && (
+            <p className="text-xs text-red-600 mt-2 font-mono">
+              Error: {error}
+            </p>
+          )}
+        </div>
+        
+        <div className="bg-white p-3 rounded border">
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <Database className="h-3 w-3" />
+            Expected Component Locations:
+          </p>
+          <ul className="text-xs text-gray-700 space-y-1 font-mono">
+            <li>• /src/modules/{moduleId}/index.tsx</li>
+            <li>• /src/modules/{moduleId}/Component.tsx</li>
+            <li>• /src/modules/{moduleId}/{moduleId}.tsx</li>
+          </ul>
+        </div>
+        
+        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+          <p className="text-xs text-blue-700 font-medium flex items-center gap-1">
+            <Code className="h-3 w-3" />
+            To Fix This Issue:
+          </p>
+          <ul className="text-xs text-blue-600 mt-1 space-y-1">
+            <li>1. Create the component file in one of the expected locations</li>
+            <li>2. Export a default React component from the file</li>
+            <li>3. Refresh the modules list to reload</li>
+          </ul>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 const ModuleRenderer: React.FC<ModuleRendererProps> = ({ 
   moduleId, 
   context,
@@ -83,73 +137,28 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
         setLoading(true);
         setError(null);
         
-        console.log(`Attempting to load module: ${moduleId}`);
+        console.log(`🔍 ModuleRenderer: Loading module ${moduleId}`);
 
         // First try to get from registry
         let component = moduleCodeRegistry.getComponent(moduleId);
         
         if (!component) {
-          console.log(`Module ${moduleId} not in registry, attempting dynamic load...`);
+          console.log(`📦 Module ${moduleId} not in registry, attempting dynamic load...`);
           // Try to load dynamically
           component = await moduleCodeRegistry.loadModuleComponent(moduleId);
         }
 
         if (component) {
-          console.log(`Successfully loaded module component: ${moduleId}`);
-          setModuleComponent(component);
+          console.log(`✅ ModuleRenderer: Successfully loaded ${moduleId}`);
+          setModuleComponent(() => component);
         } else {
-          // Create a development status component
-          console.warn(`Module ${moduleId} not found, creating status component`);
-          const StatusComponent: React.FC<any> = (props) => (
-            <Card className="border-dashed border-2 border-orange-300 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-500" />
-                  Development Module: {moduleId}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-orange-100 p-3 rounded border border-orange-200">
-                    <p className="text-sm text-orange-800 font-medium mb-2">
-                      📋 Module Status: Implementation Required
-                    </p>
-                    <p className="text-xs text-orange-700">
-                      This module exists in the database but doesn't have a React component implementation yet.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white p-3 rounded border">
-                    <p className="text-xs text-gray-500 mb-2">Module Configuration:</p>
-                    <pre className="text-xs text-gray-700 bg-gray-50 p-2 rounded">
-                      {JSON.stringify({ moduleId, ...props }, null, 2)}
-                    </pre>
-                  </div>
-                  
-                  <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                    <p className="text-xs text-blue-700 font-medium">
-                      🔧 Next Steps:
-                    </p>
-                    <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                      <li>• Create component file at: /src/modules/{moduleId}/index.tsx</li>
-                      <li>• Implement the module functionality</li>
-                      <li>• Test using the Module Testing Lab</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs text-green-600">
-                    ✅ Module loading system is operational
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-          
-          setModuleComponent(() => StatusComponent);
+          console.warn(`❌ ModuleRenderer: Failed to load ${moduleId}`);
+          setError('Component not found or failed to load');
         }
       } catch (err) {
-        console.error(`Failed to load module ${moduleId}:`, err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error(`❌ ModuleRenderer: Error loading ${moduleId}:`, err);
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -162,28 +171,9 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
     return fallback || <ModuleLoadingFallback moduleId={moduleId} />;
   }
 
-  if (error) {
+  if (error || !moduleComponent) {
     if (!showError) return null;
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          Error loading module {moduleId}: {error}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (!moduleComponent) {
-    if (!showError) return null;
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          Module {moduleId} component could not be loaded
-        </AlertDescription>
-      </Alert>
-    );
+    return <ModuleNotFoundComponent moduleId={moduleId} error={error || undefined} />;
   }
 
   // Render the module component
@@ -202,16 +192,9 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
 
     return content;
   } catch (renderError) {
-    console.error(`Failed to render module ${moduleId}:`, renderError);
+    console.error(`❌ ModuleRenderer: Failed to render ${moduleId}:`, renderError);
     if (!showError) return null;
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          Failed to render module {moduleId}
-        </AlertDescription>
-      </Alert>
-    );
+    return <ModuleNotFoundComponent moduleId={moduleId} error="Render error" />;
   }
 };
 

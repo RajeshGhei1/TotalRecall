@@ -1,3 +1,4 @@
+
 import { ModuleManifest, LoadedModule } from '@/types/modules';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,7 +42,7 @@ export class ModuleCodeRegistry {
     this.registeredComponents.set(moduleId, moduleComponent);
     this.componentCache.set(moduleId, component);
     
-    console.log(`Registered module component: ${moduleId} (${manifest.name})`);
+    console.log(`✅ Registered module component: ${moduleId} (${manifest.name})`);
   }
 
   /**
@@ -66,62 +67,52 @@ export class ModuleCodeRegistry {
   }
 
   /**
-   * Dynamically load a module component from the filesystem using discovery service
+   * Dynamically load a module component using proper Vite import paths
    */
   async loadModuleComponent(moduleId: string): Promise<React.ComponentType<any> | null> {
     try {
+      console.log(`🔍 Loading module component: ${moduleId}`);
+      
       // Check cache first
       if (this.componentCache.has(moduleId)) {
+        console.log(`✅ Found ${moduleId} in cache`);
         return this.componentCache.get(moduleId)!;
       }
 
-      // Use discovery service to get module path
-      const { moduleDiscoveryService } = await import('./moduleDiscoveryService');
-      const moduleInfo = moduleDiscoveryService.getModuleFileInfo(moduleId);
-      
-      if (moduleInfo) {
-        try {
-          const moduleExports = await import(moduleInfo.path);
-          const component = moduleExports.default;
-          
-          if (component) {
-            this.componentCache.set(moduleId, component);
-            console.log(`Dynamically loaded module: ${moduleId}`);
-            return component;
-          }
-        } catch (importError) {
-          console.warn(`Failed to import module from ${moduleInfo.path}:`, importError);
-        }
-      }
-
-      // Fallback: try alternative paths (legacy support)
-      const alternativePaths = [
+      // Use proper Vite import paths (relative to src/)
+      const importPaths = [
         `/src/modules/${moduleId}/index.tsx`,
         `/src/modules/${moduleId}/Component.tsx`,
         `/src/modules/${moduleId}/${moduleId}.tsx`,
         `/src/components/modules/${moduleId}.tsx`
       ];
 
-      for (const altPath of alternativePaths) {
+      for (const importPath of importPaths) {
         try {
-          const moduleExports = await import(altPath);
+          console.log(`🔄 Attempting to import: ${importPath}`);
+          
+          // Use dynamic import with proper path resolution
+          const moduleExports = await import(/* @vite-ignore */ importPath);
           const component = moduleExports.default || moduleExports[moduleId];
           
-          if (component) {
+          if (component && typeof component === 'function') {
+            console.log(`✅ Successfully loaded module from: ${importPath}`);
             this.componentCache.set(moduleId, component);
-            console.log(`Loaded module from alternative path: ${altPath}`);
             return component;
+          } else {
+            console.warn(`⚠️ No valid component found at: ${importPath}`);
           }
-        } catch (altError) {
+        } catch (importError) {
+          console.log(`❌ Failed to import from ${importPath}:`, importError.message);
           // Continue to next path
         }
       }
 
-      console.error(`No component found for module: ${moduleId}`);
+      console.error(`❌ No component found for module: ${moduleId}`);
       return null;
 
     } catch (error) {
-      console.error(`Error loading module component ${moduleId}:`, error);
+      console.error(`❌ Error loading module component ${moduleId}:`, error);
       return null;
     }
   }
@@ -138,6 +129,8 @@ export class ModuleCodeRegistry {
     const warnings: string[] = [];
 
     try {
+      console.log(`🔍 Validating module: ${moduleId}`);
+      
       // Get database manifest
       const { data: dbModule, error } = await supabase
         .from('system_modules')
@@ -163,12 +156,13 @@ export class ModuleCodeRegistry {
         warnings.push(`Component missing moduleMetadata: ${moduleId}`);
       }
 
-      // Additional validation could be added here
       const isValid = errors.length === 0;
+      console.log(`✅ Validation complete for ${moduleId}: ${isValid ? 'VALID' : 'INVALID'}`);
       
       return { isValid, errors, warnings };
 
     } catch (error) {
+      console.error(`❌ Validation error for ${moduleId}:`, error);
       errors.push(`Validation error: ${error}`);
       return { isValid: false, errors, warnings };
     }
@@ -185,6 +179,8 @@ export class ModuleCodeRegistry {
     const failed: { moduleId: string; error: string }[] = [];
 
     try {
+      console.log('🔍 Starting module discovery...');
+      
       // Get all system modules from database
       const { data: modules, error } = await supabase
         .from('system_modules')
@@ -192,20 +188,24 @@ export class ModuleCodeRegistry {
         .eq('is_active', true);
 
       if (error) {
-        console.error('Error fetching modules:', error);
+        console.error('❌ Error fetching modules:', error);
         return { registered, failed };
       }
+
+      console.log(`📋 Found ${modules?.length || 0} active modules in database`);
 
       // Try to load each module
       for (const module of modules || []) {
         try {
+          console.log(`🔄 Processing module: ${module.name}`);
+          
           const component = await this.loadModuleComponent(module.name);
           
           if (component) {
-            // Create manifest from database module with correct property mapping
+            // Create manifest from database module
             const manifest: ModuleManifest = {
               id: module.name,
-              name: module.name, // Use name instead of display_name
+              name: module.name,
               version: module.version || '1.0.0',
               description: module.description || '',
               category: module.category as any,
@@ -213,8 +213,8 @@ export class ModuleCodeRegistry {
               license: 'MIT',
               dependencies: module.dependencies || [],
               entryPoint: 'index.tsx',
-              requiredPermissions: [], // Set empty array instead of accessing required_permissions
-              subscriptionTiers: [], // Set empty array instead of accessing pricing_tier
+              requiredPermissions: [],
+              subscriptionTiers: [],
               loadOrder: 100,
               autoLoad: module.is_active,
               canUnload: true,
@@ -229,25 +229,30 @@ export class ModuleCodeRegistry {
             );
 
             registered.push(module.name);
+            console.log(`✅ Successfully registered: ${module.name}`);
           } else {
+            const errorMsg = 'Component not found';
             failed.push({
               moduleId: module.name,
-              error: 'Component not found'
+              error: errorMsg
             });
+            console.log(`❌ Failed to register: ${module.name} - ${errorMsg}`);
           }
         } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
           failed.push({
             moduleId: module.name,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: errorMsg
           });
+          console.error(`❌ Error processing ${module.name}:`, error);
         }
       }
 
-      console.log(`Module discovery complete: ${registered.length} registered, ${failed.length} failed`);
+      console.log(`🎯 Module discovery complete: ${registered.length} registered, ${failed.length} failed`);
       return { registered, failed };
 
     } catch (error) {
-      console.error('Error during module discovery:', error);
+      console.error('❌ Error during module discovery:', error);
       return { registered, failed };
     }
   }
@@ -261,7 +266,7 @@ export class ModuleCodeRegistry {
     this.componentCache.delete(moduleId);
     
     if (wasRegistered) {
-      console.log(`Unregistered module component: ${moduleId}`);
+      console.log(`🗑️ Unregistered module component: ${moduleId}`);
     }
     
     return wasRegistered;
@@ -273,7 +278,7 @@ export class ModuleCodeRegistry {
   clearAll(): void {
     this.registeredComponents.clear();
     this.componentCache.clear();
-    console.log('Cleared all module registrations');
+    console.log('🧹 Cleared all module registrations');
   }
 }
 

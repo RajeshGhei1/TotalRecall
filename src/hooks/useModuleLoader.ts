@@ -11,7 +11,7 @@ export const useModuleLoader = () => {
   const refreshModules = async () => {
     setIsLoading(true);
     try {
-      console.log('Refreshing modules...');
+      console.log('🔄 Refreshing modules...');
       
       // Get all system modules from database
       const { data: dbModules, error } = await supabase
@@ -20,16 +20,16 @@ export const useModuleLoader = () => {
         .eq('is_active', true);
 
       if (error) {
-        console.error('Error fetching modules:', error);
+        console.error('❌ Error fetching modules:', error);
         setLoadedModules([]);
         return;
       }
 
-      console.log('Database modules found:', dbModules?.length || 0);
+      console.log(`📋 Database modules found: ${dbModules?.length || 0}`);
       
       // Try to discover and register modules that have implementations
       const result = await moduleCodeRegistry.discoverAndRegisterModules();
-      console.log('Module discovery result:', result);
+      console.log(`🎯 Module discovery result: ${result.registered.length} registered, ${result.failed.length} failed`);
       
       // Create LoadedModule entries for all database modules
       const modules: LoadedModule[] = (dbModules || []).map(dbModule => {
@@ -56,20 +56,26 @@ export const useModuleLoader = () => {
           minCoreVersion: '1.0.0'
         };
 
+        const status = hasImplementation ? 'loaded' as const : 'error' as const;
+        const error = hasImplementation ? undefined : 'Component implementation not found';
+        
+        console.log(`📦 Module ${dbModule.name}: ${status} ${error ? `(${error})` : ''}`);
+
         return {
           manifest,
           instance: hasImplementation ? { Component: hasImplementation.component } : null,
-          status: hasImplementation ? 'loaded' as const : 'error' as const,
+          status,
           loadedAt: new Date(),
           dependencies: [],
-          error: hasImplementation ? undefined : 'Component implementation not found'
+          error
         };
       });
       
       setLoadedModules(modules);
-      console.log('All modules (with status):', modules);
+      console.log(`✅ All modules processed: ${modules.length} total`);
+      
     } catch (error) {
-      console.error('Failed to load modules:', error);
+      console.error('❌ Failed to load modules:', error);
       setLoadedModules([]);
     } finally {
       setIsLoading(false);
