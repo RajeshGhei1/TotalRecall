@@ -75,6 +75,22 @@ export interface ModuleHook {
   dependencies?: string[];
 }
 
+export interface DevelopmentStageData {
+  stage: string;
+  progress: number;
+  promoted_at?: string;
+  promoted_from?: string;
+}
+
+export interface ModuleProgressData {
+  overall_progress: number;
+  code_completion: number;
+  test_coverage: number;
+  feature_completion: number;
+  documentation_completion: number;
+  quality_score: number;
+}
+
 export interface LoadedModule {
   manifest: ModuleManifest;
   instance: any;
@@ -82,6 +98,8 @@ export interface LoadedModule {
   error?: string;
   loadedAt: Date;
   dependencies: LoadedModule[];
+  developmentStage?: DevelopmentStageData;
+  progressData?: ModuleProgressData;
 }
 
 export interface ModuleContext {

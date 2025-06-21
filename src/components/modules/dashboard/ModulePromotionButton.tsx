@@ -61,7 +61,11 @@ const ModulePromotionButton: React.FC<ModulePromotionButtonProps> = ({
       });
       
       setDialogOpen(false);
-      onPromotionSuccess?.();
+      
+      // Call the success callback to refresh the UI
+      if (onPromotionSuccess) {
+        onPromotionSuccess();
+      }
     } catch (error) {
       console.error('Promotion failed:', error);
     }

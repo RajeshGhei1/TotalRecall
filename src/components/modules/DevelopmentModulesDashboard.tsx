@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useModuleLoader } from '@/hooks/useModuleLoader';
+import { useDevModules } from '@/hooks/useDevModules';
 import { LoadedModule } from '@/types/modules';
 import { SystemModule } from '@/hooks/useSystemModules';
 import ModuleSettingsDialog from '@/components/superadmin/settings/modules/ModuleSettingsDialog';
@@ -14,7 +14,7 @@ type ViewMode = 'grid' | 'list';
 
 const DevelopmentModulesDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { loadedModules, isLoading, refreshModules } = useModuleLoader();
+  const { loadedModules, isLoading, refreshModules } = useDevModules();
   const [previewingModule, setPreviewingModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
@@ -58,6 +58,11 @@ const DevelopmentModulesDashboard: React.FC = () => {
     setSelectedModuleForSettings(null);
   };
 
+  const handlePromotionSuccess = () => {
+    // Refresh modules after successful promotion
+    refreshModules();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,6 +94,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
               onPreview={handlePreviewModule}
               onEditCode={handleEditModuleCode}
               onOpenSettings={handleOpenSettings}
+              onPromotionSuccess={handlePromotionSuccess}
             />
           ))}
         </div>

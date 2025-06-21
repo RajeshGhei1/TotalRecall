@@ -1,26 +1,46 @@
 
 import { useState, useEffect } from 'react';
-import { LoadedModule } from '@/types/modules';
+import { LoadedModule, DevelopmentStageData, ModuleProgressData } from '@/types/modules';
 import { moduleCodeRegistry } from '@/services/moduleCodeRegistry';
 import { supabase } from '@/integrations/supabase/client';
 
-// Helper type for development stage
-interface DevelopmentStageData {
-  stage?: string;
-  progress?: number;
-  promoted_at?: string;
-  promoted_from?: string;
-}
-
 // Helper function to safely parse development stage
 const parseDevelopmentStage = (developmentStage: any): DevelopmentStageData => {
-  if (!developmentStage) return {};
+  if (!developmentStage) return { stage: 'planning', progress: 0 };
   
   if (typeof developmentStage === 'object' && developmentStage !== null && !Array.isArray(developmentStage)) {
-    return developmentStage as DevelopmentStageData;
+    return {
+      stage: developmentStage.stage || 'planning',
+      progress: developmentStage.progress || 0,
+      promoted_at: developmentStage.promoted_at,
+      promoted_from: developmentStage.promoted_from
+    };
   }
   
-  return {};
+  return { stage: 'planning', progress: 0 };
+};
+
+// Helper function to parse progress data
+const parseProgressData = (progressTracking: any): ModuleProgressData => {
+  if (!progressTracking) {
+    return {
+      overall_progress: 0,
+      code_completion: 0,
+      test_coverage: 0,
+      feature_completion: 0,
+      documentation_completion: 0,
+      quality_score: 0
+    };
+  }
+
+  return {
+    overall_progress: progressTracking.overall_progress || 0,
+    code_completion: progressTracking.code_completion || 0,
+    test_coverage: progressTracking.test_coverage || 0,
+    feature_completion: progressTracking.feature_completion || 0,
+    documentation_completion: progressTracking.documentation_completion || 0,
+    quality_score: progressTracking.quality_score || 0
+  };
 };
 
 export const useDevModules = () => {
@@ -32,10 +52,21 @@ export const useDevModules = () => {
     try {
       console.log('🔄 Refreshing development modules...');
       
-      // Get modules that are not in production stage
-      const { data: dbModules, error } = await supabase
+      // Get modules with progress tracking data using a JOIN
+      const { data: moduleData, error } = await supabase
         .from('system_modules')
-        .select('*')
+        .select(`
+          *,
+          module_progress_tracking (
+            overall_progress,
+            code_completion,
+            test_coverage,
+            feature_completion,
+            documentation_completion,
+            quality_score,
+            last_updated
+          )
+        `)
         .eq('is_active', true);
 
       if (error) {
@@ -44,10 +75,10 @@ export const useDevModules = () => {
         return;
       }
 
-      console.log(`📋 All modules found: ${dbModules?.length || 0}`);
+      console.log(`📋 All modules found: ${moduleData?.length || 0}`);
       
       // Filter out production modules
-      const developmentModules = (dbModules || []).filter(dbModule => {
+      const developmentModules = (moduleData || []).filter(dbModule => {
         const developmentStage = parseDevelopmentStage(dbModule.development_stage);
         const stage = developmentStage.stage || 'planning';
         
@@ -66,6 +97,10 @@ export const useDevModules = () => {
         // Check if this module was successfully registered (has implementation)
         const registeredModules = moduleCodeRegistry.getAllRegisteredModules();
         const hasImplementation = registeredModules.find(rm => rm.id === dbModule.name);
+        
+        // Parse development stage and progress data
+        const developmentStage = parseDevelopmentStage(dbModule.development_stage);
+        const progressData = parseProgressData(dbModule.module_progress_tracking?.[0]);
         
         // Create manifest from database module
         const manifest = {
@@ -89,7 +124,7 @@ export const useDevModules = () => {
         const status = hasImplementation ? 'loaded' as const : 'error' as const;
         const error = hasImplementation ? undefined : 'Component implementation not found';
         
-        console.log(`📦 Development Module ${dbModule.name}: ${status} ${error ? `(${error})` : ''}`);
+        console.log(`📦 Development Module ${dbModule.name}: ${status} - Stage: ${developmentStage.stage}, Progress: ${progressData.overall_progress}% ${error ? `(${error})` : ''}`);
 
         return {
           manifest,
@@ -97,7 +132,9 @@ export const useDevModules = () => {
           status,
           loadedAt: new Date(),
           dependencies: [],
-          error
+          error,
+          developmentStage,
+          progressData
         };
       });
       

@@ -23,6 +23,7 @@ interface ModuleCardProps {
   onPreview: (moduleId: string) => void;
   onEditCode: (moduleId: string, moduleName: string) => void;
   onOpenSettings: (module: LoadedModule) => void;
+  onPromotionSuccess?: () => void;
   showPromotionControls?: boolean;
 }
 
@@ -32,11 +33,12 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   onPreview,
   onEditCode,
   onOpenSettings,
+  onPromotionSuccess,
   showPromotionControls = true
 }) => {
-  // Extract development stage info (assuming it's stored in module metadata or database)
-  const developmentStage = 'alpha'; // This would come from the module data
-  const progress = 65; // This would come from the progress tracking system
+  // Extract real development stage and progress from module data
+  const developmentStage = module.developmentStage?.stage || 'planning';
+  const progress = module.progressData?.overall_progress || 0;
 
   const getStatusIcon = () => {
     if (module.status === 'error') {
@@ -169,6 +171,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                   moduleId={module.manifest.id}
                   currentStage={developmentStage}
                   progress={progress}
+                  onPromotionSuccess={onPromotionSuccess}
                 />
               )}
             </div>
@@ -230,6 +233,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
               moduleId={module.manifest.id}
               currentStage={developmentStage}
               progress={progress}
+              onPromotionSuccess={onPromotionSuccess}
             />
           </div>
         )}
