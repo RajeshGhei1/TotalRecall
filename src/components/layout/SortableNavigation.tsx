@@ -21,7 +21,7 @@ interface NavItem {
   id: string;
   label: string;
   customLabel?: string;
-  icon: React.ComponentType<{ size?: string | number }>;
+  icon: React.ComponentType<{ size?: string | number; className?: string }>;
   href: string;
 }
 

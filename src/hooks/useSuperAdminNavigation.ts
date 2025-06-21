@@ -8,10 +8,8 @@ import {
   Briefcase, 
   Database,
   Code,
-  FileText,
-  Zap
+  FileText
 } from 'lucide-react';
-import { useNavigationPreferences } from './useNavigationPreferences';
 
 export interface NavItem {
   id: string;
@@ -91,25 +89,25 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
 ];
 
 export const useSuperAdminNavigation = () => {
-  const { preferences, updateOrder } = useNavigationPreferences();
   const [items, setItems] = useState<NavItem[]>(DEFAULT_NAV_ITEMS);
+  const [itemOrder, setItemOrder] = useState<string[]>([]);
 
   useEffect(() => {
-    if (preferences.itemOrder && preferences.itemOrder.length > 0) {
-      const orderedItems = preferences.itemOrder
+    if (itemOrder.length > 0) {
+      const orderedItems = itemOrder
         .map(id => DEFAULT_NAV_ITEMS.find(item => item.id === id))
         .filter(Boolean) as NavItem[];
       
       // Add any new items that weren't in the saved order
-      const existingIds = new Set(preferences.itemOrder);
+      const existingIds = new Set(itemOrder);
       const newItems = DEFAULT_NAV_ITEMS.filter(item => !existingIds.has(item.id));
       
       setItems([...orderedItems, ...newItems]);
     }
-  }, [preferences.itemOrder]);
+  }, [itemOrder]);
 
   const reorderItems = (newOrder: string[]) => {
-    updateOrder(newOrder);
+    setItemOrder(newOrder);
   };
 
   return {
