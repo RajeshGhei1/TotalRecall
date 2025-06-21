@@ -8,7 +8,7 @@ import {
   ModuleComponent,
   ValidationResult,
   DiscoveryResult
-} from './moduleCodeRegistry';
+} from './moduleCodeRegistry/index';
 
 export type { ModuleComponent, ValidationResult, DiscoveryResult };
 
