@@ -10,9 +10,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Play,
-  Package
+  Package,
+  TrendingUp
 } from 'lucide-react';
 import { LoadedModule } from '@/types/modules';
+import ModuleProgressIndicator from './ModuleProgressIndicator';
+import ModulePromotionButton from './ModulePromotionButton';
 
 interface ModuleCardProps {
   module: LoadedModule;
@@ -20,6 +23,7 @@ interface ModuleCardProps {
   onPreview: (moduleId: string) => void;
   onEditCode: (moduleId: string, moduleName: string) => void;
   onOpenSettings: (module: LoadedModule) => void;
+  showPromotionControls?: boolean;
 }
 
 const ModuleCard: React.FC<ModuleCardProps> = ({
@@ -27,8 +31,13 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   viewMode,
   onPreview,
   onEditCode,
-  onOpenSettings
+  onOpenSettings,
+  showPromotionControls = true
 }) => {
+  // Extract development stage info (assuming it's stored in module metadata or database)
+  const developmentStage = 'alpha'; // This would come from the module data
+  const progress = 65; // This would come from the progress tracking system
+
   const getStatusIcon = () => {
     if (module.status === 'error') {
       return <AlertTriangle className="h-4 w-4 text-red-500" />;
@@ -91,6 +100,17 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                   </h3>
                   {getStatusBadge()}
                 </div>
+                
+                {/* Progress and Stage Info */}
+                <div className="mb-3">
+                  <ModuleProgressIndicator 
+                    stage={developmentStage}
+                    progress={progress}
+                    showDetails={true}
+                    size="md"
+                  />
+                </div>
+                
                 <div className="flex items-center gap-2 mb-3">
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
                     {module.manifest.category}
@@ -106,7 +126,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
             </div>
             
             {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Button
                 size="sm"
                 variant="outline"
@@ -142,6 +162,15 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <Play className="h-4 w-4" />
                 Test
               </Button>
+              
+              {/* Promotion Button */}
+              {showPromotionControls && (
+                <ModulePromotionButton
+                  moduleId={module.manifest.id}
+                  currentStage={developmentStage}
+                  progress={progress}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -173,6 +202,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
           {getCategoryIcon()}
         </div>
         
+        {/* Progress Indicator */}
+        <ModuleProgressIndicator 
+          stage={developmentStage}
+          progress={progress}
+          showDetails={true}
+          size="sm"
+        />
+        
         {/* Description */}
         <p className="text-sm text-gray-600 leading-relaxed min-h-[2.5rem]">
           {module.manifest.description}
@@ -185,6 +222,17 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
           </Badge>
           {getStatusBadge()}
         </div>
+        
+        {/* Promotion Button */}
+        {showPromotionControls && (
+          <div className="pt-2">
+            <ModulePromotionButton
+              moduleId={module.manifest.id}
+              currentStage={developmentStage}
+              progress={progress}
+            />
+          </div>
+        )}
         
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2 pt-2">
