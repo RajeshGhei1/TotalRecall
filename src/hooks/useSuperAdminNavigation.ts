@@ -1,117 +1,261 @@
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { 
-  Users, 
+  BarChart2,
   Building2, 
+  CircleDollarSign, 
+  LayoutDashboard, 
   Settings, 
-  BarChart3, 
-  Briefcase, 
-  Database,
-  Code,
-  FileText
+  Store, 
+  Users,
+  Users2,
+  PieChart,
+  Package,
+  Cog,
+  TrendingUp,
+  Brain,
+  Zap,
+  Shield,
+  Activity,
+  BookOpen,
+  BarChart3,
+  Code
 } from 'lucide-react';
-
-export interface NavItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  href: string;
-  description?: string;
-  badge?: string;
-  children?: NavItem[];
-}
-
-const DEFAULT_NAV_ITEMS: NavItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: BarChart3,
-    href: '/superadmin/dashboard',
-    description: 'System overview and analytics'
-  },
-  {
-    id: 'tenant-management',
-    label: 'Tenant Management',
-    icon: Building2,
-    href: '/superadmin/tenant-management',
-    description: 'Manage client organizations'
-  },
-  {
-    id: 'user-management',
-    label: 'User Management',
-    icon: Users,
-    href: '/superadmin/user-management',
-    description: 'Manage system users and permissions'
-  },
-  {
-    id: 'job-management',
-    label: 'Job Management',
-    icon: Briefcase,
-    href: '/superadmin/job-management',
-    description: 'Manage job postings and applications'
-  },
-  {
-    id: 'database-management',
-    label: 'Database Management',
-    icon: Database,
-    href: '/superadmin/database-management',
-    description: 'Manage system databases and data'
-  },
-  {
-    id: 'module-development',
-    label: 'Module Development',
-    icon: Code,
-    href: '/superadmin/module-development',
-    description: 'Development environment for system modules',
-    badge: 'Dev'
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: BarChart3,
-    href: '/superadmin/analytics',
-    description: 'System analytics and insights'
-  },
-  {
-    id: 'reports',
-    label: 'Reports',
-    icon: FileText,
-    href: '/superadmin/reports',
-    description: 'Generate and manage reports'
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    icon: Settings,
-    href: '/superadmin/settings',
-    description: 'System configuration and preferences'
-  }
-];
+import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
+import { ModuleAccessService } from '@/services/moduleAccessService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useSuperAdminNavigation = () => {
-  const [items, setItems] = useState<NavItem[]>(DEFAULT_NAV_ITEMS);
-  const [itemOrder, setItemOrder] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (itemOrder.length > 0) {
-      const orderedItems = itemOrder
-        .map(id => DEFAULT_NAV_ITEMS.find(item => item.id === id))
-        .filter(Boolean) as NavItem[];
+  const { user, bypassAuth } = useAuth();
+  
+  // Get current tenant for super admin (usually they have a default tenant context)
+  const { data: tenantData } = useQuery({
+    queryKey: ['superAdminTenantContext', user?.id],
+    queryFn: async () => {
+      if (bypassAuth) {
+        return { tenant_id: 'super-admin-context' };
+      }
       
-      // Add any new items that weren't in the saved order
-      const existingIds = new Set(itemOrder);
-      const newItems = DEFAULT_NAV_ITEMS.filter(item => !existingIds.has(item.id));
+      if (!user) return null;
       
-      setItems([...orderedItems, ...newItems]);
-    }
-  }, [itemOrder]);
+      // For super admin, we might want to use a default tenant or allow switching
+      // For now, just return a super admin context
+      return { tenant_id: 'super-admin-context' };
+    },
+    enabled: !!user || bypassAuth,
+  });
 
-  const reorderItems = (newOrder: string[]) => {
-    setItemOrder(newOrder);
-  };
+  // Check module access for all module-based items
+  const { data: moduleAccess } = useQuery({
+    queryKey: ['superAdminModuleAccess', tenantData?.tenant_id],
+    queryFn: async () => {
+      if (!tenantData?.tenant_id) return {};
+      
+      const accessResults: Record<string, boolean> = {};
+      
+      // Module-based items (subscription controlled)
+      const moduleNavItems: NavItem[] = [
+        { 
+          id: 'analytics',
+          label: 'BI Dashboard', 
+          icon: BarChart2, 
+          href: '/superadmin/analytics',
+          requiresModule: 'bi_dashboard'
+        },
+        { 
+          id: 'advanced-analytics',
+          label: 'Advanced Analytics', 
+          icon: BarChart3, 
+          href: '/superadmin/advanced-analytics',
+          requiresModule: 'advanced_analytics'
+        },
+        { 
+          id: 'companies',
+          label: 'Companies', 
+          icon: Building2, 
+          href: '/superadmin/companies',
+          requiresModule: 'companies'
+        },
+        { 
+          id: 'people',
+          label: 'Business Contacts', 
+          icon: Users2, 
+          href: '/superadmin/people',
+          requiresModule: 'people_contacts'
+        },
+        { 
+          id: 'documentation',
+          label: 'Documentation', 
+          icon: BookOpen, 
+          href: '/superadmin/documentation',
+          requiresModule: 'documentation'
+        },
+        { 
+          id: 'ai-orchestration',
+          label: 'AI Orchestration', 
+          icon: Brain, 
+          href: '/superadmin/ai-orchestration',
+          requiresModule: 'ai_orchestration'
+        },
+        { 
+          id: 'ai-analytics',
+          label: 'AI Analytics', 
+          icon: Zap, 
+          href: '/superadmin/ai-analytics',
+          requiresModule: 'ai_analytics'
+        },
+        { 
+          id: 'user-activity',
+          label: 'User Activity', 
+          icon: Activity, 
+          href: '/superadmin/user-activity',
+          requiresModule: 'user_activity'
+        },
+      ];
+      
+      // Check access for each module
+      for (const item of moduleNavItems) {
+        if (item.requiresModule) {
+          try {
+            const result = await ModuleAccessService.isModuleEnabled(
+              tenantData.tenant_id, 
+              item.requiresModule
+            );
+            accessResults[item.requiresModule] = result.enabled;
+          } catch (error) {
+            console.error(`Error checking access for ${item.requiresModule}:`, error);
+            accessResults[item.requiresModule] = false;
+          }
+        }
+      }
+      
+      return accessResults;
+    },
+    enabled: !!tenantData?.tenant_id,
+  });
 
-  return {
-    items,
-    reorderItems
-  };
+  // Memoize core navigation items (static, no dependencies)
+  const coreNavItems = useMemo((): NavItem[] => [
+    { 
+      id: 'tenants',
+      label: 'Tenants', 
+      icon: Store, 
+      href: '/superadmin/tenants'
+    },
+    { 
+      id: 'users',
+      label: 'Tenant Users', 
+      icon: Users, 
+      href: '/superadmin/users'
+    },
+    { 
+      id: 'subscription-plans',
+      label: 'Subscription Plans', 
+      icon: Package, 
+      href: '/superadmin/subscription-plans'
+    },
+    { 
+      id: 'module-development',
+      label: 'Module Development', 
+      icon: Code, 
+      href: '/superadmin/module-development'
+    },
+    { 
+      id: 'security-dashboard',
+      label: 'Security Dashboard', 
+      icon: Shield, 
+      href: '/superadmin/security-dashboard'
+    },
+    { 
+      id: 'audit-logs',
+      label: 'Audit Logs', 
+      icon: Shield, 
+      href: '/superadmin/audit-logs'
+    },
+    { 
+      id: 'global-settings',
+      label: 'Global Settings', 
+      icon: Cog, 
+      href: '/superadmin/global-settings'
+    },
+    { 
+      id: 'settings',
+      label: 'System Settings', 
+      icon: Settings, 
+      href: '/superadmin/settings'
+    },
+  ], []);
+
+  // Memoize filtered module items (depends on moduleAccess)
+  const filteredModuleItems = useMemo((): NavItem[] => {
+    const moduleNavItems: NavItem[] = [
+      { 
+        id: 'analytics',
+        label: 'BI Dashboard', 
+        icon: BarChart2, 
+        href: '/superadmin/analytics',
+        requiresModule: 'bi_dashboard'
+      },
+      { 
+        id: 'advanced-analytics',
+        label: 'Advanced Analytics', 
+        icon: BarChart3, 
+        href: '/superadmin/advanced-analytics',
+        requiresModule: 'advanced_analytics'
+      },
+      { 
+        id: 'companies',
+        label: 'Companies', 
+        icon: Building2, 
+        href: '/superadmin/companies',
+        requiresModule: 'companies'
+      },
+      { 
+        id: 'people',
+        label: 'Business Contacts', 
+        icon: Users2, 
+        href: '/superadmin/people',
+        requiresModule: 'people_contacts'
+      },
+      { 
+        id: 'documentation',
+        label: 'Documentation', 
+        icon: BookOpen, 
+        href: '/superadmin/documentation',
+        requiresModule: 'documentation'
+      },
+      { 
+        id: 'ai-orchestration',
+        label: 'AI Orchestration', 
+        icon: Brain, 
+        href: '/superadmin/ai-orchestration',
+        requiresModule: 'ai_orchestration'
+      },
+      { 
+        id: 'ai-analytics',
+        label: 'AI Analytics', 
+        icon: Zap, 
+        href: '/superadmin/ai-analytics',
+        requiresModule: 'ai_analytics'
+      },
+      { 
+        id: 'user-activity',
+        label: 'User Activity', 
+        icon: Activity, 
+        href: '/superadmin/user-activity',
+        requiresModule: 'user_activity'
+      },
+    ];
+
+    return moduleNavItems.filter(item => 
+      !item.requiresModule || moduleAccess?.[item.requiresModule] === true
+    );
+  }, [moduleAccess]);
+
+  // Memoize all navigation items (depends on core and filtered module items)
+  const allNavItems = useMemo(() => [...coreNavItems, ...filteredModuleItems], [coreNavItems, filteredModuleItems]);
+  
+  return useNavigationPreferences('super_admin', allNavItems);
 };

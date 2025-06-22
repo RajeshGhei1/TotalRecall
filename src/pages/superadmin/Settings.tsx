@@ -1,22 +1,56 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
+import { TabsContent } from '@/components/ui/tabs';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import SetupWizard from '@/components/superadmin/settings/SetupWizard';
+
+// Import new refactored components
+import SettingsHeader from '@/components/superadmin/settings/layout/SettingsHeader';
+import SettingsTabs from '@/components/superadmin/settings/layout/SettingsTabs';
+import ModulesTabContent from '@/components/superadmin/settings/tabs/ModulesTabContent';
+import IntegrationsTabContent from '@/components/superadmin/settings/tabs/IntegrationsTabContent';
+import FormsTabContent from '@/components/superadmin/settings/tabs/FormsTabContent';
 
 const Settings = () => {
+  console.log("Rendering SuperAdmin Settings Page");
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  
   return (
-    <AdminLayout>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-2">
-            System configuration and preferences
-          </p>
+    <ErrorBoundary>
+      <AdminLayout>
+        <div className="p-6">
+          <SettingsHeader />
+          
+          <ErrorBoundary>
+            <SetupWizard 
+              open={showSetupWizard} 
+              onOpenChange={setShowSetupWizard} 
+            />
+          </ErrorBoundary>
+          
+          <SettingsTabs>
+            <ErrorBoundary>
+              <TabsContent value="modules" className="mt-6">
+                <ModulesTabContent />
+              </TabsContent>
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <TabsContent value="forms" className="mt-6">
+                <FormsTabContent />
+              </TabsContent>
+            </ErrorBoundary>
+            
+            <ErrorBoundary>
+              <TabsContent value="integrations" className="mt-6">
+                <IntegrationsTabContent />
+              </TabsContent>
+            </ErrorBoundary>
+          </SettingsTabs>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500">Settings interface coming soon...</p>
-        </div>
-      </div>
-    </AdminLayout>
+      </AdminLayout>
+    </ErrorBoundary>
   );
 };
 

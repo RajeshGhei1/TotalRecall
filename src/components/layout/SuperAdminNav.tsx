@@ -6,20 +6,13 @@ import SortableNavigation from './SortableNavigation';
 const SuperAdminNav = () => {
   const { items, reorderItems } = useSuperAdminNavigation();
 
-  // Convert NavItem[] to the expected format for SortableNavigation
-  const convertedItems = items.map(item => ({
-    id: item.id,
-    label: item.label,
-    customLabel: undefined,
-    icon: item.icon,
-    href: item.href
-  }));
-
-  const handleReorder = (newItems: typeof convertedItems) => {
+  // Convert NavItem[] to string[] for the updateOrder function
+  const handleReorder = (newItems: typeof items) => {
     const newOrder = newItems.map(item => item.id);
     reorderItems(newOrder);
   };
 
+  // Placeholder functions for rename and reset (not implemented in useNavigationPreferences)
   const handleRename = (id: string, newLabel: string) => {
     console.log('Rename functionality not implemented yet:', id, newLabel);
   };
@@ -30,7 +23,7 @@ const SuperAdminNav = () => {
 
   return (
     <SortableNavigation 
-      items={convertedItems} 
+      items={items} 
       onReorder={handleReorder}
       onRename={handleRename}
       onResetLabel={handleResetLabel}
