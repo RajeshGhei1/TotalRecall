@@ -76,7 +76,6 @@ const ContactTypeForm: React.FC<ContactTypeFormProps> = ({
         }
       } catch (error) {
         console.error('Error saving contact type:', error);
-        // For now, just log the error - in a real app you might want to handle this differently
         throw error;
       }
     },

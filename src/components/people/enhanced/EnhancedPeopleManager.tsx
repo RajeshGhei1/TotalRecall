@@ -49,11 +49,13 @@ const EnhancedPeopleManager: React.FC<EnhancedPeopleManagerProps> = ({
         filters: searchFilters
       });
       
-      downloadExportedFile(exportResult);
-      toast({
-        title: 'Export completed',
-        description: `Contacts exported as ${format.toUpperCase()}`
-      });
+      if (exportResult) {
+        downloadExportedFile(exportResult);
+        toast({
+          title: 'Export completed',
+          description: `Contacts exported as ${format.toUpperCase()}`
+        });
+      }
     } catch (error) {
       toast({
         title: 'Export failed',
