@@ -50,7 +50,7 @@ interface PersonData {
 export const exportPeopleData = async (options: ExportOptions) => {
   try {
     // Build the query based on options
-    let query = supabase
+    let baseQuery = supabase
       .from('people')
       .select(`
         id,
@@ -61,43 +61,60 @@ export const exportPeopleData = async (options: ExportOptions) => {
         type,
         created_at,
         updated_at
-        ${options.includeCompanyInfo ? `,
-          company_relationships!left (
-            role,
-            start_date,
-            end_date,
-            is_current,
-            companies (
-              name,
-              industry,
-              size,
-              location
-            )
-          )
-        ` : ''}
-        ${options.includeLinkedInData ? `,
-          linkedin_profile_enrichments!left (
-            linkedin_data
-          )
-        ` : ''}
       `)
       .eq('type', 'contact');
 
     // Apply date range filter
     if (options.dateRange) {
-      query = query
+      baseQuery = baseQuery
         .gte('created_at', options.dateRange.start)
         .lte('created_at', options.dateRange.end);
     }
 
-    const { data: rawData, error } = await query.order('full_name');
+    const { data: baseData, error: baseError } = await baseQuery.order('full_name');
     
-    if (error) throw error;
-    if (!rawData) return null;
+    if (baseError) throw baseError;
+    if (!baseData) return null;
 
-    // Transform data for export with proper type handling
-    const exportData = rawData.map((person: PersonData) => {
-      const baseData = {
+    // Get company relationships if needed
+    let companyData: any[] = [];
+    if (options.includeCompanyInfo) {
+      const { data: companyRelationships, error: companyError } = await supabase
+        .from('company_relationships')
+        .select(`
+          person_id,
+          role,
+          start_date,
+          end_date,
+          is_current,
+          companies (
+            name,
+            industry,
+            size,
+            location
+          )
+        `)
+        .in('person_id', baseData.map(p => p.id));
+
+      if (companyError) throw companyError;
+      companyData = companyRelationships || [];
+    }
+
+    // Get LinkedIn data if needed
+    let linkedInData: any[] = [];
+    if (options.includeLinkedInData) {
+      const { data: linkedInEnrichments, error: linkedInError } = await supabase
+        .from('linkedin_profile_enrichments')
+        .select('person_id, linkedin_data')
+        .in('person_id', baseData.map(p => p.id));
+
+      if (linkedInError) throw linkedInError;
+      linkedInData = linkedInEnrichments || [];
+    }
+
+    // Transform data for export
+    const exportData = baseData.map((person: any) => {
+      const basePersonData = {
         'Full Name': person.full_name || '',
         'Email': person.email || '',
         'Phone': person.phone || '',
@@ -107,10 +124,12 @@ export const exportPeopleData = async (options: ExportOptions) => {
       };
 
       // Add company information if requested
-      if (options.includeCompanyInfo && person.company_relationships) {
-        const currentCompany = person.company_relationships.find(rel => rel.is_current);
+      if (options.includeCompanyInfo) {
+        const currentCompany = companyData.find(rel => 
+          rel.person_id === person.id && rel.is_current
+        );
         if (currentCompany && currentCompany.companies) {
-          Object.assign(baseData, {
+          Object.assign(basePersonData, {
             'Current Company': currentCompany.companies.name || '',
             'Current Role': currentCompany.role || '',
             'Company Industry': currentCompany.companies.industry || '',
@@ -121,18 +140,18 @@ export const exportPeopleData = async (options: ExportOptions) => {
       }
 
       // Add LinkedIn data if requested
-      if (options.includeLinkedInData && person.linkedin_profile_enrichments?.length) {
-        const linkedInData = person.linkedin_profile_enrichments[0].linkedin_data;
-        if (linkedInData) {
-          Object.assign(baseData, {
-            'LinkedIn URL': linkedInData.publicProfileUrl || '',
-            'LinkedIn Headline': linkedInData.headline || '',
-            'LinkedIn Summary': linkedInData.summary || ''
+      if (options.includeLinkedInData) {
+        const linkedInInfo = linkedInData.find(li => li.person_id === person.id);
+        if (linkedInInfo && linkedInInfo.linkedin_data) {
+          Object.assign(basePersonData, {
+            'LinkedIn URL': linkedInInfo.linkedin_data.publicProfileUrl || '',
+            'LinkedIn Headline': linkedInInfo.linkedin_data.headline || '',
+            'LinkedIn Summary': linkedInInfo.linkedin_data.summary || ''
           });
         }
       }
 
-      return baseData;
+      return basePersonData;
     });
 
     // Apply additional filters
