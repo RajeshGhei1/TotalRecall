@@ -17,6 +17,36 @@ export interface ExportOptions {
   };
 }
 
+interface PersonData {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  company_relationships?: Array<{
+    role?: string;
+    start_date?: string;
+    end_date?: string;
+    is_current: boolean;
+    companies?: {
+      name?: string;
+      industry?: string;
+      size?: string;
+      location?: string;
+    };
+  }>;
+  linkedin_profile_enrichments?: Array<{
+    linkedin_data: {
+      publicProfileUrl?: string;
+      headline?: string;
+      summary?: string;
+    };
+  }>;
+}
+
 export const exportPeopleData = async (options: ExportOptions) => {
   try {
     // Build the query based on options
@@ -30,8 +60,8 @@ export const exportPeopleData = async (options: ExportOptions) => {
         location,
         type,
         created_at,
-        updated_at,
-        ${options.includeCompanyInfo ? `
+        updated_at
+        ${options.includeCompanyInfo ? `,
           company_relationships!left (
             role,
             start_date,
@@ -45,7 +75,7 @@ export const exportPeopleData = async (options: ExportOptions) => {
             )
           )
         ` : ''}
-        ${options.includeLinkedInData ? `
+        ${options.includeLinkedInData ? `,
           linkedin_profile_enrichments!left (
             linkedin_data
           )
@@ -63,12 +93,13 @@ export const exportPeopleData = async (options: ExportOptions) => {
     const { data: rawData, error } = await query.order('full_name');
     
     if (error) throw error;
+    if (!rawData) return null;
 
-    // Transform data for export
-    const exportData = rawData?.map(person => {
+    // Transform data for export with proper type handling
+    const exportData = rawData.map((person: PersonData) => {
       const baseData = {
-        'Full Name': person.full_name,
-        'Email': person.email,
+        'Full Name': person.full_name || '',
+        'Email': person.email || '',
         'Phone': person.phone || '',
         'Location': person.location || '',
         'Created Date': new Date(person.created_at).toLocaleDateString(),
@@ -77,30 +108,32 @@ export const exportPeopleData = async (options: ExportOptions) => {
 
       // Add company information if requested
       if (options.includeCompanyInfo && person.company_relationships) {
-        const currentCompany = person.company_relationships.find((rel: any) => rel.is_current);
-        if (currentCompany) {
+        const currentCompany = person.company_relationships.find(rel => rel.is_current);
+        if (currentCompany && currentCompany.companies) {
           Object.assign(baseData, {
-            'Current Company': currentCompany.companies?.name || '',
+            'Current Company': currentCompany.companies.name || '',
             'Current Role': currentCompany.role || '',
-            'Company Industry': currentCompany.companies?.industry || '',
-            'Company Size': currentCompany.companies?.size || '',
-            'Company Location': currentCompany.companies?.location || ''
+            'Company Industry': currentCompany.companies.industry || '',
+            'Company Size': currentCompany.companies.size || '',
+            'Company Location': currentCompany.companies.location || ''
           });
         }
       }
 
       // Add LinkedIn data if requested
-      if (options.includeLinkedInData && person.linkedin_profile_enrichments?.length > 0) {
+      if (options.includeLinkedInData && person.linkedin_profile_enrichments?.length) {
         const linkedInData = person.linkedin_profile_enrichments[0].linkedin_data;
-        Object.assign(baseData, {
-          'LinkedIn URL': linkedInData?.publicProfileUrl || '',
-          'LinkedIn Headline': linkedInData?.headline || '',
-          'LinkedIn Summary': linkedInData?.summary || ''
-        });
+        if (linkedInData) {
+          Object.assign(baseData, {
+            'LinkedIn URL': linkedInData.publicProfileUrl || '',
+            'LinkedIn Headline': linkedInData.headline || '',
+            'LinkedIn Summary': linkedInData.summary || ''
+          });
+        }
       }
 
       return baseData;
-    }) || [];
+    });
 
     // Apply additional filters
     let filteredData = exportData;
