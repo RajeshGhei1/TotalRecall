@@ -59,19 +59,25 @@ const ContactTypeForm: React.FC<ContactTypeFormProps> = ({
 
   const saveMutation = useMutation({
     mutationFn: async (data: ContactTypeFormData) => {
-      if (editingType) {
-        const { error } = await supabase
-          .from('contact_types')
-          .update(data)
-          .eq('id', editingType.id);
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('contact_types')
-          .insert([data]);
-        
-        if (error) throw error;
+      try {
+        if (editingType) {
+          const { error } = await supabase
+            .from('contact_types')
+            .update(data)
+            .eq('id', editingType.id);
+          
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from('contact_types')
+            .insert([data]);
+          
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error('Error saving contact type:', error);
+        // For now, just log the error - in a real app you might want to handle this differently
+        throw error;
       }
     },
     onSuccess: () => {
