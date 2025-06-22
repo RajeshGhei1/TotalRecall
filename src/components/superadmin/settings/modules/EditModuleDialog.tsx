@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSystemModules } from '@/hooks/useSystemModules';
+import { toast } from '@/hooks/use-toast';
 import ModuleDependencySelector from './ModuleDependencySelector';
 import ModuleLimitsEditor from './ModuleLimitsEditor';
 
@@ -50,6 +51,9 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
 
   React.useEffect(() => {
     if (module) {
+      console.log('Setting form values for module:', module);
+      console.log('Module dependencies:', module.dependencies);
+      
       form.reset({
         name: module.name,
         description: module.description || '',
@@ -57,13 +61,14 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
         version: module.version || '1.0.0',
         is_active: module.is_active,
         default_limits: module.default_limits || {},
-        dependencies: module.dependencies || []
+        dependencies: Array.isArray(module.dependencies) ? module.dependencies : []
       });
     }
   }, [module, form]);
 
   const categories = [
     { value: 'core', label: 'Core' },
+    { value: 'business', label: 'Business' },
     { value: 'analytics', label: 'Analytics' },
     { value: 'communication', label: 'Communication' },
     { value: 'integrations', label: 'Integrations' },
@@ -78,6 +83,9 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
     if (!module) return;
     
     try {
+      console.log('Submitting module update with data:', data);
+      console.log('Dependencies being saved:', data.dependencies);
+      
       const updates = {
         name: data.name,
         description: data.description || '',
@@ -88,11 +96,29 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
         dependencies: data.dependencies || []
       };
       
+      console.log('Final updates object:', updates);
+      
       await updateModule.mutateAsync({ id: module.id, updates });
+      
+      toast({
+        title: "Module Updated",
+        description: `${data.name} has been updated successfully.`,
+      });
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating module:', error);
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating the module. Please try again.",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleDependenciesChange = (dependencies: string[]) => {
+    console.log('Dependencies changed to:', dependencies);
+    form.setValue('dependencies', dependencies);
   };
 
   if (!module) return null;
@@ -101,7 +127,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Module</DialogTitle>
+          <DialogTitle>Edit Module - {module.name}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -176,7 +202,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
 
           <ModuleDependencySelector
             selectedDependencies={form.watch('dependencies') || []}
-            onDependenciesChange={(dependencies) => form.setValue('dependencies', dependencies)}
+            onDependenciesChange={handleDependenciesChange}
           />
 
           <ModuleLimitsEditor
