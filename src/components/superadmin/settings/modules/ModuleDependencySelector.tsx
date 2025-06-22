@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,24 +16,35 @@ const ModuleDependencySelector: React.FC<ModuleDependencySelectorProps> = ({
   const { data: modules } = useSystemModules();
 
   const handleDependencyToggle = (moduleName: string, checked: boolean) => {
+    console.log('Toggling dependency:', moduleName, 'checked:', checked);
     if (checked) {
-      onDependenciesChange([...selectedDependencies, moduleName]);
+      const newDependencies = [...selectedDependencies, moduleName];
+      console.log('New dependencies:', newDependencies);
+      onDependenciesChange(newDependencies);
     } else {
-      onDependenciesChange(selectedDependencies.filter(dep => dep !== moduleName));
+      const newDependencies = selectedDependencies.filter(dep => dep !== moduleName);
+      console.log('New dependencies after removal:', newDependencies);
+      onDependenciesChange(newDependencies);
     }
   };
 
   const coreModules = [
     'people_management',
+    'user_management',
     'analytics_engine',
     'ai_orchestration',
     'communication_hub',
     'workflow_designer',
-    'integration_framework'
+    'integration_framework',
+    'document_management',
+    'custom_field_management'
   ];
 
   const availableModules = modules?.map(m => m.name) || [];
   const allModules = [...new Set([...coreModules, ...availableModules])];
+
+  console.log('Available modules for dependencies:', allModules);
+  console.log('Current selected dependencies:', selectedDependencies);
 
   return (
     <div className="space-y-2">

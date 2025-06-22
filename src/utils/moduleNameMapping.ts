@@ -1,3 +1,4 @@
+
 // Module name mapping utilities for display names and normalization
 
 /**
@@ -10,6 +11,7 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
   'ai_orchestration': 'AI Orchestration',
   'document_management': 'Document Management',
   'custom_field_management': 'Custom Field Management',
+  'people_management': 'People Management',
   
   // Business modules
   'company_database': 'Company Database',

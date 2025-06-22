@@ -8,7 +8,7 @@
   "author": "Total Recall",
   "license": "MIT",
   "homepage": "https://totalrecall.ai/modules/companies",
-  "dependencies": ["user_management"],
+  "dependencies": ["user_management", "people_management"],
   "peerDependencies": [],
   "minCoreVersion": "1.0.0",
   "entryPoint": "index.ts",

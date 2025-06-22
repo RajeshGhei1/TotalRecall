@@ -35,6 +35,14 @@ class ModuleNavigationService {
         category: 'core'
       },
       {
+        moduleId: 'people_management',
+        path: '/superadmin/people',
+        name: 'People Management',
+        description: 'Manage people and contact information',
+        requiresAuth: true,
+        category: 'core'
+      },
+      {
         moduleId: 'user_management',
         path: '/superadmin/users',
         name: 'User Management',
