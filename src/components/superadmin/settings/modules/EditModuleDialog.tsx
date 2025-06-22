@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -203,6 +202,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
           <ModuleDependencySelector
             selectedDependencies={form.watch('dependencies') || []}
             onDependenciesChange={handleDependenciesChange}
+            currentModuleName={module.name}
           />
 
           <ModuleLimitsEditor
