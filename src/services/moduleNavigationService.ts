@@ -1,4 +1,3 @@
-
 // Service to handle navigation to module implementations
 export interface ModuleRoute {
   moduleId: string;
@@ -32,14 +31,6 @@ class ModuleNavigationService {
         path: '/superadmin/companies',
         name: 'Company Database',
         description: 'Manage company records and organizational data',
-        requiresAuth: true,
-        category: 'core'
-      },
-      {
-        moduleId: 'business_contacts_data_access',
-        path: '/superadmin/companies',
-        name: 'Business Contacts & Data Access',
-        description: 'Access and manage business contact information',
         requiresAuth: true,
         category: 'core'
       },

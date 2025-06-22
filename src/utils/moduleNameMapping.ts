@@ -1,4 +1,3 @@
-
 // Module name mapping utilities for display names and normalization
 
 /**
@@ -14,7 +13,6 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
   
   // Business modules
   'company_database': 'Company Database',
-  'business_contacts_data_access': 'Business Contacts & Data Access',
   'talent_database': 'Talent Database',
   'smart_talent_analytics': 'Smart Talent Analytics',
   
