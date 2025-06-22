@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,7 +69,13 @@ const ContactTypeForm: React.FC<ContactTypeFormProps> = ({
         } else {
           const { error } = await supabase
             .from('contact_types')
-            .insert([data]);
+            .insert([{
+              name: data.name,
+              description: data.description || '',
+              icon: data.icon,
+              color: data.color,
+              is_default: data.is_default
+            }]);
           
           if (error) throw error;
         }

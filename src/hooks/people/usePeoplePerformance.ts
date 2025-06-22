@@ -151,6 +151,5 @@ export const useOptimizedPeopleSearch = (searchTerm: string, filters: any) => {
     },
     enabled: searchTerm.length >= 2, // Only search with 2+ characters
     staleTime: 30 * 1000, // 30 seconds
-    debounce: 300 // Debounce search requests
   });
 };
