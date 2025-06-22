@@ -19,6 +19,7 @@ import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import ModuleDevelopment from '@/pages/superadmin/ModuleDevelopment';
 import ModuleTesting from '@/pages/superadmin/ModuleTesting';
+import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 
 const SuperAdminRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const SuperAdminRoutes = () => {
       <Route path="/settings" element={<Settings />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
+      <Route path="/companies/:companyId" element={<CompanyDetailView />} />
       <Route path="/companies" element={<Companies />} />
       <Route path="/people" element={<People />} />
       <Route path="/documentation" element={<Documentation />} />
