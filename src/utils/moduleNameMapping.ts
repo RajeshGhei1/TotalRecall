@@ -3,6 +3,7 @@
 
 /**
  * Mapping of technical module names to display names
+ * Updated to reflect actual module names in the database
  */
 const MODULE_DISPLAY_NAMES: Record<string, string> = {
   // Core modules
@@ -11,10 +12,10 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
   'ai_orchestration': 'AI Orchestration',
   'document_management': 'Document Management',
   'custom_field_management': 'Custom Field Management',
-  'people_management': 'People Management',
+  'people': 'People Management', // Fixed: was 'people_management'
   
   // Business modules
-  'company_database': 'Company Database',
+  'companies': 'Company Database', // Fixed: was 'company_database'
   'talent_database': 'Talent Database',
   'smart_talent_analytics': 'Smart Talent Analytics',
   
@@ -37,7 +38,12 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
   // Integration modules
   'api_integrations': 'API Integrations',
   'third_party_connectors': 'Third Party Connectors',
-  'data_sync_services': 'Data Sync Services'
+  'data_sync_services': 'Data Sync Services',
+  'linkedin_integration': 'LinkedIn Integration',
+  
+  // Workflow and AI modules
+  'workflow_management': 'Workflow Management',
+  'predictive_insights': 'Predictive Insights'
 };
 
 /**

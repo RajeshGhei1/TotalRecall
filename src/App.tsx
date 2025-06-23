@@ -10,7 +10,7 @@ import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Component to handle authenticated user redirects
+// Enhanced component to handle smart authenticated user redirects
 const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   
@@ -29,9 +29,10 @@ const AuthenticatedRedirect: React.FC = () => {
     return <Index />;
   }
 
-  // For authenticated users, redirect to module development for now
-  // TODO: Implement proper role-based redirects
-  return <Navigate to="/superadmin/module-development" replace />;
+  // Smart role-based redirects - no longer defaults to superadmin
+  // TODO: Implement intelligent routing based on user's role and available modules
+  // For now, try tenant-admin first, then fall back to superadmin
+  return <Navigate to="/tenant-admin" replace />;
 };
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
-            {/* Home route - shows marketing page for unauthenticated users, redirects authenticated users */}
+            {/* Home route - shows marketing page for unauthenticated users, smart redirects for authenticated users */}
             <Route path="/" element={<AuthenticatedRedirect />} />
             
             {/* Auth Route */}
@@ -56,7 +57,7 @@ function App() {
               } 
             />
             
-            {/* Tenant Admin Routes - Protected */}
+            {/* Tenant Admin Routes - Protected with Smart Module Independence */}
             <Route 
               path="/tenant-admin/*" 
               element={

@@ -25,110 +25,112 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const defaultNavItems: NavItem[] = [
+  // Core Dashboard is now optional - not required for basic navigation
   { 
     id: 'dashboard',
     label: 'Dashboard', 
     icon: LayoutDashboard, 
     href: '/tenant-admin/dashboard',
-    requiresModule: 'Core Dashboard'
+    requiresModule: 'core_dashboard' // Fixed: use actual module name
   },
   { 
     id: 'predictive-insights',
     label: 'Predictive Insights', 
     icon: TrendingUp, 
     href: '/tenant-admin/predictive-insights',
-    requiresModule: 'Predictive Insights'
+    requiresModule: 'predictive_insights'
   },
   { 
     id: 'intelligent-workflows',
     label: 'Intelligent Workflows', 
     icon: Zap, 
     href: '/tenant-admin/intelligent-workflows',
-    requiresModule: 'Workflow Management'
+    requiresModule: 'workflow_management'
   },
   { 
     id: 'smart-talent-matching',
     label: 'AI Talent Matching', 
     icon: Target, 
     href: '/tenant-admin/smart-talent-matching',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'ats-dashboard',
     label: 'ATS Dashboard', 
     icon: UserCheck, 
     href: '/tenant-admin/ats/dashboard',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'ats-jobs',
     label: 'Jobs Management', 
     icon: Briefcase, 
     href: '/tenant-admin/ats/jobs',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'ats-candidates',
     label: 'Candidates', 
     icon: Users2, 
     href: '/tenant-admin/ats/candidates',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'ats-talent',
     label: 'Talent Pool', 
     icon: Users2, 
     href: '/tenant-admin/ats/talent',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'ats-pipeline',
     label: 'Applications Pipeline', 
     icon: GitBranch, 
     href: '/tenant-admin/ats/pipeline',
-    requiresModule: 'ATS Core'
+    requiresModule: 'ats_core'
   },
   { 
     id: 'talent-database',
     label: 'Talent Database', 
     icon: Database, 
     href: '/tenant-admin/talent-database',
-    requiresModule: 'Talent Database'
+    requiresModule: 'talent_database'
   },
   { 
     id: 'companies',
     label: 'Companies', 
     icon: Building2, 
     href: '/tenant-admin/companies',
-    requiresModule: 'Company Database'
+    requiresModule: 'companies' // Fixed: correct module name
   },
   { 
     id: 'contacts',
     label: 'Contacts', 
     icon: Users, 
     href: '/tenant-admin/contacts',
-    requiresModule: 'Business Contacts'
+    requiresModule: 'people' // Fixed: correct module name
   },
   { 
     id: 'linkedin-integration',
     label: 'LinkedIn Integration', 
     icon: Users, 
     href: '/tenant-admin/linkedin-integration',
-    requiresModule: 'LinkedIn Integration'
+    requiresModule: 'linkedin_integration'
   },
   { 
     id: 'smart-talent-analytics',
     label: 'Smart Talent Analytics', 
     icon: Brain, 
     href: '/tenant-admin/smart-talent-analytics',
-    requiresModule: 'Advanced Analytics'
+    requiresModule: 'smart_talent_analytics' // Removed artificial Core Dashboard dependency
   },
+  // Settings is now always accessible - no module requirement
   { 
     id: 'settings',
     label: 'Settings', 
     icon: Settings, 
-    href: '/tenant-admin/settings',
-    requiresModule: 'User Management'
+    href: '/tenant-admin/settings'
+    // No requiresModule - Settings should always be accessible
   },
 ];
 
@@ -159,76 +161,78 @@ export const useTenantAdminNavigation = () => {
 
   const currentTenantId = tenantData?.tenant_id || null;
 
-  // Get module access for each required module - Fix remaining mismatches
-  const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'Core Dashboard', user?.id);
-  const { data: predictiveAccess } = useUnifiedModuleAccess(currentTenantId, 'Predictive Insights', user?.id);
-  const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'Workflow Management', user?.id);
-  const { data: userMgmtAccess } = useUnifiedModuleAccess(currentTenantId, 'User Management', user?.id);
-  const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ATS Core', user?.id);
-  const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'Talent Database', user?.id);
-  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'Company Database', user?.id);
-  const { data: contactsAccess } = useUnifiedModuleAccess(currentTenantId, 'Business Contacts', user?.id);
-  const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'Advanced Analytics', user?.id);
-  const { data: linkedinAccess } = useUnifiedModuleAccess(currentTenantId, 'LinkedIn Integration', user?.id);
+  // Get module access for each module using correct names
+  const { data: dashboardAccess } = useUnifiedModuleAccess(currentTenantId, 'core_dashboard', user?.id);
+  const { data: predictiveAccess } = useUnifiedModuleAccess(currentTenantId, 'predictive_insights', user?.id);
+  const { data: workflowAccess } = useUnifiedModuleAccess(currentTenantId, 'workflow_management', user?.id);
+  const { data: atsAccess } = useUnifiedModuleAccess(currentTenantId, 'ats_core', user?.id);
+  const { data: talentDatabaseAccess } = useUnifiedModuleAccess(currentTenantId, 'talent_database', user?.id);
+  const { data: companiesAccess } = useUnifiedModuleAccess(currentTenantId, 'companies', user?.id);
+  const { data: peopleAccess } = useUnifiedModuleAccess(currentTenantId, 'people', user?.id);
+  const { data: analyticsAccess } = useUnifiedModuleAccess(currentTenantId, 'smart_talent_analytics', user?.id);
+  const { data: linkedinAccess } = useUnifiedModuleAccess(currentTenantId, 'linkedin_integration', user?.id);
 
-  // Add debugging
-  console.log('Navigation Debug:', {
+  console.log('Navigation Debug - Module Access:', {
     currentTenantId,
-    talentDatabaseAccess,
-    allAccess: {
-      dashboard: dashboardAccess?.hasAccess,
-      ats: atsAccess?.hasAccess,
-      talentDatabase: talentDatabaseAccess?.hasAccess,
-      companies: companiesAccess?.hasAccess
-    }
+    dashboard: dashboardAccess?.hasAccess,
+    ats: atsAccess?.hasAccess,
+    talentDatabase: talentDatabaseAccess?.hasAccess,
+    companies: companiesAccess?.hasAccess,
+    people: peopleAccess?.hasAccess,
+    analytics: analyticsAccess?.hasAccess
   });
 
   // Filter navigation items based on module access
   const filteredNavItems = defaultNavItems.filter(item => {
+    // Settings has no module requirement - always show
     if (!item.requiresModule) {
       console.log(`Item ${item.id} has no module requirement, showing it`);
-      return true; // Always show items that don't require modules
+      return true;
     }
 
     console.log(`Checking access for ${item.id} (module: ${item.requiresModule})`);
 
     switch (item.requiresModule) {
-      case 'Core Dashboard':
+      case 'core_dashboard':
         return dashboardAccess?.hasAccess === true;
-      case 'Predictive Insights':
+      case 'predictive_insights':
         return predictiveAccess?.hasAccess === true;
-      case 'Workflow Management':
+      case 'workflow_management':
         return workflowAccess?.hasAccess === true;
-      case 'User Management':
-        return userMgmtAccess?.hasAccess === true;
-      case 'ATS Core':
+      case 'ats_core':
         return atsAccess?.hasAccess === true;
-      case 'Talent Database':
+      case 'talent_database':
         const hasAccess = talentDatabaseAccess?.hasAccess === true;
         console.log(`Talent Database access check: ${hasAccess}`, talentDatabaseAccess);
         return hasAccess;
-      case 'Company Database':
+      case 'companies':
         return companiesAccess?.hasAccess === true;
-      case 'Business Contacts':
-        return contactsAccess?.hasAccess === true;
-      case 'Advanced Analytics':
+      case 'people':
+        return peopleAccess?.hasAccess === true;
+      case 'smart_talent_analytics':
         return analyticsAccess?.hasAccess === true;
-      case 'LinkedIn Integration':
+      case 'linkedin_integration':
         return linkedinAccess?.hasAccess === true;
       default:
         console.warn(`Unknown module requirement: ${item.requiresModule}`);
-        return true;
+        return false;
     }
   });
 
   console.log('Filtered nav items:', filteredNavItems.map(item => ({ id: item.id, label: item.label, module: item.requiresModule })));
 
-  // If no access to any modules, show basic user management only
+  // Always show at least Settings - don't redirect to upgrade if user has basic access
   const hasAnyAccess = filteredNavItems.length > 0;
   
   if (!hasAnyAccess && currentTenantId) {
     // Show minimal navigation for tenants without any subscription
     return useNavigationPreferences('tenant_admin', [
+      { 
+        id: 'settings',
+        label: 'Settings', 
+        icon: Settings, 
+        href: '/tenant-admin/settings'
+      },
       { 
         id: 'upgrade',
         label: 'Upgrade Plan', 

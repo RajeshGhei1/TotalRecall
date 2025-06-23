@@ -25,6 +25,42 @@ import UpgradePlan from "@/pages/tenant-admin/UpgradePlan";
 import ATSRoutes from "@/routes/ats/ATSRoutes";
 import TalentDatabase from "@/modules/talent-database";
 
+// Smart redirect component for intelligent default routing
+const SmartTenantRedirect: React.FC = () => {
+  const { user, bypassAuth } = useAuth();
+
+  const { data: tenantData } = useQuery({
+    queryKey: ['currentTenantData', user?.id],
+    queryFn: async () => {
+      if (bypassAuth) {
+        return { tenant_id: 'mock-tenant-id' };
+      }
+      
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_tenants')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user || bypassAuth,
+  });
+
+  const currentTenantId = tenantData?.tenant_id || null;
+
+  // Check available modules and redirect to the first available one
+  if (currentTenantId) {
+    // For now, redirect to settings (always accessible) until we can determine the best available module
+    return <Navigate to="settings" replace />;
+  }
+
+  return <Navigate to="upgrade" replace />;
+};
+
 const TenantAdminRoutes = () => {
   const { user, bypassAuth } = useAuth();
 
@@ -54,13 +90,13 @@ const TenantAdminRoutes = () => {
 
   return (
     <Routes>
-      {/* Default redirect to dashboard */}
-      <Route index element={<Navigate to="dashboard" replace />} />
+      {/* Smart default redirect - no longer requires Core Dashboard */}
+      <Route index element={<SmartTenantRedirect />} />
       
-      {/* Core Dashboard - Now Module Protected */}
+      {/* Core Dashboard - Now Optional Module Protected */}
       <Route path="dashboard" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Core Dashboard" 
+          moduleName="core_dashboard" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -68,10 +104,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Intelligent Workflows - Now Module Protected */}
+      {/* Intelligent Workflows - Independent Module */}
       <Route path="intelligent-workflows" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Workflow Management" 
+          moduleName="workflow_management" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -79,10 +115,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Predictive Insights - Now Module Protected */}
+      {/* Predictive Insights - Independent Module */}
       <Route path="predictive-insights" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Predictive Insights" 
+          moduleName="predictive_insights" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -90,10 +126,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* LinkedIn Integration Module Protected Route */}
+      {/* LinkedIn Integration - Independent Module */}
       <Route path="linkedin-integration" element={
         <UnifiedModuleAccessGuard 
-          moduleName="LinkedIn Integration" 
+          moduleName="linkedin_integration" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -101,10 +137,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* ATS Core Module Protected Routes - Now with comprehensive sub-routes */}
+      {/* ATS Core - Fully Independent with Complete Sub-routes */}
       <Route path="ats/*" element={
         <UnifiedModuleAccessGuard 
-          moduleName="ATS Core" 
+          moduleName="ats_core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -112,10 +148,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Talent Database - Advanced Module Protected Route */}
+      {/* Talent Database - Independent Module */}
       <Route path="talent-database" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Talent Database" 
+          moduleName="talent_database" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -131,10 +167,10 @@ const TenantAdminRoutes = () => {
       <Route path="jobs" element={<Navigate to="ats/jobs" replace />} />
       <Route path="talent/*" element={<Navigate to="ats/talent" replace />} />
       
-      {/* Smart Talent Matching - AI Feature */}
+      {/* Smart Talent Matching - ATS Feature */}
       <Route path="smart-talent-matching" element={
         <UnifiedModuleAccessGuard 
-          moduleName="ATS Core" 
+          moduleName="ats_core" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -146,10 +182,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Companies Database Module Protected Routes */}
+      {/* Companies - Independent Module (Fixed naming) */}
       <Route path="companies" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Company Database" 
+          moduleName="companies" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -157,10 +193,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Business Contact Database Module Protected Routes */}
+      {/* People/Contacts - Independent Module (Fixed naming) */}
       <Route path="contacts" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Business Contacts" 
+          moduleName="people" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -168,10 +204,10 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Smart Talent Analytics - separate module */}
+      {/* Smart Talent Analytics - Independent Module (No Core Dashboard dependency) */}
       <Route path="smart-talent-analytics" element={
         <UnifiedModuleAccessGuard 
-          moduleName="Advanced Analytics" 
+          moduleName="smart_talent_analytics" 
           tenantId={currentTenantId}
           userId={user?.id}
         >
@@ -179,70 +215,14 @@ const TenantAdminRoutes = () => {
         </UnifiedModuleAccessGuard>
       } />
       
-      {/* Settings - Now Module Protected */}
-      <Route path="settings" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <Settings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/general" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <GeneralSettings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/custom-fields" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <CustomFieldsSettings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/api" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <ApiSettings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/communication" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <CommunicationSettings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/outreach" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <OutreachSettings />
-        </UnifiedModuleAccessGuard>
-      } />
-      <Route path="settings/social-media" element={
-        <UnifiedModuleAccessGuard 
-          moduleName="User Management" 
-          tenantId={currentTenantId}
-          userId={user?.id}
-        >
-          <SocialMediaSettings />
-        </UnifiedModuleAccessGuard>
-      } />
+      {/* Settings - Always Accessible (No Module Protection) */}
+      <Route path="settings" element={<Settings />} />
+      <Route path="settings/general" element={<GeneralSettings />} />
+      <Route path="settings/custom-fields" element={<CustomFieldsSettings />} />
+      <Route path="settings/api" element={<ApiSettings />} />
+      <Route path="settings/communication" element={<CommunicationSettings />} />
+      <Route path="settings/outreach" element={<OutreachSettings />} />
+      <Route path="settings/social-media" element={<SocialMediaSettings />} />
       
       {/* Upgrade Plan - Always accessible */}
       <Route path="upgrade" element={<UpgradePlan />} />
