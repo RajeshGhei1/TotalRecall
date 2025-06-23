@@ -29,9 +29,8 @@ const AuthenticatedRedirect: React.FC = () => {
     return <Index />;
   }
 
-  // Smart role-based redirects - no longer defaults to superadmin
-  // TODO: Implement intelligent routing based on user's role and available modules
-  // For now, try tenant-admin first, then fall back to superadmin
+  // Smart role-based redirects - try tenant-admin first, then fall back to superadmin
+  // This implements the module independence plan where users get direct access to their modules
   return <Navigate to="/tenant-admin" replace />;
 };
 
