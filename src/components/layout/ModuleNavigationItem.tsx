@@ -49,15 +49,20 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({ isExpanded,
   // Sort categories for consistent display
   const sortedCategories = Object.keys(modulesByCategory).sort();
 
+  // Format category name for display
+  const formatCategoryName = (category: string) => {
+    return category.replace(/_/g, ' ').toUpperCase();
+  };
+
   return (
     <>
       {/* Modules parent item */}
       <div
         className={cn(
-          "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md cursor-pointer transition-colors",
+          "flex items-center justify-between w-full px-3 py-2.5 text-sm rounded-lg cursor-pointer transition-all duration-200",
           isModulesActive() || isExpanded
-            ? "bg-blue-100 text-blue-900"
-            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-200"
+            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
         )}
         onClick={onToggle}
       >
@@ -69,57 +74,85 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({ isExpanded,
           </div>
           <span className="font-medium">Modules</span>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center space-x-2">
           {isLoading && (
-            <div className="w-4 h-4 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full mr-2" />
+            <div className="w-4 h-4 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full" />
           )}
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+            {modules?.length || 0}
+          </span>
+          <div className="transition-transform duration-200">
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </div>
         </div>
       </div>
 
       {/* Expanded module list */}
       {isExpanded && (
-        <div className="ml-6 mt-1 space-y-1">
+        <div className="ml-3 mt-2 space-y-3 border-l-2 border-gray-100 pl-3">
           {sortedCategories.map((category) => (
             <div key={category} className="space-y-1">
               {/* Category header */}
-              <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                {category.replace('_', ' ')}
+              <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md">
+                <h4 className="text-xs font-bold text-gray-700 tracking-wider">
+                  {formatCategoryName(category)}
+                </h4>
+                <span className="text-xs bg-white text-gray-500 px-2 py-0.5 rounded-full font-medium border">
+                  {modulesByCategory[category].length}
+                </span>
               </div>
               
               {/* Modules in category */}
-              {modulesByCategory[category].map((module) => (
-                <Link
-                  key={module.id}
-                  to={getModuleRoute(module.name)}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm rounded-md transition-colors ml-4",
-                    isModuleActive(module.name)
-                      ? "bg-blue-50 text-blue-700 border-l-2 border-blue-500"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  )}
-                >
-                  <div className="flex items-center space-x-3 w-full">
-                    <div className="w-2 h-2 rounded-full bg-current opacity-50" />
-                    <span className="truncate">{getDisplayName(module.name)}</span>
-                    {!module.is_active && (
-                      <span className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded">
-                        Inactive
-                      </span>
+              <div className="space-y-1">
+                {modulesByCategory[category].map((module) => (
+                  <Link
+                    key={module.id}
+                    to={getModuleRoute(module.name)}
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2.5 text-sm rounded-md transition-all duration-200 ml-2 group",
+                      isModuleActive(module.name)
+                        ? "bg-blue-100 text-blue-800 border-l-3 border-blue-500 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm border-l-3 border-transparent"
                     )}
-                  </div>
-                </Link>
-              ))}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full transition-colors",
+                        module.is_active 
+                          ? "bg-green-500" 
+                          : "bg-gray-300"
+                      )} />
+                      <span className="font-medium truncate group-hover:text-gray-900">
+                        {getDisplayName(module.name)}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {!module.is_active && (
+                        <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full border border-orange-200 font-medium">
+                          Inactive
+                        </span>
+                      )}
+                      <div className="w-1 h-1 rounded-full bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           ))}
           
           {sortedCategories.length === 0 && !isLoading && (
-            <div className="px-3 py-2 text-sm text-gray-500 italic">
-              No modules available
+            <div className="px-3 py-4 text-center">
+              <div className="text-gray-400 mb-1">
+                <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m0 0h8m-8 0v-5a2 2 0 012-2h8a2 2 0 012 2v5" />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-500 font-medium">No modules available</p>
+              <p className="text-xs text-gray-400 mt-1">Create modules in Module Development</p>
             </div>
           )}
         </div>
