@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSystemModules } from '@/hooks/useSystemModules';
@@ -93,7 +92,8 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
   isExpanded,
   onToggle,
 }) => {
-  const { data: modules, isLoading } = useSystemModules(true, 'production');
+  // Fetch all active modules regardless of maturity status
+  const { data: modules, isLoading } = useSystemModules(true);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const location = useLocation();
