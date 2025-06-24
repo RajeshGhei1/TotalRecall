@@ -32,7 +32,7 @@ const AuthenticatedRedirect: React.FC = () => {
   // Smart role-based redirects - check if user is super admin first
   // Super admins should go to super admin portal, others to tenant admin
   if (user.email?.includes('@superadmin') || user.user_metadata?.role === 'super_admin') {
-    return <Navigate to="/superadmin" replace />;
+    return <Navigate to="/superadmin/dashboard" replace />;
   }
 
   // Regular users go to tenant admin portal
