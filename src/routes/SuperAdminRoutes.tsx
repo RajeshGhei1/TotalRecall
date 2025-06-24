@@ -20,6 +20,7 @@ import ModuleDevelopment from '@/pages/superadmin/ModuleDevelopment';
 import ModuleTesting from '@/pages/superadmin/ModuleTesting';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 import DynamicModulePage from '@/components/modules/DynamicModulePage';
+import ATS from '@/pages/superadmin/ATS';
 
 const SuperAdminRoutes = () => {
   return (
@@ -52,6 +53,10 @@ const SuperAdminRoutes = () => {
       <Route path="ai-orchestration" element={<AIOrchestration />} />
       <Route path="ai-analytics" element={<AIAnalytics />} />
       <Route path="user-activity" element={<UserActivity />} />
+      
+      {/* Dedicated Module Pages */}
+      <Route path="ats-core" element={<ATS />} />
+      <Route path="ats/*" element={<ATS />} />
       
       {/* Dynamic Module Routes - Handle all other module routes */}
       <Route path="*" element={<DynamicModulePage />} />

@@ -5,7 +5,13 @@ import { useSystemModules } from '@/hooks/useSystemModules';
 import { getDisplayName } from '@/utils/moduleNameMapping';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Blocks, AlertCircle } from 'lucide-react';
+import { Blocks, AlertCircle, ExternalLink } from 'lucide-react';
+
+// Define modules that have dedicated pages
+const DEDICATED_MODULE_PAGES: Record<string, string> = {
+  'ats_core': '/superadmin/ats-core',
+  'ats-core': '/superadmin/ats-core',
+};
 
 const DynamicModulePage = () => {
   const location = useLocation();
@@ -14,6 +20,12 @@ const DynamicModulePage = () => {
   // Extract module name from path
   const pathSegments = location.pathname.split('/');
   const moduleSlug = pathSegments[pathSegments.length - 1];
+  
+  // Check if this module has a dedicated page
+  const dedicatedPageRoute = DEDICATED_MODULE_PAGES[moduleSlug];
+  if (dedicatedPageRoute && location.pathname !== dedicatedPageRoute) {
+    return <Navigate to={dedicatedPageRoute} replace />;
+  }
   
   // Find the matching module
   const matchingModule = React.useMemo(() => {
@@ -43,6 +55,9 @@ const DynamicModulePage = () => {
   if (!matchingModule) {
     return <Navigate to="/superadmin/dashboard" replace />;
   }
+
+  // Check if this module has a dedicated page
+  const hasDedicatedPage = DEDICATED_MODULE_PAGES[matchingModule.name] || DEDICATED_MODULE_PAGES[moduleSlug];
 
   return (
     <AdminLayout>
@@ -95,6 +110,31 @@ const DynamicModulePage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Dedicated Page Notice */}
+          {hasDedicatedPage && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ExternalLink className="h-5 w-5 text-blue-600" />
+                  Enhanced Interface Available
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div>
+                    <p className="font-medium text-blue-800">
+                      Full Featured Interface Available
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      This module has a dedicated interface with enhanced functionality. 
+                      Click on the module name in the navigation to access the full feature set.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Module Configuration Placeholder */}
           <Card>
