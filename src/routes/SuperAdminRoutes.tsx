@@ -39,6 +39,9 @@ const SuperAdminRoutes = () => {
       <Route path="global-settings" element={<GlobalSettings />} />
       <Route path="settings" element={<Settings />} />
       
+      {/* Redirect upgrade path to dashboard - Super Admins don't need upgrades */}
+      <Route path="upgrade" element={<Navigate to="dashboard" replace />} />
+      
       {/* Module Routes - Keep existing routes for backward compatibility */}
       <Route path="analytics" element={<Analytics />} />
       <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
