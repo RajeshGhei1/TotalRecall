@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import SuperAdminDashboard from '@/pages/superadmin/Dashboard';
 import Tenants from '@/pages/superadmin/Tenants';
 import Users from '@/pages/superadmin/Users';
@@ -24,25 +24,28 @@ import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailVi
 const SuperAdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/dashboard" element={<SuperAdminDashboard />} />
-      <Route path="/module-development" element={<ModuleDevelopment />} />
-      <Route path="/module-testing" element={<ModuleTesting />} />
-      <Route path="/tenants" element={<Tenants />} />
-      <Route path="/users" element={<Users />} />
-      <Route path="/subscription-plans" element={<SubscriptionPlans />} />
-      <Route path="/security-dashboard" element={<SecurityDashboard />} />
-      <Route path="/audit-logs" element={<AuditLogs />} />
-      <Route path="/global-settings" element={<GlobalSettings />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/analytics" element={<Analytics />} />
-      <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
-      <Route path="/companies/:companyId" element={<CompanyDetailView />} />
-      <Route path="/companies" element={<Companies />} />
-      <Route path="/people" element={<People />} />
-      <Route path="/documentation" element={<Documentation />} />
-      <Route path="/ai-orchestration" element={<AIOrchestration />} />
-      <Route path="/ai-analytics" element={<AIAnalytics />} />
-      <Route path="/user-activity" element={<UserActivity />} />
+      {/* Default route - redirect to dashboard */}
+      <Route index element={<Navigate to="dashboard" replace />} />
+      
+      <Route path="dashboard" element={<SuperAdminDashboard />} />
+      <Route path="module-development" element={<ModuleDevelopment />} />
+      <Route path="module-testing" element={<ModuleTesting />} />
+      <Route path="tenants" element={<Tenants />} />
+      <Route path="users" element={<Users />} />
+      <Route path="subscription-plans" element={<SubscriptionPlans />} />
+      <Route path="security-dashboard" element={<SecurityDashboard />} />
+      <Route path="audit-logs" element={<AuditLogs />} />
+      <Route path="global-settings" element={<GlobalSettings />} />
+      <Route path="settings" element={<Settings />} />
+      <Route path="analytics" element={<Analytics />} />
+      <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
+      <Route path="companies/:companyId" element={<CompanyDetailView />} />
+      <Route path="companies" element={<Companies />} />
+      <Route path="people" element={<People />} />
+      <Route path="documentation" element={<Documentation />} />
+      <Route path="ai-orchestration" element={<AIOrchestration />} />
+      <Route path="ai-analytics" element={<AIAnalytics />} />
+      <Route path="user-activity" element={<UserActivity />} />
     </Routes>
   );
 };

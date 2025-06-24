@@ -29,8 +29,13 @@ const AuthenticatedRedirect: React.FC = () => {
     return <Index />;
   }
 
-  // Smart role-based redirects - try tenant-admin first, then fall back to superadmin
-  // This implements the module independence plan where users get direct access to their modules
+  // Smart role-based redirects - check if user is super admin first
+  // Super admins should go to super admin portal, others to tenant admin
+  if (user.email?.includes('@superadmin') || user.user_metadata?.role === 'super_admin') {
+    return <Navigate to="/superadmin" replace />;
+  }
+
+  // Regular users go to tenant admin portal
   return <Navigate to="/tenant-admin" replace />;
 };
 
@@ -46,7 +51,7 @@ function App() {
             {/* Auth Route */}
             <Route path="/auth" element={<Auth />} />
             
-            {/* Superadmin Routes - Protected */}
+            {/* Superadmin Routes - Protected, no subscription checks */}
             <Route 
               path="/superadmin/*" 
               element={
