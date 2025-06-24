@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { Navbar } from '../components/Navbar';
+import { Footer } from '../components/Footer';
 import CurrencySelector from '../components/pricing/CurrencySelector';
 import UserTypeTabs from '../components/pricing/UserTypeTabs';
 import FAQSection from '../components/pricing/FAQSection';
