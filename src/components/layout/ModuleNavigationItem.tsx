@@ -63,7 +63,16 @@ const CATEGORY_CONFIG = {
   }
 };
 
-// Module sub-components mapping
+// Normalize module name to match mapping keys
+const normalizeModuleName = (moduleName: string): string => {
+  return moduleName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+};
+
+// Module sub-components mapping - using normalized keys
 const MODULE_SUB_COMPONENTS = {
   'ats_core': [
     { name: 'Jobs', path: '/superadmin/ats/jobs' },
@@ -78,7 +87,7 @@ const MODULE_SUB_COMPONENTS = {
   ],
   'people': [
     { name: 'People Database', path: '/superadmin/people' },
-    { name: 'Skills Management', path: '/super admin/people/skills' },
+    { name: 'Skills Management', path: '/superadmin/people/skills' },
     { name: 'Reporting', path: '/superadmin/people/reporting' }
   ]
 };
@@ -172,7 +181,7 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
     const moduleSlug = module.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
     
     // Check if module has dedicated page
-    if (module.name === 'ats_core' || moduleSlug === 'ats-core') {
+    if (module.name === 'ats_core' || moduleSlug === 'ats-core' || module.name === 'ATS Core') {
       navigate('/superadmin/ats-core');
     } else if (module.name === 'companies') {
       navigate('/superadmin/companies');
@@ -257,7 +266,9 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
                 {isCategoryExpanded && (
                   <div className="ml-4 space-y-1">
                     {categoryModules.map((module) => {
-                      const hasSubComponents = MODULE_SUB_COMPONENTS[module.name];
+                      // Normalize the module name to check for sub-components
+                      const normalizedModuleName = normalizeModuleName(module.name);
+                      const hasSubComponents = MODULE_SUB_COMPONENTS[normalizedModuleName];
                       const isModuleExpanded = expandedModules.has(module.id);
 
                       return (
@@ -288,7 +299,7 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
                           {/* Sub-components */}
                           {hasSubComponents && isModuleExpanded && (
                             <div className="ml-6 space-y-1">
-                              {MODULE_SUB_COMPONENTS[module.name].map((subComponent, index) => (
+                              {MODULE_SUB_COMPONENTS[normalizedModuleName].map((subComponent, index) => (
                                 <button
                                   key={index}
                                   onClick={() => handleSubComponentClick(subComponent.path)}
