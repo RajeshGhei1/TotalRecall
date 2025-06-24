@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import SuperAdminDashboard from '@/pages/superadmin/Dashboard';
@@ -20,6 +19,7 @@ import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import ModuleDevelopment from '@/pages/superadmin/ModuleDevelopment';
 import ModuleTesting from '@/pages/superadmin/ModuleTesting';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
+import DynamicModulePage from '@/components/modules/DynamicModulePage';
 
 const SuperAdminRoutes = () => {
   return (
@@ -27,16 +27,19 @@ const SuperAdminRoutes = () => {
       {/* Default route - redirect to dashboard */}
       <Route index element={<Navigate to="dashboard" replace />} />
       
+      {/* Core Admin Routes */}
       <Route path="dashboard" element={<SuperAdminDashboard />} />
-      <Route path="module-development" element={<ModuleDevelopment />} />
-      <Route path="module-testing" element={<ModuleTesting />} />
       <Route path="tenants" element={<Tenants />} />
       <Route path="users" element={<Users />} />
       <Route path="subscription-plans" element={<SubscriptionPlans />} />
+      <Route path="module-development" element={<ModuleDevelopment />} />
+      <Route path="module-testing" element={<ModuleTesting />} />
       <Route path="security-dashboard" element={<SecurityDashboard />} />
       <Route path="audit-logs" element={<AuditLogs />} />
       <Route path="global-settings" element={<GlobalSettings />} />
       <Route path="settings" element={<Settings />} />
+      
+      {/* Module Routes - Keep existing routes for backward compatibility */}
       <Route path="analytics" element={<Analytics />} />
       <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
       <Route path="companies/:companyId" element={<CompanyDetailView />} />
@@ -46,6 +49,9 @@ const SuperAdminRoutes = () => {
       <Route path="ai-orchestration" element={<AIOrchestration />} />
       <Route path="ai-analytics" element={<AIAnalytics />} />
       <Route path="user-activity" element={<UserActivity />} />
+      
+      {/* Dynamic Module Routes - Handle all other module routes */}
+      <Route path="*" element={<DynamicModulePage />} />
     </Routes>
   );
 };

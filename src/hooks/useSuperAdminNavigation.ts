@@ -19,12 +19,13 @@ import {
   Activity,
   BookOpen,
   BarChart3,
-  Code
+  Code,
+  Blocks
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
 export const useSuperAdminNavigation = () => {
-  // Define all super admin navigation items - always accessible regardless of subscriptions
+  // Define core super admin navigation items - only administrative functions
   const allNavItems = useMemo((): NavItem[] => [
     // Core administrative functions - always available
     { 
@@ -81,61 +82,16 @@ export const useSuperAdminNavigation = () => {
       icon: Settings, 
       href: '/superadmin/settings'
     },
-    // Business intelligence and analytics - always available for super admins
+    // Modules parent item - expands to show all system modules
     { 
-      id: 'analytics',
-      label: 'BI Dashboard', 
-      icon: BarChart2, 
-      href: '/superadmin/analytics'
-    },
-    { 
-      id: 'advanced-analytics',
-      label: 'Advanced Analytics', 
-      icon: BarChart3, 
-      href: '/superadmin/advanced-analytics'
-    },
-    // Data management - always available for super admins
-    { 
-      id: 'companies',
-      label: 'Companies', 
-      icon: Building2, 
-      href: '/superadmin/companies'
-    },
-    { 
-      id: 'people',
-      label: 'Business Contacts', 
-      icon: Users2, 
-      href: '/superadmin/people'
-    },
-    // AI and automation - always available for super admins
-    { 
-      id: 'ai-orchestration',
-      label: 'AI Orchestration', 
-      icon: Brain, 
-      href: '/superadmin/ai-orchestration'
-    },
-    { 
-      id: 'ai-analytics',
-      label: 'AI Analytics', 
-      icon: Zap, 
-      href: '/superadmin/ai-analytics'
-    },
-    // Monitoring and documentation - always available for super admins
-    { 
-      id: 'user-activity',
-      label: 'User Activity', 
-      icon: Activity, 
-      href: '/superadmin/user-activity'
-    },
-    { 
-      id: 'documentation',
-      label: 'Documentation', 
-      icon: BookOpen, 
-      href: '/superadmin/documentation'
+      id: 'modules',
+      label: 'Modules', 
+      icon: Blocks, 
+      href: '#modules'
     },
   ], []);
 
-  console.log('Super Admin Navigation: All items always accessible', allNavItems.length);
+  console.log('Super Admin Navigation: Core admin items only', allNavItems.length);
   
   return useNavigationPreferences('super_admin', allNavItems);
 };

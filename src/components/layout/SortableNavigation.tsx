@@ -67,7 +67,7 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
       onDragEnd={handleDragEndEvent}
     >
       <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-        <nav className="space-y-1 px-2 w-full">
+        <div className="space-y-1">
           {items.map((item) => (
             <DraggableNavItem
               key={item.id}
@@ -86,7 +86,7 @@ const SortableNavigation: React.FC<SortableNavigationProps> = ({
               }}
             />
           ))}
-        </nav>
+        </div>
       </SortableContext>
     </DndContext>
   );
