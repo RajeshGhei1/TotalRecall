@@ -1,21 +1,18 @@
 
-import Navbar from '../components/Navbar';
-import Hero from '../components/Hero';
-import CompanySpotlight from '../components/CompanySpotlight';
-import HowItWorks from '../components/HowItWorks';
-import SignupForm from '../components/SignupForm';
-import Footer from '../components/Footer';
+import React from 'react';
+import { Navbar } from '@/components/Navbar';
+import { Hero } from '@/components/Hero';
+import { HowItWorks } from '@/components/HowItWorks';
+import { CompanySpotlight } from '@/components/CompanySpotlight';
+import { Footer } from '@/components/Footer';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navbar />
-      <main>
-        <Hero />
-        <CompanySpotlight />
-        <HowItWorks />
-        <SignupForm />
-      </main>
+      <Hero />
+      <HowItWorks />
+      <CompanySpotlight />
       <Footer />
     </div>
   );
