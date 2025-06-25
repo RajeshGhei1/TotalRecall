@@ -59,6 +59,12 @@ export const useSuperAdminNavigation = () => {
       href: '/superadmin/module-development'
     },
     { 
+      id: 'documentation',
+      label: 'Documentation', 
+      icon: BookOpen, 
+      href: '/superadmin/documentation'
+    },
+    { 
       id: 'security-dashboard',
       label: 'Security Dashboard', 
       icon: Shield, 
