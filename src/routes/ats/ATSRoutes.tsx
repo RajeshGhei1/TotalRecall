@@ -8,37 +8,47 @@ import AdminLayout from '@/components/AdminLayout';
 
 const ATSRoutes: React.FC = () => {
   return (
-    <Routes>
-      {/* Default redirect to ATS dashboard */}
-      <Route index element={<Navigate to="dashboard" replace />} />
-      
-      {/* ATS Dashboard - Overview */}
-      <Route path="dashboard" element={
-        <AdminLayout>
-          <ATSDashboard view="dashboard" showMetrics={true} allowCreate={true} />
-        </AdminLayout>
-      } />
-      
-      {/* Jobs Management */}
-      <Route path="jobs" element={<Jobs />} />
-      
-      {/* Talent Pool Management */}
-      <Route path="talent/*" element={<Talent />} />
-      
-      {/* Applications Pipeline */}
-      <Route path="pipeline" element={
-        <AdminLayout>
-          <ATSDashboard view="pipeline" showMetrics={true} allowCreate={false} />
-        </AdminLayout>
-      } />
-      
-      {/* Candidates View */}
-      <Route path="candidates" element={
-        <AdminLayout>
-          <ATSDashboard view="candidates" showMetrics={false} allowCreate={true} />
-        </AdminLayout>
-      } />
-    </Routes>
+    <AdminLayout>
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">ATS Core</h1>
+          <p className="text-gray-600 mt-2">
+            Complete Applicant Tracking System with job and candidate management
+          </p>
+        </div>
+        
+        <Routes>
+          {/* Default redirect to ATS dashboard */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+          
+          {/* ATS Dashboard - Overview */}
+          <Route path="dashboard" element={
+            <ATSDashboard view="dashboard" showMetrics={true} allowCreate={true} />
+          } />
+          
+          {/* Jobs Management */}
+          <Route path="jobs" element={<Jobs />} />
+          
+          {/* Talent Pool Management */}
+          <Route path="talent/*" element={<Talent />} />
+          
+          {/* Applications Pipeline */}
+          <Route path="pipeline" element={
+            <ATSDashboard view="pipeline" showMetrics={true} allowCreate={false} />
+          } />
+          
+          {/* Candidates View */}
+          <Route path="candidates" element={
+            <ATSDashboard view="candidates" showMetrics={false} allowCreate={true} />
+          } />
+          
+          {/* Analytics View */}
+          <Route path="analytics" element={
+            <ATSDashboard view="dashboard" showMetrics={true} allowCreate={false} />
+          } />
+        </Routes>
+      </div>
+    </AdminLayout>
   );
 };
 

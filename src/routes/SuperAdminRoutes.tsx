@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import SuperAdminDashboard from '@/pages/superadmin/Dashboard';
@@ -21,6 +22,7 @@ import ModuleTesting from '@/pages/superadmin/ModuleTesting';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 import DynamicModulePage from '@/components/modules/DynamicModulePage';
 import ATS from '@/pages/superadmin/ATS';
+import ATSRoutes from '@/routes/ats/ATSRoutes';
 
 const SuperAdminRoutes = () => {
   return (
@@ -54,9 +56,9 @@ const SuperAdminRoutes = () => {
       <Route path="ai-analytics" element={<AIAnalytics />} />
       <Route path="user-activity" element={<UserActivity />} />
       
-      {/* Dedicated Module Pages */}
+      {/* ATS Routes - Updated to use dedicated routes */}
       <Route path="ats-core" element={<ATS />} />
-      <Route path="ats/*" element={<ATS />} />
+      <Route path="ats/*" element={<ATSRoutes />} />
       
       {/* Dynamic Module Routes - Handle all other module routes */}
       <Route path="*" element={<DynamicModulePage />} />

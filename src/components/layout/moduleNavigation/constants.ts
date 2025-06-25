@@ -60,9 +60,10 @@ export const CATEGORY_CONFIG = {
 // Module sub-components mapping - using normalized keys
 export const MODULE_SUB_COMPONENTS = {
   'ats_core': [
+    { name: 'Dashboard', path: '/superadmin/ats/dashboard' },
     { name: 'Jobs', path: '/superadmin/ats/jobs' },
     { name: 'Candidates', path: '/superadmin/ats/candidates' },
-    { name: 'Applications', path: '/superadmin/ats/applications' },
+    { name: 'Pipeline', path: '/superadmin/ats/pipeline' },
     { name: 'Analytics', path: '/superadmin/ats/analytics' }
   ],
   'companies': [

@@ -13,7 +13,7 @@ const ATS = () => {
             Complete Applicant Tracking System with job and candidate management
           </p>
         </div>
-        <ATSDashboard />
+        <ATSDashboard view="dashboard" showMetrics={true} allowCreate={true} />
       </div>
     </AdminLayout>
   );
