@@ -1,9 +1,9 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useSuperAdminCheck } from "@/hooks/useSuperAdminCheck";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -13,58 +13,7 @@ interface AuthGuardProps {
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = false }) => {
   const { user, loading, bypassAuth } = useAuth();
   const location = useLocation();
-
-  // For super admin check
-  const [isSuperAdmin, setIsSuperAdmin] = React.useState<boolean | null>(null);
-  const [checkingRole, setCheckingRole] = React.useState(requiresSuperAdmin && !bypassAuth);
-
-  useEffect(() => {
-    const checkSuperAdmin = async () => {
-      // In bypass mode, automatically grant super admin access
-      if (bypassAuth) {
-        console.log('AuthGuard: Bypass mode enabled, granting super admin access');
-        setIsSuperAdmin(true);
-        setCheckingRole(false);
-        return;
-      }
-
-      if (!user || !requiresSuperAdmin) {
-        setCheckingRole(false);
-        return;
-      }
-      
-      console.log('AuthGuard: Checking super admin status for user:', user.id);
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) {
-          console.error('AuthGuard: Error checking admin status:', error);
-          throw error;
-        }
-        
-        const isAdmin = data.role === 'super_admin';
-        console.log('AuthGuard: User role check result:', { role: data.role, isAdmin });
-        setIsSuperAdmin(isAdmin);
-      } catch (error: any) {
-        console.error('AuthGuard: Error checking admin status:', error);
-        toast({
-          title: "Error",
-          description: "Failed to verify your admin privileges.",
-          variant: "destructive",
-        });
-        setIsSuperAdmin(false);
-      } finally {
-        setCheckingRole(false);
-      }
-    };
-
-    checkSuperAdmin();
-  }, [user, requiresSuperAdmin, bypassAuth]);
+  const { isSuperAdmin, isLoading: checkingRole, error } = useSuperAdminCheck();
 
   console.log('AuthGuard state:', { 
     user: !!user, 
@@ -77,7 +26,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
   });
 
   // Show loading while checking authentication or role
-  if (loading || checkingRole) {
+  if (loading || (requiresSuperAdmin && checkingRole)) {
     console.log('AuthGuard: Showing loading state');
     return (
       <div className="flex items-center justify-center h-screen">
@@ -112,8 +61,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     return <Navigate to="/" replace />;
   }
 
+  // Show error if there was an issue checking role
+  if (error && requiresSuperAdmin) {
+    toast({
+      title: "Error",
+      description: error,
+      variant: "destructive",
+    });
+  }
+
   console.log('AuthGuard: Access granted, showing protected content');
-  // Otherwise, show protected content
   return <>{children}</>;
 };
 

@@ -9,12 +9,15 @@ import TenantAdminRoutes from '@/routes/TenantAdminRoutes';
 import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 
 // Enhanced component to handle smart authenticated user redirects
 const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
+  const { isSuperAdmin, isLoading: checkingRole } = useSuperAdminCheck();
   
-  if (loading) {
+  // Show loading while checking authentication or role
+  if (loading || checkingRole) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -25,17 +28,19 @@ const AuthenticatedRedirect: React.FC = () => {
     );
   }
 
+  // If no user, show marketing page
   if (!user) {
     return <Index />;
   }
 
-  // Smart role-based redirects - check if user is super admin first
-  // Super admins should go to super admin portal, others to tenant admin
-  if (user.email?.includes('@superadmin') || user.user_metadata?.role === 'super_admin') {
+  // Smart role-based redirects using database role check
+  if (isSuperAdmin) {
+    console.log('AuthenticatedRedirect: User is super admin, redirecting to super admin portal');
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 
   // Regular users go to tenant admin portal
+  console.log('AuthenticatedRedirect: User is tenant admin, redirecting to tenant admin portal');
   return <Navigate to="/tenant-admin" replace />;
 };
 
