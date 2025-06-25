@@ -43,6 +43,8 @@ export const useModuleNavigation = () => {
       navigate('/superadmin/companies');
     } else if (module.name === 'people') {
       navigate('/superadmin/people');
+    } else if (module.name === 'ai_analytics' || moduleSlug === 'ai-analytics') {
+      navigate('/superadmin/ai-analytics');
     } else {
       // Navigate to dynamic module page
       navigate(`/superadmin/${moduleSlug}`);

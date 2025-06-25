@@ -33,7 +33,8 @@ export const groupModulesByCategory = (modules: any[]) => {
     } else if (moduleName.includes('email') || moduleName.includes('notification') ||
                moduleName.includes('communication') || moduleName.includes('collaboration')) {
       category = 'communication';
-    } else if (moduleName.startsWith('ai_analytics')) {
+    } else if (moduleName === 'ai_analytics' || moduleName.includes('behavioral') ||
+               moduleName.includes('intelligence')) {
       category = 'ai_analytics';
     } else if (moduleName.startsWith('ai_automation')) {
       category = 'ai_automation';
