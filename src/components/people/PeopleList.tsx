@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -198,9 +197,9 @@ const PeopleList: React.FC<PeopleListProps> = ({
                         </div>
                       )}
 
-                      {/* Show reporting relationships for contacts - this should appear after company info */}
+                      {/* Always show reporting indicator for contacts, positioned clearly */}
                       {person.type === 'contact' && (
-                        <div className="mt-2">
+                        <div className="mt-3 pt-2 border-t border-gray-100">
                           <ReportingIndicator personId={person.id} showDetails={!isMobile} />
                         </div>
                       )}

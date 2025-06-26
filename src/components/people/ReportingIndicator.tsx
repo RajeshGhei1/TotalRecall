@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Users, User, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,16 +14,29 @@ const ReportingIndicator: React.FC<ReportingIndicatorProps> = ({
   personId, 
   showDetails = false 
 }) => {
-  const { data: reportingData } = useQuery({
+  console.log('ReportingIndicator rendering for personId:', personId);
+
+  const { data: reportingData, isLoading, error } = useQuery({
     queryKey: ['reporting-indicator', personId],
     queryFn: async () => {
-      // Get manager info
-      const { data: personRelationship } = await supabase
+      console.log('Fetching reporting data for person:', personId);
+      
+      // Get current relationship for this person
+      const { data: currentRelationship } = await supabase
         .from('company_relationships')
-        .select('reports_to')
+        .select(`
+          reports_to,
+          role,
+          people!company_relationships_reports_to_fkey (
+            id,
+            full_name
+          )
+        `)
         .eq('person_id', personId)
         .eq('is_current', true)
         .maybeSingle();
+
+      console.log('Current relationship:', currentRelationship);
 
       // Get direct reports count
       const { count: directReportsCount } = await supabase
@@ -32,31 +45,55 @@ const ReportingIndicator: React.FC<ReportingIndicatorProps> = ({
         .eq('reports_to', personId)
         .eq('is_current', true);
 
-      // Get manager name if exists
-      let managerName = null;
-      if (personRelationship?.reports_to) {
-        const { data: manager } = await supabase
-          .from('people')
-          .select('full_name')
-          .eq('id', personRelationship.reports_to)
-          .single();
-        managerName = manager?.full_name;
-      }
+      console.log('Direct reports count:', directReportsCount);
 
-      return {
-        hasManager: !!personRelationship?.reports_to,
-        managerName,
+      const result = {
+        hasManager: !!currentRelationship?.reports_to,
+        managerName: currentRelationship?.people?.full_name || null,
         directReportsCount: directReportsCount || 0,
       };
+
+      console.log('Reporting data result:', result);
+      return result;
     },
     enabled: !!personId,
   });
 
-  if (!reportingData) return null;
+  if (isLoading) {
+    console.log('ReportingIndicator loading...');
+    return (
+      <div className="flex gap-2">
+        <div className="h-5 w-20 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Error fetching reporting data:', error);
+    return null;
+  }
+
+  if (!reportingData) {
+    console.log('No reporting data');
+    return null;
+  }
 
   const { hasManager, managerName, directReportsCount } = reportingData;
 
-  if (!hasManager && directReportsCount === 0) return null;
+  // Show something even if there's no reporting relationship for debugging
+  if (!hasManager && directReportsCount === 0) {
+    console.log('No reporting relationships found');
+    // Temporarily show a debug badge
+    return (
+      <div className="flex gap-2 flex-wrap">
+        <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-500">
+          No reporting relationships
+        </Badge>
+      </div>
+    );
+  }
+
+  console.log('Rendering badges - hasManager:', hasManager, 'directReportsCount:', directReportsCount);
 
   return (
     <div className="flex gap-2 flex-wrap">
