@@ -1,7 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import PersonFormFields from './PersonFormFields';
@@ -33,6 +33,25 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
   const queryClient = useQueryClient();
   const { employmentHistory, isLoading: isLoadingHistory } = usePersonEmploymentHistory(person?.id);
 
+  // Get current reporting relationship
+  const { data: currentRelationship } = useQuery({
+    queryKey: ['current-relationship', person?.id],
+    queryFn: async () => {
+      if (!person?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('company_relationships')
+        .select('*')
+        .eq('person_id', person.id)
+        .eq('is_current', true)
+        .maybeSingle();
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!person?.id && person?.type === 'contact'
+  });
+
   const form = useForm<PersonFormValues>({
     resolver: zodResolver(personFormSchema),
     defaultValues: {
@@ -43,11 +62,12 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
       type: person?.type || 'talent',
       company_id: undefined,
       role: '',
+      reports_to: '',
       personal_email: '',
     }
   });
 
-  // Reset form values when person changes
+  // Reset form values when person or relationship changes
   useEffect(() => {
     if (person) {
       form.reset({
@@ -56,17 +76,19 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
         phone: person.phone || '',
         location: person.location || '',
         type: person.type,
-        company_id: undefined,
-        role: '',
+        company_id: currentRelationship?.company_id || undefined,
+        role: currentRelationship?.role || '',
+        reports_to: currentRelationship?.reports_to || '',
         personal_email: '',
       });
     }
-  }, [person, form]);
+  }, [person, currentRelationship, form]);
 
   const updatePersonMutation = useMutation({
     mutationFn: async (values: PersonFormValues) => {
       if (!person?.id) throw new Error('Person ID is required');
       
+      // Update person basic info
       const { data, error } = await supabase
         .from('people')
         .update({
@@ -74,18 +96,52 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
           email: values.email,
           phone: values.phone || null,
           location: values.location || null,
-          // Don't update type as it could break relationships
         })
         .eq('id', person.id)
         .select()
         .single();
         
       if (error) throw error;
+
+      // Update or create company relationship for contacts
+      if (person.type === 'contact') {
+        if (currentRelationship) {
+          // Update existing relationship
+          const { error: updateError } = await supabase
+            .from('company_relationships')
+            .update({
+              role: values.role || 'Contact',
+              reports_to: values.reports_to || null,
+            })
+            .eq('id', currentRelationship.id);
+            
+          if (updateError) throw updateError;
+        } else if (values.role || values.reports_to) {
+          // Create new relationship if role or reports_to is specified
+          const { error: createError } = await supabase
+            .from('company_relationships')
+            .insert([{
+              person_id: person.id,
+              company_id: values.company_id || null,
+              role: values.role || 'Contact',
+              reports_to: values.reports_to || null,
+              relationship_type: 'business_contact',
+              start_date: new Date().toISOString().split('T')[0],
+              is_current: true,
+            }]);
+            
+          if (createError) throw createError;
+        }
+      }
+      
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['people'] });
       queryClient.invalidateQueries({ queryKey: ['person', person?.id] });
+      queryClient.invalidateQueries({ queryKey: ['current-relationship'] });
+      queryClient.invalidateQueries({ queryKey: ['person-reporting-relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['potential-managers'] });
       toast.success('Person updated successfully');
       onClose();
       if (onSuccess) onSuccess();
