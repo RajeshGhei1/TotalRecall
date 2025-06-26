@@ -89,11 +89,14 @@ const ReportingManager: React.FC = () => {
             
           if (error) throw error;
         } else {
-          // Create new relationship
+          // Create new relationship - we need to provide a company_id
+          // For reporting purposes, we'll use a default/placeholder company ID
+          // In a real scenario, you might want to let users select a company
           const { error } = await supabase
             .from('company_relationships')
             .insert({
               person_id: personId,
+              company_id: '00000000-0000-0000-0000-000000000000', // Placeholder UUID
               relationship_type: 'business_contact',
               role: 'Contact',
               reports_to: managerId,
