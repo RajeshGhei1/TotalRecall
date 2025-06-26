@@ -17,36 +17,41 @@ export const groupModulesByCategory = (modules: any[]) => {
   modules.forEach(module => {
     let category = 'core_system'; // default category
     
-    // Categorize modules based on their names and functionality
-    const moduleName = module.name.toLowerCase();
-    
-    if (moduleName.includes('ats') || moduleName.includes('candidate') || 
-        moduleName.includes('job') || moduleName.includes('recruitment') ||
-        moduleName.includes('interview') || moduleName.includes('talent')) {
-      category = 'recruitment';
-    } else if (moduleName.includes('company') || moduleName.includes('people') ||
-               moduleName.includes('business')) {
-      category = 'business';
-    } else if (moduleName.includes('analytic') || moduleName.includes('report') ||
-               moduleName.includes('insight') || moduleName.includes('metric')) {
-      category = 'analytics';
-    } else if (moduleName.includes('email') || moduleName.includes('notification') ||
-               moduleName.includes('communication') || moduleName.includes('collaboration')) {
-      category = 'communication';
-    } else if (moduleName === 'ai_analytics' || moduleName.includes('behavioral') ||
-               moduleName.includes('intelligence')) {
-      category = 'ai_analytics';
-    } else if (moduleName.startsWith('ai_automation')) {
-      category = 'ai_automation';
-    } else if (moduleName.startsWith('ai_cognitive')) {
-      category = 'ai_cognitive';
-    } else if (moduleName.startsWith('ai_core')) {
-      category = 'ai_core';
-    } else if (moduleName.startsWith('ai_knowledge')) {
-      category = 'ai_knowledge';
-    } else if (moduleName.includes('ai') || moduleName.includes('smart') ||
-               moduleName.includes('predict')) {
-      category = 'ai_tools';
+    // First priority: Use the database category if it exists and is not empty
+    if (module.category && module.category.trim() !== '') {
+      category = module.category.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    } else {
+      // Second priority: Categorize modules based on their names and functionality (fallback)
+      const moduleName = module.name.toLowerCase();
+      
+      if (moduleName.includes('ats') || moduleName.includes('candidate') || 
+          moduleName.includes('job') || moduleName.includes('recruitment') ||
+          moduleName.includes('interview') || moduleName.includes('talent')) {
+        category = 'recruitment';
+      } else if (moduleName.includes('company') || moduleName.includes('people') ||
+                 moduleName.includes('business')) {
+        category = 'business';
+      } else if (moduleName.includes('analytic') || moduleName.includes('report') ||
+                 moduleName.includes('insight') || moduleName.includes('metric')) {
+        category = 'analytics';
+      } else if (moduleName.includes('email') || moduleName.includes('notification') ||
+                 moduleName.includes('communication') || moduleName.includes('collaboration')) {
+        category = 'communication';
+      } else if (moduleName === 'ai_analytics' || moduleName.includes('behavioral') ||
+                 moduleName.includes('intelligence')) {
+        category = 'ai_analytics';
+      } else if (moduleName.startsWith('ai_automation')) {
+        category = 'ai_automation';
+      } else if (moduleName.startsWith('ai_cognitive')) {
+        category = 'ai_cognitive';
+      } else if (moduleName.startsWith('ai_core')) {
+        category = 'ai_core';
+      } else if (moduleName.startsWith('ai_knowledge')) {
+        category = 'ai_knowledge';
+      } else if (moduleName.includes('ai') || moduleName.includes('smart') ||
+                 moduleName.includes('predict')) {
+        category = 'ai_tools';
+      }
     }
     
     if (!grouped[category]) {
