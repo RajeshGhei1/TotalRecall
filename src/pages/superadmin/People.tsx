@@ -44,6 +44,7 @@ const People = () => {
   // Fetch companies for the dropdown
   useEffect(() => {
     const fetchCompanies = async () => {
+      console.log('Fetching companies...');
       setIsLoadingCompanies(true);
       setCompaniesError(null);
       try {
@@ -52,8 +53,12 @@ const People = () => {
           .select('id, name')
           .order('name');
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching companies:', error);
+          throw error;
+        }
         
+        console.log('Fetched companies:', data);
         setCompanies(data || []);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -142,6 +147,13 @@ const People = () => {
                   entityName="companies"
                   className="mb-4"
                 />
+              )}
+
+              {/* Loading state for companies */}
+              {isLoadingCompanies && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">Loading companies...</p>
+                </div>
               )}
 
               <PeopleActionBar 

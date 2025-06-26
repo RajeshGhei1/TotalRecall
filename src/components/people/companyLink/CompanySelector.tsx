@@ -9,19 +9,23 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building } from 'lucide-react';
+import { Building, Loader2 } from 'lucide-react';
 
 interface CompanySelectorProps {
   form: UseFormReturn<any>;
   companies: { id: string; name: string }[];
   onCompanyChange: (companyId: string) => void;
+  isLoading?: boolean;
 }
 
 export const CompanySelector: React.FC<CompanySelectorProps> = ({
   form,
   companies,
-  onCompanyChange
+  onCompanyChange,
+  isLoading = false
 }) => {
+  console.log('CompanySelector companies:', companies);
+  
   return (
     <FormField
       control={form.control}
@@ -36,16 +40,29 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
             <Select
               value={field.value}
               onValueChange={(value) => {
+                console.log('Selected company:', value);
                 field.onChange(value);
                 onCompanyChange(value);
               }}
+              disabled={isLoading || companies.length === 0}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a company" />
+              <SelectTrigger className="bg-white">
+                <SelectValue placeholder={
+                  isLoading 
+                    ? "Loading companies..." 
+                    : companies.length === 0 
+                      ? "No companies available" 
+                      : "Select a company"
+                } />
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border shadow-lg z-50">
                 {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
+                  <SelectItem 
+                    key={company.id} 
+                    value={company.id}
+                    className="hover:bg-gray-100 cursor-pointer"
+                  >
                     {company.name}
                   </SelectItem>
                 ))}

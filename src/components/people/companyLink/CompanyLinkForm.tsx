@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -45,6 +44,8 @@ export const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
 }) => {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const queryClient = useQueryClient();
+
+  console.log('CompanyLinkForm received companies:', companies);
 
   const form = useForm<CompanyLinkFormValues>({
     resolver: zodResolver(companyLinkSchema),
@@ -160,10 +161,12 @@ export const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
   });
 
   const handleSubmit = (values: CompanyLinkFormValues) => {
+    console.log('Form submission with values:', values);
     createRelationshipMutation.mutate(values);
   };
 
   const handleCompanyChange = (companyId: string) => {
+    console.log('Company changed to:', companyId);
     setSelectedCompanyId(companyId);
     form.setValue('company_id', companyId);
     form.setValue('branch_office_id', '');
@@ -191,6 +194,7 @@ export const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               form={form}
               companies={companies}
               onCompanyChange={handleCompanyChange}
+              isLoading={companies.length === 0}
             />
 
             {selectedCompanyId && (
@@ -215,7 +219,7 @@ export const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
               </Button>
               <Button 
                 type="submit" 
-                disabled={createRelationshipMutation.isPending || isSubmitting}
+                disabled={createRelationshipMutation.isPending || isSubmitting || companies.length === 0}
               >
                 {createRelationshipMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
