@@ -198,9 +198,11 @@ const PeopleList: React.FC<PeopleListProps> = ({
                         </div>
                       )}
 
-                      {/* Show reporting relationships for contacts */}
+                      {/* Show reporting relationships for contacts - this should appear after company info */}
                       {person.type === 'contact' && (
-                        <ReportingIndicator personId={person.id} showDetails={!isMobile} />
+                        <div className="mt-2">
+                          <ReportingIndicator personId={person.id} showDetails={!isMobile} />
+                        </div>
                       )}
                     </div>
                   </div>
