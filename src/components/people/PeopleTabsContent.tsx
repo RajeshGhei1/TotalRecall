@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PeopleList from './PeopleList';
-import { ContactMetricsDashboard } from '@/components/contacts/ContactMetricsDashboard';
+import ContactMetricsDashboard from '@/components/contacts/ContactMetricsDashboard';
 import ReportingTabContent from './tabs/ReportingTabContent';
 import ReportingManager from './ReportingManager';
 
