@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Users, Save, AlertCircle } from "lucide-react";
+import { Search, Users, Save, AlertCircle, Plus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,59 +17,96 @@ const ReportingManager: React.FC = () => {
   const [pendingChanges, setPendingChanges] = useState<Record<string, string | null>>({});
   const queryClient = useQueryClient();
 
-  // Fetch all contacts
-  const { data: contacts = [], isLoading } = useQuery({
+  // Fetch all contacts - simplified query
+  const { data: contacts = [], isLoading, error } = useQuery({
     queryKey: ['contacts-for-reporting'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Fetching contacts for reporting...');
+      
+      // First, get all contacts
+      const { data: peopleData, error: peopleError } = await supabase
         .from('people')
-        .select(`
-          id,
-          full_name,
-          email,
-          company_relationships!inner(
-            id,
-            role,
-            reports_to,
-            is_current,
-            companies(name)
-          )
-        `)
+        .select('id, full_name, email')
         .eq('type', 'contact')
-        .eq('company_relationships.is_current', true)
         .order('full_name');
         
-      if (error) throw error;
-      return data || [];
+      if (peopleError) {
+        console.error('Error fetching people:', peopleError);
+        throw peopleError;
+      }
+
+      console.log('Found people:', peopleData?.length || 0);
+
+      if (!peopleData || peopleData.length === 0) {
+        return [];
+      }
+
+      // Then get their current relationships
+      const { data: relationshipsData, error: relationshipsError } = await supabase
+        .from('company_relationships')
+        .select('person_id, role, reports_to')
+        .eq('is_current', true)
+        .in('person_id', peopleData.map(p => p.id));
+        
+      if (relationshipsError) {
+        console.error('Error fetching relationships:', relationshipsError);
+        // Don't throw error, just continue without relationships
+      }
+
+      console.log('Found relationships:', relationshipsData?.length || 0);
+
+      // Combine the data
+      const contactsWithRelationships = peopleData.map(person => ({
+        ...person,
+        relationship: relationshipsData?.find(r => r.person_id === person.id) || null
+      }));
+
+      console.log('Final contacts with relationships:', contactsWithRelationships);
+      return contactsWithRelationships;
     },
   });
 
-  // Create a lookup map for easy manager selection
-  const contactsMap = contacts.reduce((acc, contact) => {
-    acc[contact.id] = contact;
-    return acc;
-  }, {} as Record<string, any>);
-
   const saveChangesMutation = useMutation({
     mutationFn: async () => {
-      const updates = Object.entries(pendingChanges).map(([personId, managerId]) => ({
-        person_id: personId,
-        reports_to: managerId,
-      }));
+      const updates = Object.entries(pendingChanges);
+      console.log('Saving changes:', updates);
 
-      for (const update of updates) {
-        const { error } = await supabase
+      for (const [personId, managerId] of updates) {
+        // Check if person has a current relationship
+        const { data: currentRelationship } = await supabase
           .from('company_relationships')
-          .update({ reports_to: update.reports_to })
-          .eq('person_id', update.person_id)
-          .eq('is_current', true);
-          
-        if (error) throw error;
+          .select('id')
+          .eq('person_id', personId)
+          .eq('is_current', true)
+          .maybeSingle();
+
+        if (currentRelationship) {
+          // Update existing relationship
+          const { error } = await supabase
+            .from('company_relationships')
+            .update({ reports_to: managerId })
+            .eq('id', currentRelationship.id);
+            
+          if (error) throw error;
+        } else {
+          // Create new relationship
+          const { error } = await supabase
+            .from('company_relationships')
+            .insert({
+              person_id: personId,
+              relationship_type: 'business_contact',
+              role: 'Contact',
+              reports_to: managerId,
+              start_date: new Date().toISOString().split('T')[0],
+              is_current: true,
+            });
+            
+          if (error) throw error;
+        }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts-for-reporting'] });
-      queryClient.invalidateQueries({ queryKey: ['person-reporting-relationships'] });
       queryClient.invalidateQueries({ queryKey: ['reporting-indicator'] });
       setPendingChanges({});
       toast.success('Reporting relationships updated successfully');
@@ -120,6 +157,51 @@ const ReportingManager: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Reporting Relationships Manager</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-8">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Error Loading Contacts</h3>
+            <p className="text-muted-foreground mb-4">
+              {error.message || 'Failed to load contacts'}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (contacts.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Reporting Relationships Manager</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-8">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Contacts Found</h3>
+            <p className="text-muted-foreground mb-4">
+              You need to add contacts first before setting up reporting relationships.
+            </p>
+            <Button onClick={() => window.location.href = '/superadmin/people'}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Contacts
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -127,6 +209,7 @@ const ReportingManager: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             Reporting Relationships Manager
+            <Badge variant="secondary">{contacts.length} contacts</Badge>
           </div>
           {hasChanges && (
             <Button 
@@ -164,10 +247,9 @@ const ReportingManager: React.FC = () => {
         {/* Contacts List */}
         <div className="space-y-3">
           {filteredContacts.map((contact) => {
-            const currentRelationship = contact.company_relationships?.[0];
             const currentManagerId = pendingChanges[contact.id] !== undefined 
               ? pendingChanges[contact.id] 
-              : currentRelationship?.reports_to;
+              : contact.relationship?.reports_to;
             const hasChange = pendingChanges[contact.id] !== undefined;
 
             return (
@@ -184,13 +266,15 @@ const ReportingManager: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium truncate">{contact.full_name}</h4>
                         {hasChange && (
-                          <Badge variant="outline" className="text-xs">Changed</Badge>
+                          <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700">
+                            Changed
+                          </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
-                      {currentRelationship?.role && (
+                      {contact.relationship?.role && (
                         <p className="text-xs text-muted-foreground">
-                          {currentRelationship.role} at {currentRelationship.companies?.name}
+                          Role: {contact.relationship.role}
                         </p>
                       )}
                     </div>
@@ -223,9 +307,9 @@ const ReportingManager: React.FC = () => {
           })}
         </div>
 
-        {filteredContacts.length === 0 && (
+        {filteredContacts.length === 0 && searchQuery && (
           <div className="text-center py-8 text-muted-foreground">
-            {searchQuery ? 'No contacts match your search.' : 'No contacts found.'}
+            No contacts match your search for "{searchQuery}".
           </div>
         )}
       </CardContent>
