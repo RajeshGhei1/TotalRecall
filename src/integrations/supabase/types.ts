@@ -1112,7 +1112,8 @@ export type Database = {
       }
       company_relationships: {
         Row: {
-          company_id: string
+          branch_office_id: string | null
+          company_id: string | null
           created_at: string
           end_date: string | null
           id: string
@@ -1125,7 +1126,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          company_id: string
+          branch_office_id?: string | null
+          company_id?: string | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -1138,7 +1140,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          company_id?: string
+          branch_office_id?: string | null
+          company_id?: string | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -1151,6 +1154,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "company_relationships_branch_office_id_fkey"
+            columns: ["branch_office_id"]
+            isOneToOne: false
+            referencedRelation: "company_branch_offices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "company_relationships_company_id_fkey"
             columns: ["company_id"]

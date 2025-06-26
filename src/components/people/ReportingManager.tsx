@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Users, Save, AlertCircle, Plus } from "lucide-react";
+import { Search, Users, Save, AlertCircle, Plus, Building, MapPin } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -14,55 +14,72 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const ReportingManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [pendingChanges, setPendingChanges] = useState<Record<string, string | null>>({});
   const queryClient = useQueryClient();
 
-  // Fetch all contacts - simplified query
+  // Fetch companies for filtering
+  const { data: companies = [] } = useQuery({
+    queryKey: ['companies-for-reporting'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name')
+        .order('name');
+        
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch properly linked contacts with company relationships
   const { data: contacts = [], isLoading, error } = useQuery({
-    queryKey: ['contacts-for-reporting'],
+    queryKey: ['contacts-for-reporting', companyFilter],
     queryFn: async () => {
       console.log('Fetching contacts for reporting...');
       
-      // First, get all contacts
-      const { data: peopleData, error: peopleError } = await supabase
-        .from('people')
-        .select('id, full_name, email')
-        .eq('type', 'contact')
-        .order('full_name');
-        
-      if (peopleError) {
-        console.error('Error fetching people:', peopleError);
-        throw peopleError;
-      }
-
-      console.log('Found people:', peopleData?.length || 0);
-
-      if (!peopleData || peopleData.length === 0) {
-        return [];
-      }
-
-      // Then get their current relationships
-      const { data: relationshipsData, error: relationshipsError } = await supabase
+      let query = supabase
         .from('company_relationships')
-        .select('person_id, role, reports_to')
+        .select(`
+          id,
+          person_id,
+          company_id,
+          branch_office_id,
+          role,
+          reports_to,
+          people!inner (
+            id,
+            full_name,
+            email,
+            type
+          ),
+          companies!inner (
+            id,
+            name
+          ),
+          company_branch_offices (
+            id,
+            branch_name,
+            city
+          )
+        `)
         .eq('is_current', true)
-        .in('person_id', peopleData.map(p => p.id));
+        .eq('people.type', 'contact')
+        .not('company_id', 'is', null);
+
+      if (companyFilter !== 'all') {
+        query = query.eq('company_id', companyFilter);
+      }
+
+      const { data: relationshipsData, error: relationshipsError } = await query.order('people.full_name');
         
       if (relationshipsError) {
         console.error('Error fetching relationships:', relationshipsError);
-        // Don't throw error, just continue without relationships
+        throw relationshipsError;
       }
 
       console.log('Found relationships:', relationshipsData?.length || 0);
-
-      // Combine the data
-      const contactsWithRelationships = peopleData.map(person => ({
-        ...person,
-        relationship: relationshipsData?.find(r => r.person_id === person.id) || null
-      }));
-
-      console.log('Final contacts with relationships:', contactsWithRelationships);
-      return contactsWithRelationships;
+      return relationshipsData || [];
     },
   });
 
@@ -71,41 +88,13 @@ const ReportingManager: React.FC = () => {
       const updates = Object.entries(pendingChanges);
       console.log('Saving changes:', updates);
 
-      for (const [personId, managerId] of updates) {
-        // Check if person has a current relationship
-        const { data: currentRelationship } = await supabase
+      for (const [relationshipId, managerId] of updates) {
+        const { error } = await supabase
           .from('company_relationships')
-          .select('id')
-          .eq('person_id', personId)
-          .eq('is_current', true)
-          .maybeSingle();
-
-        if (currentRelationship) {
-          // Update existing relationship
-          const { error } = await supabase
-            .from('company_relationships')
-            .update({ reports_to: managerId })
-            .eq('id', currentRelationship.id);
-            
-          if (error) throw error;
-        } else {
-          // Create new relationship - we need to provide a company_id
-          // For reporting purposes, we'll use a default/placeholder company ID
-          // In a real scenario, you might want to let users select a company
-          const { error } = await supabase
-            .from('company_relationships')
-            .insert({
-              person_id: personId,
-              company_id: '00000000-0000-0000-0000-000000000000', // Placeholder UUID
-              relationship_type: 'business_contact',
-              role: 'Contact',
-              reports_to: managerId,
-              start_date: new Date().toISOString().split('T')[0],
-              is_current: true,
-            });
-            
-          if (error) throw error;
-        }
+          .update({ reports_to: managerId })
+          .eq('id', relationshipId);
+          
+        if (error) throw error;
       }
     },
     onSuccess: () => {
@@ -120,19 +109,36 @@ const ReportingManager: React.FC = () => {
     }
   });
 
-  const handleManagerChange = (personId: string, managerId: string | null) => {
+  const handleManagerChange = (relationshipId: string, managerId: string | null) => {
     setPendingChanges(prev => ({
       ...prev,
-      [personId]: managerId === '' ? null : managerId,
+      [relationshipId]: managerId === '' ? null : managerId,
     }));
   };
 
   const filteredContacts = contacts.filter(contact =>
-    contact.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+    contact.people.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.people.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.companies.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const hasChanges = Object.keys(pendingChanges).length > 0;
+
+  // Group contacts by company for better organization
+  const contactsByCompany = filteredContacts.reduce((acc, contact) => {
+    const companyId = contact.company_id;
+    const companyName = contact.companies.name;
+    
+    if (!acc[companyId]) {
+      acc[companyId] = {
+        companyName,
+        contacts: []
+      };
+    }
+    
+    acc[companyId].contacts.push(contact);
+    return acc;
+  }, {} as Record<string, { companyName: string; contacts: typeof filteredContacts }>);
 
   if (isLoading) {
     return (
@@ -191,13 +197,13 @@ const ReportingManager: React.FC = () => {
         <CardContent>
           <div className="text-center p-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Contacts Found</h3>
+            <h3 className="text-lg font-medium mb-2">No Linked Contacts Found</h3>
             <p className="text-muted-foreground mb-4">
-              You need to add contacts first before setting up reporting relationships.
+              You need to link contacts to companies first before setting up reporting relationships.
             </p>
             <Button onClick={() => window.location.href = '/superadmin/people'}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Contacts
+              Link Contacts to Companies
             </Button>
           </div>
         </CardContent>
@@ -212,7 +218,7 @@ const ReportingManager: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             Reporting Relationships Manager
-            <Badge variant="secondary">{contacts.length} contacts</Badge>
+            <Badge variant="secondary">{contacts.length} linked contacts</Badge>
           </div>
           {hasChanges && (
             <Button 
@@ -227,15 +233,31 @@ const ReportingManager: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search contacts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        {/* Filters */}
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search contacts or companies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by company" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Companies</SelectItem>
+              {companies.map((company) => (
+                <SelectItem key={company.id} value={company.id}>
+                  {company.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {hasChanges && (
@@ -247,67 +269,87 @@ const ReportingManager: React.FC = () => {
           </div>
         )}
 
-        {/* Contacts List */}
-        <div className="space-y-3">
-          {filteredContacts.map((contact) => {
-            const currentManagerId = pendingChanges[contact.id] !== undefined 
-              ? pendingChanges[contact.id] 
-              : contact.relationship?.reports_to;
-            const hasChange = pendingChanges[contact.id] !== undefined;
+        {/* Contacts grouped by company */}
+        <div className="space-y-6">
+          {Object.entries(contactsByCompany).map(([companyId, { companyName, contacts: companyContacts }]) => (
+            <div key={companyId} className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <Building className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-medium text-lg">{companyName}</h3>
+                <Badge variant="outline">{companyContacts.length} contacts</Badge>
+              </div>
+              
+              {companyContacts.map((contact) => {
+                const currentManagerId = pendingChanges[contact.id] !== undefined 
+                  ? pendingChanges[contact.id] 
+                  : contact.reports_to;
+                const hasChange = pendingChanges[contact.id] !== undefined;
 
-            return (
-              <div key={contact.id} className={`p-4 border rounded-lg ${hasChange ? 'bg-blue-50 border-blue-200' : ''}`}>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {contact.full_name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium truncate">{contact.full_name}</h4>
-                        {hasChange && (
-                          <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700">
-                            Changed
-                          </Badge>
-                        )}
+                // Get potential managers from the same company, excluding the contact themselves
+                const potentialManagers = companyContacts.filter(c => c.person_id !== contact.person_id);
+
+                return (
+                  <div key={contact.id} className={`p-4 border rounded-lg ${hasChange ? 'bg-blue-50 border-blue-200' : ''}`}>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <Avatar>
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {contact.people.full_name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium truncate">{contact.people.full_name}</h4>
+                            {hasChange && (
+                              <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700">
+                                Changed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">{contact.people.email}</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                            <span>Role: {contact.role}</span>
+                            {contact.company_branch_offices && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span>{contact.company_branch_offices.branch_name}</span>
+                                {contact.company_branch_offices.city && (
+                                  <span>({contact.company_branch_offices.city})</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
-                      {contact.relationship?.role && (
-                        <p className="text-xs text-muted-foreground">
-                          Role: {contact.relationship.role}
-                        </p>
-                      )}
+
+                      <div className="w-64">
+                        <Select
+                          value={currentManagerId || ''}
+                          onValueChange={(value) => handleManagerChange(contact.id, value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select manager" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">No manager</SelectItem>
+                            {potentialManagers.map((manager) => (
+                              <SelectItem key={manager.person_id} value={manager.person_id}>
+                                <div className="flex flex-col">
+                                  <span>{manager.people.full_name}</span>
+                                  <span className="text-xs text-muted-foreground">{manager.role}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="w-64">
-                    <Select
-                      value={currentManagerId || ''}
-                      onValueChange={(value) => handleManagerChange(contact.id, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select manager" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">No manager</SelectItem>
-                        {contacts
-                          .filter(c => c.id !== contact.id) // Don't allow self-reporting
-                          .map((manager) => (
-                            <SelectItem key={manager.id} value={manager.id}>
-                              {manager.full_name}
-                            </SelectItem>
-                          ))
-                        }
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {filteredContacts.length === 0 && searchQuery && (
