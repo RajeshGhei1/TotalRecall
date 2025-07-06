@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Shield, Activity, ArrowLeft } from 'lucide-react';
+import { Shield, Activity, ArrowLeft, TestTube } from 'lucide-react';
 import AuditDashboard from '@/components/superadmin/audit/AuditDashboard';
 import AuditLogViewer from '@/components/superadmin/audit/AuditLogViewer';
+import AuditLogTest from '@/components/superadmin/user-activity/AuditLogTest';
 
 const AuditLogs: React.FC = () => {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ const AuditLogs: React.FC = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Dashboard
@@ -46,6 +46,10 @@ const AuditLogs: React.FC = () => {
           <TabsTrigger value="logs" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Audit Logs
+          </TabsTrigger>
+          <TabsTrigger value="test" className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            Test
           </TabsTrigger>
         </TabsList>
 
@@ -58,6 +62,10 @@ const AuditLogs: React.FC = () => {
             selectedTenantId={selectedTenantId} 
             onTenantChange={setSelectedTenantId}
           />
+        </TabsContent>
+
+        <TabsContent value="test" className="space-y-6">
+          <AuditLogTest />
         </TabsContent>
       </Tabs>
     </div>

@@ -18,6 +18,7 @@ const editModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
   description: z.string().optional(),
   category: z.string().min(1, "Category is required"),
+  type: z.string().min(1, "Type is required"),
   version: z.string().min(1, "Version is required"),
   is_active: z.boolean(),
   default_limits: z.record(z.any()).optional(),
@@ -41,6 +42,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
       name: module?.name || '',
       description: module?.description || '',
       category: module?.category || '',
+      type: module?.type || '',
       version: module?.version || '1.0.0',
       is_active: module?.is_active || true,
       default_limits: module?.default_limits || {},
@@ -57,6 +59,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
         name: module.name,
         description: module.description || '',
         category: module.category,
+        type: module.type || '',
         version: module.version || '1.0.0',
         is_active: module.is_active,
         default_limits: module.default_limits || {},
@@ -78,6 +81,11 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
     { value: 'tenant-admin', label: 'Tenant Admin' }
   ];
 
+  const types = [
+    { value: 'foundation', label: 'Foundation' },
+    { value: 'business', label: 'Business' }
+  ];
+
   const onSubmit = async (data: EditModuleFormData) => {
     if (!module) return;
     
@@ -89,6 +97,7 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
         name: data.name,
         description: data.description || '',
         category: data.category,
+        type: data.type,
         version: data.version || '1.0.0',
         is_active: data.is_active,
         default_limits: data.default_limits || {},
@@ -189,14 +198,36 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
               )}
             </div>
 
-            <div className="flex items-center space-x-2 pt-7">
-              <Switch
-                id="is_active"
-                checked={form.watch('is_active')}
-                onCheckedChange={(checked) => form.setValue('is_active', checked)}
-              />
-              <Label htmlFor="is_active">Active Module</Label>
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <Select
+                value={form.watch('type')}
+                onValueChange={(value) => form.setValue('type', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {types.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.type && (
+                <p className="text-sm text-red-500">{form.formState.errors.type.message}</p>
+              )}
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2 pt-7">
+            <Switch
+              id="is_active"
+              checked={form.watch('is_active')}
+              onCheckedChange={(checked) => form.setValue('is_active', checked)}
+            />
+            <Label htmlFor="is_active">Active Module</Label>
           </div>
 
           <ModuleDependencySelector

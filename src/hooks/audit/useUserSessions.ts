@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -19,7 +18,8 @@ export const useUserSessions = (filters: UserSessionFilters = {}, page = 1, page
           profiles:user_id (
             id,
             email,
-            full_name
+            full_name,
+            role
           ),
           tenants:tenant_id (
             id,

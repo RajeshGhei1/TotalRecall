@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { 
   BarChart2,
@@ -20,7 +19,8 @@ import {
   BookOpen,
   BarChart3,
   Code,
-  Blocks
+  Blocks,
+  Monitor
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -75,6 +75,12 @@ export const useSuperAdminNavigation = () => {
       label: 'Audit Logs', 
       icon: Shield, 
       href: '/superadmin/audit-logs'
+    },
+    { 
+      id: 'user-activity',
+      label: 'User Activity', 
+      icon: Monitor, 
+      href: '/superadmin/user-activity'
     },
     { 
       id: 'global-settings',

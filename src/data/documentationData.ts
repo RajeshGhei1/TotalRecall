@@ -1259,5 +1259,78 @@ Total Recall provides real-time collaboration capabilities across all modules.
 ✅ Performance optimization tips
 🔄 Automated deployment scripts
 🔄 Kubernetes deployment manifests`
+  },
+  {
+    filePath: 'docs/current/GETTING_STARTED_GUIDE.md',
+    title: 'Getting Started Guide',
+    description: 'Step-by-step onboarding for new users, including setup, navigation, and first actions.',
+    category: 'user-guide',
+    priority: 'critical',
+    tags: ['user', 'onboarding', 'guide'],
+    lastModified: '2025-06-13',
+    estimatedReadTime: '10 min',
+    content: `# Getting Started Guide\n\nWelcome to Total Recall! This guide will help you get started with your first login, basic navigation, and initial setup.\n\n## 1. Logging In\n- Go to the login page and enter your credentials.\n- If you do not have an account, contact your administrator.\n\n## 2. Navigating the Dashboard\n- The left sidebar provides access to all major modules.\n- Use the top navigation for quick actions and notifications.\n\n## 3. Setting Up Your Profile\n- Click your avatar in the top right and select 'Profile'.\n- Update your contact information and preferences.\n\n## 4. Accessing Modules\n- Modules are listed in the sidebar. Click to open.\n- If you do not see a module, you may not have access.\n\n## 5. Getting Help\n- Use the 'Help' button in the sidebar for documentation and support.\n\n---\n\n*For more detailed guides, see the User Manuals section.*\n`,
+    type: 'guide',
+    difficulty: 'beginner',
+    version: '1.0.0'
+  },
+  {
+    filePath: 'docs/current/TROUBLESHOOTING_GUIDE.md',
+    title: 'Troubleshooting Guide',
+    description: 'Common issues and solutions for users and administrators.',
+    category: 'user-guide',
+    priority: 'critical',
+    tags: ['user', 'troubleshooting', 'support'],
+    lastModified: '2025-06-13',
+    estimatedReadTime: '8 min',
+    content: `# Troubleshooting Guide\n\nThis guide covers common issues and their solutions for Total Recall users.\n\n## 1. Login Problems\n- **Forgot Password:** Use the 'Forgot Password' link on the login page.\n- **Account Locked:** Contact your administrator to unlock your account.\n\n## 2. Module Access Issues\n- **Missing Modules:** Ensure you have the correct permissions. Contact your admin if needed.\n- **Access Denied:** Your subscription or role may not allow access.\n\n## 3. Data Import/Export\n- **Import Fails:** Check file format and required fields.\n- **Export Issues:** Try exporting a smaller data set or check your browser settings.\n\n## 4. Performance\n- **Slow Loading:** Clear your browser cache and check your internet connection.\n- **API Errors:** Retry after a few minutes. If persistent, contact support.\n\n## 5. Getting More Help\n- Use the in-app Help button or contact support at support@totalrecall.com.\n\n---\n\n*For advanced troubleshooting, see the Admin Guide or contact your system administrator.*\n`,
+    type: 'guide',
+    difficulty: 'beginner',
+    version: '1.0.0'
+  },
+  {
+    filePath: 'docs/current/DEPLOYMENT_GUIDE_USER.md',
+    title: 'Deployment Guide',
+    description: 'Step-by-step guide for deploying Total Recall in production environments.',
+    category: 'deployment',
+    priority: 'critical',
+    tags: ['deployment', 'production', 'guide'],
+    lastModified: '2025-06-13',
+    estimatedReadTime: '12 min',
+    content: `# Deployment Guide
+
+This guide provides step-by-step instructions for deploying Total Recall in a production environment.
+
+## 1. Environment Setup
+- Ensure Node.js, npm, and PostgreSQL are installed.
+- Clone the repository and install dependencies with 'npm install'.
+
+## 2. Database Configuration
+- Set up your PostgreSQL instance.
+- Run the migration scripts in the 'supabase/migrations' directory.
+- Configure environment variables for database access.
+
+## 3. Application Configuration
+- Set environment variables for API keys, authentication, and storage.
+- Review and update the 'supabase/config.toml' file as needed.
+
+## 4. Security Hardening
+- Enable HTTPS for all endpoints.
+- Set up RLS (Row Level Security) policies in the database.
+- Configure user roles and permissions.
+
+## 5. Performance Tuning
+- Enable database indexing for high-traffic tables.
+- Use CDN for static assets.
+- Monitor API response times and optimize queries.
+
+## 6. Monitoring & Maintenance
+- Set up application and database monitoring tools.
+- Schedule regular backups.
+- Review logs for errors and unusual activity.
+
+---
+
+*For advanced deployment scenarios, see the Admin Deployment Guide or contact your DevOps team.*`
   }
 ];

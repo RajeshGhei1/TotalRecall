@@ -21,9 +21,8 @@ const UserSessionViewer: React.FC<UserSessionViewerProps> = ({
   selectedTenantId, 
   onTenantChange 
 }) => {
-  const [filters, setFilters] = useState<UserSessionFilters>({
-    tenant_id: selectedTenantId
-  });
+  // By default, do not apply any filters (show all sessions)
+  const [filters, setFilters] = useState<UserSessionFilters>({});
   const [page, setPage] = useState(1);
 
   const { data: sessionData, isLoading } = useUserSessions(filters, page);
@@ -138,7 +137,7 @@ const UserSessionViewer: React.FC<UserSessionViewerProps> = ({
               variant="outline"
               size="sm"
               onClick={() => {
-                setFilters({ tenant_id: selectedTenantId });
+                setFilters({});
                 setPage(1);
               }}
             >
@@ -185,6 +184,9 @@ const UserSessionViewer: React.FC<UserSessionViewerProps> = ({
                           <div>
                             <div className="font-medium">
                               {session.profiles?.full_name || session.profiles?.email || 'Unknown User'}
+                              {session.profiles?.role === 'super_admin' && (
+                                <Badge variant="destructive" className="ml-2">Super Admin</Badge>
+                              )}
                             </div>
                             {session.tenants && (
                               <div className="text-sm text-muted-foreground">

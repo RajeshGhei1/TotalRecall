@@ -1,4 +1,3 @@
-
 export interface UserSession {
   id: string;
   user_id: string;
@@ -14,6 +13,7 @@ export interface UserSession {
     id: string;
     email: string;
     full_name?: string;
+    role?: string;
   };
   tenants?: {
     id: string;

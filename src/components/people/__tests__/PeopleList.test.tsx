@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { render } from '@testing-library/react';
 import { screen, waitFor } from '@testing-library/dom';
@@ -102,7 +101,8 @@ describe('PeopleList', () => {
       { wrapper: createWrapper() }
     );
 
-    expect(screen.getByText('Searching...')).toBeInTheDocument();
+    // Look for loading skeleton elements instead of text
+    expect(screen.getByTestId('people-list-skeleton')).toBeInTheDocument();
   });
 
   it('shows error state', async () => {
@@ -125,7 +125,9 @@ describe('PeopleList', () => {
       { wrapper: createWrapper() }
     );
 
-    expect(screen.getByText(/Error loading contacts/)).toBeInTheDocument();
+    // Use getAllByText to handle multiple elements with same text
+    const errorElements = screen.getAllByText(/Failed to load contacts/);
+    expect(errorElements.length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no people found', async () => {
@@ -148,6 +150,7 @@ describe('PeopleList', () => {
       { wrapper: createWrapper() }
     );
 
-    expect(screen.getByText('No contacts found.')).toBeInTheDocument();
+    // Use a more flexible text matcher for split text
+    expect(screen.getByText(/No.*contacts.*found/)).toBeInTheDocument();
   });
 });

@@ -1,0 +1,5 @@
+{
+  "name": "email-management",
+  "type": "foundation",
+  "description": "Handles transactional and system email services."
+} 

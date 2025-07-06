@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // General application styles
@@ -10,6 +9,7 @@ import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
+import { useSessionLogger } from '@/hooks/useSessionLogger';
 
 // Enhanced component to handle smart authenticated user redirects
 const AuthenticatedRedirect: React.FC = () => {
@@ -45,6 +45,7 @@ const AuthenticatedRedirect: React.FC = () => {
 };
 
 function App() {
+  useSessionLogger();
   return (
     <TenantProvider>
       <Router>

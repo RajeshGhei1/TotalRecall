@@ -6,6 +6,7 @@ export interface SystemModule {
   name: string;
   description?: string;
   category: string;
+  type?: string; // 'foundation' | 'business' | etc.
   is_active: boolean;
   version?: string;
   dependencies?: string[];

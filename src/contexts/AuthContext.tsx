@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+// import { useSessionLogger } from '@/hooks/useSessionLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -27,6 +28,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [bypassAuth] = useState(false); // Set to true for development bypass
+
+  // Add session logging
+  // useSessionLogger();
 
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');

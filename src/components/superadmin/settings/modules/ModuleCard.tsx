@@ -144,50 +144,35 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onEdit, onDelete }) => 
                 </div>
               </div>
               
-              {/* Category and Status */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge 
-                  variant="outline" 
-                  className={`${getCategoryColor(module.category)} border font-medium`}
-                >
-                  <span className="capitalize">{module.category.replace('-', ' ')}</span>
-                </Badge>
-                
-                {/* Functional Module Badge */}
-                {isFunction && (
+              {/* Category, Type, Function, and Status */}
+              <div className="flex flex-col gap-1 mt-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge 
-                    variant="default"
-                    className="bg-green-100 text-green-800 border-green-200"
+                    variant="outline" 
+                    className={`${getCategoryColor(module.category)} border font-medium`}
                   >
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Functional
+                    <span className="capitalize">{module.category.replace('-', ' ')}</span>
                   </Badge>
-                )}
-                
-                {/* Accessible Badge */}
-                {moduleRoute && (
-                  <Badge 
-                    variant="outline"
-                    className="bg-blue-50 text-blue-700 border-blue-200"
-                  >
-                    <Eye className="h-3 w-3 mr-1" />
-                    Accessible
-                  </Badge>
-                )}
-                
-                <Badge 
-                  variant={module.is_active ? 'default' : 'secondary'} 
-                  className={`${module.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}
-                >
-                  {module.is_active ? (
-                    <>
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Active
-                    </>
-                  ) : (
-                    'Inactive'
+                  {module.type && (
+                    <Badge variant="outline" className="border font-medium bg-yellow-50 text-yellow-800 border-yellow-200">
+                      {module.type.charAt(0).toUpperCase() + module.type.slice(1)}
+                    </Badge>
                   )}
-                </Badge>
+                  <Badge 
+                    variant={module.is_active ? 'default' : 'secondary'} 
+                    className={`${module.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}
+                  >
+                    {module.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                  {module.maturity_status && (
+                    <Badge variant="outline" className="border font-medium">
+                      {module.maturity_status.charAt(0).toUpperCase() + module.maturity_status.slice(1)}
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  <span className="font-semibold">Function:</span> {module.description || 'No description provided.'}
+                </div>
               </div>
             </div>
             

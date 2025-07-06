@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Users, Activity } from 'lucide-react';
+import { useComplianceItems, useCreateComplianceItem, useUpdateComplianceItem, useDeleteComplianceItem, ComplianceItem } from '@/hooks/useComplianceItems';
+import { ComplianceItemDialog } from './ComplianceItemDialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 interface SecurityAlert {
   id: string;
@@ -18,17 +21,17 @@ interface SecurityAlert {
   affected_users?: number;
 }
 
-interface ComplianceItem {
-  id: string;
-  framework: string;
-  requirement: string;
-  status: 'compliant' | 'partial' | 'non_compliant';
-  last_audit: string;
-  next_review: string;
-}
-
 export const SecurityDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('alerts');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ComplianceItem | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<ComplianceItem | null>(null);
+
+  const { data: complianceItems, isLoading, isError } = useComplianceItems();
+  const createItem = useCreateComplianceItem();
+  const updateItem = useUpdateComplianceItem();
+  const deleteItem = useDeleteComplianceItem();
 
   // Mock security alerts
   const securityAlerts: SecurityAlert[] = [
@@ -63,33 +66,32 @@ export const SecurityDashboard: React.FC = () => {
     }
   ];
 
-  // Mock compliance data
-  const complianceItems: ComplianceItem[] = [
-    {
-      id: '1',
-      framework: 'GDPR',
-      requirement: 'Data Processing Records',
-      status: 'compliant',
-      last_audit: '2024-01-15',
-      next_review: '2024-07-15'
-    },
-    {
-      id: '2',
-      framework: 'SOC 2',
-      requirement: 'Access Control Review',
-      status: 'partial',
-      last_audit: '2024-01-10',
-      next_review: '2024-04-10'
-    },
-    {
-      id: '3',
-      framework: 'ISO 27001',
-      requirement: 'Incident Response Plan',
-      status: 'compliant',
-      last_audit: '2024-01-20',
-      next_review: '2024-07-20'
+  const handleAdd = () => {
+    setEditingItem(null);
+    setDialogOpen(true);
+  };
+  const handleEdit = (item: ComplianceItem) => {
+    setEditingItem(item);
+    setDialogOpen(true);
+  };
+  const handleDelete = (item: ComplianceItem) => {
+    setDeletingItem(item);
+    setDeleteDialogOpen(true);
+  };
+  const handleDialogSubmit = async (data: Omit<ComplianceItem, 'id'>) => {
+    if (editingItem) {
+      await updateItem.mutateAsync({ ...editingItem, ...data });
+    } else {
+      await createItem.mutateAsync(data);
     }
-  ];
+    setDialogOpen(false);
+  };
+  const handleDeleteConfirm = async () => {
+    if (deletingItem) {
+      await deleteItem.mutateAsync(deletingItem.id);
+      setDeleteDialogOpen(false);
+    }
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -118,6 +120,10 @@ export const SecurityDashboard: React.FC = () => {
       default: return 'text-gray-600';
     }
   };
+
+  const complianceScore = complianceItems && complianceItems.length > 0
+    ? Math.round((complianceItems.filter(c => c.status === 'compliant').length / complianceItems.length) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -150,7 +156,7 @@ export const SecurityDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {Math.round((complianceItems.filter(c => c.status === 'compliant').length / complianceItems.length) * 100)}%
+              {complianceScore}%
             </div>
           </CardContent>
         </Card>
@@ -229,6 +235,11 @@ export const SecurityDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="compliance" className="space-y-4">
+          <div className="flex justify-end mb-2">
+            <Button onClick={handleAdd} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Add Compliance Item
+            </Button>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -240,27 +251,62 @@ export const SecurityDashboard: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {isLoading && <div>Loading...</div>}
+              {isError && <div>Error loading compliance data.</div>}
               <div className="space-y-3">
-                {complianceItems.map((item) => (
-                  <div key={item.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="font-medium">{item.framework}</span>
-                        <p className="text-sm text-muted-foreground">{item.requirement}</p>
+                {complianceItems && complianceItems.map((item) => (
+                  <div key={item.id} className="p-4 border rounded-lg flex justify-between items-center">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="font-medium">{item.framework}</span>
+                          <p className="text-sm text-muted-foreground">{item.requirement}</p>
+                        </div>
+                        <Badge variant="outline" className={getComplianceColor(item.status)}>
+                          {item.status.replace('_', ' ')}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className={getComplianceColor(item.status)}>
-                        {item.status.replace('_', ' ')}
-                      </Badge>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Last audit: {item.last_audit}</span>
+                        <span>Next review: {item.next_review}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Last audit: {item.last_audit}</span>
-                      <span>Next review: {item.next_review}</span>
+                    <div className="flex gap-2 ml-4">
+                      <Button size="icon" variant="ghost" onClick={() => handleEdit(item)} title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(item)} title="Delete">
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
+          <ComplianceItemDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSubmit={handleDialogSubmit}
+            initialData={editingItem}
+            loading={createItem.isPending || updateItem.isPending}
+          />
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Compliance Item</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this compliance item? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteItem.isPending}>
+                  {deleteItem.isPending ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
 
         <TabsContent value="access" className="space-y-4">
