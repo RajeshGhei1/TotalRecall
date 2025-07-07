@@ -1,58 +1,32 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { AIAgent } from '@/types/ai';
+import { useTenantContext } from '@/contexts/TenantContext';
+import { 
+  aiAgentService, 
+  AIAgent, 
+  CreateAIAgentRequest, 
+  UpdateAIAgentRequest,
+  AIAgentActivityLog 
+} from '@/services/ai/aiAgentService';
 
-export const useAIAgents = (tenantId?: string) => {
+export const useAIAgents = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { selectedTenantId } = useTenantContext();
 
+  // Get all agents
   const agentsQuery = useQuery({
-    queryKey: ['ai-agents', tenantId],
-    queryFn: async (): Promise<AIAgent[]> => {
-      let query = supabase
-        .from('ai_agents')
-        .select('*')
-        .order('name', { ascending: true });
-
-      if (tenantId) {
-        query = query.eq('tenant_id', tenantId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      
-      return (data || []).map(agent => ({
-        ...agent,
-        model_config: (agent.model_config as Record<string, any>) || {},
-        performance_metrics: (agent.performance_metrics as Record<string, any>) || {}
-      }));
-    }
+    queryKey: ['ai-agents', selectedTenantId],
+    queryFn: () => aiAgentService.getAgents(selectedTenantId),
+    enabled: true // Always enabled to show global agents
   });
 
+  // Create agent mutation
   const createAgentMutation = useMutation({
-    mutationFn: async (agentData: Omit<AIAgent, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('ai_agents')
-        .insert([{
-          ...agentData,
-          model_config: agentData.model_config as any,
-          performance_metrics: agentData.performance_metrics as any
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return {
-        ...data,
-        model_config: (data.model_config as Record<string, any>) || {},
-        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
-      };
-    },
+    mutationFn: (agentData: CreateAIAgentRequest) => 
+      aiAgentService.createAgent(agentData, selectedTenantId || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
       toast({
         title: "Success",
         description: "AI agent created successfully"
@@ -67,30 +41,12 @@ export const useAIAgents = (tenantId?: string) => {
     }
   });
 
+  // Update agent mutation
   const updateAgentMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<AIAgent> }) => {
-      const updateData = {
-        ...updates,
-        ...(updates.model_config && { model_config: updates.model_config as any }),
-        ...(updates.performance_metrics && { performance_metrics: updates.performance_metrics as any })
-      };
-      
-      const { data, error } = await supabase
-        .from('ai_agents')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return {
-        ...data,
-        model_config: (data.model_config as Record<string, any>) || {},
-        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
-      };
-    },
+    mutationFn: ({ agentId, updates }: { agentId: string; updates: UpdateAIAgentRequest }) =>
+      aiAgentService.updateAgent(agentId, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
       toast({
         title: "Success",
         description: "AI agent updated successfully"
@@ -105,17 +61,11 @@ export const useAIAgents = (tenantId?: string) => {
     }
   });
 
+  // Delete agent mutation
   const deleteAgentMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('ai_agents')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
+    mutationFn: (agentId: string) => aiAgentService.deleteAgent(agentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
       toast({
         title: "Success",
         description: "AI agent deleted successfully"
@@ -130,45 +80,101 @@ export const useAIAgents = (tenantId?: string) => {
     }
   });
 
-  const toggleAgentStatusMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const { data, error } = await supabase
-        .from('ai_agents')
-        .update({ is_active: isActive })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return {
-        ...data,
-        model_config: (data.model_config as Record<string, any>) || {},
-        performance_metrics: (data.performance_metrics as Record<string, any>) || {}
-      };
-    },
+  // Execute agent mutation
+  const executeAgentMutation = useMutation({
+    mutationFn: ({ agentId, input }: { agentId: string; input: any }) =>
+      aiAgentService.executeAgent(agentId, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-agents'] });
-      toast({
-        title: "Success",
-        description: "AI agent status updated successfully"
-      });
+      queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update AI agent status",
+        description: error.message || "Failed to execute AI agent",
         variant: "destructive"
       });
     }
   });
 
   return {
+    // Data
     agents: agentsQuery.data || [],
     isLoading: agentsQuery.isLoading,
     error: agentsQuery.error,
+    
+    // Mutations
     createAgent: createAgentMutation,
     updateAgent: updateAgentMutation,
     deleteAgent: deleteAgentMutation,
-    toggleAgentStatus: toggleAgentStatusMutation
+    executeAgent: executeAgentMutation,
+    
+    // Utilities
+    refetch: agentsQuery.refetch
+  };
+};
+
+export const useAIAgent = (agentId: string) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get specific agent
+  const agentQuery = useQuery({
+    queryKey: ['ai-agent', agentId],
+    queryFn: () => aiAgentService.getAgent(agentId),
+    enabled: !!agentId
+  });
+
+  // Get agent activity logs
+  const activityLogsQuery = useQuery({
+    queryKey: ['ai-agent-logs', agentId],
+    queryFn: () => aiAgentService.getAgentActivityLogs(agentId),
+    enabled: !!agentId
+  });
+
+  // Get agent performance metrics
+  const performanceMetricsQuery = useQuery({
+    queryKey: ['ai-agent-metrics', agentId],
+    queryFn: () => aiAgentService.getAgentPerformanceMetrics(agentId),
+    enabled: !!agentId
+  });
+
+  return {
+    // Data
+    agent: agentQuery.data,
+    activityLogs: activityLogsQuery.data || [],
+    performanceMetrics: performanceMetricsQuery.data,
+    
+    // Loading states
+    isLoading: agentQuery.isLoading,
+    isLoadingLogs: activityLogsQuery.isLoading,
+    isLoadingMetrics: performanceMetricsQuery.isLoading,
+    
+    // Errors
+    error: agentQuery.error,
+    logsError: activityLogsQuery.error,
+    metricsError: performanceMetricsQuery.error,
+    
+    // Utilities
+    refetch: agentQuery.refetch,
+    refetchLogs: activityLogsQuery.refetch,
+    refetchMetrics: performanceMetricsQuery.refetch
+  };
+};
+
+export const useAIAgentActivity = (agentId: string) => {
+  const { toast } = useToast();
+
+  // Log activity mutation
+  const logActivityMutation = useMutation({
+    mutationFn: (activityData: Omit<AIAgentActivityLog, 'id' | 'created_at'>) =>
+      aiAgentService.logActivity(activityData),
+    onError: (error: any) => {
+      console.error('Failed to log activity:', error);
+      // Don't show toast for logging failures as they're not critical
+    }
+  });
+
+  return {
+    logActivity: logActivityMutation
   };
 };

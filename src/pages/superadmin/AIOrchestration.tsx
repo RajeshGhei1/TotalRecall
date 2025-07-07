@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { 
@@ -9,8 +8,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { AIOrchestrationManager } from '@/components/superadmin/ai/AIOrchestrationManager';
 import AdminLayout from '@/components/AdminLayout';
+import AiOrchestration from '@/modules/ai-orchestration';
 
 const AIOrchestration: React.FC = () => {
   return (
@@ -31,7 +30,7 @@ const AIOrchestration: React.FC = () => {
             </Breadcrumb>
           </div>
 
-          <AIOrchestrationManager />
+          <AiOrchestration isSetupMode={true} showAgents={true} showMetrics={true} showLogs={true} showServices={true} />
         </div>
       </ErrorBoundary>
     </AdminLayout>

@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Blocks, Settings, Users, BarChart3, MessageSquare, Zap } from 'lucide-react';
+import { Blocks, Settings, Users, BarChart3, MessageSquare, Zap, Brain } from 'lucide-react';
 import { useSystemModules, SystemModule } from '@/hooks/useSystemModules';
+import AiOrchestration from '@/modules/ai-orchestration';
 
 interface ModuleSelectionStepProps {
   selectedModules: string[];
@@ -20,13 +21,22 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
   onUpdate 
 }) => {
   const { data: modules, isLoading } = useSystemModules();
+  const [showAISetup, setShowAISetup] = useState(false);
   
   const handleModuleToggle = (moduleId: string, checked: boolean) => {
     let newSelected: string[];
     if (checked) {
       newSelected = [...selectedModules, moduleId];
+      // If AI orchestration is selected, show setup
+      if (moduleId === 'ai-orchestration') {
+        setShowAISetup(true);
+      }
     } else {
       newSelected = selectedModules.filter(id => id !== moduleId);
+      // If AI orchestration is deselected, hide setup
+      if (moduleId === 'ai-orchestration') {
+        setShowAISetup(false);
+      }
       // Remove config for unselected module
       const newConfigs = { ...moduleConfigs };
       delete newConfigs[moduleId];
@@ -54,7 +64,8 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
       'talent': Users,
       'configuration': Settings,
       'system-admin': Settings,
-      'tenant-admin': Settings
+      'tenant-admin': Settings,
+      'ai': Brain
     };
     const Icon = icons[category] || Blocks;
     return <Icon className="h-4 w-4" />;
@@ -70,7 +81,8 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
       'talent': 'bg-pink-100 text-pink-800',
       'configuration': 'bg-gray-100 text-gray-800',
       'system-admin': 'bg-red-100 text-red-800',
-      'tenant-admin': 'bg-yellow-100 text-yellow-800'
+      'tenant-admin': 'bg-yellow-100 text-yellow-800',
+      'ai': 'bg-purple-100 text-purple-800'
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
   };
@@ -99,6 +111,27 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
           Choose which modules to assign to this tenant and configure their settings
         </p>
       </div>
+
+      {/* AI Setup Modal */}
+      {showAISetup && (
+        <Card className="border-2 border-purple-200 bg-purple-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              <Brain className="h-5 w-5" />
+              AI Orchestration Setup
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AiOrchestration 
+              mode="full" 
+              isSetupMode={true}
+              showAgents={false}
+              showMetrics={false}
+              showLogs={false}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {selectedModules.length > 0 && (
         <Card className="bg-green-50 border-green-200">
