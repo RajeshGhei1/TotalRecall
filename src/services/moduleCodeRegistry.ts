@@ -38,7 +38,7 @@ export class ModuleCodeRegistry {
    */
   registerComponent(
     moduleId: string,
-    component: React.ComponentType<any>,
+    component: React.ComponentTypeunknown,
     manifest: ModuleManifest,
     path: string
   ): void {
@@ -49,7 +49,7 @@ export class ModuleCodeRegistry {
   /**
    * Get a registered component by module ID
    */
-  getComponent(moduleId: string): React.ComponentType<any> | null {
+  getComponent(moduleId: string): React.ComponentTypeunknown | null {
     return this.moduleLoader.getCachedComponent(moduleId);
   }
 
@@ -70,7 +70,7 @@ export class ModuleCodeRegistry {
   /**
    * Dynamically load a module component using proper Vite import paths
    */
-  async loadModuleComponent(moduleId: string): Promise<React.ComponentType<any> | null> {
+  async loadModuleComponent(moduleId: string): Promise<React.ComponentTypeunknown | null> {
     return this.moduleLoader.loadModuleComponent(moduleId);
   }
 

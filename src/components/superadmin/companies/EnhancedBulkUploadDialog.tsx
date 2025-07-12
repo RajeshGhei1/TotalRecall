@@ -50,7 +50,7 @@ import {
 interface EnhancedBulkUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  existingCompanies: Company[];
+  existingCompanies: Compunknown[];
   onImport: (
     companies: Partial<Company>[], 
     options: { skipDuplicates: boolean },

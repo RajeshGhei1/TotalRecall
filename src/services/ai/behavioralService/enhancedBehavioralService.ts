@@ -28,7 +28,7 @@ export interface SmartContext {
   userRole: string;
   timeContext: string;
   deviceContext: string;
-  sessionContext: Record<string, any>;
+  sessionContext: Record<string, unknown>;
 }
 
 export class EnhancedBehavioralService {
@@ -114,7 +114,7 @@ export class EnhancedBehavioralService {
   }
 
   // Get personalized recommendations
-  async getPersonalizedRecommendations(userId: string, context: SmartContext): Promise<any[]> {
+  async getPersonalizedRecommendations(userId: string, context: SmartContext): Promise<unknown[]> {
     const preferences = this.userPreferences.get(userId) || [];
     const patterns = await this.getUserPatterns(userId);
     
@@ -270,7 +270,7 @@ export class EnhancedBehavioralService {
     return 'desktop';
   }
 
-  private getSessionContext(userId: string): Record<string, any> {
+  private getSessionContext(userId: string): Record<string, unknown> {
     // Get session-specific context
     return {
       sessionStart: Date.now(),
@@ -291,7 +291,7 @@ export class EnhancedBehavioralService {
       
       return (data || []).map(pattern => ({
         ...pattern,
-        pattern_data: pattern.pattern_data as Record<string, any>
+        pattern_data: pattern.pattern_data as Record<string, unknown>
       })) as BehavioralPattern[];
     } catch (error) {
       console.error('Error fetching user patterns:', error);
@@ -366,7 +366,7 @@ export class EnhancedBehavioralService {
     return preferences;
   }
 
-  private async detectImmediatePatterns(event: RealTimeInteractionEvent): Promise<any[]> {
+  private async detectImmediatePatterns(event: RealTimeInteractionEvent): Promise<unknown[]> {
     // Simple immediate pattern detection
     const patterns: unknown[] = [];
     

@@ -10,7 +10,7 @@ export interface ModuleUsage {
   usage_count: number;
   period_start: string;
   period_end: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) => {
@@ -40,7 +40,7 @@ export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) =
       return (data || []).map(item => ({
         ...item,
         metadata: typeof item.metadata === 'object' && item.metadata !== null 
-          ? item.metadata as Record<string, any>
+          ? item.metadata as Record<string, unknown>
           : {}
       }));
     },
@@ -52,7 +52,7 @@ export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) =
       module_name: string;
       usage_type: string;
       usage_count?: number;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
@@ -78,7 +78,7 @@ export const useModuleUsageTracking = (tenantId?: string, moduleName?: string) =
         // Update existing record
         const updatedMetadata = {
           ...(typeof existing.metadata === 'object' && existing.metadata !== null 
-            ? existing.metadata as Record<string, any> 
+            ? existing.metadata as Record<string, unknown> 
             : {}),
           ...(usage.metadata || {})
         };

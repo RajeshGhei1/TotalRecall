@@ -8,10 +8,10 @@ interface ReviewStepProps {
   wizardData: {
     tenantData: any;
     selectedModules: string[];
-    moduleConfigs: Record<string, any>;
-    integrationSettings: Record<string, any>;
-    customConfig: Record<string, any>;
-    outreachSettings: Record<string, any>;
+    moduleConfigs: Record<string, unknown>;
+    integrationSettings: Record<string, unknown>;
+    customConfig: Record<string, unknown>;
+    outreachSettings: Record<string, unknown>;
   };
 }
 

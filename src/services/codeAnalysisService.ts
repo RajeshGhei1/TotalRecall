@@ -493,7 +493,7 @@ class CodeAnalysisService {
     }
   }
 
-  async getAllDocumentation(): Promise<any[]> {
+  async getAllDocumentation(): Promise<unknown[]> {
     try {
       const { data, error } = await supabase
         .from('documentation_updates')

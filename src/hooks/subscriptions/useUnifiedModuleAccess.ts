@@ -86,7 +86,7 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
             module: {
               module_name: moduleName,
               is_enabled: true,
-              limits: permission.limits as Record<string, any>
+              limits: permission.limits as Record<string, unknown>
             },
             plan: userSubscription.subscription_plans as unknown,
             subscription: userSubscription as unknown,
@@ -129,7 +129,7 @@ async function checkSubscriptionAccess(tenantId: string, moduleName: string, use
           module: {
             module_name: moduleName,
             is_enabled: true,
-            limits: permission.limits as Record<string, any>
+            limits: permission.limits as Record<string, unknown>
           },
           plan: tenantSubscription.subscription_plans as unknown,
           subscription: tenantSubscription as unknown,

@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Database, Bot } from 'lucide-react';
 
 interface CustomConfigurationStepProps {
-  config: Record<string, any>;
-  onUpdate: (config: Record<string, any>) => void;
+  config: Record<string, unknown>;
+  onUpdate: (config: Record<string, unknown>) => void;
 }
 
 const CustomConfigurationStep: React.FC<CustomConfigurationStepProps> = ({ config, onUpdate }) => {

@@ -132,7 +132,7 @@ export const useUserSessionStats = (tenantId?: string) => {
         
         // Safely extract device type from device_info
         if (session.device_info && typeof session.device_info === 'object' && session.device_info !== null) {
-          const deviceInfo = session.device_info as Record<string, any>;
+          const deviceInfo = session.device_info as Record<string, unknown>;
           device = deviceInfo.type || 'Unknown';
         }
         

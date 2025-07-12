@@ -28,7 +28,7 @@ interface AnalyticsExportField {
 interface AnalyticsExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  companies: Company[];
+  companies: Compunknown[];
   currentFilters?: string;
 }
 

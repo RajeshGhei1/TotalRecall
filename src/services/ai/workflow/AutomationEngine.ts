@@ -230,32 +230,32 @@ class AutomationEngineService {
     return JSON.stringify(ruleTrigger.configuration) === JSON.stringify(actualTrigger.configuration);
   }
 
-  private async assignTask(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async assignTask(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Assigning task:', config, context);
     return 'Task assigned successfully';
   }
 
-  private async sendNotification(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async sendNotification(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Sending notification:', config, context);
     return 'Notification sent successfully';
   }
 
-  private async updateStatus(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async updateStatus(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Updating status:', config, context);
     return 'Status updated successfully';
   }
 
-  private async skipStep(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async skipStep(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Skipping step:', config, context);
     return 'Step skipped successfully';
   }
 
-  private async escalateIssue(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async escalateIssue(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Escalating issue:', config, context);
     return 'Issue escalated successfully';
   }
 
-  private async autoApprove(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
+  private async autoApprove(config: Record<string, unknown>, context: Record<string, unknown>): Promise<string> {
     console.log('Auto approving:', config, context);
     return 'Auto approved successfully';
   }

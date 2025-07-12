@@ -73,7 +73,7 @@ export function filterFieldsByFormContext(
 export async function fetchCustomFieldValues(
   entityType: string, 
   entityId: string
-): Promise<any[]> {
+): Promise<unknown[]> {
   if (!entityId || !entityType) return [];
 
   console.log(`Getting custom field values for ${entityType}:${entityId}`);

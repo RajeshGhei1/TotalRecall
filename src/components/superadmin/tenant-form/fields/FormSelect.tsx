@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 
 interface FormSelectProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturnunknown;
   name: string;
   label: string;
   options: { value: string; label: string }[];

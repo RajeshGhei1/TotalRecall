@@ -27,7 +27,7 @@ interface ExportField {
 interface EnhancedExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  companies: Company[];
+  companies: Compunknown[];
   currentFilters?: string;
 }
 

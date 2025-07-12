@@ -3,16 +3,16 @@ export interface TransactionOperation {
   id: string;
   type: 'insert' | 'update' | 'delete';
   table: string;
-  data?: Record<string, any>;
-  filter?: Record<string, any>;
+  data?: Record<string, unknown>;
+  filter?: Record<string, unknown>;
   queryKey?: unknown[]; // For query invalidation
 }
 
 export interface RollbackOperation {
   type: 'insert' | 'update' | 'delete';
   table: string;
-  data?: Record<string, any>;
-  filter?: Record<string, any>;
+  data?: Record<string, unknown>;
+  filter?: Record<string, unknown>;
 }
 
 export interface TransactionState {

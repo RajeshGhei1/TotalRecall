@@ -412,7 +412,7 @@ export class ModuleManager {
   /**
    * Get tenant-specific module configuration
    */
-  private async getTenantModuleConfig(tenantId: string): Promise<Record<string, any>> {
+  private async getTenantModuleConfig(tenantId: string): Promise<Record<string, unknown>> {
     // This would load tenant-specific module configuration
     return {};
   }

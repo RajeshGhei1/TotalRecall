@@ -19,7 +19,7 @@ interface CompanyDeleteDialogProps {
   isOpen: boolean;
   onClose: () => void;
   company: Company | null;
-  allCompanies: Company[];
+  allCompanies: Compunknown[];
   bulkDeleteIds?: string[];
   onBulkDelete?: () => void;
 }

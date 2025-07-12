@@ -10,7 +10,7 @@ export interface CustomField {
   field_key: string;
   field_type: string;
   required: boolean;
-  options?: Record<string, any> | Json | string | number | boolean;
+  options?: Record<string, unknown> | Json | string | number | boolean;
   applicable_forms?: string[] | null;
   description?: string;
   created_at: string;
@@ -36,8 +36,8 @@ export interface UseCustomFieldsOptions {
 export interface UseCustomFieldsReturn {
   customFields: CustomField[];
   isLoading: boolean;
-  getCustomFieldValues: (entityType: string, entityId: string) => Promise<any[]>;
-  saveCustomFieldValues: (entityType: string, entityId: string, values: Record<string, any>) => Promise<void>;
+  getCustomFieldValues: (entityType: string, entityId: string) => Promise<unknown[]>;
+  saveCustomFieldValues: (entityType: string, entityId: string, values: Record<string, unknown>) => Promise<void>;
   updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => Promise<unknown>;
 }
 

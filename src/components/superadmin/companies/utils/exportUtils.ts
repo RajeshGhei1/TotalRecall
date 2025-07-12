@@ -11,7 +11,7 @@ export interface ExportOptions {
     start: Date;
     end: Date;
   };
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 export interface ExportProgress {
@@ -53,7 +53,7 @@ export const availableFields = [
 ];
 
 export const exportCompanies = async (
-  companies: Company[], 
+  companies: Compunknown[], 
   options: ExportOptions,
   onProgress?: (progress: ExportProgress) => void
 ): Promise<void> => {
@@ -78,7 +78,7 @@ export const exportCompanies = async (
 
     // Extract selected fields
     const exportData = filteredCompanies.map(company => {
-      const row: Record<string, any> = {};
+      const row: Record<string, unknown> = {};
       
       options.fields.forEach(fieldKey => {
         const field = availableFields.find(f => f.key === fieldKey);
@@ -140,7 +140,7 @@ const getFieldValue = (company: Company, fieldKey: string): unknown => {
   return value || '';
 };
 
-const exportToCSV = async (data: Record<string, any>[], filename: string): Promise<void> => {
+const exportToCSV = async (data: Record<string, unknown>[], filename: string): Promise<void> => {
   if (data.length === 0) return;
 
   const headers = Object.keys(data[0]);
@@ -162,7 +162,7 @@ const exportToCSV = async (data: Record<string, any>[], filename: string): Promi
   downloadFile(csvContent, filename, 'text/csv');
 };
 
-const exportToExcel = async (data: Record<string, any>[], filename: string): Promise<void> => {
+const exportToExcel = async (data: Record<string, unknown>[], filename: string): Promise<void> => {
   // For now, export as CSV with Excel-friendly format
   // In a real implementation, you'd use a library like xlsx or exceljs
   const headers = Object.keys(data[0] || {});
@@ -177,7 +177,7 @@ const exportToExcel = async (data: Record<string, any>[], filename: string): Pro
   toast.info('Excel export generated as tab-separated values. For full Excel support, consider upgrading to Pro.');
 };
 
-const exportToJSON = async (data: Record<string, any>[], filename: string): Promise<void> => {
+const exportToJSON = async (data: Record<string, unknown>[], filename: string): Promise<void> => {
   const jsonContent = JSON.stringify({
     exportDate: new Date().toISOString(),
     totalRecords: data.length,
@@ -231,7 +231,7 @@ export const createScheduledExport = (options: ExportOptions & { schedule: strin
 };
 
 // Export statistics
-export const calculateExportStats = (companies: Company[], options: ExportOptions) => {
+export const calculateExportStats = (companies: Compunknown[], options: ExportOptions) => {
   const stats = {
     totalCompanies: companies.length,
     fieldsSelected: options.fields.length,

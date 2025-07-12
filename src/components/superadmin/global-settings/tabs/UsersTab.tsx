@@ -17,7 +17,7 @@ const UsersTab: React.FC = () => {
   const [user, setUser] = React.useState<unknown>(null);
   const { data: settings, isLoading: settingsLoading } = useGlobalSettings('users');
   const updateSetting = useUpdateGlobalSetting();
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -30,7 +30,7 @@ const UsersTab: React.FC = () => {
       const initialData = settings.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
       setFormData(initialData);
     }
   }, [settings]);

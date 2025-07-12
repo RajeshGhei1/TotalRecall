@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface ModulePermissionLimitsProps {
-  defaultLimits: Record<string, any>;
-  currentLimits: Record<string, any>;
+  defaultLimits: Record<string, unknown>;
+  currentLimits: Record<string, unknown>;
   onUpdateLimit: (limitKey: string, value: unknown) => void;
 }
 

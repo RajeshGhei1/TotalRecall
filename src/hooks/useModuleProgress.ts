@@ -31,7 +31,7 @@ export interface ProgressUpdate {
   module_id: string;
   metric_type: 'code' | 'test' | 'feature' | 'documentation' | 'quality';
   increment_value: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 // Type guard to ensure metrics_data has the correct structure

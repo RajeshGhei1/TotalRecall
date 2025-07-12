@@ -20,7 +20,7 @@ export interface CompanyRelationshipAdvanced {
   effective_date: string;
   end_date?: string;
   is_active: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   notes?: string;
   created_by?: string;
   created_at: string;
@@ -41,8 +41,8 @@ export interface CompanyRelationshipHistory {
   id: string;
   relationship_id: string;
   change_type: 'created' | 'updated' | 'deleted';
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
   changed_by?: string;
   changed_at: string;
   change_reason?: string;

@@ -18,8 +18,13 @@ interface BranchOffice {
   is_headquarters: boolean;
 }
 
+interface BranchOfficeSelectorFormData {
+  branch_office_id?: string;
+  [key: string]: unknown;
+}
+
 interface BranchOfficeSelectorProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BranchOfficeSelectorFormData>;
   branchOffices: BranchOffice[];
   isLoading: boolean;
 }

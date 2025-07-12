@@ -9,7 +9,7 @@ export interface Company {
 }
 
 export const useCompanies = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<Compunknown[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

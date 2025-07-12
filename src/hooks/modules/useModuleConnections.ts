@@ -7,7 +7,7 @@ export interface ModuleConnection {
   id: string;
   tenant_id: string;
   platform: string;
-  connection_config: Record<string, any>;
+  connection_config: Record<string, unknown>;
   is_active: boolean;
   connected_at: string;
   expires_at?: string;
@@ -77,7 +77,7 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
   const createConnectionMutation = useMutation({
     mutationFn: async (connectionData: {
       platform: string;
-      connection_config: Record<string, any>;
+      connection_config: Record<string, unknown>;
       expires_at?: string;
     }) => {
       if (!tenantId) throw new Error('Tenant ID required');

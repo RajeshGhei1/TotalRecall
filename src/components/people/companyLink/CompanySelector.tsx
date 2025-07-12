@@ -11,8 +11,13 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building, Loader2 } from 'lucide-react';
 
+interface CompanySelectorFormData {
+  company_id: string;
+  [key: string]: unknown;
+}
+
 interface CompanySelectorProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CompanySelectorFormData>;
   companies: { id: string; name: string }[];
   onCompanyChange: (companyId: string) => void;
   isLoading?: boolean;

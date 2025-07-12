@@ -4,8 +4,8 @@ export interface FormChangeHistory {
   form_id: string;
   changed_by?: string;
   change_type: 'created' | 'updated' | 'deleted' | 'published' | 'unpublished';
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   session_id?: string;
@@ -23,8 +23,8 @@ export interface ReportChangeHistory {
   report_id: string;
   changed_by?: string;
   change_type: 'created' | 'updated' | 'deleted' | 'executed';
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   session_id?: string;

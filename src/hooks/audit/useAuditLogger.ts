@@ -11,11 +11,11 @@ export const useAuditLogger = () => {
     entity_type: string,
     options?: {
       entity_id?: string;
-      old_values?: Record<string, any>;
-      new_values?: Record<string, any>;
+      old_values?: Record<string, unknown>;
+      new_values?: Record<string, unknown>;
       severity?: 'low' | 'medium' | 'high' | 'critical';
       module_name?: string;
-      additional_context?: Record<string, any>;
+      additional_context?: Record<string, unknown>;
     }
   ) => {
     if (!user) {
@@ -41,7 +41,7 @@ export const createAuditLogger = (module_name: string) => {
   const { logEvent } = useAuditLogger();
 
   return {
-    logCreate: (entity_type: string, entity_id: string, data: Record<string, any>) => {
+    logCreate: (entity_type: string, entity_id: string, data: Record<string, unknown>) => {
       logEvent('CREATE', entity_type, {
         entity_id,
         new_values: data,
@@ -50,7 +50,7 @@ export const createAuditLogger = (module_name: string) => {
       });
     },
 
-    logUpdate: (entity_type: string, entity_id: string, oldData: Record<string, any>, newData: Record<string, any>) => {
+    logUpdate: (entity_type: string, entity_id: string, oldData: Record<string, unknown>, newData: Record<string, unknown>) => {
       logEvent('UPDATE', entity_type, {
         entity_id,
         old_values: oldData,
@@ -60,7 +60,7 @@ export const createAuditLogger = (module_name: string) => {
       });
     },
 
-    logDelete: (entity_type: string, entity_id: string, data: Record<string, any>) => {
+    logDelete: (entity_type: string, entity_id: string, data: Record<string, unknown>) => {
       logEvent('DELETE', entity_type, {
         entity_id,
         old_values: data,

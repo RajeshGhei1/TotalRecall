@@ -10,18 +10,18 @@ export interface SystemModule {
   is_active: boolean;
   version?: string;
   dependencies?: string[];
-  default_limits?: Record<string, any>;
+  default_limits?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   maturity_status?: 'planning' | 'alpha' | 'beta' | 'production';
-  development_stage?: Record<string, any>;
+  development_stage?: Record<string, unknown>;
   promoted_to_production_at?: string;
   promoted_by?: string;
   // AI Contribution fields
   ai_capabilities?: string[];
   ai_level?: 'high' | 'medium' | 'low' | 'none';
   ai_description?: string;
-  ai_features?: Record<string, any>;
+  ai_features?: Record<string, unknown>;
 }
 
 export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: string) => {

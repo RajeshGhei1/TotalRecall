@@ -15,7 +15,7 @@ interface ModulePermissionsManagerProps {
 }
 
 const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ planId }) => {
-  const [permissions, setPermissions] = useState<Record<string, any>>({});
+  const [permissions, setPermissions] = useState<Record<string, unknown>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -32,7 +32,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
 
       if (error) throw error;
       
-      const permissionsMap: Record<string, any> = {};
+      const permissionsMap: Record<string, unknown> = {};
       data?.forEach((perm: unknown) => {
         permissionsMap[perm.module_name] = {
           is_enabled: perm.is_enabled,
@@ -119,12 +119,12 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
     return systemModules
       .filter(module => module.is_active) // Only show active modules
       .map(module => {
-        // Safely convert default_limits from Json to Record<string, any>
-        const defaultLimits: Record<string, any> = 
+        // Safely convert default_limits from Json to Record<string, unknown>
+        const defaultLimits: Record<string, unknown> = 
           module.default_limits && 
           typeof module.default_limits === 'object' && 
           !Array.isArray(module.default_limits) 
-            ? module.default_limits as Record<string, any>
+            ? module.default_limits as Record<string, unknown>
             : {};
 
         return {

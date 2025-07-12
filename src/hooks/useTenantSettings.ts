@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 type ValidTableName = 'tenants' | 'tenant_settings' | 'tenant_communication' | 'tenant_social_media' | 
                      'tenant_outreach' | 'tenant_api_settings';
 
-export function useTenantSettings<T extends Record<string, any>>(
+export function useTenantSettings<T extends Record<string, unknown>>(
   tableName: ValidTableName,
   defaultValue: T,
   keyField: string = "id"

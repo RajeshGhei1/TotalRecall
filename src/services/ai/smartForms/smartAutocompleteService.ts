@@ -10,7 +10,7 @@ export class SmartAutocompleteService {
   static async getAutocompleteOptions(
     fieldType: string,
     value: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<AutocompleteOption[]> {
     // Mock implementation - replace with actual AI logic
     const options: AutocompleteOption[] = [];

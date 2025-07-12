@@ -10,7 +10,7 @@ export interface FormDefinition {
   updated_at: string;
   created_by?: string;
   tenant_id?: string;
-  settings?: any;
+  settings?: Record<string, unknown>;
   required_modules?: string[];
 }
 
@@ -23,7 +23,7 @@ export interface FormDefinitionInsert {
   is_active?: boolean;
   created_by?: string;
   tenant_id?: string;
-  settings?: any;
+  settings?: Record<string, unknown>;
   required_modules?: string[];
 }
 
@@ -43,7 +43,13 @@ export interface FormField {
   field_type: string;
   field_key?: string;
   required: boolean;
-  validation_rules?: any;
+  validation_rules?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    required?: boolean;
+    custom?: string;
+  };
   options?: string[] | EnhancedFieldOptions;
   placeholder?: string;
   help_text?: string;
@@ -63,8 +69,14 @@ export interface FormFieldInsert {
   field_type: string;
   field_key: string;
   required?: boolean;
-  validation_rules?: any;
-  options?: any;
+  validation_rules?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    required?: boolean;
+    custom?: string;
+  };
+  options?: string[] | EnhancedFieldOptions;
   placeholder?: string;
   help_text?: string;
   description?: string;
@@ -72,7 +84,7 @@ export interface FormFieldInsert {
   form_id?: string;
   sort_order?: number;
   tenant_id?: string;
-  applicable_forms?: any;
+  applicable_forms?: string[];
 }
 
 export interface FormSection {
@@ -104,7 +116,7 @@ export interface FormPlacement {
   tenant_id?: string;
   status: 'active' | 'inactive' | 'scheduled' | 'expired';
   priority: number;
-  configuration?: any;
+  configuration?: Record<string, unknown>;
   starts_at?: string;
   ends_at?: string;
   created_at: string;
@@ -119,7 +131,7 @@ export interface FormPlacementInsert {
   tenant_id?: string;
   status?: 'active' | 'inactive' | 'scheduled' | 'expired';
   priority?: number;
-  configuration?: any;
+  configuration?: Record<string, unknown>;
   starts_at?: string;
   ends_at?: string;
   created_by?: string;
@@ -148,7 +160,7 @@ export interface FormTrigger {
   id: string;
   placement_id: string;
   trigger_type: string;
-  trigger_conditions: any;
+  trigger_conditions: Record<string, unknown>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -157,7 +169,7 @@ export interface FormTrigger {
 export interface FormTriggerInsert {
   placement_id: string;
   trigger_type: string;
-  trigger_conditions: any;
+  trigger_conditions: Record<string, unknown>;
   is_active?: boolean;
 }
 
@@ -206,8 +218,8 @@ export interface WorkflowStep {
   step_type: string;
   type: string;
   action: string;
-  step_config: any;
-  config?: any;
+  step_config: Record<string, unknown>;
+  config?: Record<string, unknown>;
   order_index: number;
   order?: number;
 }
@@ -217,7 +229,7 @@ export interface FormWorkflow {
   form_id: string;
   name: string;
   description?: string;
-  trigger_conditions: any;
+  trigger_conditions: Record<string, unknown>;
   workflow_steps: WorkflowStep[];
   is_active: boolean;
   created_by?: string;
@@ -229,7 +241,7 @@ export interface FormWorkflowInsert {
   form_id: string;
   name: string;
   description?: string;
-  trigger_conditions: any;
+  trigger_conditions: Record<string, unknown>;
   workflow_steps: WorkflowStep[];
   is_active?: boolean;
   created_by?: string;
@@ -241,7 +253,7 @@ export interface FormNotification {
   notification_type: string;
   trigger_event: string;
   recipients: string[];
-  template_data: Record<string, any>;
+  template_data: Record<string, unknown>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -252,7 +264,7 @@ export interface FormNotificationInsert {
   notification_type: string;
   trigger_event: string;
   recipients: string[];
-  template_data: Record<string, any>;
+  template_data: Record<string, unknown>;
   is_active?: boolean;
 }
 
@@ -261,7 +273,7 @@ export interface WorkflowExecutionLog {
   workflow_id: string;
   response_id?: string;
   status: string;
-  step_results: Record<string, any>[];
+  step_results: Record<string, unknown>[];
   error_message?: string;
   created_at: string;
   completed_at?: string;
@@ -285,7 +297,7 @@ export interface FieldDefinition {
   label: string;
   icon: string;
   description: string;
-  defaultOptions?: any;
+  defaultOptions?: Record<string, unknown>;
 }
 
 export type FieldType = 'text' | 'textarea' | 'number' | 'email' | 'date' | 'dropdown' | 'multiselect' | 'checkbox' | 'radio' | 'boolean' | 'rating';

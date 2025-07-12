@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ModuleLimitsEditorProps {
-  limits: Record<string, any>;
-  onLimitsChange: (limits: Record<string, any>) => void;
+  limits: Record<string, unknown>;
+  onLimitsChange: (limits: Record<string, unknown>) => void;
   category: string;
 }
 

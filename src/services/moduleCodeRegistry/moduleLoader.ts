@@ -1,11 +1,11 @@
 
 export class ModuleLoader {
-  private componentCache: Map<string, React.ComponentType<any>> = new Map();
+  private componentCache: Map<string, React.ComponentTypeunknown> = new Map();
 
   /**
    * Dynamically load a module component using proper Vite import paths
    */
-  async loadModuleComponent(moduleId: string): Promise<React.ComponentType<any> | null> {
+  async loadModuleComponent(moduleId: string): Promise<React.ComponentTypeunknown | null> {
     try {
       console.log(`🔍 Loading module component: ${moduleId}`);
       
@@ -58,14 +58,14 @@ export class ModuleLoader {
   /**
    * Get a cached component
    */
-  getCachedComponent(moduleId: string): React.ComponentType<any> | null {
+  getCachedComponent(moduleId: string): React.ComponentTypeunknown | null {
     return this.componentCache.get(moduleId) || null;
   }
 
   /**
    * Cache a component
    */
-  cacheComponent(moduleId: string, component: React.ComponentType<any>): void {
+  cacheComponent(moduleId: string, component: React.ComponentTypeunknown): void {
     this.componentCache.set(moduleId, component);
   }
 

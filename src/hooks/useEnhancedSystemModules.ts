@@ -9,18 +9,18 @@ export interface EnhancedSystemModule {
   is_active: boolean;
   version?: string;
   dependencies?: string[];
-  default_limits?: Record<string, any>;
+  default_limits?: Record<string, unknown>;
   pricing_tier?: string;
   monthly_price?: number;
   annual_price?: number;
   requires_modules?: string[];
-  max_usage_limits?: Record<string, any>;
+  max_usage_limits?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
 
-// Helper function to safely convert Json to Record<string, any>
-const parseJsonField = (jsonValue: unknown): Record<string, any> => {
+// Helper function to safely convert Json to Record<string, unknown>
+const parseJsonField = (jsonValue: unknown): Record<string, unknown> => {
   if (!jsonValue) return {};
   if (typeof jsonValue === 'string') {
     try {
@@ -125,7 +125,7 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
 
   const updateModule = async (moduleName: string, updates: Partial<EnhancedSystemModule>) => {
     try {
-      // Convert Record<string, any> fields back to the format expected by Supabase
+      // Convert Record<string, unknown> fields back to the format expected by Supabase
       const updateData: unknown = { ...updates };
       if (updates.default_limits) {
         updateData.default_limits = updates.default_limits;

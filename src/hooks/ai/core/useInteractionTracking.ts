@@ -57,7 +57,7 @@ export const useInteractionTracking = (
   );
 
   // Specific tracking methods
-  const trackClick = useCallback((target: string, metadata: Record<string, any> = {}) => {
+  const trackClick = useCallback((target: string, metadata: Record<string, unknown> = {}) => {
     trackInteraction('click', { target, ...metadata });
   }, [trackInteraction]);
 

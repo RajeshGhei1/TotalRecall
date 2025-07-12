@@ -10,7 +10,7 @@ export class ComponentRegistry {
    */
   registerComponent(
     moduleId: string,
-    component: React.ComponentType<any>,
+    component: React.ComponentTypeunknown,
     manifest: ModuleManifest,
     path: string
   ): void {

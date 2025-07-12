@@ -14,7 +14,7 @@ export interface RealTimeSession {
     section?: string;
   };
   current_section?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   profiles?: {
     id: string;
     email: string;
@@ -31,7 +31,7 @@ export interface RealTimeNotification {
   entity_id: string;
   title: string;
   message: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   is_read: boolean;
   created_at: string;
   expires_at?: string;
@@ -43,7 +43,7 @@ export interface EntityVersion {
   entity_type: 'form' | 'report';
   entity_id: string;
   version_number: number;
-  data_snapshot: Record<string, any>;
+  data_snapshot: Record<string, unknown>;
   created_at: string;
   created_by: string;
   change_summary?: string;
@@ -70,7 +70,7 @@ export interface WorkflowApproval {
   reviewed_by?: string;
   reviewed_at?: string;
   review_notes?: string;
-  workflow_config: Record<string, any>;
+  workflow_config: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

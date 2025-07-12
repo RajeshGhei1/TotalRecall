@@ -22,7 +22,12 @@ import { useCompanyNetwork } from '@/hooks/useCompanyRelationships';
 
 interface CompanyNodeData {
   label: string;
-  company: any;
+  company: {
+    id: string;
+    name: string;
+    industry?: string;
+    [key: string]: unknown;
+  };
   isRoot: boolean;
 }
 

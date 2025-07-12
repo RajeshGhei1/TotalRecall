@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/form';
 
 interface FormInputProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturnunknown;
   name: string;
   label: string;
   placeholder?: string;

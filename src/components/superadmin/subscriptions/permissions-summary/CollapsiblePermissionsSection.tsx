@@ -8,7 +8,7 @@ interface ModuleDetail {
   name: string;
   label: string;
   isEnabled: boolean;
-  limits: Record<string, any>;
+  limits: Record<string, unknown>;
 }
 
 interface CollapsiblePermissionsSectionProps {

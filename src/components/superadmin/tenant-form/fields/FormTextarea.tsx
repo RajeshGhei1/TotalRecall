@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/form';
 
 interface FormTextareaProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturnunknown;
   name: string;
   label: string;
   placeholder?: string;

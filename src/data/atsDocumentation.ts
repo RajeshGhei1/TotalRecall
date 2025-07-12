@@ -1760,8 +1760,8 @@ interface WebhookPayload {
   data: {
     id: string;
     type: 'candidate' | 'application' | 'job' | 'interview';
-    attributes: Record<string, any>;
-    relationships?: Record<string, any>;
+    attributes: Record<string, unknown>;
+    relationships?: Record<string, unknown>;
   };
   metadata: {
     tenantId: string;

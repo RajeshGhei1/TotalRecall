@@ -22,7 +22,7 @@ interface WorkflowRule {
   trigger: 'contact_created' | 'company_linked' | 'data_updated' | 'scheduled';
   actions: string[];
   isActive: boolean;
-  conditions: any;
+  conditions: Record<string, unknown>;
 }
 
 const ContactWorkflowAutomation: React.FC = () => {

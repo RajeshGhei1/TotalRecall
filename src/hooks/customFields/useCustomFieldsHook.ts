@@ -22,7 +22,7 @@ export function useCustomFieldsHook(
   const saveValuesWrapper = async (
     entityType: string, 
     entityId: string, 
-    values: Record<string, any>
+    values: Record<string, unknown>
   ): Promise<void> => {
     await saveCustomFieldValues(entityType, entityId, values, customFields);
   };

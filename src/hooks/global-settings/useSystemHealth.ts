@@ -11,7 +11,7 @@ export interface SystemHealthMetric {
   threshold_warning?: number;
   threshold_critical?: number;
   recorded_at: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export const useSystemHealthMetrics = (timeRange: 'hour' | 'day' | 'week' = 'hour') => {
@@ -41,11 +41,11 @@ export const useSystemHealthMetrics = (timeRange: 'hour' | 'day' | 'week' = 'hou
 
       if (error) throw error;
       
-      // Convert metadata from Json type to Record<string, any>
+      // Convert metadata from Json type to Record<string, unknown>
       return data.map(metric => ({
         ...metric,
         metadata: typeof metric.metadata === 'object' && metric.metadata !== null 
-          ? metric.metadata as Record<string, any>
+          ? metric.metadata as Record<string, unknown>
           : {}
       })) as SystemHealthMetric[];
     },
@@ -92,7 +92,7 @@ export const useSystemHealthSummary = () => {
           acc[metric.metric_name] = {
             ...metric,
             metadata: typeof metric.metadata === 'object' && metric.metadata !== null 
-              ? metric.metadata as Record<string, any>
+              ? metric.metadata as Record<string, unknown>
               : {}
           };
         }

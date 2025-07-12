@@ -18,7 +18,7 @@ export function useCustomFieldValues() {
   const saveValues = async (
     entityType: string, 
     entityId: string, 
-    values: Record<string, any>,
+    values: Record<string, unknown>,
     customFields?: CustomField[]
   ): Promise<unknown> => {
     if (customFields) {
@@ -39,7 +39,7 @@ export function useCustomFieldValues() {
         try {
           return (data || []).map((field, index) => {
             // Handle options parsing safely
-            let parsedOptions: Record<string, any> | Json | string | number | boolean;
+            let parsedOptions: Record<string, unknown> | Json | string | number | boolean;
             if (typeof field.options === 'string') {
               try {
                 parsedOptions = JSON.parse(field.options);

@@ -11,8 +11,8 @@ import AiOrchestration from '@/modules/ai-orchestration';
 
 interface ModuleSelectionStepProps {
   selectedModules: string[];
-  moduleConfigs: Record<string, any>;
-  onUpdate: (modules: string[], configs: Record<string, any>) => void;
+  moduleConfigs: Record<string, unknown>;
+  onUpdate: (modules: string[], configs: Record<string, unknown>) => void;
 }
 
 const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({ 
@@ -55,7 +55,7 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
   };
 
   const getCategoryIcon = (category: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, unknown> = {
       'core': Blocks,
       'analytics': BarChart3,
       'communication': MessageSquare,

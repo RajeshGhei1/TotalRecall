@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 
 interface FormDatePickerProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturnunknown;
   name: string;
   label: string;
   placeholder?: string;

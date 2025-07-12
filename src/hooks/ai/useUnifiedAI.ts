@@ -66,7 +66,7 @@ export const useUnifiedAI = () => {
       tenantId?: string;
       module: string;
       userHistory?: unknown[];
-      contextData?: Record<string, any>;
+      contextData?: Record<string, unknown>;
     }
   ) => {
     return processRequest({

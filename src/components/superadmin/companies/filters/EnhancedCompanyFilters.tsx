@@ -14,7 +14,7 @@ interface EnhancedCompanyFiltersProps {
   filters: CompanyFilters;
   onFiltersChange: (filters: CompanyFilters) => void;
   onReset: () => void;
-  companies: Company[];
+  companies: Compunknown[];
 }
 
 const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({

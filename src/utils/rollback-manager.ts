@@ -11,7 +11,7 @@ export class RollbackManager {
         case 'insert':
           // For inserts, prepare to delete the created records
           if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-            const firstRecord = result.data[0] as Record<string, any>;
+            const firstRecord = result.data[0] as Record<string, unknown>;
             if (firstRecord && 'id' in firstRecord && firstRecord.id != null) {
               this.rollbackOperations.push({
                 type: 'delete',

@@ -17,7 +17,7 @@ export interface AIPredictionOptions {
 }
 
 export interface AIResult {
-  result: any;
+  result: unknown;
   suggestions?: unknown[];
   confidence_score?: number;
   execution_time_ms?: number;

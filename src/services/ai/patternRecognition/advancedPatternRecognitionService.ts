@@ -9,7 +9,7 @@ export interface PatternRecognitionResult {
   description: string;
   recommendations: string[];
   severity: 'low' | 'medium' | 'high' | 'critical';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface WorkflowInefficiency {
@@ -346,8 +346,8 @@ export class AdvancedPatternRecognitionService {
 
       return (data || []).map(interaction => ({
         ...interaction,
-        context: interaction.context as Record<string, any>,
-        metadata: interaction.metadata as Record<string, any>
+        context: interaction.context as Record<string, unknown>,
+        metadata: interaction.metadata as Record<string, unknown>
       })) as UserInteraction[];
     } catch (error) {
       console.error('Error fetching interactions:', error);
@@ -374,7 +374,7 @@ export class AdvancedPatternRecognitionService {
 
       return (data || []).map(pattern => ({
         ...pattern,
-        pattern_data: pattern.pattern_data as Record<string, any>
+        pattern_data: pattern.pattern_data as Record<string, unknown>
       })) as BehavioralPattern[];
     } catch (error) {
       console.error('Error fetching existing patterns:', error);

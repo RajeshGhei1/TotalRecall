@@ -8,7 +8,7 @@ export class ModuleDiscoveryService {
   private static instance: ModuleDiscoveryService;
   private initializer: ModuleInitializer;
   private discoveryEngine: DiscoveryEngine;
-  private templates: Record<string, any> = {};
+  private templates: Record<string, unknown> = {};
 
   private constructor() {
     this.initializer = new ModuleInitializer();

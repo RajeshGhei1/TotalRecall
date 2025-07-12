@@ -93,7 +93,7 @@ export const useCompanies = () => {
 
       if (error) throw error;
       
-      return (data as unknown) as Company[];
+      return (data as unknown) as Compunknown[];
     },
   });
 

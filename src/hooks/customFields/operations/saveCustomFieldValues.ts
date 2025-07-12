@@ -8,7 +8,7 @@ import { CustomField } from '../types';
 export async function saveCustomFieldValues(
   entityType: string, 
   entityId: string, 
-  values: Record<string, any>,
+  values: Record<string, unknown>,
   customFields: CustomField[]
 ): Promise<boolean> {
   try {

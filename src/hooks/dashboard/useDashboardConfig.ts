@@ -6,9 +6,9 @@ export interface DashboardConfig {
   id: string;
   user_id: string;
   dashboard_name: string;
-  layout_config: Record<string, any>;
+  layout_config: Record<string, unknown>;
   widget_configs: unknown[];
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   is_default: boolean;
   tenant_id?: string;
   created_at: string;
@@ -21,9 +21,9 @@ export interface DashboardWidget {
   name: string;
   description?: string;
   category: string;
-  config_schema: Record<string, any>;
-  data_source_config: Record<string, any>;
-  default_config: Record<string, any>;
+  config_schema: Record<string, unknown>;
+  data_source_config: Record<string, unknown>;
+  default_config: Record<string, unknown>;
   is_active: boolean;
 }
 

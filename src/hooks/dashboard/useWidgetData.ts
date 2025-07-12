@@ -6,12 +6,12 @@ export interface WidgetDataSource {
   id: string;
   name: string;
   source_type: 'supabase_table' | 'custom_query' | 'api_endpoint' | 'calculated';
-  query_config: Record<string, any>;
+  query_config: Record<string, unknown>;
   refresh_interval: number;
   cache_duration: number;
 }
 
-export const useWidgetData = (dataSource: WidgetDataSource, widgetConfig?: Record<string, any>) => {
+export const useWidgetData = (dataSource: WidgetDataSource, widgetConfig?: Record<string, unknown>) => {
   return useQuery({
     queryKey: ['widget-data', dataSource.id, widgetConfig],
     queryFn: async () => {
@@ -31,7 +31,7 @@ export const useWidgetData = (dataSource: WidgetDataSource, widgetConfig?: Recor
   });
 };
 
-const fetchTableData = async (config: Record<string, any>) => {
+const fetchTableData = async (config: Record<string, unknown>) => {
   const { table, operation, filters = [], columns = '*' } = config;
   
   let query = supabase.from(table).select(columns);
@@ -56,7 +56,7 @@ const fetchTableData = async (config: Record<string, any>) => {
   return data;
 };
 
-const fetchCustomQuery = async (config: Record<string, any>) => {
+const fetchCustomQuery = async (config: Record<string, unknown>) => {
   const { query } = config;
   // For now, we'll simulate custom query execution
   // In a real implementation, you'd need a backend function to execute raw SQL
@@ -64,7 +64,7 @@ const fetchCustomQuery = async (config: Record<string, any>) => {
   return [];
 };
 
-const fetchCalculatedData = async (config: Record<string, any>) => {
+const fetchCalculatedData = async (config: Record<string, unknown>) => {
   const { calculation_type } = config;
   
   switch (calculation_type) {

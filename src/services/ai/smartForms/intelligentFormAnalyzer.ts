@@ -33,7 +33,7 @@ export class IntelligentFormAnalyzer {
   async analyzeForm(
     form: FormDefinition,
     fields: FormField[],
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<FormAnalysis> {
     const formType = FormTypeDetector.detectFormType(form);
     const completeness = FormCompletenessCalculator.calculateCompleteness(form, fields, formType);
@@ -56,7 +56,7 @@ export class IntelligentFormAnalyzer {
   private async generateFieldSuggestions(
     form: FormDefinition,
     fields: FormField[],
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     formType?: string
   ): Promise<FormSuggestion[]> {
     const formContext = {
@@ -64,7 +64,7 @@ export class IntelligentFormAnalyzer {
       currentValues: fields.reduce((acc, field) => {
         acc[field.field_key || field.name] = field.name;
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, unknown>),
       userHistory: [],
       userId: context?.userId || '',
       tenantId: context?.tenantId

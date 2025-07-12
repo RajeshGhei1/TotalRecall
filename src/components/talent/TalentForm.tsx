@@ -225,7 +225,7 @@ const TalentForm: React.FC<TalentFormProps> = ({ talentId, onSuccess }) => {
         .reduce((acc, key) => {
           acc[key.replace('custom_', '')] = data[key];
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, unknown>);
       
       if (Object.keys(customFields).length === 0) return;
 

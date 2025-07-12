@@ -8,13 +8,13 @@ interface ModuleInfo {
   name: string;
   label: string;
   description: string;
-  defaultLimits: Record<string, any>;
+  defaultLimits: Record<string, unknown>;
 }
 
 interface ModulePermissionCardProps {
   module: ModuleInfo;
   isEnabled: boolean;
-  limits: Record<string, any>;
+  limits: Record<string, unknown>;
   onToggleEnabled: (checked: boolean) => void;
   onUpdateLimit: (limitKey: string, value: unknown) => void;
 }

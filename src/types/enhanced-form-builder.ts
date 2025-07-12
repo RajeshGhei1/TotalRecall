@@ -48,7 +48,7 @@ export interface EnhancedFormField {
     pattern?: string;
     custom?: string;
   };
-  options?: MultiSelectFieldOptions | any;
+  options?: MultiSelectFieldOptions | string[];
   placeholder?: string;
   help_text?: string;
   order_index?: number;

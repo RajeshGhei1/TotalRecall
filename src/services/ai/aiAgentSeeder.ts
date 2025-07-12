@@ -7,8 +7,8 @@ interface DefaultAgentConfig {
   type: AIAgentType;
   description: string;
   capabilities: string[];
-  model_config: Record<string, any>;
-  performance_metrics: Record<string, any>;
+  model_config: Record<string, unknown>;
+  performance_metrics: Record<string, unknown>;
 }
 
 interface CapabilityUpdate {

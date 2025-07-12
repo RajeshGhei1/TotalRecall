@@ -9,7 +9,7 @@ import { LoadedModule, ModuleContext } from '@/types/modules';
 interface ModuleRendererProps {
   moduleId: string;
   context?: ModuleContext;
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
   fallback?: React.ReactNode;
   showError?: boolean;
   showStatus?: boolean;

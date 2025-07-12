@@ -21,7 +21,7 @@ export const useTenants = () => {
 
   // Extract custom field values from form data
   const extractCustomFieldValues = (formData: TenantFormValues) => {
-    const customFields: Record<string, any> = {};
+    const customFields: Record<string, unknown> = {};
     
     // Loop through all form values and extract those that start with "custom_"
     Object.entries(formData).forEach(([key, value]) => {

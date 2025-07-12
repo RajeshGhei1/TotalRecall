@@ -15,13 +15,13 @@ import { useToast } from '@/hooks/use-toast';
 const ModulePricingManager: React.FC = () => {
   const { data: modulePricing, isLoading: pricingLoading } = useModulePricing();
   const { data: systemModules, isLoading: modulesLoading } = useSystemModules();
-  const [pricing, setPricing] = useState<Record<string, any>>({});
+  const [pricing, setPricing] = useState<Record<string, unknown>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
     if (modulePricing) {
-      const pricingMap: Record<string, any> = {};
+      const pricingMap: Record<string, unknown> = {};
       modulePricing.forEach(mp => {
         pricingMap[mp.module_name] = {
           base_price_monthly: mp.base_price_monthly,

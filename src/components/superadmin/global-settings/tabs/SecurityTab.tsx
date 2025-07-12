@@ -63,7 +63,7 @@ const SecurityTab: React.FC = () => {
       const settingsMap = settings.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
       setFormData(prev => ({
         password_min_length: settingsMap.password_min_length !== undefined 

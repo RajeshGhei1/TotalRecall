@@ -154,8 +154,8 @@ export class AILearningDataService {
     }
   }
 
-  private groupLearningData(data: unknown[]): Record<string, any[]> {
-    const grouped: Record<string, any[]> = {};
+  private groupLearningData(data: unknown[]): Record<string, unknown[]> {
+    const grouped: Record<string, unknown[]> = {};
 
     data.forEach(entry => {
       const context = entry.ai_decisions?.context;

@@ -19,7 +19,7 @@ export interface ModulePermission {
   plan_id: string;
   module_name: string;
   is_enabled: boolean;
-  limits: Record<string, any> | null;
+  limits: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -76,7 +76,7 @@ export interface ResolvedSubscription {
 export interface ModuleAccess {
   module_name: string;
   is_enabled: boolean;
-  limits: Record<string, any> | null;
+  limits: Record<string, unknown> | null;
 }
 
 export interface AccessCheckResult {

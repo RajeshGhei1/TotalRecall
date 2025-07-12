@@ -4,7 +4,7 @@ import { ModuleManifest } from '@/types/modules';
 export interface ModuleComponent {
   id: string;
   name: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<Record<string, unknown>>;
   manifest: ModuleManifest;
   path: string;
 }

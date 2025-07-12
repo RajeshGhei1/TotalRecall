@@ -19,8 +19,15 @@ interface PotentialManager {
   role: string;
 }
 
+interface RoleAndReportsSelectorFormData {
+  role: string;
+  reports_to: string;
+  start_date: string;
+  [key: string]: unknown;
+}
+
 interface RoleAndReportsSelectorProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<RoleAndReportsSelectorFormData>;
   potentialManagers: PotentialManager[];
   personType: 'talent' | 'contact';
 }

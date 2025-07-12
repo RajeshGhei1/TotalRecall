@@ -17,7 +17,7 @@ export class BehavioralAnalyticsService {
     tenantId: string | undefined,
     interactionType: string,
     context: Record<string, unknown>,
-    metadata: Record<string, any> = {}
+    metadata: Record<string, unknown> = {}
   ): Promise<void> {
     const interaction: Omit<UserInteraction, 'id' | 'created_at'> = {
       user_id: userId,
@@ -97,7 +97,7 @@ export class BehavioralAnalyticsService {
       // Type assertion to handle Json type mismatch
       return (data || []).map(pattern => ({
         ...pattern,
-        pattern_data: pattern.pattern_data as Record<string, any>
+        pattern_data: pattern.pattern_data as Record<string, unknown>
       })) as BehavioralPattern[];
     } catch (error) {
       console.error('Error fetching user patterns:', error);
@@ -126,8 +126,8 @@ export class BehavioralAnalyticsService {
       // Type assertion to handle Json type mismatch
       const typedInteractions = (interactions || []).map(interaction => ({
         ...interaction,
-        context: interaction.context as Record<string, any>,
-        metadata: interaction.metadata as Record<string, any>
+        context: interaction.context as Record<string, unknown>,
+        metadata: interaction.metadata as Record<string, unknown>
       })) as UserInteraction[];
 
       // Enhanced behavior analysis with AI if tenant has it configured
@@ -255,7 +255,7 @@ Format your response as JSON with "insights" and "recommendations" arrays.
   private performBehaviorAnalysis(interactions: UserInteraction[]): unknown {
     const typeFrequency: Record<string, number> = {};
     const timePatterns: Record<string, number[]> = {};
-    const contextPatterns: Record<string, any> = {};
+    const contextPatterns: Record<string, unknown> = {};
 
     interactions.forEach(interaction => {
       // Count interaction types

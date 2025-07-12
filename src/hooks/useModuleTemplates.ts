@@ -9,7 +9,7 @@ export interface ModuleTemplate {
   description?: string;
   category: string;
   tags: string[];
-  manifest_template: Record<string, any>;
+  manifest_template: Record<string, unknown>;
   files: Record<string, string>;
   dependencies: string[];
   is_built_in: boolean;

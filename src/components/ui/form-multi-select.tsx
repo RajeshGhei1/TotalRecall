@@ -11,7 +11,7 @@ import {
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 
 interface FormMultiSelectProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturnunknown;
   name: string;
   label: string;
   options: MultiSelectOption[];

@@ -11,7 +11,7 @@ export class CompanyService {
     return CompanyService.instance;
   }
 
-  async getCompanies(): Promise<Company[]> {
+  async getCompanies(): Promise<Compunknown[]> {
     // Mock implementation - would connect to API/database
     return [
       {

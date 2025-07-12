@@ -40,7 +40,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 };
 
 interface QueryErrorDisplayProps {
-  error: any;
+  error: unknown;
   onRetry?: () => void;
   entityName?: string;
   className?: string;

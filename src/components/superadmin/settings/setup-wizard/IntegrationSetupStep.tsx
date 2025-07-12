@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Globe, MessageCircle, Database } from 'lucide-react';
 
 interface IntegrationSetupStepProps {
-  settings: Record<string, any>;
-  onUpdate: (settings: Record<string, any>) => void;
+  settings: Record<string, unknown>;
+  onUpdate: (settings: Record<string, unknown>) => void;
 }
 
 const IntegrationSetupStep: React.FC<IntegrationSetupStepProps> = ({ settings, onUpdate }) => {

@@ -44,7 +44,7 @@ const GeneralTab: React.FC = () => {
       const settingsMap = settings.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
       setFormData(prev => ({
         system_name: settingsMap.system_name || prev.system_name,

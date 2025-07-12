@@ -28,7 +28,7 @@ export const useFormWorkflows = (formId?: string) => {
       // Transform the data to match our types
       return (data || []).map(workflow => ({
         ...workflow,
-        trigger_conditions: workflow.trigger_conditions as Record<string, any>,
+        trigger_conditions: workflow.trigger_conditions as Record<string, unknown>,
         workflow_steps: Array.isArray(workflow.workflow_steps) ? workflow.workflow_steps as unknown[] : []
       })) as FormWorkflow[];
     },
@@ -58,7 +58,7 @@ export const useCreateFormWorkflow = () => {
 
       return {
         ...data,
-        trigger_conditions: data.trigger_conditions as Record<string, any>,
+        trigger_conditions: data.trigger_conditions as Record<string, unknown>,
         workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as unknown[] : []
       } as FormWorkflow;
     },
@@ -96,7 +96,7 @@ export const useUpdateFormWorkflow = () => {
 
       return {
         ...data,
-        trigger_conditions: data.trigger_conditions as Record<string, any>,
+        trigger_conditions: data.trigger_conditions as Record<string, unknown>,
         workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as unknown[] : []
       } as FormWorkflow;
     },
@@ -134,7 +134,7 @@ export const useFormNotifications = (workflowId?: string) => {
 
       return (data || []).map(notification => ({
         ...notification,
-        template_data: notification.template_data as Record<string, any>,
+        template_data: notification.template_data as Record<string, unknown>,
         recipients: Array.isArray(notification.recipients) ? notification.recipients as string[] : []
       })) as FormNotification[];
     },
@@ -164,7 +164,7 @@ export const useCreateFormNotification = () => {
 
       return {
         ...data,
-        template_data: data.template_data as Record<string, any>,
+        template_data: data.template_data as Record<string, unknown>,
         recipients: Array.isArray(data.recipients) ? data.recipients as string[] : []
       } as FormNotification;
     },
@@ -208,7 +208,7 @@ export const useWorkflowExecutionLogs = (workflowId?: string, responseId?: strin
         workflow_id: log.workflow_id,
         response_id: log.response_id,
         status: log.execution_status || 'pending', // Map execution_status to status
-        step_results: Array.isArray(log.step_results) ? log.step_results as Record<string, any>[] : [],
+        step_results: Array.isArray(log.step_results) ? log.step_results as Record<string, unknown>[] : [],
         error_message: log.error_message,
         created_at: log.created_at,
         completed_at: log.completed_at

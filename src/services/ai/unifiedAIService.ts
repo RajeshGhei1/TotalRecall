@@ -39,7 +39,7 @@ export interface AIServiceRegistration {
   supportedActions: string[];
   requiredParameters: string[];
   optionalParameters: string[];
-  outputFormat: Record<string, any>;
+  outputFormat: Record<string, unknown>;
 }
 
 class UnifiedAIService {

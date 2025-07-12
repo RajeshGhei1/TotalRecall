@@ -37,7 +37,7 @@ export const useAIModels = () => {
       
       return (data || []).map(model => ({
         ...model,
-        configuration: (model.configuration as Record<string, any>) || {}
+        configuration: (model.configuration as Record<string, unknown>) || {}
       }));
     }
   });
@@ -56,7 +56,7 @@ export const useAIModels = () => {
       if (error) throw error;
       return {
         ...data,
-        configuration: (data.configuration as Record<string, any>) || {}
+        configuration: (data.configuration as Record<string, unknown>) || {}
       };
     },
     onSuccess: () => {
@@ -92,7 +92,7 @@ export const useAIModels = () => {
       if (error) throw error;
       return {
         ...data,
-        configuration: (data.configuration as Record<string, any>) || {}
+        configuration: (data.configuration as Record<string, unknown>) || {}
       };
     },
     onSuccess: () => {

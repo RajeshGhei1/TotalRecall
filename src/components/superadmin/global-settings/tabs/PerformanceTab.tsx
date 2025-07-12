@@ -41,7 +41,7 @@ const PerformanceTab: React.FC = () => {
       const settingsMap = settings.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
       setFormData(prev => ({
         rate_limit_requests_per_minute: settingsMap.rate_limit_requests_per_minute !== undefined 

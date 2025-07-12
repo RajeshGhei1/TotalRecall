@@ -152,7 +152,7 @@ class TalentAnalyticsService {
     }
   }
 
-  async generateTalentInsights(tenantId: string): Promise<any[]> {
+  async generateTalentInsights(tenantId: string): Promise<unknown[]> {
     try {
       const [skillsGap, retentionRisk] = await Promise.all([
         this.getSkillsGapAnalysis(tenantId),

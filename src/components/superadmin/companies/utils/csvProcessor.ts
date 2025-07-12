@@ -80,7 +80,7 @@ export interface BranchOfficeData {
 export interface CSVProcessingResult {
   validRows: Partial<Company>[];
   branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>;
-  errors: Array<{ row: number; message: string; data?: any; field?: string; value?: string }>;
+  errors: Array<{ row: number; message: string; data?: Record<string, unknown>; field?: string; value?: string }>;
   duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }>;
   summary: {
     totalRows: number;
@@ -533,7 +533,7 @@ export function validateCSVData(
 ): CSVProcessingResult {
   const validRows: Partial<Company>[] = [];
   const branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }> = [];
-  const errors: Array<{ row: number; message: string; data?: any; field?: string; value?: string }> = [];
+  const errors: Array<{ row: number; message: string; data?: Record<string, unknown>; field?: string; value?: string }> = [];
   const duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }> = [];
   let totalBranchOffices = 0;
   

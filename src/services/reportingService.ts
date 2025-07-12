@@ -92,7 +92,7 @@ export const runDynamicReport = async (
   columns: string[],
   filters: Filter[],
   groupBy?: string,
-): Promise<any[]> => {
+): Promise<unknown[]> => {
   if (!entity || columns.length === 0) {
     throw new Error('Entity and columns are required');
   }

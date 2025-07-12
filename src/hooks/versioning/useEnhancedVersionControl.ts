@@ -32,7 +32,7 @@ interface ApprovalWorkflow {
   version_id: string;
   requested_by: string;
   status: string;
-  workflow_config: any;
+  workflow_config: unknown;
   review_notes?: string;
   reviewed_by?: string;
   reviewed_at?: string;

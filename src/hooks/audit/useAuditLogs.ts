@@ -146,11 +146,11 @@ export const useLogAuditEvent = () => {
       action: string;
       entity_type: string;
       entity_id?: string;
-      old_values?: Record<string, any>;
-      new_values?: Record<string, any>;
+      old_values?: Record<string, unknown>;
+      new_values?: Record<string, unknown>;
       severity?: 'low' | 'medium' | 'high' | 'critical';
       module_name?: string;
-      additional_context?: Record<string, any>;
+      additional_context?: Record<string, unknown>;
     }) => {
       const { data, error } = await supabase.functions.invoke('log-audit-event', {
         body: logData,

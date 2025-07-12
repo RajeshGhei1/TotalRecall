@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export const useCompanyActions = (
   refetch: () => void,
-  createCompany: any
+  createCompany: { mutateAsync: (data: CompanyFormValues) => Promise<void> }
 ) => {
   const navigate = useNavigate();
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);

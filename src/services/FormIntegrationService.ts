@@ -20,7 +20,7 @@ export class FormIntegrationService {
   async getFormsForLocation(
     location: DeploymentLocation, 
     tenantId?: string, 
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<FormPlacement[]> {
     const cacheKey = `${location}-${tenantId || 'global'}`;
     
@@ -64,7 +64,7 @@ export class FormIntegrationService {
     return this.filterByTriggers(data || [], context);
   }
 
-  private filterByTriggers(placements: unknown[], context?: Record<string, any>): FormPlacement[] {
+  private filterByTriggers(placements: unknown[], context?: Record<string, unknown>): FormPlacement[] {
     if (!context) return placements;
 
     return placements.filter(placement => {
@@ -103,7 +103,7 @@ export class FormIntegrationService {
     }
   }
 
-  private evaluateConditions(conditions: Record<string, any>, context: Record<string, unknown>): boolean {
+  private evaluateConditions(conditions: Record<string, unknown>, context: Record<string, unknown>): boolean {
     if (!conditions.rules) return true;
 
     return conditions.rules.every((rule: unknown) => {
@@ -127,7 +127,7 @@ export class FormIntegrationService {
     });
   }
 
-  private evaluateSchedule(conditions: Record<string, any>): boolean {
+  private evaluateSchedule(conditions: Record<string, unknown>): boolean {
     const now = new Date();
     
     if (conditions.start_date && new Date(conditions.start_date) > now) {
@@ -152,7 +152,7 @@ export class FormIntegrationService {
     eventType: 'form_view' | 'form_start' | 'form_submit' | 'form_abandon',
     placementId?: string,
     responseId?: string,
-    eventData?: Record<string, any>,
+    eventData?: Record<string, unknown>,
     tenantId?: string
   ) {
     try {
@@ -180,7 +180,7 @@ export class FormIntegrationService {
   async submitFormResponse(
     formId: string,
     placementId: string,
-    responseData: Record<string, any>,
+    responseData: Record<string, unknown>,
     tenantId?: string,
     userId?: string
   ) {
@@ -216,7 +216,7 @@ export class FormIntegrationService {
   }
 
   // Execute workflows for form responses
-  async triggerWorkflows(formId: string, responseId: string, responseData: Record<string, any>) {
+  async triggerWorkflows(formId: string, responseId: string, responseData: Record<string, unknown>) {
     try {
       // Fetch active workflows for this form
       const { data: workflows, error } = await supabase
@@ -239,7 +239,7 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeWorkflow(workflow: unknown, responseId: string, responseData: Record<string, any>) {
+  private async executeWorkflow(workflow: unknown, responseId: string, responseData: Record<string, unknown>) {
     try {
       // Create execution log
       const { data: executionLog, error: logError } = await supabase
@@ -258,7 +258,7 @@ export class FormIntegrationService {
         return;
       }
 
-      const stepResults: Record<string, any>[] = [];
+      const stepResults: Record<string, unknown>[] = [];
 
       // Execute workflow steps
       for (const step of workflow.workflow_steps) {
@@ -286,7 +286,7 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeWorkflowStep(step: unknown, responseData: Record<string, any>) {
+  private async executeWorkflowStep(step: unknown, responseData: Record<string, unknown>) {
     switch (step.type) {
       case 'notification':
         return await this.executeNotificationStep(step, responseData);
@@ -300,19 +300,19 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeNotificationStep(step: unknown, responseData: Record<string, any>) {
+  private async executeNotificationStep(step: unknown, responseData: Record<string, unknown>) {
     // This would integrate with email/SMS services
     console.log('Executing notification step:', step, responseData);
     return { message: 'Notification sent', action: step.action };
   }
 
-  private async executeDataProcessingStep(step: unknown, responseData: Record<string, any>) {
+  private async executeDataProcessingStep(step: unknown, responseData: Record<string, unknown>) {
     // This would process the data according to the step configuration
     console.log('Executing data processing step:', step, responseData);
     return { message: 'Data processed', action: step.action };
   }
 
-  private async executeWebhookStep(step: unknown, responseData: Record<string, any>) {
+  private async executeWebhookStep(step: unknown, responseData: Record<string, unknown>) {
     // This would call external webhooks
     console.log('Executing webhook step:', step, responseData);
     return { message: 'Webhook called', action: step.action };

@@ -107,7 +107,7 @@ class WorkflowOptimizerService {
     return optimizations;
   }
 
-  async optimizeWorkflowSteps(workflowSteps: unknown[], optimizations: WorkflowOptimization[]): Promise<any[]> {
+  async optimizeWorkflowSteps(workflowSteps: unknown[], optimizations: WorkflowOptimization[]): Promise<unknown[]> {
     let optimizedSteps = [...workflowSteps];
 
     for (const optimization of optimizations) {

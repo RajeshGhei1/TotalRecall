@@ -19,7 +19,7 @@ export const useCompanyDeletion = () => {
   const queryClient = useQueryClient();
 
   // Check deletion prerequisites
-  const checkDeletionInfo = async (company: Company, allCompanies: Company[]): Promise<DeletionInfo> => {
+  const checkDeletionInfo = async (company: Company, allCompanies: Compunknown[]): Promise<DeletionInfo> => {
     const warnings: string[] = [];
     
     // Check for child companies

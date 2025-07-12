@@ -78,7 +78,7 @@ export class DecisionContextManager {
     return hash.toString(16);
   }
 
-  private async findSimilarContexts(context: AIContext): Promise<any[]> {
+  private async findSimilarContexts(context: AIContext): Promise<unknown[]> {
     try {
       const { data: decisions, error } = await supabase
         .from('ai_decisions')

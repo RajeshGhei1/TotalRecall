@@ -52,7 +52,7 @@ const ChartVisualization: React.FC<ChartVisualizationProps> = ({
       }
     };
     return config;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, unknown>);
 
   // Render based on visualization type
   switch (visualizationType) {

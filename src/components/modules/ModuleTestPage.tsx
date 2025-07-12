@@ -26,7 +26,7 @@ const ModuleTestPage: React.FC = () => {
   const navigate = useNavigate();
   const { loadedModules, isLoading, refreshModules } = useModuleLoader();
   const [selectedModule, setSelectedModule] = useState<string>('');
-  const [moduleProps, setModuleProps] = useState<Record<string, any>>({});
+  const [moduleProps, setModuleProps] = useState<Record<string, unknown>>({});
   const [activeTab, setActiveTab] = useState('test');
 
   // Handle navigation state from development dashboard
@@ -131,7 +131,8 @@ const ModuleTestPage: React.FC = () => {
   );
 
   const renderPropControls = () => {
-    if (!selectedModuleData?.instance?.Component?.moduleMetadata?.props) {
+    const moduleInstance = selectedModuleData?.instance as { Component?: { moduleMetadata?: { props?: Record<string, unknown> } } };
+    if (!moduleInstance?.Component?.moduleMetadata?.props) {
       return (
         <div className="text-center py-8">
           <Info className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -140,61 +141,69 @@ const ModuleTestPage: React.FC = () => {
       );
     }
 
-    const props = selectedModuleData.instance.Component.moduleMetadata.props;
+    const props = moduleInstance.Component.moduleMetadata.props;
 
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Module Configuration</h3>
         
         <div className="grid gap-4">
-          {Object.entries(props).map(([propName, propConfig]: [string, any]) => (
-            <div key={propName} className="space-y-2">
-              <label className="text-sm font-medium">
-                {propName}
-                {propConfig.type && (
-                  <span className="text-muted-foreground ml-1">({propConfig.type})</span>
-                )}
-              </label>
-              
-              {propConfig.options ? (
-                <Select
-                  value={moduleProps[propName] || propConfig.default}
-                  onValueChange={(value) => handlePropChange(propName, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {propConfig.options.map((option: string) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : propConfig.type === 'boolean' ? (
-                <div className="flex items-center space-x-2">
+          {Object.entries(props).map(([propName, propConfigRaw]: [string, unknown]) => {
+            const propConfig = propConfigRaw as {
+              type?: string;
+              options?: string[];
+              default?: unknown;
+            };
+            
+            return (
+              <div key={propName} className="space-y-2">
+                <label className="text-sm font-medium">
+                  {propName}
+                  {propConfig.type && (
+                    <span className="text-muted-foreground ml-1">({propConfig.type})</span>
+                  )}
+                </label>
+                
+                {propConfig.options ? (
+                  <Select
+                    value={String(moduleProps[propName] || propConfig.default || '')}
+                    onValueChange={(value) => handlePropChange(propName, value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {propConfig.options.map((option: string) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : propConfig.type === 'boolean' ? (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(moduleProps[propName] ?? propConfig.default)}
+                      onChange={(e) => handlePropChange(propName, e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      Default: {String(propConfig.default)}
+                    </span>
+                  </div>
+                ) : (
                   <input
-                    type="checkbox"
-                    checked={moduleProps[propName] ?? propConfig.default}
-                    onChange={(e) => handlePropChange(propName, e.target.checked)}
-                    className="rounded"
+                    type="text"
+                    value={String(moduleProps[propName] || propConfig.default || '')}
+                    onChange={(e) => handlePropChange(propName, e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md"
+                    placeholder={`Default: ${propConfig.default}`}
                   />
-                  <span className="text-sm text-muted-foreground">
-                    Default: {String(propConfig.default)}
-                  </span>
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  value={moduleProps[propName] || propConfig.default || ''}
-                  onChange={(e) => handlePropChange(propName, e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
-                  placeholder={`Default: ${propConfig.default}`}
-                />
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );

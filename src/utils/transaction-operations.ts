@@ -54,7 +54,7 @@ const executeRollbackOperation = async (rollbackOp: RollbackOperation) => {
   }
 };
 
-const fetchCurrentData = async (table: string, filter: Record<string, any>) => {
+const fetchCurrentData = async (table: string, filter: Record<string, unknown>) => {
   const client = supabase as unknown;
   return await client
     .from(table)

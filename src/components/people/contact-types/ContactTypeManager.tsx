@@ -74,7 +74,7 @@ const ContactTypeManager: React.FC = () => {
   });
 
   const getIcon = (iconName: string) => {
-    const icons: Record<string, React.ComponentType<any>> = {
+    const icons: Record<string, React.ComponentType<{ className?: string }>> = {
       users: Users,
       building: Building,
       'shopping-cart': ShoppingCart,

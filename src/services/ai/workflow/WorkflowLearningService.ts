@@ -394,7 +394,7 @@ class WorkflowLearningService {
     });
   }
 
-  async getPredictions(workflowContext: Record<string, any>): Promise<Array<{
+  async getPredictions(workflowContext: Record<string, unknown>): Promise<Array<{
     metric: string;
     prediction: any;
     confidence: number;

@@ -59,7 +59,7 @@ class DocumentationService {
     return await codeAnalysisService.getDocumentationForPath(path);
   }
 
-  async getAllDocumentationFiles(): Promise<any[]> {
+  async getAllDocumentationFiles(): Promise<unknown[]> {
     return await codeAnalysisService.getAllDocumentation();
   }
 

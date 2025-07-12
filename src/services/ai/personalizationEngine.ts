@@ -14,7 +14,7 @@ export interface PersonalizationRule {
 export interface UIAdaptation {
   type: 'layout' | 'navigation' | 'content' | 'style' | 'workflow';
   target: string;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
   duration?: number;
 }
 

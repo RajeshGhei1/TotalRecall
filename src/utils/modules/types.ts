@@ -8,7 +8,7 @@ export interface Module {
   description?: string;
   category?: string;
   maturity_status?: ModuleMaturityStatus;
-  development_stage?: ModuleDevelopmentStage | string | Record<string, any>;
+  development_stage?: ModuleDevelopmentStage | string | Record<string, unknown>;
   overall_progress?: number;
   version?: string;
   dependencies?: string[];
@@ -60,7 +60,7 @@ export interface ModuleProgressThresholds {
 
 // Utility type for converting SystemModule to Module
 export interface SystemModuleCompatible extends Omit<Module, 'development_stage'> {
-  development_stage?: Record<string, any>;
+  development_stage?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
   promoted_to_production_at?: string;

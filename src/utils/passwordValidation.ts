@@ -50,7 +50,7 @@ export async function fetchPasswordRequirements(): Promise<PasswordRequirements>
     const settingsMap = settings?.reduce((acc, setting) => {
       acc[setting.setting_key] = setting.setting_value;
       return acc;
-    }, {} as Record<string, any>) || {};
+    }, {} as Record<string, unknown>) || {};
 
     const requirements: PasswordRequirements = {
       password_min_length: settingsMap.password_min_length !== undefined 

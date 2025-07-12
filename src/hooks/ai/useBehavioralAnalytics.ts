@@ -48,7 +48,7 @@ export const useBehavioralAnalytics = () => {
     mutationFn: async ({ interactionType, context, metadata }: {
       interactionType: string;
       context: Record<string, unknown>;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }) => {
       try {
         return await behavioralAnalyticsService.trackInteraction(

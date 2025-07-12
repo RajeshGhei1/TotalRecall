@@ -12,7 +12,7 @@ export const useAutoTracking = (
   userId: string,
   options: AutoTrackingOptions,
   trackingMethods: {
-    trackClick: (target: string, metadata?: Record<string, any>) => void;
+    trackClick: (target: string, metadata?: Record<string, unknown>) => void;
     trackScrolling: (scrollPercentage: number, section: string) => void;
     trackFormInteraction: (formId: string, fieldName: string, action: string) => void;
   },

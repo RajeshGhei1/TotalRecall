@@ -66,7 +66,7 @@ export interface CompanyFilters {
 }
 
 export const useCompanyFilters = (
-  companies: Company[] | undefined,
+  companies: Compunknown[] | undefined,
   filters: CompanyFilters,
   searchTerm: string
 ) => {

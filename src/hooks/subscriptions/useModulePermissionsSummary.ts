@@ -12,7 +12,7 @@ export interface ModulePermissionSummary {
     name: string;
     label: string;
     isEnabled: boolean;
-    limits: Record<string, any>;
+    limits: Record<string, unknown>;
   }>;
 }
 
@@ -21,7 +21,7 @@ interface ModulePermissionRecord {
   plan_id: string;
   module_name: string;
   is_enabled: boolean;
-  limits: Record<string, any> | null;
+  limits: Record<string, unknown> | null;
   created_at: string;
 }
 
