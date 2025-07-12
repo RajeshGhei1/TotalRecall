@@ -1,48 +1,29 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
+import Dashboard from "@/pages/tenant-admin/Dashboard";
+import Companies from "@/pages/tenant-admin/Companies";
+import Contacts from "@/pages/tenant-admin/Contacts";
+import SmartTalentAnalytics from "@/pages/tenant-admin/SmartTalentAnalytics";
+import Settings from "@/pages/tenant-admin/Settings";
+import GeneralSettings from "@/pages/tenant-admin/settings/GeneralSettings";
+import CustomFieldsSettings from "@/pages/tenant-admin/settings/CustomFieldsSettings";
+import ApiSettings from "@/pages/tenant-admin/settings/ApiSettings";
+import CommunicationSettings from "@/pages/tenant-admin/settings/CommunicationSettings";
+import OutreachSettings from "@/pages/tenant-admin/settings/OutreachSettings";
+import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettings";
+import IntelligentWorkflowsPage from "@/components/workflow/IntelligentWorkflowsPage";
+import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleAccessGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleAccessGuard";
+import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
+import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
+import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher";
 import AdminLayout from "@/components/AdminLayout";
-
-// Lazy load pages to reduce initial bundle size
-const Dashboard = React.lazy(() => import("@/pages/tenant-admin/Dashboard"));
-const Companies = React.lazy(() => import("@/pages/tenant-admin/Companies"));
-const Contacts = React.lazy(() => import("@/pages/tenant-admin/Contacts"));
-const SmartTalentAnalytics = React.lazy(() => import("@/pages/tenant-admin/SmartTalentAnalytics"));
-const Settings = React.lazy(() => import("@/pages/tenant-admin/Settings"));
-const GeneralSettings = React.lazy(() => import("@/pages/tenant-admin/settings/GeneralSettings"));
-const CustomFieldsSettings = React.lazy(() => import("@/pages/tenant-admin/settings/CustomFieldsSettings"));
-const ApiSettings = React.lazy(() => import("@/pages/tenant-admin/settings/ApiSettings"));
-const CommunicationSettings = React.lazy(() => import("@/pages/tenant-admin/settings/CommunicationSettings"));
-const OutreachSettings = React.lazy(() => import("@/pages/tenant-admin/settings/OutreachSettings"));
-const SocialMediaSettings = React.lazy(() => import("@/pages/tenant-admin/settings/SocialMediaSettings"));
-const IntelligentWorkflowsPage = React.lazy(() => import("@/components/workflow/IntelligentWorkflowsPage"));
-const PredictiveInsights = React.lazy(() => import("@/pages/tenant-admin/PredictiveInsights"));
-const LinkedInIntegrationPage = React.lazy(() => import("@/pages/tenant-admin/LinkedInIntegration"));
-const SmartTalentMatcher = React.lazy(() => import("@/components/talent-matching/SmartTalentMatcher"));
-const UpgradePlan = React.lazy(() => import("@/pages/tenant-admin/UpgradePlan"));
-const ATSRoutes = React.lazy(() => import("@/routes/ats/ATSRoutes"));
-const TalentDatabase = React.lazy(() => import("@/modules/talent-database"));
-
-// Loading component for lazy-loaded routes
-const RouteLoading = () => (
-  <div className="flex items-center justify-center h-64">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-      <p>Loading...</p>
-    </div>
-  </div>
-);
-
-// Wrapper component for lazy-loaded routes with Suspense
-const LazyRoute = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<RouteLoading />}>
-    {children}
-  </Suspense>
-);
+import UpgradePlan from "@/pages/tenant-admin/UpgradePlan";
+import ATSRoutes from "@/routes/ats/ATSRoutes";
+import TalentDatabase from "@/modules/talent-database";
 
 // Smart redirect component for intelligent default routing
 const SmartTenantRedirect: React.FC = () => {
@@ -119,9 +100,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <Dashboard />
-          </LazyRoute>
+          <Dashboard />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -132,9 +111,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <IntelligentWorkflowsPage />
-          </LazyRoute>
+          <IntelligentWorkflowsPage />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -145,9 +122,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <PredictiveInsights />
-          </LazyRoute>
+          <PredictiveInsights />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -158,9 +133,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <LinkedInIntegrationPage />
-          </LazyRoute>
+          <LinkedInIntegrationPage />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -171,9 +144,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <ATSRoutes />
-          </LazyRoute>
+          <ATSRoutes />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -186,9 +157,7 @@ const TenantAdminRoutes = () => {
         >
           <AdminLayout>
             <div className="p-6">
-              <LazyRoute>
-                <TalentDatabase view="search" showFilters={true} allowAdd={true} />
-              </LazyRoute>
+              <TalentDatabase view="search" showFilters={true} allowAdd={true} />
             </div>
           </AdminLayout>
         </UnifiedModuleAccessGuard>
@@ -207,9 +176,7 @@ const TenantAdminRoutes = () => {
         >
           <AdminLayout>
             <div className="p-6">
-              <LazyRoute>
-                <SmartTalentMatcher />
-              </LazyRoute>
+              <SmartTalentMatcher />
             </div>
           </AdminLayout>
         </UnifiedModuleAccessGuard>
@@ -222,9 +189,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <Companies />
-          </LazyRoute>
+          <Companies />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -235,9 +200,7 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <Contacts />
-          </LazyRoute>
+          <Contacts />
         </UnifiedModuleAccessGuard>
       } />
       
@@ -248,55 +211,21 @@ const TenantAdminRoutes = () => {
           tenantId={currentTenantId}
           userId={user?.id}
         >
-          <LazyRoute>
-            <SmartTalentAnalytics />
-          </LazyRoute>
+          <SmartTalentAnalytics />
         </UnifiedModuleAccessGuard>
       } />
       
       {/* Settings - Always Accessible (No Module Protection) */}
-      <Route path="settings" element={
-        <LazyRoute>
-          <Settings />
-        </LazyRoute>
-      } />
-      <Route path="settings/general" element={
-        <LazyRoute>
-          <GeneralSettings />
-        </LazyRoute>
-      } />
-      <Route path="settings/custom-fields" element={
-        <LazyRoute>
-          <CustomFieldsSettings />
-        </LazyRoute>
-      } />
-      <Route path="settings/api" element={
-        <LazyRoute>
-          <ApiSettings />
-        </LazyRoute>
-      } />
-      <Route path="settings/communication" element={
-        <LazyRoute>
-          <CommunicationSettings />
-        </LazyRoute>
-      } />
-      <Route path="settings/outreach" element={
-        <LazyRoute>
-          <OutreachSettings />
-        </LazyRoute>
-      } />
-      <Route path="settings/social-media" element={
-        <LazyRoute>
-          <SocialMediaSettings />
-        </LazyRoute>
-      } />
+      <Route path="settings" element={<Settings />} />
+      <Route path="settings/general" element={<GeneralSettings />} />
+      <Route path="settings/custom-fields" element={<CustomFieldsSettings />} />
+      <Route path="settings/api" element={<ApiSettings />} />
+      <Route path="settings/communication" element={<CommunicationSettings />} />
+      <Route path="settings/outreach" element={<OutreachSettings />} />
+      <Route path="settings/social-media" element={<SocialMediaSettings />} />
       
       {/* Upgrade Plan - Always accessible */}
-      <Route path="upgrade" element={
-        <LazyRoute>
-          <UpgradePlan />
-        </LazyRoute>
-      } />
+      <Route path="upgrade" element={<UpgradePlan />} />
     </Routes>
   );
 };

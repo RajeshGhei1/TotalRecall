@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // General application styles
 import Index from '@/pages/Index';
@@ -12,7 +12,7 @@ import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 import { useSessionLogger } from '@/hooks/useSessionLogger';
 
 // Enhanced component to handle smart authenticated user redirects
-const AuthenticatedRedirect: React.FC = React.memo(() => {
+const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: checkingRole } = useSuperAdminCheck();
   
@@ -42,75 +42,48 @@ const AuthenticatedRedirect: React.FC = React.memo(() => {
   // Regular users go to tenant admin portal
   console.log('AuthenticatedRedirect: User is tenant admin, redirecting to tenant admin portal');
   return <Navigate to="/tenant-admin" replace />;
-});
-
-AuthenticatedRedirect.displayName = 'AuthenticatedRedirect';
-
-// Memoized route components to prevent unnecessary re-renders
-const MemoizedSuperAdminRoutes = React.memo(() => (
-  <AuthGuard requiresSuperAdmin={true}>
-    <SuperAdminRoutes />
-  </AuthGuard>
-));
-
-const MemoizedTenantAdminRoutes = React.memo(() => (
-  <AuthGuard>
-    <TenantAdminRoutes />
-  </AuthGuard>
-));
-
-MemoizedSuperAdminRoutes.displayName = 'MemoizedSuperAdminRoutes';
-MemoizedTenantAdminRoutes.displayName = 'MemoizedTenantAdminRoutes';
+};
 
 function App() {
   useSessionLogger();
-
-  // Memoize route configurations to prevent unnecessary re-renders
-  const routes = useMemo(() => [
-    {
-      path: "/",
-      element: <AuthenticatedRedirect />
-    },
-    {
-      path: "/auth",
-      element: <Auth />
-    },
-    {
-      path: "/superadmin/*",
-      element: <MemoizedSuperAdminRoutes />
-    },
-    {
-      path: "/tenant-admin/*",
-      element: <MemoizedTenantAdminRoutes />
-    },
-    {
-      path: "*",
-      element: <Navigate to="/" replace />
-    }
-  ], []);
-
-  // Memoize the routes JSX to prevent unnecessary re-renders
-  const routesJSX = useMemo(() => (
-    <Routes>
-      {routes.map((route, index) => (
-        <Route
-          key={`${route.path}-${index}`}
-          path={route.path}
-          element={route.element}
-        />
-      ))}
-    </Routes>
-  ), [routes]);
-
   return (
     <TenantProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          {routesJSX}
+          <Routes>
+            {/* Home route - shows marketing page for unauthenticated users, smart redirects for authenticated users */}
+            <Route path="/" element={<AuthenticatedRedirect />} />
+            
+            {/* Auth Route */}
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Superadmin Routes - Protected, no subscription checks */}
+            <Route 
+              path="/superadmin/*" 
+              element={
+                <AuthGuard requiresSuperAdmin={true}>
+                  <SuperAdminRoutes />
+                </AuthGuard>
+              } 
+            />
+            
+            {/* Tenant Admin Routes - Protected with Smart Module Independence */}
+            <Route 
+              path="/tenant-admin/*" 
+              element={
+                <AuthGuard>
+                  <TenantAdminRoutes />
+                </AuthGuard>
+              } 
+            />
+
+            {/* Catch all other routes and redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </div>
       </Router>
     </TenantProvider>
   );
 }
 
-export default React.memo(App);
+export default App;
