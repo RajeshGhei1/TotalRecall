@@ -78,6 +78,24 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     return <Package className="h-8 w-8 text-gray-400" />;
   };
 
+  const getAILevelColor = (level?: string) => {
+    switch (level) {
+      case 'high': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'medium': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  const getAILevelText = (level?: string) => {
+    switch (level) {
+      case 'high': return 'High AI';
+      case 'medium': return 'Medium AI';
+      case 'low': return 'Low AI';
+      default: return 'No AI';
+    }
+  };
+
   const handleRunTest = () => {
     const testUrl = `/superadmin/module-testing?moduleId=${module.manifest.id}`;
     window.open(testUrl, '_blank');
@@ -124,6 +142,37 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
                   {module.manifest.description}
                 </p>
+                
+                {/* AI Contribution Section */}
+                {module.ai_level && module.ai_level !== 'none' && (
+                  <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={getAILevelColor(module.ai_level)}>
+                        {getAILevelText(module.ai_level)}
+                      </Badge>
+                      <span className="text-xs text-gray-500">Integration</span>
+                    </div>
+                    {module.ai_description && (
+                      <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                        {module.ai_description}
+                      </p>
+                    )}
+                    {module.ai_capabilities && module.ai_capabilities.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {module.ai_capabilities.slice(0, 3).map((capability, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs px-2 py-1">
+                            {capability}
+                          </Badge>
+                        ))}
+                        {module.ai_capabilities.length > 3 && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1">
+                            +{module.ai_capabilities.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
@@ -217,6 +266,37 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         <p className="text-sm text-gray-600 leading-relaxed min-h-[2.5rem]">
           {module.manifest.description}
         </p>
+        
+        {/* AI Contribution Section */}
+        {module.ai_level && module.ai_level !== 'none' && (
+          <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={getAILevelColor(module.ai_level)}>
+                {getAILevelText(module.ai_level)}
+              </Badge>
+              <span className="text-xs text-gray-500">Integration</span>
+            </div>
+            {module.ai_description && (
+              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                {module.ai_description}
+              </p>
+            )}
+            {module.ai_capabilities && module.ai_capabilities.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {module.ai_capabilities.slice(0, 2).map((capability, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs px-2 py-1">
+                    {capability}
+                  </Badge>
+                ))}
+                {module.ai_capabilities.length > 2 && (
+                  <Badge variant="secondary" className="text-xs px-2 py-1">
+                    +{module.ai_capabilities.length - 2} more
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Version and Status */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">

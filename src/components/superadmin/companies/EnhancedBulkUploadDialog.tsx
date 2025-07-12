@@ -114,10 +114,13 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       setProgress({ stage: 'parsing', progress: 100, message: `File parsed successfully: ${rows.length - 1} data rows found` });
       
       // Auto-detect field mappings based on headers
-      const headers = rows[0]?.map(h => h.toLowerCase().trim()) || [];
+      const headers = rows[0] || [];
       const detectedMappings = autoDetectFieldMappings(headers);
       setFieldMappings(detectedMappings);
       
+      // Debug: log headers and mappings
+      console.log('CSV Headers:', headers);
+      console.log('Detected Field Mappings:', detectedMappings);
       toast.success(`File loaded: ${rows.length - 1} data rows found`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -252,6 +255,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       'financial_year': 'turnoveryear'
     };
 
+    // First, auto-map columns that we can recognize
     headers.forEach(header => {
       const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
       const mappedField = commonMappings[normalizedHeader] || commonMappings[header.toLowerCase()];
@@ -270,7 +274,19 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
       }
     });
 
-    return mappings.filter(m => headers.includes(m.csvColumn) || m.isRequired);
+    // Then, add unmapped columns as "ignore" mappings so they appear in the dropdown
+    headers.forEach(header => {
+      const isAlreadyMapped = mappings.some(m => m.csvColumn === header);
+      if (!isAlreadyMapped) {
+        mappings.push({
+          csvColumn: header,
+          companyField: 'ignore',
+          isRequired: false,
+        });
+      }
+    });
+
+    return mappings;
   };
 
   const handleFieldMappingChange = (index: number, field: 'csvColumn' | 'companyField' | 'isRequired', value: any) => {
@@ -560,6 +576,14 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
             </div>
 
             <ScrollArea className="h-64 border rounded-md p-4">
+              {/* Column headers for mapping table */}
+              <div className="flex items-center space-x-2 px-3 pb-2 font-semibold text-gray-700 text-sm">
+                <div className="w-40">Uploaded File Field</div>
+                <div className="w-4"></div>
+                <div className="w-40">Template Field</div>
+                <div className="w-24">Required</div>
+                <div className="flex-1"></div>
+              </div>
               <div className="space-y-3">
                 {fieldMappings.map((mapping, index) => (
                   <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg bg-gray-50">
@@ -570,7 +594,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       <SelectTrigger className="w-40">
                         <SelectValue placeholder="CSV Column" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]">
                         {csvHeaders.map((header) => (
                           <SelectItem key={header} value={header}>
                             {header}
@@ -588,7 +612,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]">
                         {companyFields.map((field) => (
                           <SelectItem key={field} value={field}>
                             {field === 'ignore' ? 'Ignore Column' : field}

@@ -62,3 +62,27 @@ export const groupModulesByCategory = (modules: any[]) => {
   
   return grouped;
 };
+
+// Group modules by type (super_admin vs foundation vs business)
+export const groupModulesByType = (modules: any[]) => {
+  if (!modules) return {};
+  
+  const grouped: Record<string, any[]> = {};
+  
+  modules.forEach(module => {
+    // Use the type field from the database, defaulting to 'business' if not set
+    const type = module.type || 'business';
+    
+    if (!grouped[type]) {
+      grouped[type] = [];
+    }
+    grouped[type].push(module);
+  });
+  
+  // Sort modules within each type by name
+  Object.keys(grouped).forEach(type => {
+    grouped[type].sort((a, b) => a.name.localeCompare(b.name));
+  });
+  
+  return grouped;
+};

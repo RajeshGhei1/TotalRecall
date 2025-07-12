@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { LoadedModule, DevelopmentStageData, ModuleProgressData } from '@/types/modules';
 import { moduleCodeRegistry } from '@/services/moduleCodeRegistry';
 import { supabase } from '@/integrations/supabase/client';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 // Helper function to safely parse development stage
 const parseDevelopmentStage = (developmentStage: any): DevelopmentStageData => {
@@ -65,6 +66,9 @@ export const useDevModules = () => {
       }
 
       console.log(`📋 All modules found: ${systemModules?.length || 0}`);
+      
+      // Type assertion to ensure we have the correct interface with AI fields
+      const typedSystemModules = systemModules as SystemModule[];
 
       // Fetch progress tracking data separately
       const { data: progressData, error: progressError } = await supabase
@@ -86,7 +90,7 @@ export const useDevModules = () => {
       }
 
       // Filter out production modules
-      const developmentModules = (systemModules || []).filter(dbModule => {
+      const developmentModules = (typedSystemModules || []).filter(dbModule => {
         const developmentStage = parseDevelopmentStage(dbModule.development_stage);
         const stage = developmentStage.stage || 'planning';
         
@@ -145,7 +149,12 @@ export const useDevModules = () => {
           dependencies: [],
           error,
           developmentStage,
-          progressData
+          progressData,
+          // AI Contribution fields from database
+          ai_capabilities: dbModule.ai_capabilities,
+          ai_level: dbModule.ai_level,
+          ai_description: dbModule.ai_description,
+          ai_features: dbModule.ai_features
         };
       });
       

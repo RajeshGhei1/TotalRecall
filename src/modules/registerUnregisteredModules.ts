@@ -37,9 +37,24 @@ async function registerModule(moduleName: string) {
       name: moduleName,
       category: 'business', // Default, can be updated later
       description: '',
-      status: 'inactive',
       version: '1.0.0',
-      is_active: false
+      is_active: true,
+      maturity_status: 'alpha',
+      author: 'System',
+      license: 'MIT',
+      entry_point: 'index.tsx',
+      required_permissions: ['read'],
+      subscription_tiers: ['basic', 'pro', 'enterprise'],
+      load_order: 100,
+      auto_load: false,
+      can_unload: true,
+      hot_reload: true,
+      development_stage: {
+        "stage": "alpha",
+        "progress": 30,
+        "milestones": ["requirements_defined", "prototype_created"],
+        "requirements": ["complete_development", "testing", "documentation"]
+      }
     });
   if (error) {
     console.error(`Error registering module ${moduleName}:`, error);

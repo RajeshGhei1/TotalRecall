@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useSystemModules } from '@/hooks/useSystemModules';
@@ -6,6 +5,7 @@ import { getDisplayName } from '@/utils/moduleNameMapping';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Blocks, AlertCircle, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 // Define modules that have dedicated pages
 const DEDICATED_MODULE_PAGES: Record<string, string> = {
@@ -15,15 +15,24 @@ const DEDICATED_MODULE_PAGES: Record<string, string> = {
 
 const DynamicModulePage = () => {
   const location = useLocation();
-  const { data: modules, isLoading } = useSystemModules(true, 'production');
+  const { data: modules, isLoading } = useSystemModules(true); // Load all modules, not just production
+  
+  // Debug logging
+  console.log('DynamicModulePage triggered for:', location.pathname);
+  console.log('DynamicModulePage - modules loaded:', !!modules);
+  console.log('DynamicModulePage - isLoading:', isLoading);
   
   // Extract module name from path
   const pathSegments = location.pathname.split('/');
   const moduleSlug = pathSegments[pathSegments.length - 1];
   
+  console.log('DynamicModulePage - pathSegments:', pathSegments);
+  console.log('DynamicModulePage - moduleSlug:', moduleSlug);
+  
   // Check if this module has a dedicated page
   const dedicatedPageRoute = DEDICATED_MODULE_PAGES[moduleSlug];
   if (dedicatedPageRoute && location.pathname !== dedicatedPageRoute) {
+    console.log('DynamicModulePage - Redirecting to dedicated page:', dedicatedPageRoute);
     return <Navigate to={dedicatedPageRoute} replace />;
   }
   
@@ -37,7 +46,13 @@ const DynamicModulePage = () => {
     });
   }, [modules, moduleSlug]);
 
+  console.log('DynamicModulePage - matchingModule found:', !!matchingModule);
+  if (matchingModule) {
+    console.log('DynamicModulePage - module name:', matchingModule.name);
+  }
+
   if (isLoading) {
+    console.log('DynamicModulePage - Still loading, showing skeleton');
     return (
       <AdminLayout>
         <div className="p-6">
@@ -53,6 +68,8 @@ const DynamicModulePage = () => {
 
   // If no matching module found, redirect to dashboard
   if (!matchingModule) {
+    console.log('DynamicModulePage - No matching module found, redirecting to dashboard');
+    console.log('DynamicModulePage - Available modules:', modules?.map(m => m.name));
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 
@@ -73,6 +90,76 @@ const DynamicModulePage = () => {
         </div>
 
         <div className="grid gap-6">
+          {/* AI Contribution Card */}
+          {matchingModule.ai_level && matchingModule.ai_level !== 'none' && (
+            <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${
+                      matchingModule.ai_level === 'high' ? 'bg-red-500' : 
+                      matchingModule.ai_level === 'medium' ? 'bg-yellow-500' : 
+                      'bg-green-500'
+                    }`} />
+                    🤖 AI Contribution
+                  </div>
+                  <Badge 
+                    variant="outline" 
+                    className={`ml-auto ${
+                      matchingModule.ai_level === 'high' ? 'bg-red-100 text-red-800 border-red-300' : 
+                      matchingModule.ai_level === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 
+                      'bg-green-100 text-green-800 border-green-300'
+                    }`}
+                  >
+                    {matchingModule.ai_level?.toUpperCase()} AI Integration
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {matchingModule.ai_description && (
+                  <p className="text-gray-700 leading-relaxed">
+                    {matchingModule.ai_description}
+                  </p>
+                )}
+                
+                {matchingModule.ai_capabilities && matchingModule.ai_capabilities.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3">AI Capabilities:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {matchingModule.ai_capabilities.map((capability, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="bg-blue-100 text-blue-800 border-blue-300"
+                        >
+                          {capability}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {matchingModule.ai_features && Object.keys(matchingModule.ai_features).length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3">Key AI Features:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {Object.entries(matchingModule.ai_features).slice(0, 4).map(([key, value]) => (
+                        <div key={key} className="p-3 bg-white rounded-lg border border-blue-200">
+                          <div className="font-medium text-blue-800 text-sm mb-1">
+                            {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {value as string}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Module Status Card */}
           <Card>
             <CardHeader>

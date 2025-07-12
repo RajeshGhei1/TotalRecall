@@ -18,7 +18,8 @@
     "test:auth:coverage": "vitest run --coverage src/contexts/__tests__/AuthContext.test.tsx src/components/__tests__/AuthGuard.test.tsx src/components/access-control/__tests__/ModuleAccessGuard.test.tsx",
     "test:foundation": "vitest run src/contexts/__tests__/ src/components/__tests__/ src/components/access-control/__tests__/",
     "test:foundation:watch": "vitest --watch src/contexts/__tests__/ src/components/__tests__/ src/components/access-control/__tests__/",
-    "test:foundation:coverage": "vitest run --coverage src/contexts/__tests__/ src/components/__tests__/ src/components/access-control/__tests__/"
+    "test:foundation:coverage": "vitest run --coverage src/contexts/__tests__/ src/components/__tests__/ src/components/access-control/__tests__/",
+    "modules:register": "node --loader ts-node/esm src/modules/importModulesToSupabase.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^5.0.3",

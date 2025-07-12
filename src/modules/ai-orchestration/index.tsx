@@ -40,6 +40,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { useAIDecisionRules, useAIDecisionInstances, useAIDecisionWorkflows, useAIDecisionAnalytics } from '@/hooks/ai/useAIDecisions';
+import { useUnifiedAIOrchestration } from '@/hooks/ai/useUnifiedAIOrchestration';
 
 // Available AI models
 const AVAILABLE_MODELS = [
@@ -1596,27 +1597,116 @@ const AiOrchestration: React.FC<AiOrchestrationProps> = ({
     </div>
   );
 
-  const renderTesting = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Testing</CardTitle>
-          <CardDescription>
-            Test AI models and validate performance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Testing Features Coming Soon</h3>
-            <p className="text-muted-foreground">
-              Model testing and validation features will be available here
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  const renderTesting = () => {
+    const { requestPrediction, isRequesting } = useUnifiedAIOrchestration();
+    const [testPrompt, setTestPrompt] = useState('');
+    const [lastTestResponse, setLastTestResponse] = useState<any>(null);
+
+    const handleTestRequest = async () => {
+      if (!testPrompt.trim()) return;
+
+      try {
+        const response = await requestPrediction({
+          context: {
+            user_id: 'test-user',
+            tenant_id: undefined,
+            module: 'orchestration',
+            action: 'test_ai_request'
+          },
+          parameters: { prompt: testPrompt },
+          priority: 'high'
+        });
+        
+        setLastTestResponse(response);
+        console.log('Test response:', response);
+      } catch (error) {
+        console.error('Test request failed:', error);
+      }
+    };
+
+    const handleProvideFeedback = async (feedback: 'positive' | 'negative') => {
+      if (!lastTestResponse) return;
+
+      try {
+        const mockDecisionId = `test_${Date.now()}`;
+        console.log(`Feedback provided: ${feedback} for decision ${mockDecisionId}`);
+      } catch (error) {
+        console.error('Failed to provide feedback:', error);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg md:text-xl">Test AI Request</CardTitle>
+              <CardDescription>
+                Test the AI orchestration system with a sample request
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <textarea
+                  className="w-full h-24 sm:h-32 p-3 border rounded-md text-sm"
+                  placeholder="Enter a test prompt..."
+                  value={testPrompt}
+                  onChange={(e) => setTestPrompt(e.target.value)}
+                />
+              </div>
+              <Button 
+                onClick={handleTestRequest} 
+                disabled={isRequesting || !testPrompt.trim()}
+                className="w-full sm:w-auto"
+              >
+                {isRequesting ? 'Processing...' : 'Send Test Request'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {lastTestResponse && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg md:text-xl">Test Response</CardTitle>
+                <CardDescription>
+                  Provide feedback to improve AI learning
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ScrollArea className="h-32 w-full rounded border">
+                  <div className="bg-gray-50 p-3 text-sm">
+                    <p className="font-medium mb-1">Response:</p>
+                    <p className="break-words">{JSON.stringify(lastTestResponse.result, null, 2)}</p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Confidence: {(lastTestResponse.confidence_score * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </ScrollArea>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    onClick={() => handleProvideFeedback('positive')}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 sm:flex-none"
+                  >
+                    👍 Positive
+                  </Button>
+                  <Button 
+                    onClick={() => handleProvideFeedback('negative')}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 sm:flex-none"
+                  >
+                    👎 Negative
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderMetrics = () => (
     <div className="space-y-6">

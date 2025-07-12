@@ -22,33 +22,29 @@ export const useModulePromotion = () => {
     mutationFn: async (data: ModulePromotionData) => {
       console.log('🚀 Promoting module:', data);
 
-      // Update the module's development stage
+      // Update the module's development stage and maturity status
+      const updateData: any = {
+        development_stage: {
+          stage: data.targetStage,
+          progress: getProgressForStage(data.targetStage),
+          promoted_at: new Date().toISOString(),
+          promoted_from: data.currentStage
+        },
+        maturity_status: data.targetStage // Also update maturity_status to match the stage
+      };
+
+      // If promoting to production, add additional production fields
+      if (data.targetStage === 'production') {
+        updateData.promoted_to_production_at = new Date().toISOString();
+        updateData.is_active = true;
+      }
+
       const { error: updateError } = await supabase
         .from('system_modules')
-        .update({
-          development_stage: {
-            stage: data.targetStage,
-            progress: getProgressForStage(data.targetStage),
-            promoted_at: new Date().toISOString(),
-            promoted_from: data.currentStage
-          }
-        })
+        .update(updateData)
         .eq('name', data.moduleId);
 
       if (updateError) throw updateError;
-
-      // If promoting to production, mark as system module
-      if (data.targetStage === 'production') {
-        const { error: prodError } = await supabase
-          .from('system_modules')
-          .update({
-            promoted_to_production_at: new Date().toISOString(),
-            is_active: true
-          })
-          .eq('name', data.moduleId);
-
-        if (prodError) throw prodError;
-      }
 
       // Update progress tracking if data provided
       if (data.progressData) {

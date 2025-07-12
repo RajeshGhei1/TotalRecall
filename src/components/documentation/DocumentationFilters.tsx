@@ -31,6 +31,20 @@ export function DocumentationFilters({
   selectedDifficulty,
   setSelectedDifficulty,
 }: DocumentationFiltersProps) {
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedPriority('all');
+    if (setSelectedType) setSelectedType('all');
+    if (setSelectedDifficulty) setSelectedDifficulty('all');
+  };
+
+  const hasActiveFilters = selectedCategory !== 'all' || 
+    selectedPriority !== 'all' || 
+    selectedType !== 'all' || 
+    selectedDifficulty !== 'all' ||
+    searchTerm !== '';
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'getting-started': return <BookOpen className="h-4 w-4" />;
@@ -44,184 +58,223 @@ export function DocumentationFilters({
     }
   };
 
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('all');
-    setSelectedPriority('all');
-    if (setSelectedType) setSelectedType('all');
-    if (setSelectedDifficulty) setSelectedDifficulty('all');
-  };
-
-  const hasActiveFilters = searchTerm || 
-    selectedCategory !== 'all' || 
-    selectedPriority !== 'all' || 
-    selectedType !== 'all' || 
-    selectedDifficulty !== 'all';
-
   return (
-    <Card className="border-slate-200 bg-white/80 backdrop-blur-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-blue-600" />
-            <CardTitle className="text-lg">Search & Filter</CardTitle>
-          </div>
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAllFilters}
-              className="text-slate-500 hover:text-slate-700"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear All
-            </Button>
-          )}
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="h-5 w-5 text-gray-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
         </div>
-        <CardDescription>
-          Browse Total Recall's complete documentation including ATS training materials
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Enhanced Search Bar */}
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Clear All
+          </Button>
+        )}
+      </div>
+
+      {/* Search */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Search</label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search documentation by title, description, or tags..."
+            placeholder="Search documentation..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+            className="pl-10"
           />
         </div>
+      </div>
 
-        {/* Category Filters */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Categories
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
+      {/* Filter Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Category Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Category</label>
+          <div className="space-y-1">
             {documentCategories.map((category) => {
               const Icon = category.icon;
-              const isSelected = selectedCategory === category.id;
+              const isActive = selectedCategory === category.id;
               
               return (
-                <Button
+                <button
                   key={category.id}
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`justify-start h-auto p-3 ${
-                    isSelected 
-                      ? 'bg-blue-600 hover:bg-blue-700' 
-                      : 'border-slate-300 hover:bg-slate-50'
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <div className="flex items-center gap-2 w-full">
-                    {Icon && <Icon className="h-4 w-4" />}
-                    <div className="text-left">
-                      <div className="font-medium">{category.label}</div>
-                      <div className="text-xs opacity-75">({category.count})</div>
-                    </div>
-                  </div>
-                </Button>
+                  {Icon && <Icon className="h-4 w-4" />}
+                  <span className="truncate">{category.label}</span>
+                  <Badge variant="secondary" className="ml-auto text-xs">
+                    {category.count}
+                  </Badge>
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* Document Type Filters */}
-        {selectedType !== undefined && setSelectedType && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-700">Document Type</h3>
-            <div className="flex flex-wrap gap-2">
-              {documentTypes.map((type) => (
-                <Button
-                  key={type.id}
-                  variant={selectedType === type.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedType(type.id)}
-                  className={selectedType === type.id ? '' : 'border-slate-300 hover:bg-slate-50'}
+        {/* Priority Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Priority</label>
+          <div className="space-y-1">
+            {priorityLevels.map((priority) => {
+              const isActive = selectedPriority === priority.id;
+              
+              return (
+                <button
+                  key={priority.id}
+                  onClick={() => setSelectedPriority(priority.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
                 >
-                  {type.label} {type.count !== undefined && `(${type.count})`}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Difficulty Level Filters */}
-        {selectedDifficulty !== undefined && setSelectedDifficulty && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-700">Difficulty Level</h3>
-            <div className="flex flex-wrap gap-2">
-              {difficultyLevels.map((difficulty) => (
-                <Button
-                  key={difficulty.id}
-                  variant={selectedDifficulty === difficulty.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedDifficulty(difficulty.id)}
-                  className={selectedDifficulty === difficulty.id ? '' : 'border-slate-300 hover:bg-slate-50'}
-                >
-                  {difficulty.label} {difficulty.count !== undefined && `(${difficulty.count})`}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Priority Filters */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-slate-700">Priority Level</h3>
-          <div className="flex flex-wrap gap-2">
-            {priorityLevels.map((priority) => (
-              <Button
-                key={priority.id}
-                variant={selectedPriority === priority.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedPriority(priority.id)}
-                className={selectedPriority === priority.id ? '' : 'border-slate-300 hover:bg-slate-50'}
-              >
-                {priority.label} {priority.count !== undefined && `(${priority.count})`}
-              </Button>
-            ))}
+                  <span className="truncate">{priority.label}</span>
+                  <Badge variant="secondary" className="ml-auto text-xs">
+                    {priority.count}
+                  </Badge>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Active Filters Summary */}
-        {hasActiveFilters && (
-          <div className="pt-4 border-t border-slate-200">
-            <h4 className="text-sm font-medium text-slate-700 mb-2">Active Filters:</h4>
-            <div className="flex flex-wrap gap-2">
-              {searchTerm && (
-                <Badge variant="secondary" className="text-xs">
-                  Search: "{searchTerm}"
-                </Badge>
-              )}
-              {selectedCategory !== 'all' && (
-                <Badge variant="secondary" className="text-xs">
-                  Category: {documentCategories.find(c => c.id === selectedCategory)?.label}
-                </Badge>
-              )}
-              {selectedPriority !== 'all' && (
-                <Badge variant="secondary" className="text-xs">
-                  Priority: {priorityLevels.find(p => p.id === selectedPriority)?.label}
-                </Badge>
-              )}
-              {selectedType && selectedType !== 'all' && (
-                <Badge variant="secondary" className="text-xs">
-                  Type: {documentTypes.find(t => t.id === selectedType)?.label}
-                </Badge>
-              )}
-              {selectedDifficulty && selectedDifficulty !== 'all' && (
-                <Badge variant="secondary" className="text-xs">
-                  Difficulty: {difficultyLevels.find(d => d.id === selectedDifficulty)?.label}
-                </Badge>
-              )}
+        {/* Type Filter */}
+        {setSelectedType && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Type</label>
+            <div className="space-y-1">
+              {documentTypes.map((type) => {
+                const isActive = selectedType === type.id;
+                
+                return (
+                  <button
+                    key={type.id}
+                    onClick={() => setSelectedType(type.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="truncate">{type.label}</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {type.count}
+                    </Badge>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Difficulty Filter */}
+        {setSelectedDifficulty && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Difficulty</label>
+            <div className="space-y-1">
+              {difficultyLevels.map((difficulty) => {
+                const isActive = selectedDifficulty === difficulty.id;
+                
+                return (
+                  <button
+                    key={difficulty.id}
+                    onClick={() => setSelectedDifficulty(difficulty.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="truncate">{difficulty.label}</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {difficulty.count}
+                    </Badge>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Active Filters Summary */}
+      {hasActiveFilters && (
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCategory !== 'all' && (
+              <Badge variant="outline" className="text-xs">
+                Category: {documentCategories.find(c => c.id === selectedCategory)?.label}
+                <button
+                  onClick={() => setSelectedCategory('all')}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {selectedPriority !== 'all' && (
+              <Badge variant="outline" className="text-xs">
+                Priority: {priorityLevels.find(p => p.id === selectedPriority)?.label}
+                <button
+                  onClick={() => setSelectedPriority('all')}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {selectedType !== 'all' && setSelectedType && (
+              <Badge variant="outline" className="text-xs">
+                Type: {documentTypes.find(t => t.id === selectedType)?.label}
+                <button
+                  onClick={() => setSelectedType('all')}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {selectedDifficulty !== 'all' && setSelectedDifficulty && (
+              <Badge variant="outline" className="text-xs">
+                Difficulty: {difficultyLevels.find(d => d.id === selectedDifficulty)?.label}
+                <button
+                  onClick={() => setSelectedDifficulty('all')}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {searchTerm && (
+              <Badge variant="outline" className="text-xs">
+                Search: "{searchTerm}"
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

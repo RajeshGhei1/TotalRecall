@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown, ChevronRight, Blocks } from 'lucide-react';
 import { useModuleNavigation } from './moduleNavigation/useModuleNavigation';
@@ -17,9 +16,9 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
     modules,
     isLoading,
     groupedModules,
-    expandedCategories,
+    expandedTypes,
     expandedModules,
-    toggleCategory,
+    toggleType,
     toggleModule,
     handleModuleClick,
     handleSubComponentClick,
@@ -63,9 +62,9 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
       {isExpanded && (
         <ModuleNavigationContent
           groupedModules={groupedModules}
-          expandedCategories={expandedCategories}
+          expandedTypes={expandedTypes}
           expandedModules={expandedModules}
-          onToggleCategory={toggleCategory}
+          onToggleType={toggleType}
           onToggleModule={toggleModule}
           onModuleClick={handleModuleClick}
           onSubComponentClick={handleSubComponentClick}

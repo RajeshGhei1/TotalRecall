@@ -1,12 +1,11 @@
-
 import React from 'react';
-import ModuleCategoryItem from './ModuleCategoryItem';
+import ModuleTypeItem from './ModuleTypeItem';
 
 interface ModuleNavigationContentProps {
   groupedModules: Record<string, any[]>;
-  expandedCategories: Set<string>;
+  expandedTypes: Set<string>;
   expandedModules: Set<string>;
-  onToggleCategory: (categoryKey: string) => void;
+  onToggleType: (typeKey: string) => void;
   onToggleModule: (moduleId: string) => void;
   onModuleClick: (module: any) => void;
   onSubComponentClick: (path: string) => void;
@@ -14,23 +13,23 @@ interface ModuleNavigationContentProps {
 
 const ModuleNavigationContent: React.FC<ModuleNavigationContentProps> = ({
   groupedModules,
-  expandedCategories,
+  expandedTypes,
   expandedModules,
-  onToggleCategory,
+  onToggleType,
   onToggleModule,
   onModuleClick,
   onSubComponentClick,
 }) => {
   return (
     <div className="ml-2 mt-1 space-y-1">
-      {Object.entries(groupedModules).map(([categoryKey, categoryModules]) => (
-        <ModuleCategoryItem
-          key={categoryKey}
-          categoryKey={categoryKey}
-          categoryModules={categoryModules}
-          isCategoryExpanded={expandedCategories.has(categoryKey)}
+      {Object.entries(groupedModules).map(([typeKey, typeModules]) => (
+        <ModuleTypeItem
+          key={typeKey}
+          typeKey={typeKey}
+          typeModules={typeModules}
+          isTypeExpanded={expandedTypes.has(typeKey)}
           expandedModules={expandedModules}
-          onToggleCategory={onToggleCategory}
+          onToggleType={onToggleType}
           onToggleModule={onToggleModule}
           onModuleClick={onModuleClick}
           onSubComponentClick={onSubComponentClick}

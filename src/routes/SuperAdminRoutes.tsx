@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import SuperAdminDashboard from '@/pages/superadmin/Dashboard';
 import Tenants from '@/pages/superadmin/Tenants';
 import Users from '@/pages/superadmin/Users';
@@ -24,11 +23,25 @@ import DynamicModulePage from '@/components/modules/DynamicModulePage';
 import ATS from '@/pages/superadmin/ATS';
 import ATSRoutes from '@/routes/ats/ATSRoutes';
 
+
+
 const SuperAdminRoutes = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    console.log('SuperAdminRoutes - Current location:', location.pathname);
+    console.log('SuperAdminRoutes - Location state:', location.state);
+  }, [location]);
+  
+  console.log('SuperAdminRoutes component rendering for path:', location.pathname);
+  
   return (
     <Routes>
       {/* Default route - redirect to dashboard */}
       <Route index element={<Navigate to="dashboard" replace />} />
+      
+      {/* Test route to verify routing works */}
+      <Route path="test-route" element={<div style={{padding: '20px', background: 'lightgreen'}}>TEST ROUTE WORKS!</div>} />
       
       {/* Core Admin Routes */}
       <Route path="dashboard" element={<SuperAdminDashboard />} />

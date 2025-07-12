@@ -1,26 +1,25 @@
-
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSystemModules } from '@/hooks/useSystemModules';
-import { groupModulesByCategory } from './utils';
+import { groupModulesByType } from './utils';
 
 export const useModuleNavigation = () => {
   const { data: modules, isLoading } = useSystemModules(true);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
 
-  // Group modules by category
-  const groupedModules = useMemo(() => groupModulesByCategory(modules), [modules]);
+  // Group modules by type
+  const groupedModules = useMemo(() => groupModulesByType(modules), [modules]);
 
-  const toggleCategory = (categoryKey: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryKey)) {
-      newExpanded.delete(categoryKey);
+  const toggleType = (typeKey: string) => {
+    const newExpanded = new Set(expandedTypes);
+    if (newExpanded.has(typeKey)) {
+      newExpanded.delete(typeKey);
     } else {
-      newExpanded.add(categoryKey);
+      newExpanded.add(typeKey);
     }
-    setExpandedCategories(newExpanded);
+    setExpandedTypes(newExpanded);
   };
 
   const toggleModule = (moduleId: string) => {
@@ -59,9 +58,9 @@ export const useModuleNavigation = () => {
     modules,
     isLoading,
     groupedModules,
-    expandedCategories,
+    expandedTypes,
     expandedModules,
-    toggleCategory,
+    toggleType,
     toggleModule,
     handleModuleClick,
     handleSubComponentClick,

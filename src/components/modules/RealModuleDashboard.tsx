@@ -226,6 +226,43 @@ const RealModuleDashboard: React.FC = () => {
                         {module.description || 'No description available'}
                       </p>
 
+                      {/* AI Contribution Section */}
+                      {module.ai_level && module.ai_level !== 'none' && (
+                        <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={
+                              module.ai_level === 'high' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                              module.ai_level === 'medium' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                              module.ai_level === 'low' ? 'bg-green-100 text-green-800 border-green-200' :
+                              'bg-gray-100 text-gray-600 border-gray-200'
+                            }>
+                              {module.ai_level === 'high' ? 'High AI' :
+                               module.ai_level === 'medium' ? 'Medium AI' :
+                               module.ai_level === 'low' ? 'Low AI' : 'No AI'} Integration
+                            </Badge>
+                          </div>
+                          {module.ai_description && (
+                            <p className="text-xs text-gray-600 mb-2">
+                              {module.ai_description}
+                            </p>
+                          )}
+                          {module.ai_capabilities && module.ai_capabilities.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {module.ai_capabilities.slice(0, 4).map((capability, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs px-2 py-1">
+                                  {capability}
+                                </Badge>
+                              ))}
+                              {module.ai_capabilities.length > 4 && (
+                                <Badge variant="secondary" className="text-xs px-2 py-1">
+                                  +{module.ai_capabilities.length - 4} more
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Module Route Info */}
                       {moduleRoute && (
                         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">

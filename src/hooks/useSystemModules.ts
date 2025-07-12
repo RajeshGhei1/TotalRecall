@@ -6,7 +6,7 @@ export interface SystemModule {
   name: string;
   description?: string;
   category: string;
-  type?: string; // 'foundation' | 'business' | etc.
+  type?: 'super_admin' | 'foundation' | 'business'; // Three-tier module architecture
   is_active: boolean;
   version?: string;
   dependencies?: string[];
@@ -17,6 +17,11 @@ export interface SystemModule {
   development_stage?: Record<string, any>;
   promoted_to_production_at?: string;
   promoted_by?: string;
+  // AI Contribution fields
+  ai_capabilities?: string[];
+  ai_level?: 'high' | 'medium' | 'low' | 'none';
+  ai_description?: string;
+  ai_features?: Record<string, any>;
 }
 
 export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: string) => {
@@ -72,6 +77,7 @@ export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: st
       
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.category !== undefined) updateData.category = updates.category;
+      if (updates.type !== undefined) (updateData as any).type = updates.type;
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
       if (updates.version !== undefined) updateData.version = updates.version;

@@ -31,7 +31,22 @@ async function importModules() {
           version: moduleData.version || '1.0.0',
           dependencies: moduleData.dependencies || [],
           default_limits: moduleData.default_limits || {},
-          maturity_status: moduleData.maturity_status || 'planning',
+          maturity_status: moduleData.maturity_status || 'alpha',
+          author: 'System',
+          license: 'MIT',
+          entry_point: 'index.tsx',
+          required_permissions: ['read'],
+          subscription_tiers: ['basic', 'pro', 'enterprise'],
+          load_order: 100,
+          auto_load: false,
+          can_unload: true,
+          hot_reload: true,
+          development_stage: {
+            "stage": "alpha",
+            "progress": 30,
+            "milestones": ["requirements_defined", "prototype_created"],
+            "requirements": ["complete_development", "testing", "documentation"]
+          }
         });
       if (error) {
         console.error(`Error inserting module ${moduleData.name}:`, error);

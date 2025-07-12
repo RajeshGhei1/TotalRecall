@@ -100,6 +100,11 @@ export interface LoadedModule {
   dependencies: LoadedModule[];
   developmentStage?: DevelopmentStageData;
   progressData?: ModuleProgressData;
+  // AI Contribution fields
+  ai_capabilities?: string[];
+  ai_level?: 'high' | 'medium' | 'low' | 'none';
+  ai_description?: string;
+  ai_features?: Record<string, any>;
 }
 
 export interface ModuleContext {

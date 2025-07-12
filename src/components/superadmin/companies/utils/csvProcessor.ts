@@ -1,5 +1,6 @@
 import { Company } from '@/hooks/useCompanies';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 
 export interface CSVRow {
   name: string;
@@ -492,9 +493,23 @@ export function parseCSV(file: File): Promise<string[][]> {
     }
 
     if (isExcel) {
-      // For Excel files, we'll need to convert them to CSV format first
-      // This is a simplified approach - in production, you might want to use a library like xlsx
-      reject(new Error('Excel file support requires additional setup. Please convert your Excel file to CSV format for now.'));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+          // Ensure all rows are arrays of strings
+          const rows = (json as any[][]).map(row => row.map(cell => (cell == null ? '' : String(cell))));
+          resolve(rows);
+        } catch (err) {
+          reject(new Error('Failed to parse Excel file.'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read Excel file.'));
+      reader.readAsArrayBuffer(file);
       return;
     }
 

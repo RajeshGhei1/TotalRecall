@@ -21,7 +21,8 @@ import {
   Settings,
   BarChart3,
   Activity,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ export default function Documentation() {
   const [isTestingPDF, setIsTestingPDF] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   const {
     selectedDocument,
@@ -68,6 +70,12 @@ export default function Documentation() {
   } = useDocumentation();
 
   const allDocuments = getAllIntegratedDocuments();
+
+  // Check if any filters are active
+  const hasActiveFilters = selectedCategory !== 'all' || 
+    selectedPriority !== 'all' || 
+    selectedType !== 'all' || 
+    selectedDifficulty !== 'all';
 
   const handleExportAllPDF = async () => {
     setIsExportingPDF(true);
@@ -125,39 +133,37 @@ export default function Documentation() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar Navigation */}
       <DocumentationSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 xl:ml-72 2xl:ml-80">
+        {/* Real-Time Documentation Status at the top */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <RealTimeDocumentationStatus />
+        </div>
         {/* Enhanced Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 px-8 py-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileText className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                    Documentation Center
-                  </h1>
-                  <p className="text-slate-600 font-medium">
-                    Total Recall Enterprise Knowledge Base
-                  </p>
-                </div>
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Documentation Center</h1>
+                <p className="text-gray-600">Total Recall Enterprise Knowledge Base</p>
               </div>
             </div>
             
             {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button 
                 onClick={handleTestPDF}
                 variant="outline" 
                 size="sm"
                 disabled={isTestingPDF}
-                className="border-slate-300 hover:bg-slate-50"
+                className="border-gray-300 hover:bg-gray-50"
               >
                 <TestTube className="h-4 w-4 mr-2" />
                 {isTestingPDF ? 'Testing...' : 'Test PDF'}
@@ -173,7 +179,7 @@ export default function Documentation() {
               </Button>
               <Button 
                 onClick={handleExportAllMD} 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow"
                 disabled={isExportingMD}
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -185,12 +191,12 @@ export default function Documentation() {
           {/* Search and Controls */}
           <div className="flex items-center gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search documentation..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="pl-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             
@@ -199,13 +205,16 @@ export default function Documentation() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="border-slate-300 hover:bg-slate-50"
+                className="border-gray-300 hover:bg-gray-50 flex items-center gap-2"
               >
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="h-4 w-4" />
                 Filters
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-1 text-xs">3</Badge>
+                )}
               </Button>
               
-              <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -227,22 +236,22 @@ export default function Documentation() {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-200">
+          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-gray-600">
                 {filteredDocuments.length} of {allDocuments.length} documents
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-gray-600">
                 Real-time updates enabled
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-gray-600">
                 AI-powered search
               </span>
             </div>
@@ -251,7 +260,7 @@ export default function Documentation() {
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="bg-white/60 backdrop-blur-sm border-b border-slate-200/50 px-8 py-4">
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
             <DocumentationFilters
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -268,128 +277,86 @@ export default function Documentation() {
         )}
 
         {/* Content Area */}
-        <div className="flex-1 flex">
-          {/* Left Panel - Document List */}
-          <div className="w-1/2 border-r border-slate-200/50 bg-white/40 backdrop-blur-sm">
-            <div className="p-6">
-              {viewMode === 'grid' ? (
-                <DocumentGrid
-                  filteredDocuments={filteredDocuments}
-                  onLoadDocument={loadDocument}
-                  onDownloadDocument={downloadDocument}
-                  onDownloadPDF={downloadDocumentAsPDF}
-                />
-              ) : (
-                <div className="space-y-3">
-                  {filteredDocuments.map((doc) => (
-                    <Card 
-                      key={doc.filePath} 
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 border-slate-200 hover:border-blue-300 group"
-                      onClick={() => loadDocument(doc.filePath)}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {/* Priority Icon */}
-                              <FileText className="h-4 w-4 text-gray-500" />
-                              <CardTitle className="text-base group-hover:text-blue-600 transition-colors">
-                                {doc.title}
-                              </CardTitle>
-                            </div>
-                            <CardDescription className="text-sm text-slate-600 line-clamp-2">
-                              {doc.description}
-                            </CardDescription>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs border-slate-300">
-                              {doc.category}
-                            </Badge>
-                            <Badge variant="secondary" className="text-xs">
-                              {doc.priority}
-                            </Badge>
-                          </div>
+        <div className="flex-1 bg-white p-6">
+          {viewMode === 'grid' ? (
+            <DocumentGrid
+              filteredDocuments={filteredDocuments}
+              onDownloadDocument={downloadDocument}
+              onDownloadPDF={downloadDocumentAsPDF}
+            />
+          ) : (
+            <div className="space-y-3">
+              {filteredDocuments.map((doc) => (
+                <Card 
+                  key={doc.filePath} 
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 border-gray-200 hover:border-blue-300 group"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-4 w-4 text-gray-500" />
+                          <CardTitle className="text-base group-hover:text-blue-600 transition-colors">
+                            {doc.title}
+                          </CardTitle>
                         </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-xs text-slate-500">
-                            <span>{doc.estimatedReadTime}</span>
+                        <CardDescription className="text-sm text-gray-600 line-clamp-2">
+                          {doc.description}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs border-gray-300">
+                          {doc.category}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {doc.priority}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>{doc.estimatedReadTime}</span>
+                        <span>•</span>
+                        <span>Updated {doc.lastModified}</span>
+                        {doc.version && (
+                          <>
                             <span>•</span>
-                            <span>Updated {doc.lastModified}</span>
-                            {doc.version && (
-                              <>
-                                <span>•</span>
-                                <span>v{doc.version}</span>
-                              </>
-                            )}
-                          </div>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadDocumentAsPDF(doc.filePath, doc.title);
-                              }}
-                              className="h-8 w-8 p-0"
-                            >
-                              <FileDown className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadDocument(doc.filePath, doc.title);
-                              }}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                            <span>v{doc.version}</span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadDocumentAsPDF(doc.filePath, doc.title);
+                          }}
+                          className="h-8 w-8 p-0"
+                        >
+                          <FileDown className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadDocument(doc.filePath, doc.title);
+                          }}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-
-          {/* Right Panel - Document Viewer */}
-          <div className="flex-1 bg-white/40 backdrop-blur-sm">
-            <Tabs defaultValue="viewer" className="h-full">
-              <TabsList className="w-full justify-start border-b border-slate-200/50 rounded-none bg-white/60 backdrop-blur-sm">
-                <TabsTrigger value="viewer" className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                  <FileText className="h-4 w-4" />
-                  Document Viewer
-                </TabsTrigger>
-                <TabsTrigger value="live" className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                  <FileText className="h-4 w-4" />
-                  Live Documentation
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="viewer" className="h-full p-0">
-                <DocumentViewer
-                  selectedDocument={selectedDocument}
-                  loading={loading}
-                  onDownloadDocument={downloadDocument}
-                  onDownloadPDF={downloadDocumentAsPDF}
-                />
-              </TabsContent>
-              
-              <TabsContent value="live" className="h-full p-0">
-                <LiveDocumentationPanel />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        {/* Enhanced Footer Status */}
-        <div className="bg-white/80 backdrop-blur-sm border-t border-slate-200/50 px-8 py-3">
-          <RealTimeDocumentationStatus />
+          )}
         </div>
       </div>
     </div>

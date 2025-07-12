@@ -6,7 +6,21 @@ import {
   MessageSquare,
   Brain,
   Settings,
-  Zap
+  Zap,
+  Shield,
+  Building,
+  DollarSign,
+  Package,
+  ShoppingCart,
+  Headphones,
+  FolderOpen,
+  Truck,
+  Target,
+  TrendingUp,
+  CheckCircle,
+  GitBranch,
+  BookOpen,
+  Megaphone
 } from 'lucide-react';
 
 // Category configuration with icons and no descriptions
@@ -54,6 +68,67 @@ export const CATEGORY_CONFIG = {
   'ai_knowledge': {
     name: 'AI-Knowledge',
     icon: Zap,
+  },
+  
+  // New Business Categories
+  'sales': {
+    name: 'Sales',
+    icon: Target,
+  },
+  'marketing': {
+    name: 'Marketing',
+    icon: Megaphone,
+  },
+  'operations': {
+    name: 'Operations',
+    icon: Package,
+  },
+  'finance': {
+    name: 'Finance',
+    icon: DollarSign,
+  },
+  'commerce': {
+    name: 'Commerce',
+    icon: ShoppingCart,
+  },
+  'project_management': {
+    name: 'Project Management',
+    icon: FolderOpen,
+  },
+  'support': {
+    name: 'Support',
+    icon: Headphones,
+  },
+  'compliance': {
+    name: 'Compliance',
+    icon: CheckCircle,
+  },
+  'integration': {
+    name: 'Integration',
+    icon: GitBranch,
+  },
+  'knowledge': {
+    name: 'Knowledge',
+    icon: BookOpen,
+  }
+};
+
+// Type configuration for module grouping by type
+export const TYPE_CONFIG = {
+  'super_admin': {
+    name: 'Super Admin Modules',
+    icon: Shield,
+    description: 'System administration and platform management modules'
+  },
+  'foundation': {
+    name: 'Foundation Modules',
+    icon: Settings,
+    description: 'Core platform modules that provide foundational capabilities'
+  },
+  'business': {
+    name: 'Business Modules',
+    icon: Building,
+    description: 'Business functionality and specialized feature modules'
   }
 };
 
