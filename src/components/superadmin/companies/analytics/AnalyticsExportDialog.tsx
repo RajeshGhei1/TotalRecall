@@ -174,7 +174,7 @@ const AnalyticsExportDialog: React.FC<AnalyticsExportDialogProps> = ({
       const computedValues = calculateComputedValues(company);
       
       const row = selectedFields.map(field => {
-        let value: any;
+        let value: unknown;
         
         if (field.type === 'computed') {
           value = computedValues[field.key as keyof typeof computedValues];

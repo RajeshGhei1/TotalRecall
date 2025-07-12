@@ -93,7 +93,7 @@ export class ModuleContextManager {
     }
   }
 
-  private async getModuleMetadata(moduleName: string, tenantId?: string): Promise<any> {
+  private async getModuleMetadata(moduleName: string, tenantId?: string): Promise<unknown> {
     try {
       const { data: moduleInfo } = await supabase
         .from('system_modules')
@@ -137,7 +137,7 @@ export class ModuleContextManager {
     }
   }
 
-  private async getBudgetStatus(moduleName: string, tenantId: string | null): Promise<any> {
+  private async getBudgetStatus(moduleName: string, tenantId: string | null): Promise<unknown> {
     const budget = await this.getModuleBudget(moduleName, tenantId);
     
     if (!budget) return null;

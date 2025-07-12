@@ -15,7 +15,7 @@ interface OrgNodeProps {
     name: string;
     role: string;
     email?: string;
-    children: any[];
+    children: unknown[];
     type?: 'talent' | 'contact';
     isManager?: boolean;
   };

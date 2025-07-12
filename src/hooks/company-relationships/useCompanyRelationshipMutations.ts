@@ -43,7 +43,7 @@ export const useCompanyRelationshipMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['person-reporting-relationships'] });
       toast.success('Company relationship added successfully');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error linking person to company:', error);
       toast.error(`Failed to link to company: ${error.message}`);
     }

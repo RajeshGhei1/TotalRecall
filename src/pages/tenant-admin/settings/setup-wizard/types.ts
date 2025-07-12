@@ -9,5 +9,5 @@ export interface WizardStepProps {
   onNext: () => void;
   onPrevious?: () => void;
   tenantData: any;
-  updateTenantData: (data: any) => void;
+  updateTenantData: (data: unknown) => void;
 }

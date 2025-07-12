@@ -35,7 +35,7 @@ export const useAIDecisionRules = () => {
         description: "Decision rule created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create decision rule",
@@ -55,7 +55,7 @@ export const useAIDecisionRules = () => {
         description: "Decision rule updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update decision rule",
@@ -74,7 +74,7 @@ export const useAIDecisionRules = () => {
         description: "Decision rule deleted successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete decision rule",
@@ -122,7 +122,7 @@ export const useAIDecisionInstances = () => {
         description: "Decision instance created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create decision instance",
@@ -141,7 +141,7 @@ export const useAIDecisionInstances = () => {
         description: "Decision processed successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to process decision",
@@ -195,7 +195,7 @@ export const useAIDecisionInstance = (instanceId: string) => {
         description: "Approval submitted successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to submit approval",

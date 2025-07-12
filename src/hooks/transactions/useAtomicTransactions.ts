@@ -60,7 +60,7 @@ export const useAtomicTransactions = () => {
     setState(prev => ({ ...prev, isRunning: true }));
 
     try {
-      const results: any[] = [];
+      const results: unknown[] = [];
       const completed: string[] = [];
       const queryKeysToInvalidate = new Set<string>();
       const rollbackManager = new RollbackManager();
@@ -88,7 +88,7 @@ export const useAtomicTransactions = () => {
 
           console.log(`Operation ${operation.id} completed successfully`);
 
-        } catch (operationError: any) {
+        } catch (operationError: unknown) {
           console.log('Operation failed, attempting rollback...', operationError);
           
           // Attempt to rollback completed operations
@@ -136,7 +136,7 @@ export const useAtomicTransactions = () => {
 
       return { success: true, results };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       setState(prev => ({
         ...prev,
         isRunning: false,

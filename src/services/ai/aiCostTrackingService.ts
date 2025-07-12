@@ -182,7 +182,7 @@ export class AICostTrackingService {
     return this.modelCosts;
   }
 
-  async generateCostReport(tenantId?: string): Promise<any> {
+  async generateCostReport(tenantId?: string): Promise<unknown> {
     let query = supabase
       .from('ai_request_logs')
       .select('tenant_id, total_cost, created_at, context, status')

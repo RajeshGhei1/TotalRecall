@@ -49,7 +49,7 @@ export interface EnhancedPredictiveInsight {
   impact: 'low' | 'medium' | 'high' | 'critical';
   actionable: boolean;
   generatedAt: string;
-  dataPoints: any[];
+  dataPoints: unknown[];
   recommendations: string[];
   timeframe: string;
 }

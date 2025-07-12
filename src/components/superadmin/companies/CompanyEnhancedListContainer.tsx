@@ -107,7 +107,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
     setSelectedCompanies(new Set());
   }, [currentPage, itemsPerPage]);
 
-  const handleEditSubmit = (data: any) => {
+  const handleEditSubmit = (data: unknown) => {
     if (editingCompany) {
       updateCompany.mutate(
         { id: editingCompany.id, companyData: data },

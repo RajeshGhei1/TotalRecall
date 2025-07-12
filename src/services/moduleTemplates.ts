@@ -189,7 +189,7 @@ class ModuleTemplateService {
     }
   }
 
-  private mapDatabaseTemplate(data: any): ModuleTemplate {
+  private mapDatabaseTemplate(data: unknown): ModuleTemplate {
     return {
       id: data.id,
       template_id: data.template_id,

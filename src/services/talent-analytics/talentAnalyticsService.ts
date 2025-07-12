@@ -9,9 +9,9 @@ export interface TalentAnalyticsRequest {
 }
 
 export interface TalentAnalyticsResult {
-  insights: any[];
-  predictions: any[];
-  recommendations: any[];
+  insights: unknown[];
+  predictions: unknown[];
+  recommendations: unknown[];
   confidence: number;
 }
 
@@ -50,21 +50,21 @@ class TalentAnalyticsService {
     }
   }
 
-  private extractInsights(result: any): any[] {
+  private extractInsights(result: unknown): unknown[] {
     if (result && typeof result === 'object' && result.insights) {
       return Array.isArray(result.insights) ? result.insights : [result.insights];
     }
     return [];
   }
 
-  private extractPredictions(result: any): any[] {
+  private extractPredictions(result: unknown): unknown[] {
     if (result && typeof result === 'object' && result.predictions) {
       return Array.isArray(result.predictions) ? result.predictions : [result.predictions];
     }
     return [];
   }
 
-  private extractRecommendations(aiResult: any): any[] {
+  private extractRecommendations(aiResult: any): unknown[] {
     if (aiResult && aiResult.suggestions) {
       return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
     }
@@ -172,7 +172,7 @@ class TalentAnalyticsService {
     }
   }
 
-  private async storeInsights(tenantId: string, insights: any[]): Promise<void> {
+  private async storeInsights(tenantId: string, insights: unknown[]): Promise<void> {
     try {
       const insightsToStore = insights.map(insight => ({
         tenant_id: tenantId,

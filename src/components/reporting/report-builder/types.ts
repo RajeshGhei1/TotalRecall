@@ -26,7 +26,7 @@ export interface ReportFormProps {
 }
 
 export interface ReportResultsProps {
-  reportResults: any[];
+  reportResults: unknown[];
   columns: string[];
   availableFields: FieldOption[];
   visualizationType?: string;

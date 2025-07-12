@@ -334,7 +334,7 @@ export class EnhancedAIOrchestrationService {
     }
   }
 
-  async getLearningInsights(tenantId?: string): Promise<any> {
+  async getLearningInsights(tenantId?: string): Promise<unknown> {
     try {
       const learningInsights = await aiLearningDataService.getLearningInsights(tenantId);
       const contextInsights = await decisionContextManager.getContextInsights(tenantId);

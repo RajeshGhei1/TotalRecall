@@ -91,7 +91,7 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
     },
     enabled: !!wizardData.selectedTenantId,
     meta: {
-      onSuccess: (data: any) => {
+      onSuccess: (data: unknown) => {
         if (data) {
           console.log("Setting tenant data:", data);
           setWizardData(prev => ({ ...prev, tenantData: data }));

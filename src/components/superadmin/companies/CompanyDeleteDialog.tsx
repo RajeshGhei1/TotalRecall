@@ -63,7 +63,7 @@ const CompanyDeleteDialog: React.FC<CompanyDeleteDialogProps> = ({
         await deleteCompany.mutateAsync(company.id);
         toast.success('Company deleted successfully');
         onClose();
-      } catch (error: any) {
+      } catch (error: unknown) {
         toast.error(`Failed to delete company: ${error.message}`);
       } finally {
         setIsDeleting(false);

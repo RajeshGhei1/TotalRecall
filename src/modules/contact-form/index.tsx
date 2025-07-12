@@ -11,7 +11,7 @@ interface ContactFormProps {
   title?: string;
   showPhone?: boolean;
   submitButtonText?: string;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: unknown) => void;
   variant?: 'default' | 'compact' | 'detailed';
 }
 

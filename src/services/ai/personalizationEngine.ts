@@ -162,8 +162,8 @@ export class PersonalizationEngine {
     userId: string,
     preferences: UserPreference[],
     patterns: BehavioralPattern[]
-  ): any[] {
-    const widgets: any[] = [];
+  ): unknown[] {
+    const widgets: unknown[] = [];
 
     // Analyze most used modules
     const moduleUsage = patterns

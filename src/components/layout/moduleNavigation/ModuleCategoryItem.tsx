@@ -6,7 +6,7 @@ import ModuleItem from './ModuleItem';
 
 interface ModuleCategoryItemProps {
   categoryKey: string;
-  categoryModules: any[];
+  categoryModules: unknown[];
   isCategoryExpanded: boolean;
   expandedModules: Set<string>;
   onToggleCategory: (categoryKey: string) => void;

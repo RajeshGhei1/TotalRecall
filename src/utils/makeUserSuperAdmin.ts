@@ -31,7 +31,7 @@ export async function makeUserSuperAdmin(email: string): Promise<boolean> {
     });
 
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to make user super admin:", error);
     toast({
       title: "Error",

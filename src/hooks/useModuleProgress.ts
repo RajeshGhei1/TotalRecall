@@ -35,7 +35,7 @@ export interface ProgressUpdate {
 }
 
 // Type guard to ensure metrics_data has the correct structure
-const ensureMetricsData = (data: any): ModuleProgressMetrics['metrics_data'] => {
+const ensureMetricsData = (data: unknown): ModuleProgressMetrics['metrics_data'] => {
   const defaultMetrics = {
     total_files_planned: 0,
     files_implemented: 0,

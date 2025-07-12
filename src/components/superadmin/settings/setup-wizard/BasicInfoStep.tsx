@@ -6,7 +6,7 @@ import { Building2, Calendar, Globe } from 'lucide-react';
 
 interface BasicInfoStepProps {
   tenantData: any;
-  onUpdate: (data: any) => void;
+  onUpdate: (data: unknown) => void;
 }
 
 const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ tenantData }) => {

@@ -13,7 +13,7 @@ import ReportingRelationships from './ReportingRelationships';
 
 interface PersonTabsContentProps {
   person: Person;
-  employmentHistory: any[];
+  employmentHistory: unknown[];
   loadingHistory: boolean;
   onAddCompany: () => void;
 }

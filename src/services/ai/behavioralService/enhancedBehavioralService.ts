@@ -319,8 +319,8 @@ export class EnhancedBehavioralService {
     preferences: UserPreference[], 
     patterns: BehavioralPattern[], 
     context: SmartContext
-  ): any[] {
-    const recommendations: any[] = [];
+  ): unknown[] {
+    const recommendations: unknown[] = [];
     
     // Generate recommendations based on preferences and patterns
     preferences.forEach(pref => {
@@ -368,7 +368,7 @@ export class EnhancedBehavioralService {
 
   private async detectImmediatePatterns(event: RealTimeInteractionEvent): Promise<any[]> {
     // Simple immediate pattern detection
-    const patterns: any[] = [];
+    const patterns: unknown[] = [];
     
     if (event.eventType === 'repeated_action') {
       patterns.push({

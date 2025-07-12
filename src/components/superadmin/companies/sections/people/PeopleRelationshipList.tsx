@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PeopleRelationshipListProps {
-  relationships: any[];
+  relationships: unknown[];
 }
 
 const PeopleRelationshipList: React.FC<PeopleRelationshipListProps> = ({ relationships }) => {

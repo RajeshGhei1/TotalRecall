@@ -55,7 +55,7 @@ const UserSubscriptionManager: React.FC<UserSubscriptionManagerProps> = ({
         description: "User subscription removed successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to remove user subscription",

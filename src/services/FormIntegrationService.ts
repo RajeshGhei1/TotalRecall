@@ -64,7 +64,7 @@ export class FormIntegrationService {
     return this.filterByTriggers(data || [], context);
   }
 
-  private filterByTriggers(placements: any[], context?: Record<string, any>): FormPlacement[] {
+  private filterByTriggers(placements: unknown[], context?: Record<string, any>): FormPlacement[] {
     if (!context) return placements;
 
     return placements.filter(placement => {

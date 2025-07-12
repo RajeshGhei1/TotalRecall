@@ -53,7 +53,7 @@ export const useSuperAdminCheck = (): SuperAdminCheckResult => {
         const isAdmin = data.role === 'super_admin';
         console.log('useSuperAdminCheck: User role check result:', { role: data.role, isAdmin });
         setIsSuperAdmin(isAdmin);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('useSuperAdminCheck: Error checking admin status:', err);
         setError('Failed to verify admin privileges');
         setIsSuperAdmin(false);

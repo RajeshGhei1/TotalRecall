@@ -57,7 +57,7 @@ const ModulePricingManager: React.FC = () => {
         description: "Module pricing updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update module pricing",

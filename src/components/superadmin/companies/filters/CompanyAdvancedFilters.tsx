@@ -29,7 +29,7 @@ interface CompanyAdvancedFiltersProps {
   filters: CompanyFilters;
   onFiltersChange: (filters: CompanyFilters) => void;
   onReset: () => void;
-  companies: any[];
+  companies: unknown[];
 }
 
 const CompanyAdvancedFilters: React.FC<CompanyAdvancedFiltersProps> = ({

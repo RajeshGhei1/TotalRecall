@@ -154,7 +154,7 @@ export class AILearningDataService {
     }
   }
 
-  private groupLearningData(data: any[]): Record<string, any[]> {
+  private groupLearningData(data: unknown[]): Record<string, any[]> {
     const grouped: Record<string, any[]> = {};
 
     data.forEach(entry => {
@@ -171,7 +171,7 @@ export class AILearningDataService {
     return grouped;
   }
 
-  private extractPattern(contextKey: string, entries: any[]): LearningPattern {
+  private extractPattern(contextKey: string, entries: unknown[]): LearningPattern {
     const [module, action, feedbackType] = contextKey.split('_');
     
     // Calculate confidence based on consistency of feedback
@@ -200,7 +200,7 @@ export class AILearningDataService {
     };
   }
 
-  private extractCommonContexts(entries: any[]): any {
+  private extractCommonContexts(entries: unknown[]): unknown {
     const contexts = entries
       .map(e => e.ai_decisions?.context)
       .filter(Boolean);
@@ -208,7 +208,7 @@ export class AILearningDataService {
     if (contexts.length === 0) return {};
 
     // Find common properties across contexts
-    const commonContext: any = {};
+    const commonContext: unknown = {};
     const firstContext = contexts[0];
 
     Object.keys(firstContext).forEach(key => {
@@ -225,7 +225,7 @@ export class AILearningDataService {
     return commonContext;
   }
 
-  private generateRecommendations(feedbackType: string, entries: any[]): string[] {
+  private generateRecommendations(feedbackType: string, entries: unknown[]): string[] {
     const recommendations: string[] = [];
 
     if (feedbackType === 'negative') {

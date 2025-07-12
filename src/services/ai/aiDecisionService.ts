@@ -7,8 +7,8 @@ export interface AIDecisionRule {
   description?: string;
   rule_type: 'approval' | 'classification' | 'routing' | 'scoring' | 'custom';
   module_context: string;
-  conditions: any[];
-  actions: any[];
+  conditions: unknown[];
+  actions: unknown[];
   priority: number;
   is_active: boolean;
   requires_approval: boolean;
@@ -52,7 +52,7 @@ export interface AIDecisionWorkflow {
   name: string;
   description?: string;
   workflow_type: 'sequential' | 'parallel' | 'conditional';
-  steps: any[];
+  steps: unknown[];
   is_active: boolean;
   created_by?: string;
   created_at: string;
@@ -64,8 +64,8 @@ export interface CreateDecisionRuleRequest {
   description?: string;
   rule_type: AIDecisionRule['rule_type'];
   module_context: string;
-  conditions: any[];
-  actions: any[];
+  conditions: unknown[];
+  actions: unknown[];
   priority?: number;
   requires_approval?: boolean;
   approval_threshold?: number;
@@ -74,8 +74,8 @@ export interface CreateDecisionRuleRequest {
 export interface UpdateDecisionRuleRequest {
   name?: string;
   description?: string;
-  conditions?: any[];
-  actions?: any[];
+  conditions?: unknown[];
+  actions?: unknown[];
   priority?: number;
   is_active?: boolean;
   requires_approval?: boolean;
@@ -275,7 +275,7 @@ export class AIDecisionService {
     return await this.updateDecisionInstance(instanceId, updates);
   }
 
-  private async simulateAIAnalysis(contextData: any, rule: AIDecisionRule): Promise<any> {
+  private async simulateAIAnalysis(contextData: any, rule: AIDecisionRule): Promise<unknown> {
     // Simulate AI analysis based on rule conditions
     const conditions = rule.conditions;
     let confidence = 0.5; // Base confidence
@@ -342,7 +342,7 @@ export class AIDecisionService {
   }
 
   // Analytics
-  async getDecisionAnalytics(tenantId: string, ruleId?: string, days = 30): Promise<any> {
+  async getDecisionAnalytics(tenantId: string, ruleId?: string, days = 30): Promise<unknown> {
     const { data, error } = await supabase
       .from('ai_decision_analytics')
       .select('*')

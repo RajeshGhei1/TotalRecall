@@ -261,7 +261,7 @@ export const useRealTimeCollaboration = (entityType: 'form' | 'report', entityId
 
   // Detect conflicts when multiple users are editing
   const detectConflicts = useCallback((currentData: any, incomingData: any) => {
-    const conflicts: any[] = [];
+    const conflicts: unknown[] = [];
     
     // Simple conflict detection - can be enhanced based on specific needs
     if (JSON.stringify(currentData) !== JSON.stringify(incomingData)) {

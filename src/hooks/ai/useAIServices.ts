@@ -116,7 +116,7 @@ export const useAIServices = () => {
         description: "AI service created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create AI service",
@@ -156,7 +156,7 @@ export const useAIServices = () => {
         description: "AI service updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update AI service",
@@ -182,7 +182,7 @@ export const useAIServices = () => {
         description: "AI service deleted successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete AI service",

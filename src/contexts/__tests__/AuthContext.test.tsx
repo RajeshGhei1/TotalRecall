@@ -361,7 +361,7 @@ describe('AuthContext', () => {
       const mockUser = { id: 'user-123', email: 'test@example.com' };
       const mockSession = { user: mockUser, access_token: 'token' };
       
-      let authStateCallback: any;
+      let authStateCallback: unknown;
       const mockSubscription = { unsubscribe: vi.fn() };
       const mockAuthStateChange = vi.fn().mockImplementation((callback) => {
         authStateCallback = callback;
@@ -388,7 +388,7 @@ describe('AuthContext', () => {
     });
 
     it('should handle auth state change to signed out', async () => {
-      let authStateCallback: any;
+      let authStateCallback: unknown;
       const mockSubscription = { unsubscribe: vi.fn() };
       const mockAuthStateChange = vi.fn().mockImplementation((callback) => {
         authStateCallback = callback;

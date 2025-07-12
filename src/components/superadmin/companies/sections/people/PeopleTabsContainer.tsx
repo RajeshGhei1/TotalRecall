@@ -9,8 +9,8 @@ import CompanyPeopleManager from '@/components/people/CompanyPeopleManager';
 interface PeopleTabsContainerProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  currentRelationships: any[];
-  pastRelationships: any[];
+  currentRelationships: unknown[];
+  pastRelationships: unknown[];
   companyId: string;
   isLoading: boolean;
 }

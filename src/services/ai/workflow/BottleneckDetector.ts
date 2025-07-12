@@ -22,7 +22,7 @@ export interface BottleneckAnalysis {
 }
 
 class BottleneckDetectorService {
-  async detectBottlenecks(workflowId: string, executionData: any[]): Promise<BottleneckAnalysis> {
+  async detectBottlenecks(workflowId: string, executionData: unknown[]): Promise<BottleneckAnalysis> {
     const bottlenecks: WorkflowBottleneck[] = [];
     
     // Analyze execution times for each step
@@ -53,7 +53,7 @@ class BottleneckDetectorService {
     };
   }
 
-  private analyzeExecutionTimes(executionData: any[]): WorkflowBottleneck[] {
+  private analyzeExecutionTimes(executionData: unknown[]): WorkflowBottleneck[] {
     const bottlenecks: WorkflowBottleneck[] = [];
     
     // Group execution data by step
@@ -102,7 +102,7 @@ class BottleneckDetectorService {
     return bottlenecks;
   }
 
-  private analyzeErrorPatterns(executionData: any[]): WorkflowBottleneck[] {
+  private analyzeErrorPatterns(executionData: unknown[]): WorkflowBottleneck[] {
     const bottlenecks: WorkflowBottleneck[] = [];
     
     // Count errors by step
@@ -151,7 +151,7 @@ class BottleneckDetectorService {
     return bottlenecks;
   }
 
-  private analyzeUserBehavior(executionData: any[]): WorkflowBottleneck[] {
+  private analyzeUserBehavior(executionData: unknown[]): WorkflowBottleneck[] {
     const bottlenecks: WorkflowBottleneck[] = [];
     
     // Analyze abandonment patterns

@@ -126,7 +126,7 @@ export const useEnhancedSystemModules = (activeOnly: boolean = true) => {
   const updateModule = async (moduleName: string, updates: Partial<EnhancedSystemModule>) => {
     try {
       // Convert Record<string, any> fields back to the format expected by Supabase
-      const updateData: any = { ...updates };
+      const updateData: unknown = { ...updates };
       if (updates.default_limits) {
         updateData.default_limits = updates.default_limits;
       }

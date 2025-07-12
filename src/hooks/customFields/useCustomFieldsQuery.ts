@@ -54,7 +54,7 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
         // Convert the result to the CustomField type
         const typedFields: CustomField[] = (data || []).map((field, index) => {
           // Handle options parsing safely
-          let parsedOptions: any;
+          let parsedOptions: unknown;
           if (typeof field.options === 'string') {
             try {
               parsedOptions = JSON.parse(field.options);

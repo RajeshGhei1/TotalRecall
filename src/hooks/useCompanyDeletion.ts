@@ -142,7 +142,7 @@ export const useCompanyDeletion = () => {
         description: 'The company and all related data have been deleted successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error deleting company:", error);
       toast({
         title: 'Error',

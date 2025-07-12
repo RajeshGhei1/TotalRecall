@@ -114,7 +114,7 @@ class CodeAnalysisService {
     ];
   }
 
-  async analyzeFile(filePath: string): Promise<any> {
+  async analyzeFile(filePath: string): Promise<unknown> {
     try {
       console.log(`Analyzing file: ${filePath}`);
       
@@ -132,7 +132,7 @@ class CodeAnalysisService {
     }
   }
 
-  private createAnalysisFromPath(filePath: string): any {
+  private createAnalysisFromPath(filePath: string): unknown {
     const fileName = filePath.split('/').pop()?.replace(/\.(tsx?|jsx?)$/, '') || '';
     const isComponent = filePath.includes('/components/') && filePath.endsWith('.tsx');
     const isHook = filePath.includes('/hooks/') || fileName.startsWith('use');
@@ -202,7 +202,7 @@ class CodeAnalysisService {
     };
   }
 
-  private createPageAnalysis(name: string, filePath: string): any {
+  private createPageAnalysis(name: string, filePath: string): unknown {
     return {
       name,
       filePath,
@@ -213,7 +213,7 @@ class CodeAnalysisService {
     };
   }
 
-  private createGenericAnalysis(name: string, filePath: string): any {
+  private createGenericAnalysis(name: string, filePath: string): unknown {
     return {
       name,
       filePath,
@@ -277,7 +277,7 @@ class CodeAnalysisService {
         {
           name: 'analyzeCodeFile',
           parameters: [{ name: 'filePath', type: 'string', required: true }],
-          returnType: 'Promise<any>',
+          returnType: 'Promise<unknown>',
           isAsync: true,
           description: 'Analyzes a code file and extracts documentation data'
         }

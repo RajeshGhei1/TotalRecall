@@ -9,7 +9,7 @@ export const normalizeModuleName = (moduleName: string): string => {
 };
 
 // Group modules by category
-export const groupModulesByCategory = (modules: any[]) => {
+export const groupModulesByCategory = (modules: unknown[]) => {
   if (!modules) return {};
   
   const grouped: Record<string, any[]> = {};
@@ -64,7 +64,7 @@ export const groupModulesByCategory = (modules: any[]) => {
 };
 
 // Group modules by type (super_admin vs foundation vs business)
-export const groupModulesByType = (modules: any[]) => {
+export const groupModulesByType = (modules: unknown[]) => {
   if (!modules) return {};
   
   const grouped: Record<string, any[]> = {};

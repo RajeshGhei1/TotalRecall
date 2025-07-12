@@ -211,7 +211,7 @@ export const useEnhancedVersionControl = () => {
         description: `Version ${data.version_number} created and ${variables.approvalRequired ? 'submitted for approval' : 'published'}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Version Creation Failed',
         description: `Failed to create version: ${error.message}`,
@@ -252,7 +252,7 @@ export const useEnhancedVersionControl = () => {
         description: 'Version has been successfully published',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Publish Failed',
         description: `Failed to publish version: ${error.message}`,
@@ -320,7 +320,7 @@ export const useEnhancedVersionControl = () => {
         description: `Successfully restored and created new version`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Restore Failed',
         description: `Failed to restore version: ${error.message}`,
@@ -383,7 +383,7 @@ export const useEnhancedVersionControl = () => {
         description: `Version has been ${variables.action === 'approve' ? 'approved and published' : 'rejected'}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Review Failed',
         description: `Failed to review version: ${error.message}`,

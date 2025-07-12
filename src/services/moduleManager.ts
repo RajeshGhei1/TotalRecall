@@ -196,7 +196,7 @@ export class ModuleManager {
     deploymentHealth: 'healthy' | 'warning' | 'error';
     isRegistered: boolean;
   }[]> {
-    const status: any[] = [];
+    const status: unknown[] = [];
 
     try {
       // Get registered modules from code registry

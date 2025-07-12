@@ -76,7 +76,7 @@ const Auth = () => {
         description: "You have been signed in successfully.",
       });
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
       throw error; // Re-throw to be handled by LoginForm
     }
@@ -90,7 +90,7 @@ const Auth = () => {
         description: "Please check your email to confirm your account.",
       });
       setActiveTab("login");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
       toast({
         title: "Signup failed",

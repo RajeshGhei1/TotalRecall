@@ -7,7 +7,7 @@ import { CheckCircle, Clock, AlertTriangle, Rocket } from 'lucide-react';
 import { getModuleStatusSummary, getMaturityStatusVariant } from '@/utils/moduleUtils';
 
 interface ModuleStatusSummaryProps {
-  modules: any[];
+  modules: unknown[];
   title?: string;
 }
 

@@ -11,8 +11,8 @@ interface FormsListSectionProps {
   onEditForm: (form: FormDefinition) => void;
   onDeleteForm: (form: FormDefinition) => void;
   deleteFormMutation: any;
-  tenants: any[];
-  modules: any[];
+  tenants: unknown[];
+  modules: unknown[];
 }
 
 const FormsListSection: React.FC<FormsListSectionProps> = ({

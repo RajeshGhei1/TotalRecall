@@ -239,7 +239,7 @@ class ATSService {
   }
 
   async updateApplicationStatus(id: string, status: Application['status'], notes?: string): Promise<Application> {
-    const updates: any = { status };
+    const updates: unknown = { status };
     if (notes) {
       updates.recruiter_notes = notes;
     }

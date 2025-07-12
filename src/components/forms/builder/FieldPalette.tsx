@@ -172,7 +172,7 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({
         title: 'Field Added',
         description: `${fieldData.name} has been added to the form.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding field:', error);
       toast({
         title: 'Error',

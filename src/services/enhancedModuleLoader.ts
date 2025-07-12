@@ -117,7 +117,7 @@ class EnhancedModuleLoader {
     }
   }
 
-  private async getModuleManifest(moduleId: string): Promise<any> {
+  private async getModuleManifest(moduleId: string): Promise<unknown> {
     try {
       const { data, error } = await supabase
         .from('system_modules')
@@ -189,7 +189,7 @@ class EnhancedModuleLoader {
     return uuidRegex.test(uuid);
   }
 
-  private async dynamicImport(moduleId: string): Promise<any> {
+  private async dynamicImport(moduleId: string): Promise<unknown> {
     // Mock implementation - in reality this would dynamically import modules
     try {
       switch (moduleId) {

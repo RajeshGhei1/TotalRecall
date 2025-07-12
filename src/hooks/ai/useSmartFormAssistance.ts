@@ -14,7 +14,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isLoadingAutocomplete, setIsLoadingAutocomplete] = useState<Record<string, boolean>>({});
 
-  const generateSuggestions = useCallback(async (context: any, fields: any[]) => {
+  const generateSuggestions = useCallback(async (context: any, fields: unknown[]) => {
     setIsLoadingSuggestions(true);
     try {
       // Mock suggestions - replace with actual AI logic

@@ -66,7 +66,7 @@ export const useAIModels = () => {
         description: "AI model created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create AI model",
@@ -102,7 +102,7 @@ export const useAIModels = () => {
         description: "AI model updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update AI model",
@@ -127,7 +127,7 @@ export const useAIModels = () => {
         description: "AI model deleted successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete AI model",

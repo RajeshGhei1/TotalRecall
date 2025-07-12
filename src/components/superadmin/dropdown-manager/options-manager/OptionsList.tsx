@@ -97,7 +97,7 @@ const OptionsList = ({
         queryClient.invalidateQueries({ queryKey: ['dropdown-options', selectedCategory] });
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error adding option',
         description: error.message,
@@ -126,7 +126,7 @@ const OptionsList = ({
       // Update local state to avoid a refetch
       setLocalOptions(prev => prev.filter(opt => opt.id !== deletedId));
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error deleting option',
         description: error.message,

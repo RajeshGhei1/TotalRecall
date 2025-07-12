@@ -23,7 +23,7 @@ export const usePeopleMutations = (personType?: 'talent' | 'contact') => {
       queryClient.invalidateQueries({ queryKey: ['people', personType] });
       toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} created successfully`);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error creating person:', error);
       toast.error(`Failed to create ${personType}: ${error.message}`);
     }
@@ -44,7 +44,7 @@ export const usePeopleMutations = (personType?: 'talent' | 'contact') => {
       queryClient.invalidateQueries({ queryKey: ['people', personType] });
       toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} deleted successfully`);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error deleting person:', error);
       toast.error(`Failed to delete ${personType}: ${error.message}`);
     }

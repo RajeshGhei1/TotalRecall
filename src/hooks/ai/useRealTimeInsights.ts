@@ -58,7 +58,7 @@ export const useRealTimeInsights = (tenantId?: string) => {
   };
 };
 
-function calculateHealthScore(trends: any[], risks: any[], opportunities: any[]): number {
+function calculateHealthScore(trends: unknown[], risks: unknown[], opportunities: unknown[]): number {
   const positiveTrends = trends.filter(t => t.trend === 'increasing').length;
   const highRisks = risks.filter(r => r.riskLevel === 'high' || r.riskLevel === 'critical').length;
   const highOpportunities = opportunities.filter(o => o.potential === 'high').length;

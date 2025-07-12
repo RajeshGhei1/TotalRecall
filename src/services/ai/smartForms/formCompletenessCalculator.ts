@@ -1,6 +1,6 @@
 
 export class FormCompletenessCalculator {
-  static calculateCompleteness(form: any, fields: any[], formType: string): number {
+  static calculateCompleteness(form: any, fields: unknown[], formType: string): number {
     if (!fields || fields.length === 0) return 0;
     
     const expectedFields = this.getExpectedFieldsForType(formType);
@@ -13,7 +13,7 @@ export class FormCompletenessCalculator {
     return Math.min(100, (matchedFields.length / expectedFields.length) * 100);
   }
 
-  static identifyMissingFields(form: any, fields: any[], formType: string): string[] {
+  static identifyMissingFields(form: any, fields: unknown[], formType: string): string[] {
     const expectedFields = this.getExpectedFieldsForType(formType);
     const existingFieldTypes = fields.map(f => f.field_type || f.type).filter(Boolean);
     

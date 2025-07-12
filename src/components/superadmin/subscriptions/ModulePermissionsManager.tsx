@@ -80,7 +80,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
         description: "Module permissions saved successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to save permissions",

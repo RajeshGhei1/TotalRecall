@@ -9,7 +9,7 @@ export interface FormSuggestion {
 export interface FormContext {
   formType: string;
   currentValues: Record<string, any>;
-  userHistory: any[];
+  userHistory: unknown[];
   userId: string;
   tenantId?: string;
 }

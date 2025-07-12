@@ -154,7 +154,7 @@ export const CompanyLinkForm: React.FC<CompanyLinkFormProps> = ({
       form.reset();
       setSelectedCompanyId('');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error creating company relationship:', error);
       toast.error(`Failed to create relationship: ${error.message}`);
     }

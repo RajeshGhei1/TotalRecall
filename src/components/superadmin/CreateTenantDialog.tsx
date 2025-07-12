@@ -12,7 +12,7 @@ import { ExtendedTenantForm } from '@/components/superadmin/tenant-form';
 interface CreateTenantDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: unknown) => void;
   isSubmitting: boolean;
 }
 

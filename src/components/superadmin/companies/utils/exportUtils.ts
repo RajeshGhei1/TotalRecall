@@ -115,7 +115,7 @@ export const exportCompanies = async (
   }
 };
 
-const getFieldValue = (company: Company, fieldKey: string): any => {
+const getFieldValue = (company: Company, fieldKey: string): unknown => {
   const value = (company as any)[fieldKey];
   
   // Handle special cases

@@ -15,7 +15,7 @@ import { FieldOption } from '../../hooks/useReportFields';
 
 interface ChartVisualizationProps {
   visualizationType: string;
-  data: any[];
+  data: unknown[];
   columns: string[];
   availableFields: FieldOption[];
 }

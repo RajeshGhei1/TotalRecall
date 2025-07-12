@@ -104,7 +104,7 @@ const EditTenantSubscriptionDialog: React.FC<EditTenantSubscriptionDialogProps> 
       });
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update tenant subscription",

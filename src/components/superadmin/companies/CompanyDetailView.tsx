@@ -57,7 +57,7 @@ const CompanyDetailView: React.FC = () => {
     enabled: !!companyId,
   });
 
-  const handleEditSubmit = async (data: any) => {
+  const handleEditSubmit = async (data: unknown) => {
     if (!company) return;
     
     try {

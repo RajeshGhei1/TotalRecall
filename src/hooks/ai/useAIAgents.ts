@@ -32,7 +32,7 @@ export const useAIAgents = () => {
         description: "AI agent created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create AI agent",
@@ -52,7 +52,7 @@ export const useAIAgents = () => {
         description: "AI agent updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update AI agent",
@@ -71,7 +71,7 @@ export const useAIAgents = () => {
         description: "AI agent deleted successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete AI agent",
@@ -87,7 +87,7 @@ export const useAIAgents = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to execute AI agent",
@@ -168,7 +168,7 @@ export const useAIAgentActivity = (agentId: string) => {
   const logActivityMutation = useMutation({
     mutationFn: (activityData: Omit<AIAgentActivityLog, 'id' | 'created_at'>) =>
       aiAgentService.logActivity(activityData),
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Failed to log activity:', error);
       // Don't show toast for logging failures as they're not critical
     }

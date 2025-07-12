@@ -68,7 +68,7 @@ class ModuleLoader {
     return this.loadModule(moduleId, context, { force: true });
   }
 
-  private async dynamicImport(moduleId: string): Promise<any> {
+  private async dynamicImport(moduleId: string): Promise<unknown> {
     // Mock implementation - in reality this would dynamically import modules
     try {
       switch (moduleId) {

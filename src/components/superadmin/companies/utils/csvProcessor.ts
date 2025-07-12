@@ -554,7 +554,7 @@ export function validateCSVData(
 
   dataRows.forEach((row, index) => {
     try {
-      const csvRowObject: any = {};
+      const csvRowObject: unknown = {};
       headers.forEach((header, i) => {
         csvRowObject[header] = row[i] || '';
       });

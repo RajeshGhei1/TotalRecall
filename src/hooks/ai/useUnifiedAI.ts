@@ -65,7 +65,7 @@ export const useUnifiedAI = () => {
       userId: string;
       tenantId?: string;
       module: string;
-      userHistory?: any[];
+      userHistory?: unknown[];
       contextData?: Record<string, any>;
     }
   ) => {
@@ -115,7 +115,7 @@ export const useUnifiedAI = () => {
 
   const predictOutcome = async (
     dataType: string,
-    historicalData: any[],
+    historicalData: unknown[],
     options: {
       predictionHorizon?: string;
       userId: string;

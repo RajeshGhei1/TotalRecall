@@ -103,7 +103,7 @@ const ReportingManager: React.FC = () => {
       setPendingChanges({});
       toast.success('Reporting relationships updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error updating reporting relationships:', error);
       toast.error('Failed to update reporting relationships');
     }

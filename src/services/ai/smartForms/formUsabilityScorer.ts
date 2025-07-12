@@ -1,6 +1,6 @@
 
 export class FormUsabilityScorer {
-  static calculateUsabilityScore(form: any, fields: any[]): number {
+  static calculateUsabilityScore(form: any, fields: unknown[]): number {
     let score = 50; // Base score
     
     // Field count scoring

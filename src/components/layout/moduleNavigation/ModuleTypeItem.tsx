@@ -5,7 +5,7 @@ import ModuleItem from './ModuleItem';
 
 interface ModuleTypeItemProps {
   typeKey: string;
-  typeModules: any[];
+  typeModules: unknown[];
   isTypeExpanded: boolean;
   expandedModules: Set<string>;
   onToggleType: (typeKey: string) => void;

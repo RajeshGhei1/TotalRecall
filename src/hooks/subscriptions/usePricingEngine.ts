@@ -7,7 +7,7 @@ export interface ModulePricing {
   module_name: string;
   base_price_monthly: number;
   base_price_annually: number;
-  tier_pricing: any[];
+  tier_pricing: unknown[];
   is_active: boolean;
 }
 

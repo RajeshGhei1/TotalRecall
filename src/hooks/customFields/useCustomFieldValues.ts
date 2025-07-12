@@ -20,7 +20,7 @@ export function useCustomFieldValues() {
     entityId: string, 
     values: Record<string, any>,
     customFields?: CustomField[]
-  ): Promise<any> => {
+  ): Promise<unknown> => {
     if (customFields) {
       return saveCustomFieldValues(entityType, entityId, values, customFields);
     } else {

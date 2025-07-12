@@ -8,7 +8,7 @@ import { TrendingUp, Activity, Eye, Clock } from 'lucide-react';
 interface AnalyticsPanelProps {
   title?: string;
   chartType?: 'bar' | 'line' | 'pie';
-  data?: any[];
+  data?: unknown[];
   showMetrics?: boolean;
   variant?: 'default' | 'compact' | 'detailed';
 }

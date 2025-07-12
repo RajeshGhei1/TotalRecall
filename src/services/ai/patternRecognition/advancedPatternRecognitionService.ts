@@ -382,14 +382,14 @@ export class AdvancedPatternRecognitionService {
     }
   }
 
-  private extractNavigationSequences(interactions: UserInteraction[]): any[] {
+  private extractNavigationSequences(interactions: UserInteraction[]): unknown[] {
     // Implementation for extracting navigation sequences
-    const sequences: any[] = [];
+    const sequences: unknown[] = [];
     // ... complex sequence analysis logic
     return sequences;
   }
 
-  private analyzeTimeDistribution(interactions: UserInteraction[]): any {
+  private analyzeTimeDistribution(interactions: UserInteraction[]): unknown {
     const hourCounts: Record<number, number> = {};
     
     interactions.forEach(interaction => {
@@ -421,7 +421,7 @@ export class AdvancedPatternRecognitionService {
     return groups;
   }
 
-  private analyzeTaskEfficiency(interactions: UserInteraction[]): any {
+  private analyzeTaskEfficiency(interactions: UserInteraction[]): unknown {
     // Simplified task efficiency analysis
     const taskCompletions = interactions.filter(i => i.interaction_type === 'task_completion');
     const averageTime = taskCompletions.length > 0 ? 
@@ -436,7 +436,7 @@ export class AdvancedPatternRecognitionService {
     };
   }
 
-  private analyzeLearningProgress(interactions: UserInteraction[]): any {
+  private analyzeLearningProgress(interactions: UserInteraction[]): unknown {
     // Simplified learning progress analysis
     const recentInteractions = interactions.slice(0, 50);
     const olderInteractions = interactions.slice(50, 100);

@@ -97,7 +97,7 @@ const FormWorkflowManager: React.FC = () => {
     }));
   };
 
-  const handleOptimizationApplied = (optimizedSteps: any[]) => {
+  const handleOptimizationApplied = (optimizedSteps: unknown[]) => {
     if (workflows.length > 0) {
       toast({
         title: 'Workflow Optimized',

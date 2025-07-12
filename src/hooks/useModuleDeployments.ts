@@ -13,7 +13,7 @@ export interface ModuleDeployment {
   started_at: string;
   completed_at?: string;
   deployment_config?: any;
-  deployment_log?: any[];
+  deployment_log?: unknown[];
 }
 
 export const useModuleDeployments = (tenantId?: string) => {

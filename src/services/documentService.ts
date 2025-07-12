@@ -18,7 +18,7 @@ class DocumentService {
     throw new Error(`Document not found: ${filePath}`);
   }
 
-  async downloadAllDocuments(documents: any[]): Promise<void> {
+  async downloadAllDocuments(documents: unknown[]): Promise<void> {
     try {
       // Create a zip-like structure by downloading individual files
       for (const doc of documents) {

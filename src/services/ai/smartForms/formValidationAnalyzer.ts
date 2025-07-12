@@ -7,7 +7,7 @@ export interface ValidationIssue {
 }
 
 export class FormValidationAnalyzer {
-  static identifyValidationIssues(fields: any[]): ValidationIssue[] {
+  static identifyValidationIssues(fields: unknown[]): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     
     fields.forEach(field => {

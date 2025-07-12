@@ -119,7 +119,7 @@ export const useCustomFieldsLegacy = (tenantId?: string, options?: UseCustomFiel
     fields: CustomField[], 
     tenantId?: string, 
     formContext?: string
-  ): Promise<any> => {
+  ): Promise<unknown> => {
     // Convert formContext to boolean for showToast parameter
     // If formContext is a string, we'll use true for showToast
     const showToast = typeof formContext === 'string';

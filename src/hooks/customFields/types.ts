@@ -38,7 +38,7 @@ export interface UseCustomFieldsReturn {
   isLoading: boolean;
   getCustomFieldValues: (entityType: string, entityId: string) => Promise<any[]>;
   saveCustomFieldValues: (entityType: string, entityId: string, values: Record<string, any>) => Promise<void>;
-  updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => Promise<any>;
+  updateFieldOrder: (fields: CustomField[], tenantId?: string, formContext?: string) => Promise<unknown>;
 }
 
 // Export interface for form values - updated to include multiselect

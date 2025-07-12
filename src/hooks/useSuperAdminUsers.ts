@@ -27,7 +27,7 @@ export const useSuperAdminUsers = () => {
         description: "User password has been reset successfully.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: `Failed to reset password: ${error.message}`,

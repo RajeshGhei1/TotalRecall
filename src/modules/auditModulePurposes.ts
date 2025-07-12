@@ -91,7 +91,7 @@ async function auditModulePurposes() {
   }
 }
 
-function analyzeModulePurpose(module: any, allModules: any[]): ModuleAuditResult {
+function analyzeModulePurpose(module: any, allModules: unknown[]): ModuleAuditResult {
   const name = module.name.toLowerCase();
   const description = (module.description || '').toLowerCase();
   const searchText = `${name} ${description}`;

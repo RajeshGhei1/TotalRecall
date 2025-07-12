@@ -222,7 +222,7 @@ export const useVersionControl = () => {
         description: `Version ${data.version_number} created successfully`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Version Save Failed',
         description: `Failed to create version: ${error.message}`,
@@ -264,7 +264,7 @@ export const useVersionControl = () => {
         description: `Successfully restored to version ${variables.versionNumber}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Restore Failed',
         description: `Failed to restore version: ${error.message}`,

@@ -183,7 +183,7 @@ const CreateTestDataDialog = ({ open, onOpenChange, onDataCreated }: CreateTestD
       });
       onDataCreated();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error Creating Test Data",
         description: error.message || "Failed to create test data.",

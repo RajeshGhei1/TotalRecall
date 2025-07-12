@@ -167,7 +167,7 @@ const TenantAdminUsers = () => {
       refetch();
       setEditUserDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error updating user",
         description: error.message || "An unexpected error occurred",
@@ -253,7 +253,7 @@ const TenantAdminUsers = () => {
       setAddUserDialogOpen(false);
       refetch();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding user:", error);
       toast({
         title: "Error adding user",
@@ -282,7 +282,7 @@ const TenantAdminUsers = () => {
       });
       
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error removing user:", error);
       toast({
         title: "Error removing user",

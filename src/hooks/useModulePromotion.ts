@@ -23,7 +23,7 @@ export const useModulePromotion = () => {
       console.log('🚀 Promoting module:', data);
 
       // Update the module's development stage and maturity status
-      const updateData: any = {
+      const updateData: unknown = {
         development_stage: {
           stage: data.targetStage,
           progress: getProgressForStage(data.targetStage),

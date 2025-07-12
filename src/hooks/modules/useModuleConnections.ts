@@ -22,8 +22,8 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
     queryFn: async (): Promise<ModuleConnection[]> => {
       if (!tenantId) return [];
 
-      let data: any[] = [];
-      let error: any = null;
+      let data: unknown[] = [];
+      let error: unknown = null;
 
       // Use explicit table queries based on module name
       if (moduleName === 'social_media_integration') {
@@ -82,8 +82,8 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
     }) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      let data: any = null;
-      let error: any = null;
+      let data: unknown = null;
+      let error: unknown = null;
 
       const baseData = {
         tenant_id: tenantId,
@@ -147,7 +147,7 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
         description: "Module connection has been established successfully."
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create connection",
@@ -161,8 +161,8 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
       id: string; 
       updates: Partial<ModuleConnection> 
     }) => {
-      let data: any = null;
-      let error: any = null;
+      let data: unknown = null;
+      let error: unknown = null;
 
       if (moduleName === 'social_media_integration') {
         const result = await supabase
@@ -221,7 +221,7 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
         description: "Module connection has been updated successfully."
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update connection",
@@ -232,7 +232,7 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
 
   const deleteConnectionMutation = useMutation({
     mutationFn: async (id: string) => {
-      let error: any = null;
+      let error: unknown = null;
 
       if (moduleName === 'social_media_integration') {
         const result = await supabase
@@ -275,7 +275,7 @@ export const useModuleConnections = (moduleName: string, tenantId?: string) => {
         description: "Module connection has been removed successfully."
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete connection",

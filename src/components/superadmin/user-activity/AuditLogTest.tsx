@@ -65,7 +65,7 @@ const AuditLogTest: React.FC = () => {
       } else {
         throw new Error('Failed to create session (no sessionId returned)');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('User session test failed:', error);
       toast({
         title: 'User Session Test Failed',

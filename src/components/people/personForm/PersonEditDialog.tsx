@@ -146,7 +146,7 @@ const PersonEditDialog: React.FC<PersonEditDialogProps> = ({
       onClose();
       if (onSuccess) onSuccess();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error updating person:', error);
       toast.error(`Failed to update: ${error.message}`);
     }

@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface OptimisticUpdate<T> {
   id: string;
-  queryKey: any[];
+  queryKey: unknown[];
   previousData: T | undefined;
   newData: T;
   timestamp: number;
@@ -32,7 +32,7 @@ export const useOptimisticUpdates = <T = any>() => {
 
   // Apply optimistic update
   const applyOptimisticUpdate = useCallback((
-    queryKey: any[],
+    queryKey: unknown[],
     updater: (oldData: T | undefined) => T,
     operation: 'create' | 'update' | 'delete' = 'update'
   ) => {

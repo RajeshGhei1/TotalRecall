@@ -15,7 +15,7 @@ export interface ContextPattern {
   pattern_id: string;
   context_fingerprint: any;
   success_rate: number;
-  common_outcomes: any[];
+  common_outcomes: unknown[];
   optimal_agent_type: string;
   confidence_range: [number, number];
 }
@@ -23,7 +23,7 @@ export interface ContextPattern {
 export class DecisionContextManager {
   async analyzeContext(context: AIContext): Promise<{
     contextualRecommendations: ContextualDecision[];
-    similarContexts: any[];
+    similarContexts: unknown[];
     contextComplexity: number;
     riskLevel: 'low' | 'medium' | 'high';
   }> {
@@ -144,7 +144,7 @@ export class DecisionContextManager {
 
   private async generateContextualRecommendations(
     contextHash: string, 
-    similarContexts: any[]
+    similarContexts: unknown[]
   ): Promise<ContextualDecision[]> {
     const recommendations: ContextualDecision[] = [];
 
@@ -243,7 +243,7 @@ export class DecisionContextManager {
 
   private assessRiskLevel(
     context: AIContext, 
-    similarContexts: any[]
+    similarContexts: unknown[]
   ): 'low' | 'medium' | 'high' {
     if (similarContexts.length === 0) return 'high'; // Unknown territory
 
@@ -265,7 +265,7 @@ export class DecisionContextManager {
   async storeContextPattern(
     contextFingerprint: any,
     successRate: number,
-    outcomes: any[],
+    outcomes: unknown[],
     optimalAgentType: string
   ): Promise<void> {
     try {
@@ -308,8 +308,8 @@ export class DecisionContextManager {
     totalContextsAnalyzed: number;
     avgSuccessRate: number;
     riskDistribution: Record<'low' | 'medium' | 'high', number>;
-    topPerformingContexts: any[];
-    problematicContexts: any[];
+    topPerformingContexts: unknown[];
+    problematicContexts: unknown[];
   }> {
     try {
       const { data: insights, error } = await supabase

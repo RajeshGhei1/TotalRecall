@@ -456,7 +456,7 @@ export class PDFDocumentExporter {
     const sections: Array<{type: string, content: any, level?: number, ordered?: boolean}> = [];
     const lines = content.split('\n');
     
-    let currentSection: any = null;
+    let currentSection: unknown = null;
     
     lines.forEach(line => {
       // Headings

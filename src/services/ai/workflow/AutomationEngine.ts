@@ -188,7 +188,7 @@ class AutomationEngineService {
     return true;
   }
 
-  private async executeAutomationActions(actions: AutomationAction[], context: Record<string, any>): Promise<any> {
+  private async executeAutomationActions(actions: AutomationAction[], context: Record<string, any>): Promise<unknown> {
     const results = [];
 
     for (const action of actions) {

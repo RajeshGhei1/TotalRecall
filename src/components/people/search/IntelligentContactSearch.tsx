@@ -15,7 +15,7 @@ interface SearchFilters {
 }
 
 interface IntelligentContactSearchProps {
-  onResultsChange: (results: any[]) => void;
+  onResultsChange: (results: unknown[]) => void;
   onFiltersChange: (filters: SearchFilters) => void;
 }
 

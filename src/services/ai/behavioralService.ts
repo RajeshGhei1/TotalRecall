@@ -105,7 +105,7 @@ export class BehavioralAnalyticsService {
     }
   }
 
-  async analyzeUserBehavior(userId: string, tenantId?: string): Promise<any> {
+  async analyzeUserBehavior(userId: string, tenantId?: string): Promise<unknown> {
     try {
       // Get recent interactions
       let query = supabase
@@ -156,7 +156,7 @@ export class BehavioralAnalyticsService {
     interactions: UserInteraction[], 
     tenantId: string, 
     basicAnalysis: any
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       const prompt = this.createBehaviorAnalysisPrompt(interactions, basicAnalysis);
       
@@ -224,7 +224,7 @@ Format your response as JSON with "insights" and "recommendations" arrays.
     `;
   }
 
-  private parseTextualAnalysis(content: string): any {
+  private parseTextualAnalysis(content: string): unknown {
     const insights: string[] = [];
     const recommendations: string[] = [];
     
@@ -252,7 +252,7 @@ Format your response as JSON with "insights" and "recommendations" arrays.
     return { insights, recommendations };
   }
 
-  private performBehaviorAnalysis(interactions: UserInteraction[]): any {
+  private performBehaviorAnalysis(interactions: UserInteraction[]): unknown {
     const typeFrequency: Record<string, number> = {};
     const timePatterns: Record<string, number[]> = {};
     const contextPatterns: Record<string, any> = {};

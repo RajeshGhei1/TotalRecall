@@ -263,4 +263,137 @@ export type RequiredKeys<T, K extends keyof T> = Omit<T, K> & {
 export type AsyncFunction<T = unknown, R = unknown> = (params: T) => Promise<R>;
 export type EventHandler<T = unknown> = (event: T) => void;
 export type Validator<T = unknown> = (value: T) => boolean | string;
-export type Transformer<T = unknown, R = unknown> = (input: T) => R; 
+export type Transformer<T = unknown, R = unknown> = (input: T) => R;
+
+// AI Service Types
+export interface AIServiceRequest {
+  context: Record<string, unknown>;
+  parameters: Record<string, unknown>;
+  userHistory?: unknown[];
+  tenantId?: string;
+  moduleId?: string;
+}
+
+export interface AIServiceResponse {
+  suggestions?: unknown[];
+  recommendations?: unknown[];
+  data?: unknown;
+  confidence?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AIDecisionContext {
+  decision_id: string;
+  tenant_id: string;
+  module_id: string;
+  context: Record<string, unknown>;
+  conditions: unknown[];
+  actions: unknown[];
+  steps?: unknown[];
+  alternative_options?: unknown[];
+}
+
+export interface AILearningPattern {
+  pattern_id: string;
+  context_key: string;
+  pattern_data: Record<string, unknown>;
+  frequency: number;
+  confidence: number;
+  outcomes: unknown[];
+}
+
+// Array Type Definitions
+export type UnknownArray = unknown[];
+export type DataArray = Record<string, unknown>[];
+export type ConfigArray = Record<string, unknown>[];
+export type StringArray = string[];
+export type NumberArray = number[];
+
+// Service Response Types
+export interface ServiceResponse<T = unknown> {
+  data?: T;
+  error?: string;
+  success: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PaginatedResponse<T = unknown> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+// Function Type Definitions
+export type SyncFunction<T = unknown> = (...args: unknown[]) => T;
+export type ErrorHandler = (error: unknown) => void;
+
+// Form and Validation Types
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings?: string[];
+}
+
+export interface FormSubmissionData {
+  [key: string]: unknown;
+}
+
+// Module and Workflow Types
+export interface ModuleManifest {
+  name: string;
+  version: string;
+  description: string;
+  dependencies: string[];
+  config: Record<string, unknown>;
+}
+
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  type: string;
+  config: Record<string, unknown>;
+  conditions?: unknown[];
+  actions?: unknown[];
+}
+
+export interface WorkflowExecution {
+  id: string;
+  workflowId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  steps: WorkflowStep[];
+  results?: unknown[];
+  error?: string;
+}
+
+// Analytics and Metrics Types (extended from existing MetricData)
+
+export interface AnalyticsInsight {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  data: unknown[];
+  confidence: number;
+  recommendations?: string[];
+}
+
+// Tenant and User Types
+export interface TenantData {
+  id: string;
+  name: string;
+  domain: string;
+  settings: Record<string, unknown>;
+  subscription?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  permissions: string[];
+  metadata?: Record<string, unknown>;
+} 

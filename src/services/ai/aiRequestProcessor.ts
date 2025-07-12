@@ -88,7 +88,7 @@ export class AIRequestProcessor {
     return prompt;
   }
 
-  private parseAIResponse(content: string, context: AIContext): any {
+  private parseAIResponse(content: string, context: AIContext): unknown {
     return {
       analysis: content,
       timestamp: new Date().toISOString(),

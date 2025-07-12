@@ -77,7 +77,7 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
 
       // If this is a contact with company/role info, create company relationship
       if (values.type === 'contact' && (values.company_id || values.role)) {
-        const relationshipData: any = {
+        const relationshipData: unknown = {
           person_id: person.id,
           relationship_type: 'business_contact',
           role: values.role || 'Contact',
@@ -114,7 +114,7 @@ const CreatePersonDialog: React.FC<CreatePersonDialogProps> = ({
       onClose();
       if (onSuccess) onSuccess();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error creating person:', error);
       toast.error(`Failed to create ${personType}: ${error.message}`);
     }

@@ -68,7 +68,7 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
       });
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Mutation error:', error);
       toast({
         title: "Error",

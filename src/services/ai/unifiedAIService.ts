@@ -20,7 +20,7 @@ export interface UnifiedAIRequest {
 export interface UnifiedAIResponse {
   success: boolean;
   data: any;
-  suggestions?: any[];
+  suggestions?: unknown[];
   confidence?: number;
   reasoning?: string[];
   metadata?: {

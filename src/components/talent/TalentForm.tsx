@@ -217,7 +217,7 @@ const TalentForm: React.FC<TalentFormProps> = ({ talentId, onSuccess }) => {
 
   // Custom field mutation
   const customFieldMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: unknown) => {
       if (!tenantId || !talentId) return;
       
       const customFields = Object.keys(data)

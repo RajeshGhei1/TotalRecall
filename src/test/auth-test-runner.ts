@@ -95,7 +95,7 @@ function runTest(testFile: string, description: string): boolean {
       return false;
     }
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     log(`💥 ${description} crashed: ${error.message}`, 'error');
     testResults.errors.push(`${description}: ${error.message}`);
     return false;

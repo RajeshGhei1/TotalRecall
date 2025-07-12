@@ -98,7 +98,7 @@ export class ModuleDiscoveryService {
     this.templates[templateId] = template;
   }
 
-  getTemplate(templateId: string): any | undefined {
+  getTemplate(templateId: string): unknown | undefined {
     return this.templates[templateId];
   }
 }

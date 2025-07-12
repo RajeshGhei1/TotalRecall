@@ -7,7 +7,7 @@ export interface DashboardConfig {
   user_id: string;
   dashboard_name: string;
   layout_config: Record<string, any>;
-  widget_configs: any[];
+  widget_configs: unknown[];
   filters: Record<string, any>;
   is_default: boolean;
   tenant_id?: string;

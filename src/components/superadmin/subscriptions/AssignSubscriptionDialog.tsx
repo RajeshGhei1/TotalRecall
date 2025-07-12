@@ -125,7 +125,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
       });
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to assign tenant subscription",
@@ -164,7 +164,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
       });
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to assign user subscriptions",

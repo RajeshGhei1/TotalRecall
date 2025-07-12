@@ -40,7 +40,7 @@ export const useSubscriptionPlans = () => {
         description: "Subscription plan created successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to create subscription plan",
@@ -68,7 +68,7 @@ export const useSubscriptionPlans = () => {
         description: "Subscription plan updated successfully"
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Error",
         description: error.message || "Failed to update subscription plan",

@@ -77,7 +77,7 @@ export const useBranchOffices = (companyId?: string) => {
         description: 'Branch office created successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: `Failed to create branch office: ${error.message}`,
@@ -105,7 +105,7 @@ export const useBranchOffices = (companyId?: string) => {
         description: 'Branch office updated successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: `Failed to update branch office: ${error.message}`,
@@ -130,7 +130,7 @@ export const useBranchOffices = (companyId?: string) => {
         description: 'Branch office deleted successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Error',
         description: `Failed to delete branch office: ${error.message}`,

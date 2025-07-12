@@ -5,7 +5,7 @@ export interface TransactionOperation {
   table: string;
   data?: Record<string, any>;
   filter?: Record<string, any>;
-  queryKey?: any[]; // For query invalidation
+  queryKey?: unknown[]; // For query invalidation
 }
 
 export interface RollbackOperation {
@@ -24,6 +24,6 @@ export interface TransactionState {
 
 export interface TransactionResult {
   success: boolean;
-  results: any[];
+  results: unknown[];
   error?: string;
 }

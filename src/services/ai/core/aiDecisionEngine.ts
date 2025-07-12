@@ -14,7 +14,7 @@ export interface AIDecision {
   decision: any;
   confidence: number;
   reasoning: string[];
-  alternative_options: any[];
+  alternative_options: unknown[];
   recommended_action: string;
   requires_human_review: boolean;
   created_at: string;
@@ -87,7 +87,7 @@ export class AIDecisionEngine {
     return decision;
   }
 
-  private generateMockDecision(context: AIContext): any {
+  private generateMockDecision(context: AIContext): unknown {
     switch (context.module) {
       case 'talent_management':
         return {
@@ -111,7 +111,7 @@ export class AIDecisionEngine {
     }
   }
 
-  private generateAlternatives(context: AIContext): any[] {
+  private generateAlternatives(context: AIContext): unknown[] {
     return [
       { option: 'conservative_approach', risk: 'low', impact: 'medium' },
       { option: 'aggressive_optimization', risk: 'medium', impact: 'high' },

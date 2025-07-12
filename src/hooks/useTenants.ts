@@ -94,7 +94,7 @@ export const useTenants = () => {
         description: 'The tenant has been created successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error creating tenant:", error);
       toast({
         title: 'Error',
@@ -147,7 +147,7 @@ export const useTenants = () => {
         description: 'The tenant has been updated successfully',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error updating tenant:", error);
       toast({
         title: 'Error',

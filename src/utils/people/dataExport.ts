@@ -77,7 +77,7 @@ export const exportPeopleData = async (options: ExportOptions) => {
     if (!baseData) return null;
 
     // Get company relationships if needed
-    let companyData: any[] = [];
+    let companyData: unknown[] = [];
     if (options.includeCompanyInfo) {
       const { data: companyRelationships, error: companyError } = await supabase
         .from('company_relationships')
@@ -101,7 +101,7 @@ export const exportPeopleData = async (options: ExportOptions) => {
     }
 
     // Get LinkedIn data if needed
-    let linkedInData: any[] = [];
+    let linkedInData: unknown[] = [];
     if (options.includeLinkedInData) {
       const { data: linkedInEnrichments, error: linkedInError } = await supabase
         .from('linkedin_profile_enrichments')
@@ -188,7 +188,7 @@ export const exportPeopleData = async (options: ExportOptions) => {
   }
 };
 
-const generateCSV = (data: any[]) => {
+const generateCSV = (data: unknown[]) => {
   if (data.length === 0) return '';
 
   const headers = Object.keys(data[0]);
@@ -212,7 +212,7 @@ const generateCSV = (data: any[]) => {
   };
 };
 
-const generateExcel = (data: any[]) => {
+const generateExcel = (data: unknown[]) => {
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.json_to_sheet(data);
   
@@ -233,7 +233,7 @@ const generateExcel = (data: any[]) => {
   };
 };
 
-const generateJSON = (data: any[]) => {
+const generateJSON = (data: unknown[]) => {
   const jsonContent = JSON.stringify(data, null, 2);
   
   return {
