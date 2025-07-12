@@ -21,7 +21,7 @@ const ReportCreationTab: React.FC<ReportCreationTabProps> = ({ savedReports, onS
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
   const [groupBy, setGroupBy] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<unknown[]>([]);
 
   const runReportMutation = useSecureRunDynamicReport();
   const saveReportMutation = useSecureSaveReport();

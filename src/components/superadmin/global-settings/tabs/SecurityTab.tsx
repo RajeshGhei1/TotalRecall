@@ -43,7 +43,7 @@ const SESSION_TIMEOUT_PRESETS = [
 ];
 
 const SecurityTab: React.FC = () => {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<unknown>(null);
   const { data: settings, isLoading: isLoadingSettings } = useGlobalSettings('security');
   const updateSetting = useUpdateGlobalSetting();
   const createSetting = useCreateGlobalSetting();

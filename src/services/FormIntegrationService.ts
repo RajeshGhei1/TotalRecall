@@ -79,7 +79,7 @@ export class FormIntegrationService {
     });
   }
 
-  private evaluateTrigger(trigger: FormTrigger, context: Record<string, any>): boolean {
+  private evaluateTrigger(trigger: FormTrigger, context: Record<string, unknown>): boolean {
     const conditions = trigger.trigger_conditions;
 
     switch (trigger.trigger_type) {
@@ -103,7 +103,7 @@ export class FormIntegrationService {
     }
   }
 
-  private evaluateConditions(conditions: Record<string, any>, context: Record<string, any>): boolean {
+  private evaluateConditions(conditions: Record<string, any>, context: Record<string, unknown>): boolean {
     if (!conditions.rules) return true;
 
     return conditions.rules.every((rule: any) => {

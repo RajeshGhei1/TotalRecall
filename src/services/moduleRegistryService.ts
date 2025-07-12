@@ -17,7 +17,7 @@ export interface ModuleInstallation {
   installedAt: Date;
   version: string;
   status: 'active' | 'inactive' | 'error';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 class ModuleRegistryService {

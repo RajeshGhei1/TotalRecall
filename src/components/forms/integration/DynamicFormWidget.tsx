@@ -9,7 +9,7 @@ import { useTenantContext } from '@/contexts/TenantContext';
 import { FileText, ExternalLink } from 'lucide-react';
 
 interface DynamicFormWidgetProps {
-  context?: Record<string, any>;
+  context?: FormContext;
   maxForms?: number;
 }
 

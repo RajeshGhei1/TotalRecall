@@ -21,7 +21,7 @@ const DEFAULT_VALUES: FormData = {
 };
 
 const PerformanceTab: React.FC = () => {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<unknown>(null);
   const { data: settings, isLoading: isLoadingSettings } = useGlobalSettings('performance');
   const updateSetting = useUpdateGlobalSetting();
   const createSetting = useCreateGlobalSetting();

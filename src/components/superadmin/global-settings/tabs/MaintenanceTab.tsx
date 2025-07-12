@@ -18,7 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 type MaintenanceType = 'scheduled' | 'emergency' | 'update';
 
 const MaintenanceTab: React.FC = () => {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<unknown>(null);
   const { data: maintenanceRecords, isLoading: maintenanceLoading } = useSystemMaintenance();
   const { data: settings } = useGlobalSettings('maintenance');
   const updateSetting = useUpdateGlobalSetting();

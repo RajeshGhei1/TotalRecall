@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface SmartSuggestionsPanelProps {
   form: FormDefinition;
-  onAddField: (suggestion: any) => void;
+  onAddField: (suggestion: Record<string, unknown>) => void;
   onClose: () => void;
 }
 
@@ -62,7 +62,7 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     generateSuggestions(context, []);
   }, [form, generateSuggestions, formType]);
 
-  const handleApplySuggestion = async (suggestion: any) => {
+  const handleApplySuggestion = async (suggestion: Record<string, unknown>) => {
     try {
       await applySuggestion(suggestion);
       
@@ -81,7 +81,7 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
     }
   };
 
-  const handleDismissSuggestion = async (suggestion: any) => {
+  const handleDismissSuggestion = async (suggestion: Record<string, unknown>) => {
     try {
       await dismissSuggestion(suggestion);
     } catch (error) {

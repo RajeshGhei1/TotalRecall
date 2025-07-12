@@ -16,7 +16,7 @@ interface ModulePermissionCardProps {
   isEnabled: boolean;
   limits: Record<string, any>;
   onToggleEnabled: (checked: boolean) => void;
-  onUpdateLimit: (limitKey: string, value: any) => void;
+  onUpdateLimit: (limitKey: string, value: unknown) => void;
 }
 
 const ModulePermissionCard: React.FC<ModulePermissionCardProps> = ({

@@ -74,7 +74,7 @@ const ProgressUpdateDialog: React.FC<ProgressUpdateDialogProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="metric-type">Metric Type</Label>
-            <Select value={metricType} onValueChange={(value: any) => setMetricType(value)}>
+            <Select value={metricType} onValueChange={(value: unknown) => setMetricType(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

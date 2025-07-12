@@ -26,7 +26,7 @@ export const useInteractionTracking = (
 
   // Track interaction with debouncing
   const trackInteraction = useCallback(
-    (eventType: string, context: Record<string, any> = {}) => {
+    (eventType: string, context: Record<string, unknown> = {}) => {
       if (!userId || !enableAutoTracking) return;
 
       // Clear existing debounce timer
@@ -73,7 +73,7 @@ export const useInteractionTracking = (
     trackInteraction('scroll', { scrollPercentage, section });
   }, [trackInteraction]);
 
-  const trackError = useCallback((error: string, context: Record<string, any> = {}) => {
+  const trackError = useCallback((error: string, context: Record<string, unknown> = {}) => {
     trackInteraction('error', { error, ...context });
   }, [trackInteraction]);
 

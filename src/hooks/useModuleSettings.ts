@@ -7,7 +7,7 @@ export interface ModuleSetting {
   module_name: string;
   tenant_id?: string;
   setting_key: string;
-  setting_value: any;
+  setting_value: unknown;
   setting_type: string;
   is_encrypted: boolean;
   created_by?: string;
@@ -50,7 +50,7 @@ export const useModuleSettings = (moduleName: string, tenantId?: string) => {
       is_encrypted = false
     }: {
       setting_key: string;
-      setting_value: any;
+      setting_value: unknown;
       setting_type?: string;
       is_encrypted?: boolean;
     }) => {

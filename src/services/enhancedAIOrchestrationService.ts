@@ -7,7 +7,7 @@ export interface AIContext {
   module: string;
   action: string;
   entity_type: string;
-  session_data?: Record<string, any>;
+  session_data?: Record<string, unknown>;
 }
 
 export interface AIPredictionOptions {

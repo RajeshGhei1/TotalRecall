@@ -14,18 +14,18 @@ export interface AutomationRule {
 
 export interface AutomationTrigger {
   type: 'workflow_start' | 'step_completion' | 'error_detected' | 'time_based' | 'user_action';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 export interface AutomationCondition {
   field: string;
   operator: 'equals' | 'greater_than' | 'less_than' | 'contains' | 'not_empty';
-  value: any;
+  value: unknown;
 }
 
 export interface AutomationAction {
   type: 'assign_task' | 'send_notification' | 'update_status' | 'skip_step' | 'escalate' | 'auto_approve';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 export interface AutomationExecution {
@@ -34,7 +34,7 @@ export interface AutomationExecution {
   workflowId: string;
   triggeredAt: Date;
   status: 'pending' | 'executing' | 'completed' | 'failed';
-  result?: any;
+  result?: unknown;
   error?: string;
 }
 
@@ -95,7 +95,7 @@ class AutomationEngineService {
 
   async triggerAutomation(
     trigger: AutomationTrigger, 
-    context: Record<string, any>,
+    context: Record<string, unknown>,
     availableRules: AutomationRule[]
   ): Promise<AutomationExecution[]> {
     const matchingRules = availableRules.filter(rule => 
@@ -163,7 +163,7 @@ class AutomationEngineService {
     this.isProcessing = false;
   }
 
-  private async evaluateConditions(conditions: AutomationCondition[], context: Record<string, any>): Promise<boolean> {
+  private async evaluateConditions(conditions: AutomationCondition[], context: Record<string, unknown>): Promise<boolean> {
     for (const condition of conditions) {
       const value = context[condition.field];
       
@@ -188,7 +188,7 @@ class AutomationEngineService {
     return true;
   }
 
-  private async executeAutomationActions(actions: AutomationAction[], context: Record<string, any>): Promise<unknown> {
+  private async executeAutomationActions(actions: AutomationAction[], context: Record<string, unknown>): Promise<unknown> {
     const results = [];
 
     for (const action of actions) {
@@ -230,32 +230,32 @@ class AutomationEngineService {
     return JSON.stringify(ruleTrigger.configuration) === JSON.stringify(actualTrigger.configuration);
   }
 
-  private async assignTask(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async assignTask(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Assigning task:', config, context);
     return 'Task assigned successfully';
   }
 
-  private async sendNotification(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async sendNotification(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Sending notification:', config, context);
     return 'Notification sent successfully';
   }
 
-  private async updateStatus(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async updateStatus(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Updating status:', config, context);
     return 'Status updated successfully';
   }
 
-  private async skipStep(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async skipStep(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Skipping step:', config, context);
     return 'Step skipped successfully';
   }
 
-  private async escalateIssue(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async escalateIssue(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Escalating issue:', config, context);
     return 'Issue escalated successfully';
   }
 
-  private async autoApprove(config: Record<string, any>, context: Record<string, any>): Promise<string> {
+  private async autoApprove(config: Record<string, any>, context: Record<string, unknown>): Promise<string> {
     console.log('Auto approving:', config, context);
     return 'Auto approved successfully';
   }

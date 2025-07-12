@@ -1580,12 +1580,12 @@ interface ConditionalLogic {
   showWhen: {
     field: string;
     operator: 'equals' | 'not_equals' | 'contains' | 'gt' | 'lt';
-    value: any;
+    value: unknown;
   };
   hideWhen?: {
     field: string;
     operator: string;
-    value: any;
+    value: unknown;
   };
 }
 
@@ -1662,7 +1662,7 @@ type BulkAction =
 interface BulkOperationConfig {
   action: BulkAction;
   targetIds: string[];
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   confirmationRequired: boolean;
 }
 \`\`\`

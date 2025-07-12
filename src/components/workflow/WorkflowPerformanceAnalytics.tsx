@@ -11,7 +11,7 @@ interface WorkflowPerformanceAnalyticsProps {
 }
 
 const WorkflowPerformanceAnalytics: React.FC<WorkflowPerformanceAnalyticsProps> = ({ tenantId }) => {
-  const [performanceData, setPerformanceData] = useState<any>(null);
+  const [performanceData, setPerformanceData] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -182,7 +182,7 @@ const WorkflowPerformanceAnalytics: React.FC<WorkflowPerformanceAnalyticsProps> 
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {performanceData.topPerformers.map((workflow: any, index: number) => (
+              {performanceData.topPerformers.map((workflow: Record<string, unknown>, index: number) => (
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">

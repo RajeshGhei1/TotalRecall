@@ -7,7 +7,7 @@ export interface RealTimeInteractionEvent {
   userId: string;
   tenantId?: string;
   eventType: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   timestamp: number;
   sessionId: string;
 }
@@ -16,7 +16,7 @@ export interface UserPreference {
   userId: string;
   category: string;
   preference: string;
-  value: any;
+  value: unknown;
   confidence: number;
   lastUpdated: number;
 }

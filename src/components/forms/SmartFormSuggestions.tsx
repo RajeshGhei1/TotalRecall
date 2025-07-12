@@ -10,10 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface SmartFormSuggestionsProps {
   formType: string;
-  currentValues: Record<string, any>;
+  currentValues: FormValues;
   userId: string;
   tenantId?: string;
-  onSuggestionApplied?: (suggestion: any) => void;
+  onSuggestionApplied?: (suggestion: Record<string, unknown>) => void;
 }
 
 const SmartFormSuggestions: React.FC<SmartFormSuggestionsProps> = ({
@@ -23,7 +23,7 @@ const SmartFormSuggestions: React.FC<SmartFormSuggestionsProps> = ({
   tenantId,
   onSuggestionApplied
 }) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<unknown[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -51,7 +51,7 @@ const SmartFormSuggestions: React.FC<SmartFormSuggestionsProps> = ({
     }
   };
 
-  const applySuggestion = (suggestion: any) => {
+  const applySuggestion = (suggestion: Record<string, unknown>) => {
     onSuggestionApplied?.(suggestion);
     toast({
       title: 'Suggestion Applied',

@@ -89,7 +89,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
     }
   });
 
-  const updateModulePermission = (moduleName: string, field: string, value: any) => {
+  const updateModulePermission = (moduleName: string, field: string, value: unknown) => {
     setPermissions(prev => ({
       ...prev,
       [moduleName]: {
@@ -99,7 +99,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
     }));
   };
 
-  const updateModuleLimit = (moduleName: string, limitKey: string, value: any) => {
+  const updateModuleLimit = (moduleName: string, limitKey: string, value: unknown) => {
     setPermissions(prev => ({
       ...prev,
       [moduleName]: {

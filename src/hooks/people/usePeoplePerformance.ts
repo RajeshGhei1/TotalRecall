@@ -78,7 +78,7 @@ export const usePeoplePerformance = () => {
 
 // Hook for batch operations
 export const useBatchPeopleOperations = () => {
-  const batchUpdatePeople = async (updates: Array<{ id: string; data: any }>) => {
+  const batchUpdatePeople = async (updates: Array<{ id: string; data: unknown }>) => {
     const promises = updates.map(({ id, data }) =>
       supabase
         .from('people')
@@ -111,7 +111,7 @@ export const useBatchPeopleOperations = () => {
 };
 
 // Hook for search optimization
-export const useOptimizedPeopleSearch = (searchTerm: string, filters: any) => {
+export const useOptimizedPeopleSearch = (searchTerm: string, filters: unknown) => {
   return useQuery({
     queryKey: ['people-search', searchTerm, filters],
     queryFn: async () => {

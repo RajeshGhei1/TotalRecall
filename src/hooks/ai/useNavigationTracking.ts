@@ -23,7 +23,7 @@ export const useNavigationTracking = (userId: string = 'demo-user') => {
     trackNavigation(`/module/${fromModule}`, `/module/${toModule}`, 'module_switch');
   };
 
-  const trackFeatureUsage = (feature: string, context: Record<string, any> = {}) => {
+  const trackFeatureUsage = (feature: string, context: Record<string, unknown> = {}) => {
     trackNavigation(location.pathname, `${location.pathname}#${feature}`, 'feature_use');
   };
 

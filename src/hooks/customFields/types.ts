@@ -23,7 +23,7 @@ export interface CustomFieldValue {
   field_id: string;
   entity_id: string;
   entity_type: string;
-  value: any;
+  value: unknown;
   custom_fields?: CustomField;
   created_at?: string;
   updated_at?: string;

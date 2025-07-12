@@ -26,7 +26,7 @@ export const AIOrchestrationManager = () => {
     isRequesting 
   } = useUnifiedAIOrchestration();
   const [testPrompt, setTestPrompt] = useState('');
-  const [lastTestResponse, setLastTestResponse] = useState<any>(null);
+  const [lastTestResponse, setLastTestResponse] = useState<unknown>(null);
 
   const handleTestRequest = async () => {
     if (!testPrompt.trim()) return;

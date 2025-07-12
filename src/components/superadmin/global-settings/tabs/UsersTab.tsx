@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const UsersTab: React.FC = () => {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<unknown>(null);
   const { data: settings, isLoading: settingsLoading } = useGlobalSettings('users');
   const updateSetting = useUpdateGlobalSetting();
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -88,7 +88,7 @@ const UsersTab: React.FC = () => {
     }
   };
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (key: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 

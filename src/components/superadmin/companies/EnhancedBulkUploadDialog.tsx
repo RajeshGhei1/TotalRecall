@@ -289,7 +289,7 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     return mappings;
   };
 
-  const handleFieldMappingChange = (index: number, field: 'csvColumn' | 'companyField' | 'isRequired', value: any) => {
+  const handleFieldMappingChange = (index: number, field: 'csvColumn' | 'companyField' | 'isRequired', value: unknown) => {
     const newMappings = [...fieldMappings];
     newMappings[index] = { ...newMappings[index], [field]: value };
     setFieldMappings(newMappings);

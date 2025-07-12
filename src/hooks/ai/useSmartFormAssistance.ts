@@ -9,12 +9,12 @@ export interface AutocompleteOption {
 }
 
 export const useSmartFormAssistance = (formType: string, userId: string) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<unknown[]>([]);
   const [autocompleteOptions, setAutocompleteOptions] = useState<Record<string, AutocompleteOption[]>>({});
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isLoadingAutocomplete, setIsLoadingAutocomplete] = useState<Record<string, boolean>>({});
 
-  const generateSuggestions = useCallback(async (context: any, fields: unknown[]) => {
+  const generateSuggestions = useCallback(async (context: Record<string, unknown>, fields: unknown[]) => {
     setIsLoadingSuggestions(true);
     try {
       // Mock suggestions - replace with actual AI logic
@@ -44,7 +44,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     }
   }, []);
 
-  const applySuggestion = useCallback(async (suggestion: any) => {
+  const applySuggestion = useCallback(async (suggestion: Record<string, unknown>) => {
     try {
       // Mock implementation - replace with actual logic
       console.log('Applying suggestion:', suggestion);
@@ -55,7 +55,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     }
   }, []);
 
-  const dismissSuggestion = useCallback(async (suggestion: any) => {
+  const dismissSuggestion = useCallback(async (suggestion: Record<string, unknown>) => {
     try {
       setSuggestions(prev => prev.filter(s => s.fieldName !== suggestion.fieldName));
       return true;
@@ -69,7 +69,7 @@ export const useSmartFormAssistance = (formType: string, userId: string) => {
     setSuggestions([]);
   }, []);
 
-  const getAutocomplete = useCallback(async (fieldType: string, value: string, context?: any) => {
+  const getAutocomplete = useCallback(async (fieldType: string, value: string, context?: Record<string, unknown>) => {
     setIsLoadingAutocomplete(prev => ({ ...prev, [fieldType]: true }));
     try {
       // Mock autocomplete options

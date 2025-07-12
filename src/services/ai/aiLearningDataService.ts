@@ -8,7 +8,7 @@ export interface LearningDataEntry {
   tenant_id?: string;
   feedback_type: 'positive' | 'negative' | 'correction' | 'enhancement';
   feedback_data: {
-    original_decision: any;
+    original_decision: Record<string, unknown>;
     user_correction?: any;
     satisfaction_score?: number;
     improvement_suggestions?: string[];
@@ -24,7 +24,7 @@ export interface LearningPattern {
   pattern_type: string;
   confidence: number;
   frequency: number;
-  context_conditions: any;
+  context_conditions: Record<string, unknown>;
   recommended_actions: string[];
 }
 

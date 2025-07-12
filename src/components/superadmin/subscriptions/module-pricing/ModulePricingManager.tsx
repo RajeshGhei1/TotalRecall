@@ -66,7 +66,7 @@ const ModulePricingManager: React.FC = () => {
     }
   });
 
-  const updateModulePricing = (moduleName: string, field: string, value: any) => {
+  const updateModulePricing = (moduleName: string, field: string, value: unknown) => {
     setPricing(prev => ({
       ...prev,
       [moduleName]: {

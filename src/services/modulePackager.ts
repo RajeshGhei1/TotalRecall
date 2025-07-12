@@ -3,7 +3,7 @@ export interface ModulePackage {
   id: string;
   packageHash: string;
   size: number;
-  manifest: any;
+  manifest: Record<string, unknown>;
 }
 
 export interface PackageValidationResult {

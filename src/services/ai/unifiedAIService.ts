@@ -11,15 +11,15 @@ export interface UnifiedAIRequest {
     tenantId?: string;
     entityType?: string;
     entityId?: string;
-    additionalContext?: Record<string, any>;
+    additionalContext?: Record<string, unknown>;
   };
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
 }
 
 export interface UnifiedAIResponse {
   success: boolean;
-  data: any;
+  data: unknown;
   suggestions?: unknown[];
   confidence?: number;
   reasoning?: string[];

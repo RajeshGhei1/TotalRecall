@@ -8,7 +8,7 @@ import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
 interface WorkspaceItem {
   id: string;
   type: 'form' | 'report';
-  data: any;
+  data: unknown;
   lastModified: number;
   version: number;
   isDraft: boolean;

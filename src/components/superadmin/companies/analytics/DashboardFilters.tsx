@@ -38,7 +38,7 @@ const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   locations,
   sizes,
 }) => {
-  const updateFilter = (key: keyof FilterState, value: any) => {
+  const updateFilter = (key: keyof FilterState, value: unknown) => {
     onFiltersChange({
       ...filters,
       [key]: value

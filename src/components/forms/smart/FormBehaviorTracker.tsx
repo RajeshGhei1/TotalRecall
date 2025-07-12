@@ -5,7 +5,7 @@ import { useRealTimeBehaviorTracking } from '@/hooks/ai/useRealTimeBehaviorTrack
 import { useTenantContext } from '@/contexts/TenantContext';
 
 interface FormBehaviorTrackerProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FormValues>;
   formType: string;
   formId: string;
   userId?: string;

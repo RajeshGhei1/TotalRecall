@@ -180,7 +180,7 @@ export const useVersionControl = () => {
     mutationFn: async (params: {
       entityType: 'form' | 'report';
       entityId: string;
-      data: any;
+      data: unknown;
       changeSummary?: string;
     }) => {
       const { entityType, entityId, data, changeSummary } = params;

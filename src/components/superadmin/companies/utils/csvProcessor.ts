@@ -311,7 +311,7 @@ export function normalizeHeader(header: string): string {
   return header.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
 }
 
-export function extractBranchOfficesFromRow(csvRow: any): BranchOfficeData[] {
+export function extractBranchOfficesFromRow(csvRow: unknown): BranchOfficeData[] {
   const branchOffices: BranchOfficeData[] = [];
   
   // Support up to 5 branch offices per company
@@ -372,7 +372,7 @@ export function validateBranchOfficeData(branchOffice: BranchOfficeData): string
   return errors;
 }
 
-export function mapCSVRowToCompany(csvRow: any, mappings: CSVFieldMapping[]): Partial<Company> | null {
+export function mapCSVRowToCompany(csvRow: unknown, mappings: CSVFieldMapping[]): Partial<Company> | null {
   const company: Partial<Company> = {};
   let hasRequiredField = false;
 

@@ -130,7 +130,7 @@ const fieldDefinitions: FieldDefinition[] = [
   }
 ];
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<string, React.ComponentType<Record<string, unknown>>> = {
   Type,
   FileText,
   Hash,

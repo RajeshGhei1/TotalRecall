@@ -136,7 +136,7 @@ const DataCompletenessChart: React.FC = () => {
               <XAxis type="number" domain={[0, 100]} />
               <YAxis dataKey="label" type="category" width={80} />
               <Tooltip 
-                formatter={(value: any) => [`${value}%`, 'Completeness']}
+                formatter={(value: unknown) => [`${value}%`, 'Completeness']}
                 labelFormatter={(label) => `Field: ${label}`}
               />
               <Bar dataKey="percentage">

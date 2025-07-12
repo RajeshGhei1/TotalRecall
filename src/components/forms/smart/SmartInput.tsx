@@ -18,7 +18,7 @@ interface SmartInputProps {
   fieldType?: string;
   formType: string;
   userId: string;
-  context?: Record<string, any>;
+  context?: FormContext;
   required?: boolean;
   className?: string;
 }

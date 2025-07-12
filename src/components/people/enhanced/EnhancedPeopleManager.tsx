@@ -33,8 +33,8 @@ const EnhancedPeopleManager: React.FC<EnhancedPeopleManagerProps> = ({
   onAddPerson
 }) => {
   const [activeTab, setActiveTab] = useState('contacts');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searchFilters, setSearchFilters] = useState<any>({});
+  const [searchResults, setSearchResults] = useState<unknown[]>([]);
+  const [searchFilters, setSearchFilters] = useState<unknown>({});
   const [isExporting, setIsExporting] = useState(false);
 
   const { processedData, isLoading } = usePeoplePerformance();

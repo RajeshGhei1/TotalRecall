@@ -29,7 +29,7 @@ interface ModuleData {
   templateId: string;
   features: string[];
   dependencies: string[];
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 const ModuleDevSandbox: React.FC = () => {

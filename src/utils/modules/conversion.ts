@@ -32,7 +32,7 @@ export const convertSystemModulesToModules = (systemModules: SystemModuleCompati
 /**
  * Parse development stage from various formats
  */
-export const parseDevelopmentStage = (developmentStage: any): ModuleDevelopmentStage | null => {
+export const parseDevelopmentStage = (developmentStage: unknown): ModuleDevelopmentStage | null => {
   try {
     if (typeof developmentStage === 'string') {
       return JSON.parse(developmentStage);

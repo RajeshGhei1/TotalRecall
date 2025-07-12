@@ -142,7 +142,7 @@ export const useEnhancedVersionControl = () => {
     mutationFn: async (params: {
       entityType: 'form' | 'report';
       entityId: string;
-      data: any;
+      data: unknown;
       changeSummary?: string;
       approvalRequired?: boolean;
       workflowConfig?: any;

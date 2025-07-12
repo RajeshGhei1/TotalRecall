@@ -1,4 +1,5 @@
 // Common TypeScript types to replace 'any' usage across the application
+import { UseFormReturn } from 'react-hook-form';
 
 // Generic API Response Types
 export interface ApiResponse<T = unknown> {
@@ -23,7 +24,7 @@ export type FormSubmitHandler = (event: React.FormEvent<HTMLFormElement>) => voi
 export type ButtonClickHandler = (event: React.MouseEvent<HTMLButtonElement>) => void;
 
 // Common Form Field Types
-export interface FormField {
+export interface BaseFormField {
   name: string;
   label: string;
   type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio';
@@ -302,6 +303,96 @@ export interface AILearningPattern {
   outcomes: unknown[];
 }
 
+// Enhanced AI Service Types
+export interface AIParameters {
+  prompt?: string;
+  temperature?: number;
+  maxTokens?: number;
+  context?: Record<string, unknown>;
+  userInput?: string;
+  formData?: FormSubmissionData;
+  analysisType?: string;
+  [key: string]: unknown;
+}
+
+export interface ContextAnalysis {
+  contextualRecommendations: ContextualRecommendation[];
+  similarContexts: unknown[];
+  contextComplexity: number;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+export interface ContextualRecommendation {
+  id: string;
+  recommended_agent?: string;
+  confidence_adjustment: number;
+  context_similarity: number;
+  reasoning: string[];
+}
+
+export interface FeedbackDetails {
+  userComment?: string;
+  issueCategory?: string;
+  severity?: 'low' | 'medium' | 'high';
+  expectedOutcome?: string;
+  actualOutcome?: string;
+  improvementSuggestions?: string[];
+  contextRelevance?: number;
+  [key: string]: unknown;
+}
+
+export interface OutcomeData {
+  success_metrics?: Record<string, number>;
+  error_details?: string[];
+  execution_time?: number;
+  user_satisfaction?: number;
+  business_impact?: string;
+  lessons_learned?: string[];
+  [key: string]: unknown;
+}
+
+export interface AIAgentConfiguration {
+  model_config: {
+    temperature: number;
+    max_tokens: number;
+    model_preference: string;
+    apiKey?: string;
+    [key: string]: unknown;
+  };
+  performance_metrics: {
+    accuracy?: number;
+    response_time?: number;
+    user_satisfaction?: number;
+    [key: string]: unknown;
+  };
+}
+
+export interface LearningInsights {
+  totalFeedback: number;
+  positiveRatio: number;
+  topIssues: string[];
+  improvementAreas: string[];
+  recentPatterns: AILearningPattern[];
+}
+
+export interface ContextInsights {
+  totalContextsAnalyzed: number;
+  avgSuccessRate: number;
+  riskDistribution: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  topPerformingContexts: unknown[];
+  problematicContexts: unknown[];
+}
+
+export interface CombinedAIInsights {
+  learning: LearningInsights;
+  context: ContextInsights;
+  combinedScore: number;
+}
+
 // Array Type Definitions
 export type UnknownArray = unknown[];
 export type DataArray = Record<string, unknown>[];
@@ -396,4 +487,127 @@ export interface UserProfile {
   role: string;
   permissions: string[];
   metadata?: Record<string, unknown>;
+} 
+
+// Forms system interfaces
+export interface FormDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  slug: string;
+  tenant_id?: string;
+  visibility_scope: 'global' | 'tenant_specific' | 'module_specific';
+  access_level: 'public' | 'authenticated' | 'role_based';
+  required_modules: string[];
+  is_active: boolean;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormField {
+  id: string;
+  name: string;
+  field_type: string;
+  section_id?: string;
+  required: boolean;
+  description?: string;
+  order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormSuggestion {
+  id: string;
+  fieldName: string;
+  suggestedValue: unknown;
+  confidence: number;
+  reason: string;
+  type: 'autocomplete' | 'prefill' | 'validation' | 'enhancement';
+}
+
+export interface FormContext {
+  formType: string;
+  formName?: string;
+  description?: string;
+  userId?: string;
+  tenantId?: string;
+  additionalData?: Record<string, unknown>;
+}
+
+export interface FormValues {
+  [key: string]: unknown;
+}
+
+export interface SmartFormContext {
+  formType: string;
+  currentValues: FormValues;
+  userHistory: FormValues[];
+  userId: string;
+  tenantId?: string;
+}
+
+export interface FormPlacement {
+  id: string;
+  form_id: string;
+  location: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormAnalyticsSummary {
+  total_submissions: number;
+  total_abandons: number;
+  total_views: number;
+  total_starts: number;
+  completion_rate: number;
+  average_completion_time: number;
+}
+
+export interface FormPerformanceData {
+  date: string;
+  submissions: number;
+  abandons: number;
+  views: number;
+  completion_rate: number;
+}
+
+export interface AutocompleteOption {
+  value: string;
+  label: string;
+  confidence: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CognitiveFormWrapperProps {
+  children: React.ReactNode;
+  form: UseFormReturn<FormValues>;
+  formType: string;
+  userId: string;
+  className?: string;
+  autoSuggest?: boolean;
+  showSuggestionsPanel?: boolean;
+}
+
+export interface SmartInputProps {
+  name: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  fieldType?: string;
+  formType: string;
+  userId: string;
+  context?: FormContext;
+  required?: boolean;
+  className?: string;
+}
+
+export interface FieldDefinition {
+  type: string;
+  label: string;
+  icon: string;
+  description: string;
+  defaultOptions: Record<string, unknown>;
 } 

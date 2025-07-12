@@ -8,7 +8,7 @@ export interface WorkflowLearningData {
   steps: WorkflowStepData[];
   outcome: 'completed' | 'abandoned' | 'error';
   userFeedback?: UserFeedback;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
 }
 
 export interface WorkflowStepData {
@@ -33,7 +33,7 @@ export interface StepError {
   type: string;
   message: string;
   timestamp: Date;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
 }
 
 export interface UserFeedback {
@@ -62,13 +62,13 @@ export interface PatternDefinition {
 export interface PatternCondition {
   field: string;
   operator: string;
-  value: any;
+  value: unknown;
   weight: number;
 }
 
 export interface PatternOutcome {
   metric: string;
-  value: any;
+  value: unknown;
   probability: number;
 }
 
@@ -426,7 +426,7 @@ class WorkflowLearningService {
     return predictions.sort((a, b) => b.confidence - a.confidence);
   }
 
-  private calculatePatternMatch(pattern: WorkflowPattern, context: Record<string, any>): number {
+  private calculatePatternMatch(pattern: WorkflowPattern, context: Record<string, unknown>): number {
     let totalWeight = 0;
     let matchedWeight = 0;
     
@@ -442,7 +442,7 @@ class WorkflowLearningService {
     return totalWeight > 0 ? matchedWeight / totalWeight : 0;
   }
 
-  private evaluateCondition(condition: PatternCondition, value: any): boolean {
+  private evaluateCondition(condition: PatternCondition, value: unknown): boolean {
     switch (condition.operator) {
       case 'equals':
         return value === condition.value;

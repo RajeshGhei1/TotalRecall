@@ -268,7 +268,7 @@ export const TenantPredictiveInsights: React.FC<TenantPredictiveInsightsProps> =
       </div>
 
       {/* Detailed Insights Tabs */}
-      <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+      <Tabs value={activeTab} onValueChange={(value: unknown) => setActiveTab(value)}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Trends & Forecasts</TabsTrigger>

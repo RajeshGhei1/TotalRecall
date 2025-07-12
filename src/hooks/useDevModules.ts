@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SystemModule } from '@/hooks/useSystemModules';
 
 // Helper function to safely parse development stage
-const parseDevelopmentStage = (developmentStage: any): DevelopmentStageData => {
+const parseDevelopmentStage = (developmentStage: unknown): DevelopmentStageData => {
   if (!developmentStage) return { stage: 'planning', progress: 0 };
   
   if (typeof developmentStage === 'object' && developmentStage !== null && !Array.isArray(developmentStage)) {

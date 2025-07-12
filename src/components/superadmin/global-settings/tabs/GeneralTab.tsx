@@ -24,7 +24,7 @@ const DEFAULT_VALUES: FormData = {
 };
 
 const GeneralTab: React.FC = () => {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<unknown>(null);
   const { data: settings, isLoading: isLoadingSettings } = useGlobalSettings('general');
   const updateSetting = useUpdateGlobalSetting();
   const createSetting = useCreateGlobalSetting();

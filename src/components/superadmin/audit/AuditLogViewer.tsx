@@ -40,7 +40,7 @@ const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
     tenant_id: selectedTenantId
   });
   const [page, setPage] = useState(1);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<unknown>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
 
   const { data: auditData, isLoading } = useAuditLogs(filters, page);

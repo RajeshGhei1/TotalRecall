@@ -62,7 +62,7 @@ async function auditModulePurposes() {
     console.log(`📊 Found ${modules.length} modules in database\n`);
 
     // Group modules by category for analysis (since type field may not be available in types)
-    const modulesByCategory = modules.reduce((acc: any, module: any) => {
+    const modulesByCategory = modules.reduce((acc: Record<string, unknown[]>, module: unknown) => {
       const category = module.category || 'uncategorized';
       if (!acc[category]) acc[category] = [];
       acc[category].push(module);

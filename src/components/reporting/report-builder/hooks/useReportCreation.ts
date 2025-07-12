@@ -16,7 +16,7 @@ export const useReportCreation = (onSaveReport: (report: SavedReport) => void) =
     visualizationType: 'table'
   });
   
-  const [reportResults, setReportResults] = useState<any[]>([]);
+  const [reportResults, setReportResults] = useState<unknown[]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);

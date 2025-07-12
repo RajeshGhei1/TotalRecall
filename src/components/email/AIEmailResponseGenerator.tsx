@@ -91,7 +91,7 @@ export const AIEmailResponseGenerator: React.FC<AIEmailResponseGeneratorProps> =
           {/* Tone Selection */}
           <div>
             <label className="text-sm font-medium">Preferred Tone</label>
-            <Select value={selectedTone} onValueChange={(value: any) => setSelectedTone(value)}>
+            <Select value={selectedTone} onValueChange={(value: unknown) => setSelectedTone(value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>

@@ -16,7 +16,7 @@ export interface AIModel {
   supports_vision: boolean;
   supports_function_calling: boolean;
   is_active: boolean;
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

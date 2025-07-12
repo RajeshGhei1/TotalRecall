@@ -30,7 +30,7 @@ const LinkedInIntegration: React.FC<LinkedInIntegrationProps> = ({ tenantId }) =
   const [isConnected, setIsConnected] = useState(false);
   const [isCredentialsConfigured, setIsCredentialsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [connectionData, setConnectionData] = useState<any>(null);
+  const [connectionData, setConnectionData] = useState<unknown>(null);
 
   // Check if LinkedIn is already connected and credentials are configured
   useEffect(() => {

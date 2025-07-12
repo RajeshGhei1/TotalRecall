@@ -124,7 +124,7 @@ const IndustrySectorChart: React.FC = () => {
             Industry Sector Analysis
           </CardTitle>
           <div className="flex gap-2">
-            <Select value={industryField} onValueChange={(value: any) => setIndustryField(value)}>
+            <Select value={industryField} onValueChange={(value: unknown) => setIndustryField(value)}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -134,7 +134,7 @@ const IndustrySectorChart: React.FC = () => {
                 <SelectItem value="companysector">Sector</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={chartType} onValueChange={(value: any) => setChartType(value)}>
+            <Select value={chartType} onValueChange={(value: unknown) => setChartType(value)}>
               <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>

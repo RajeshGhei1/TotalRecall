@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 export interface GlobalSetting {
   id: string;
   setting_key: string;
-  setting_value: any;
+  setting_value: unknown;
   setting_type: 'string' | 'number' | 'boolean' | 'json';
   category: string;
   description?: string;
@@ -50,7 +50,7 @@ export const useUpdateGlobalSetting = () => {
       updated_by 
     }: { 
       id: string; 
-      setting_value: any; 
+      setting_value: unknown; 
       updated_by: string;
     }) => {
       const { data, error } = await supabase

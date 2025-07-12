@@ -47,7 +47,7 @@ export const useBehavioralAnalytics = () => {
   const trackInteraction = useMutation({
     mutationFn: async ({ interactionType, context, metadata }: {
       interactionType: string;
-      context: Record<string, any>;
+      context: Record<string, unknown>;
       metadata?: Record<string, any>;
     }) => {
       try {

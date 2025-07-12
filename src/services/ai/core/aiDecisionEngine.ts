@@ -11,7 +11,7 @@ export interface DecisionCriteria {
 
 export interface AIDecision {
   id: string;
-  decision: any;
+  decision: unknown;
   confidence: number;
   reasoning: string[];
   alternative_options: unknown[];

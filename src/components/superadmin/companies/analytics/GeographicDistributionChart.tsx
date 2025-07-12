@@ -91,7 +91,7 @@ const GeographicDistributionChart: React.FC = () => {
             Geographic Distribution
           </CardTitle>
           <div className="flex gap-2">
-            <Select value={viewType} onValueChange={(value: any) => setViewType(value)}>
+            <Select value={viewType} onValueChange={(value: unknown) => setViewType(value)}>
               <SelectTrigger className="w-28">
                 <SelectValue />
               </SelectTrigger>
@@ -101,7 +101,7 @@ const GeographicDistributionChart: React.FC = () => {
                 <SelectItem value="city">City</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={chartType} onValueChange={(value: any) => setChartType(value)}>
+            <Select value={chartType} onValueChange={(value: unknown) => setChartType(value)}>
               <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>

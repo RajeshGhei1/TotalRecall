@@ -5,7 +5,7 @@ import { enhancedAIOrchestrationService } from '@/services/ai/enhancedOrchestrat
 export interface TalentAnalyticsRequest {
   tenantId: string;
   analysisType: 'skills_gap' | 'retention_risk' | 'performance_prediction' | 'career_path';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface TalentAnalyticsResult {

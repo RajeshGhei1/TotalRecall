@@ -46,7 +46,7 @@ export const useSearchTracking = (
     setSearchStartTime(null);
   }, [module, searchType, selectedTenantId, trackInteraction, searchStartTime]);
 
-  const trackSearchResult = useCallback((query: string, selectedResult: any, position: number) => {
+  const trackSearchResult = useCallback((query: string, selectedResult: unknown, position: number) => {
     trackInteraction('search_result_selected', {
       module,
       searchType,

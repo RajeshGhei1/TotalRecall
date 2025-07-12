@@ -15,7 +15,7 @@ export interface WorkflowOptimization {
 export interface WorkflowChange {
   stepId: string;
   changeType: 'modify' | 'remove' | 'add' | 'reorder';
-  newConfiguration?: any;
+  newConfiguration?: Record<string, unknown>;
   reasoning: string;
 }
 

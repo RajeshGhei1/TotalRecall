@@ -56,7 +56,7 @@ const CompanyAdvancedFilters: React.FC<CompanyAdvancedFiltersProps> = ({
   const companyTypes = getUniqueValues('companytype');
   const sectors = getUniqueValues('companysector');
 
-  const updateFilters = (field: keyof CompanyFilters, value: any) => {
+  const updateFilters = (field: keyof CompanyFilters, value: unknown) => {
     onFiltersChange({
       ...filters,
       [field]: value,

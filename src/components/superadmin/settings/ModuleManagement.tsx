@@ -19,7 +19,7 @@ const ModuleManagement: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<unknown>(null);
 
   // Only fetch production modules for the System Module Library
   const { data: modules, isLoading } = useSystemModules(true, 'production');

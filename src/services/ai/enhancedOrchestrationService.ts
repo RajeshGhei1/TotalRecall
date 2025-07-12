@@ -43,8 +43,8 @@ export class EnhancedAIOrchestrationService {
       (agents || []).forEach(agent => {
         const typedAgent: AIAgent = {
           ...agent,
-          model_config: (agent.model_config as Record<string, any>) || {},
-          performance_metrics: (agent.performance_metrics as Record<string, any>) || {}
+          model_config: (agent.model_config as Record<string, unknown>) || {},
+          performance_metrics: (agent.performance_metrics as Record<string, unknown>) || {}
         };
         this.agents.set(agent.id, typedAgent);
       });
@@ -55,7 +55,7 @@ export class EnhancedAIOrchestrationService {
     }
   }
 
-  async requestPrediction(context: AIContext, parameters: any, priority: 'low' | 'normal' | 'high' | 'urgent' = 'normal'): Promise<AIResponse> {
+  async requestPrediction(context: AIContext, parameters: Record<string, unknown>, priority: 'low' | 'normal' | 'high' | 'urgent' = 'normal'): Promise<AIResponse> {
     // Enhance context with module information
     const enhancedContext = await moduleContextManager.enhanceContextWithModule(context);
     
@@ -179,7 +179,7 @@ export class EnhancedAIOrchestrationService {
     return hybridAgentSelector.selectAgent(context, availableAgents);
   }
 
-  private async processRequest(request: AIRequest, contextAnalysis?: any): Promise<AIResponse> {
+  private async processRequest(request: AIRequest, contextAnalysis?: Record<string, unknown>): Promise<AIResponse> {
     const startTime = Date.now();
 
     try {
@@ -258,7 +258,7 @@ export class EnhancedAIOrchestrationService {
     }
   }
 
-  private estimateTokenUsage(parameters: any): number {
+  private estimateTokenUsage(parameters: Record<string, unknown>): number {
     // Basic token estimation based on prompt length
     const promptText = JSON.stringify(parameters);
     // Rough estimate: 1 token ≈ 4 characters for English text
@@ -282,7 +282,7 @@ export class EnhancedAIOrchestrationService {
     return costCalc.totalCost;
   }
 
-  async provideFeedback(decisionId: string, feedback: 'positive' | 'negative', details?: any): Promise<void> {
+  async provideFeedback(decisionId: string, feedback: 'positive' | 'negative', details?: Record<string, unknown>): Promise<void> {
     try {
       // Update the decision record
       const { error } = await supabase
@@ -325,7 +325,7 @@ export class EnhancedAIOrchestrationService {
     }
   }
 
-  async recordDecisionOutcome(decisionId: string, outcome: 'success' | 'failure' | 'partial_success', outcomeData?: any): Promise<void> {
+  async recordDecisionOutcome(decisionId: string, outcome: 'success' | 'failure' | 'partial_success', outcomeData?: Record<string, unknown>): Promise<void> {
     try {
       await aiLearningDataService.recordDecisionOutcome(decisionId, outcome, outcomeData);
       console.log(`Decision outcome recorded: ${outcome} for decision ${decisionId}`);
@@ -334,7 +334,7 @@ export class EnhancedAIOrchestrationService {
     }
   }
 
-  async getLearningInsights(tenantId?: string): Promise<unknown> {
+  async getLearningInsights(tenantId?: string): Promise<Record<string, unknown>> {
     try {
       const learningInsights = await aiLearningDataService.getLearningInsights(tenantId);
       const contextInsights = await decisionContextManager.getContextInsights(tenantId);

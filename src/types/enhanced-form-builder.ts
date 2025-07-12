@@ -73,7 +73,7 @@ export interface ReportFilter {
   id: string;
   field: string;
   operator: string;
-  value: any;
+  value: unknown;
   label: string;
   type: EnhancedFieldType;
   config: FilterConfig;

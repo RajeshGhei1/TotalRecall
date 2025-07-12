@@ -41,7 +41,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
   const queryClient = useQueryClient();
   const [step, setStep] = useState<'type' | 'tenant' | 'individual'>('type');
   const [assignmentType, setAssignmentType] = useState<'tenant' | 'individual'>('tenant');
-  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  const [selectedTenant, setSelectedTenant] = useState<unknown>(null);
 
   const form = useForm<AssignSubscriptionFormData>({
     resolver: zodResolver(assignSubscriptionSchema),

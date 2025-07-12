@@ -14,7 +14,7 @@ export interface ModuleRepositoryEntry {
     warnings: string[];
     compatibilityIssues: string[];
   };
-  manifest: any;
+  manifest: Record<string, unknown>;
   packagePath?: string;
   packageHash?: string;
 }
@@ -23,7 +23,7 @@ export interface ModulePackage {
   id: string;
   packageHash: string;
   size: number;
-  manifest: any;
+  manifest: Record<string, unknown>;
   file?: File;
 }
 
@@ -177,7 +177,7 @@ export class ModuleRepository {
     }
   }
 
-  async validateManifest(manifest: any): Promise<ModuleValidationResult> {
+  async validateManifest(manifest: Record<string, unknown>): Promise<ModuleValidationResult> {
     try {
       const errors: string[] = [];
       const warnings: string[] = [];

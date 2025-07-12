@@ -165,7 +165,7 @@ export interface FormResponse {
   id: string;
   form_id: string;
   placement_id?: string;
-  response_data: any;
+  response_data: unknown;
   submitted_by?: string;
   tenant_id?: string;
   status: string;
@@ -181,7 +181,7 @@ export interface FormResponseAnalytics {
   placement_id?: string;
   response_id?: string;
   event_type: string;
-  event_data: any;
+  event_data: unknown;
   session_id?: string;
   user_agent?: string;
   ip_address?: string;
@@ -194,7 +194,7 @@ export interface FormResponseAnalyticsInsert {
   placement_id?: string;
   response_id?: string;
   event_type: string;
-  event_data: any;
+  event_data: unknown;
   session_id?: string;
   user_agent?: string;
   ip_address?: string;

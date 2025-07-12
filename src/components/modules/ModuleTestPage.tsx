@@ -63,7 +63,7 @@ const ModuleTestPage: React.FC = () => {
 
   const selectedModuleData = loadedModules.find(m => m.manifest.id === selectedModule);
 
-  const handlePropChange = (propName: string, value: any) => {
+  const handlePropChange = (propName: string, value: unknown) => {
     setModuleProps(prev => ({
       ...prev,
       [propName]: value

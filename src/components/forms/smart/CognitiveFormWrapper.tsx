@@ -10,7 +10,7 @@ import { FormSuggestion } from '@/services/ai/smartForms/formSuggestionEngine';
 
 interface CognitiveFormWrapperProps {
   children: React.ReactNode;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FormValues>;
   formType: string;
   userId: string;
   className?: string;

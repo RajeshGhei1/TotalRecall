@@ -16,7 +16,7 @@ export class BehavioralAnalyticsService {
     userId: string,
     tenantId: string | undefined,
     interactionType: string,
-    context: Record<string, any>,
+    context: Record<string, unknown>,
     metadata: Record<string, any> = {}
   ): Promise<void> {
     const interaction: Omit<UserInteraction, 'id' | 'created_at'> = {

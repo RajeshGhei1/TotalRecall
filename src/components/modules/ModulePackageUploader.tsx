@@ -34,11 +34,11 @@ const ModulePackageUploader: React.FC<ModulePackageUploaderProps> = ({
   onClose
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [manifest, setManifest] = useState<any>(null);
+  const [manifest, setManifest] = useState<unknown>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<unknown>(null);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

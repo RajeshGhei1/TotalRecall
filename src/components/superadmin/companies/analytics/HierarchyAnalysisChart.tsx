@@ -116,7 +116,7 @@ const HierarchyAnalysisChart: React.FC = () => {
               />
               <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
               <Tooltip 
-                formatter={(value: any, name: any) => [value, 'Companies']}
+                formatter={(value: unknown, name: any) => [value, 'Companies']}
                 labelFormatter={(label) => `Level ${label}`}
               />
               <Bar dataKey="count" fill="#8884d8" />

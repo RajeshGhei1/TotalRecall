@@ -23,12 +23,12 @@ export interface AIDecisionInstance {
   tenant_id: string;
   rule_id: string;
   decision_type: string;
-  context_data: any;
+  context_data: Record<string, unknown>;
   ai_analysis?: any;
   confidence_score?: number;
   decision_result: 'approved' | 'rejected' | 'pending' | 'escalated';
   decision_reason?: string;
-  metadata: any;
+  metadata: unknown;
   created_at: string;
   processed_at?: string;
   completed_at?: string;
@@ -85,7 +85,7 @@ export interface UpdateDecisionRuleRequest {
 export interface CreateDecisionInstanceRequest {
   rule_id: string;
   decision_type: string;
-  context_data: any;
+  context_data: Record<string, unknown>;
   metadata?: any;
 }
 

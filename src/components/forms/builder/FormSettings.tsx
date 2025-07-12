@@ -18,7 +18,7 @@ interface FormSettingsProps {
 const FormSettings: React.FC<FormSettingsProps> = ({ form }) => {
   const updateFormMutation = useUpdateFormDefinition();
 
-  const handleFieldUpdate = async (field: string, value: any) => {
+  const handleFieldUpdate = async (field: string, value: unknown) => {
     try {
       await updateFormMutation.mutateAsync({
         id: form.id,

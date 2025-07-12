@@ -13,7 +13,7 @@ export interface ContextualDecision {
 
 export interface ContextPattern {
   pattern_id: string;
-  context_fingerprint: any;
+  context_fingerprint: Record<string, unknown>;
   success_rate: number;
   common_outcomes: unknown[];
   optimal_agent_type: string;
@@ -165,7 +165,7 @@ export class DecisionContextManager {
     return recommendations.sort((a, b) => b.context_similarity - a.context_similarity);
   }
 
-  private determineOutcome(decision: any): 'success' | 'failure' | 'partial_success' {
+  private determineOutcome(decision: unknown): 'success' | 'failure' | 'partial_success' {
     if (decision.ai_learning_data && decision.ai_learning_data.length > 0) {
       const feedbacks = decision.ai_learning_data;
       const positiveCount = feedbacks.filter((f: unknown) => f.feedback_type === 'positive').length;
@@ -198,7 +198,7 @@ export class DecisionContextManager {
     }
   }
 
-  private getOptimalAgent(decision: any): string | undefined {
+  private getOptimalAgent(decision: unknown): string | undefined {
     // If this decision was successful, recommend the same agent
     const outcome = this.determineOutcome(decision);
     if (outcome === 'success') {

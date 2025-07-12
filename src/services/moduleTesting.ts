@@ -297,7 +297,7 @@ export class ModuleTestingService {
     };
   }
 
-  async validateModuleManifest(manifest: any): Promise<TestResult[]> {
+  async validateModuleManifest(manifest: Record<string, unknown>): Promise<TestResult[]> {
     const tests: TestResult[] = [];
 
     // Required fields test

@@ -23,7 +23,7 @@ import { toast } from '@/hooks/use-toast';
 
 const ModuleTemplateManager: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<unknown>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
   const { 

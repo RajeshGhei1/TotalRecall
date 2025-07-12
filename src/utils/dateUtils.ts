@@ -22,7 +22,7 @@ export const formatDate = (
 /**
  * Parses a date string in various formats to a standardized ISO string
  */
-export const parseFormDate = (dateValue: any): string | null => {
+export const parseFormDate = (dateValue: unknown): string | null => {
   if (!dateValue) return null;
   
   try {

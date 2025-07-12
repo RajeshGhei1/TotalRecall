@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 interface ModulePermissionLimitsProps {
   defaultLimits: Record<string, any>;
   currentLimits: Record<string, any>;
-  onUpdateLimit: (limitKey: string, value: any) => void;
+  onUpdateLimit: (limitKey: string, value: unknown) => void;
 }
 
 const ModulePermissionLimits: React.FC<ModulePermissionLimitsProps> = ({

@@ -18,7 +18,7 @@ const AIWorkflowOptimizer: React.FC<AIWorkflowOptimizerProps> = ({
   onOptimizationApplied
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<unknown[]>([]);
 
   const analyzeWorkflow = async () => {
     setIsAnalyzing(true);

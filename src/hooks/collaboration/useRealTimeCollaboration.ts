@@ -17,7 +17,7 @@ interface RealTimeSession {
   status: 'active' | 'away' | 'editing';
   cursor_position?: any;
   current_section?: string;
-  metadata: any;
+  metadata: unknown;
   profiles?: {
     id: string;
     email: string;
@@ -34,7 +34,7 @@ interface RealTimeNotification {
   entity_id: string;
   title: string;
   message: string;
-  data: any;
+  data: unknown;
   is_read: boolean;
   created_at: string;
   expires_at?: string;
@@ -260,7 +260,7 @@ export const useRealTimeCollaboration = (entityType: 'form' | 'report', entityId
   });
 
   // Detect conflicts when multiple users are editing
-  const detectConflicts = useCallback((currentData: any, incomingData: any) => {
+  const detectConflicts = useCallback((currentData: unknown, incomingData: unknown) => {
     const conflicts: unknown[] = [];
     
     // Simple conflict detection - can be enhanced based on specific needs

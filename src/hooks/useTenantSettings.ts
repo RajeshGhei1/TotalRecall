@@ -119,7 +119,7 @@ export function useTenantSettings<T extends Record<string, any>>(
     }
   });
 
-  const updateField = useCallback((field: keyof T, value: any) => {
+  const updateField = useCallback((field: keyof T, value: unknown) => {
     setData(prev => ({...prev, [field]: value}));
   }, []);
 
