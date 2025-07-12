@@ -9,8 +9,8 @@ export interface AIAgent {
   type: AIAgentType;
   description?: string;
   capabilities: string[];
-  model_config: Record<string, any>;
-  performance_metrics: Record<string, any>;
+  model_config: Record<string, unknown>;
+  performance_metrics: Record<string, unknown>;
   status: AIAgentStatus;
   tenant_id?: string;
   created_by?: string;
@@ -58,8 +58,8 @@ export interface UserInteraction {
   user_id: string;
   tenant_id?: string;
   interaction_type: string;
-  context: Record<string, any>;
-  metadata: Record<string, any>;
+  context: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   session_id?: string;
   ip_address?: string;
   user_agent?: string;
@@ -71,11 +71,11 @@ export interface AIDecision {
   agent_id: string;
   user_id: string;
   tenant_id?: string;
-  context: Record<string, any>;
-  decision: Record<string, any>;
+  context: Record<string, unknown>;
+  decision: Record<string, unknown>;
   confidence_score: number;
   reasoning?: string[];
-  outcome_feedback?: Record<string, any>;
+  outcome_feedback?: Record<string, unknown>;
   was_accepted?: boolean;
   created_at: string;
 }
@@ -85,8 +85,8 @@ export interface AIInsight {
   agent_id: string;
   tenant_id?: string;
   insight_type: string;
-  source_entities: any[];
-  insight_data: Record<string, any>;
+  source_entities: Record<string, unknown>[];
+  insight_data: Record<string, unknown>;
   confidence_score?: number;
   applicable_modules?: string[];
   expiry_date?: string;
@@ -100,7 +100,7 @@ export interface BehavioralPattern {
   user_id: string;
   tenant_id?: string;
   pattern_type: string;
-  pattern_data: Record<string, any>;
+  pattern_data: Record<string, unknown>;
   frequency_score?: number;
   last_occurrence?: string;
   created_at: string;
@@ -114,21 +114,21 @@ export interface AIContext {
   action: string;
   entity_type?: string;
   entity_id?: string;
-  session_data?: Record<string, any>;
+  session_data?: Record<string, unknown>;
 }
 
 export interface AIRequest {
   request_id: string;
   agent_id: string;
   context: AIContext;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   priority: 'low' | 'normal' | 'high' | 'urgent';
 }
 
 export interface AIResponse {
   request_id: string;
   agent_id: string;
-  result: any;
+  result: Record<string, unknown>;
   confidence_score: number;
   reasoning?: string[];
   suggestions?: string[];

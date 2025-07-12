@@ -3,12 +3,13 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WidgetConfig, AvailableWidget, DataSource } from '@/types/common';
 
 interface BasicConfigProps {
-  config: any;
-  updateConfig: (key: string, value: any) => void;
-  widget: any;
-  dataSources: any[];
+  config: WidgetConfig;
+  updateConfig: (key: string, value: unknown) => void;
+  widget: AvailableWidget;
+  dataSources: DataSource[];
 }
 
 const BasicConfig: React.FC<BasicConfigProps> = ({ config, updateConfig, widget, dataSources }) => {
@@ -18,7 +19,7 @@ const BasicConfig: React.FC<BasicConfigProps> = ({ config, updateConfig, widget,
         <Label htmlFor="title">Widget Title</Label>
         <Input
           id="title"
-          value={config.title || ''}
+          value={String(config.title || '')}
           onChange={(e) => updateConfig('title', e.target.value)}
           placeholder={widget.name}
         />
@@ -26,7 +27,7 @@ const BasicConfig: React.FC<BasicConfigProps> = ({ config, updateConfig, widget,
 
       <div>
         <Label htmlFor="data_source">Data Source</Label>
-        <Select value={config.data_source_id || ''} onValueChange={(value) => updateConfig('data_source_id', value)}>
+        <Select value={String(config.data_source_id || '')} onValueChange={(value) => updateConfig('data_source_id', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select data source" />
           </SelectTrigger>

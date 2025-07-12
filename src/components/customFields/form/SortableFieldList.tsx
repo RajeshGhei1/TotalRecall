@@ -5,10 +5,11 @@ import { CustomField } from '@/hooks/customFields/types';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableFormField from './SortableFormField';
+import { CustomFormData } from '@/types/common';
 
 interface SortableFieldListProps {
   fields: CustomField[];
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
   onDragEnd?: (oldIndex: number, newIndex: number) => void;
 }
 

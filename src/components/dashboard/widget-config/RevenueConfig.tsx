@@ -2,10 +2,11 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WidgetConfig } from '@/types/common';
 
 interface RevenueConfigProps {
-  config: any;
-  updateConfig: (key: string, value: any) => void;
+  config: WidgetConfig;
+  updateConfig: (key: string, value: unknown) => void;
 }
 
 const RevenueConfig: React.FC<RevenueConfigProps> = ({ config, updateConfig }) => {
@@ -13,7 +14,7 @@ const RevenueConfig: React.FC<RevenueConfigProps> = ({ config, updateConfig }) =
     <div className="space-y-4">
       <div>
         <Label htmlFor="metric_type">Revenue Metric Type</Label>
-        <Select value={config.metric_type || 'mrr'} onValueChange={(value) => updateConfig('metric_type', value)}>
+        <Select value={String(config.metric_type || 'mrr')} onValueChange={(value) => updateConfig('metric_type', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select metric type" />
           </SelectTrigger>
@@ -28,7 +29,7 @@ const RevenueConfig: React.FC<RevenueConfigProps> = ({ config, updateConfig }) =
       
       <div>
         <Label htmlFor="currency">Currency</Label>
-        <Select value={config.currency || 'USD'} onValueChange={(value) => updateConfig('currency', value)}>
+        <Select value={String(config.currency || 'USD')} onValueChange={(value) => updateConfig('currency', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select currency" />
           </SelectTrigger>

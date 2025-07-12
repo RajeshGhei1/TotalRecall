@@ -9,12 +9,14 @@ import {
   FormDescription, 
   FormMessage 
 } from '@/components/ui/form';
+import { UseFormReturn, ControllerRenderProps } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 export interface BaseFieldInputProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
   fieldName: string;
-  children: (formField: any) => React.ReactNode;
+  children: (formField: ControllerRenderProps<CustomFormData, string>) => React.ReactNode;
 }
 
 const BaseFieldInput: React.FC<BaseFieldInputProps> = ({ 

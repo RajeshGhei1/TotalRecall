@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell, ResponsiveContainer } from 'recharts';
+import { ChartData } from '@/types/common';
 
 interface ChartWidgetProps {
   type: 'line_chart' | 'bar_chart' | 'pie_chart';
-  data: any[];
+  data: ChartData[];
   config: {
     title: string;
     x_axis?: string;

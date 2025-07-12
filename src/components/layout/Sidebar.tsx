@@ -3,9 +3,10 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdminSidebar from './AdminSidebar';
+import { NavItem } from '@/types/navigation';
 
 interface SidebarProps {
-  navigation: any[];
+  navigation: NavItem[];
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
 }

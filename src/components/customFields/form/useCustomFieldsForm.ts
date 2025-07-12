@@ -8,24 +8,25 @@ import { toast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useCustomFieldsHook } from '@/hooks/customFields/useCustomFieldsHook';
 import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 export interface UseCustomFieldsFormProps {
   entityType: string;
   entityId?: string;
   tenantId?: string;
   formContext?: string;
-  externalForm?: UseFormReturn<any>;
-  onSubmit?: (data: any) => void;
+  externalForm?: UseFormReturn<CustomFormData>;
+  onSubmit?: (data: CustomFormData) => void;
 }
 
 export interface UseCustomFieldsFormReturn {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
   customFields: CustomField[];
   orderedFields: CustomField[];
   setOrderedFields: React.Dispatch<React.SetStateAction<CustomField[]>>;
   isLoading: boolean;
-  fieldValues: Record<string, any>;
-  handleSubmit: (data: any) => Promise<void>;
+  fieldValues: CustomFormData;
+  handleSubmit: (data: CustomFormData) => Promise<void>;
   handleDragEnd: (oldIndex: number, newIndex: number) => void;
 }
 
@@ -37,7 +38,7 @@ export const useCustomFieldsForm = ({
   externalForm,
   onSubmit,
 }: UseCustomFieldsFormProps): UseCustomFieldsFormReturn => {
-  const [fieldValues, setFieldValues] = React.useState<Record<string, any>>({});
+  const [fieldValues, setFieldValues] = React.useState<CustomFormData>({});
   const [orderedFields, setOrderedFields] = React.useState<CustomField[]>([]);
   
   // Get custom fields and values
@@ -58,10 +59,10 @@ export const useCustomFieldsForm = ({
   
   // Create form schema dynamically based on fields
   const createFormSchema = (fields: CustomField[]) => {
-    const schema: Record<string, any> = {};
+    const schema: Record<string, z.ZodTypeAny> = {};
     
     fields?.forEach(field => {
-      let fieldSchema;
+      let fieldSchema: z.ZodTypeAny;
       
       switch (field.field_type) {
         case 'text':
@@ -83,7 +84,7 @@ export const useCustomFieldsForm = ({
           fieldSchema = z.string().optional();
           break;
         default:
-          fieldSchema = z.any();
+          fieldSchema = z.unknown();
       }
       
       // Make required fields required
@@ -123,7 +124,7 @@ export const useCustomFieldsForm = ({
             acc[fieldKey] = item.value;
           }
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as CustomFormData);
         
         setFieldValues(valuesObj);
         
@@ -150,7 +151,7 @@ export const useCustomFieldsForm = ({
   const form = externalForm || internalForm;
 
   // Handle form submission
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: CustomFormData) => {
     try {
       if (entityId) {
         await saveCustomFieldValues(entityType, entityId, data);
@@ -200,7 +201,7 @@ export const useCustomFieldsForm = ({
   };
 
   return {
-    form: form!,
+    form: form as UseFormReturn<CustomFormData>,
     customFields,
     orderedFields,
     setOrderedFields,

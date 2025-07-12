@@ -134,16 +134,17 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
         toast.error(`${results.failed} records failed to process. Check the results for details.`);
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Bulk upload error:', error);
-      toast.error(`Upload failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Upload failed: ${errorMessage}`);
       setUploadResults({ 
         successful: 0, 
         failed: 0, 
         duplicates_found: 0,
         duplicates_skipped: 0,
         duplicates_merged: 0,
-        errors: [error.message],
+        errors: [errorMessage],
         duplicate_details: []
       });
       setCurrentTab('results');
@@ -169,7 +170,7 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as any)} className="w-full">
+        <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as 'upload' | 'strategy' | 'results')} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload">1. Upload File</TabsTrigger>
             <TabsTrigger value="strategy" disabled={!file}>2. Duplicate Strategy</TabsTrigger>

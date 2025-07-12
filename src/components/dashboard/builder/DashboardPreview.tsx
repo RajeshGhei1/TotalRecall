@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Layout, Settings, Trash2 } from 'lucide-react';
+import { DashboardWidget, AvailableWidget, DataSource } from '@/types/common';
 
 interface DashboardPreviewProps {
-  selectedWidgets: any[];
-  availableWidgets: any[];
-  dataSources: any[];
-  openWidgetConfig: (widget: any, index: number) => void;
+  selectedWidgets: DashboardWidget[];
+  availableWidgets: AvailableWidget[];
+  dataSources: DataSource[];
+  openWidgetConfig: (widget: DashboardWidget, index: number) => void;
   removeWidget: (widgetId: string) => void;
 }
 

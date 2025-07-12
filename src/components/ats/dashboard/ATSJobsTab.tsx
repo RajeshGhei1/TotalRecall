@@ -5,8 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, MapPin, Clock, Users } from 'lucide-react';
 
+interface Job {
+  id: string;
+  title?: string;
+  department?: string;
+  location?: string;
+  employment_type?: string;
+  status?: 'open' | 'closed' | 'draft';
+  applications_count?: number;
+  created_at?: string;
+}
+
 interface ATSJobsTabProps {
-  jobs: any[];
+  jobs: Job[];
   searchTerm: string;
   onCreateJob: () => void;
   loading: boolean;

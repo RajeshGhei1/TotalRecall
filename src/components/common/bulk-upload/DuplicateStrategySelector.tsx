@@ -28,7 +28,7 @@ const DuplicateStrategySelector: React.FC<DuplicateStrategySelectorProps> = ({
     { value: 'review', label: 'Manual Review', description: 'Flag for manual review before processing' }
   ];
 
-  const updateStrategy = (field: keyof DuplicateStrategy, value: any) => {
+  const updateStrategy = (field: keyof DuplicateStrategy, value: DuplicateAction | number) => {
     onStrategyChange({ ...strategy, [field]: value });
   };
 

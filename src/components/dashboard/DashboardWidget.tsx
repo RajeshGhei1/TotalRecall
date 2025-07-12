@@ -9,11 +9,12 @@ import MetricCard from './widgets/MetricCard';
 import ChartWidget from './widgets/ChartWidget';
 import TableWidget from './widgets/TableWidget';
 import RevenueMetric from './widgets/RevenueMetric';
+import { WidgetConfig } from '@/types/common';
 
 interface DashboardWidgetProps {
   widget: WidgetType;
   dataSource: WidgetDataSource;
-  config?: Record<string, any>;
+  config?: WidgetConfig;
   onEdit?: () => void;
   onRemove?: () => void;
 }

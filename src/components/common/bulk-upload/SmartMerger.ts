@@ -1,17 +1,17 @@
 
 import { ContactCSVRow } from './FileProcessor';
-import { MergeOptions } from './types';
+import { MergeOptions, DatabaseRecord, ImportRecord } from './types';
 
 export class SmartMerger {
   static mergeContacts(
-    existingRecord: any,
+    existingRecord: DatabaseRecord,
     newRecord: ContactCSVRow,
     options: MergeOptions
-  ): any {
+  ): DatabaseRecord {
     const merged = { ...existingRecord };
 
     // Helper function to merge individual fields
-    const mergeField = (existingValue: any, newValue: any, fieldName: string) => {
+    const mergeField = (existingValue: unknown, newValue: unknown, fieldName: string): unknown => {
       if (options.preserveExisting && existingValue != null && existingValue !== '') {
         return existingValue;
       }
@@ -60,7 +60,7 @@ export class SmartMerger {
           existingRecord.experience_years,
           newExp,
           'experience_years'
-        );
+        ) as number;
       }
     }
 
@@ -71,7 +71,7 @@ export class SmartMerger {
           existingRecord.desired_salary,
           newSalary,
           'desired_salary'
-        );
+        ) as number;
       }
     }
 
@@ -89,7 +89,7 @@ export class SmartMerger {
             existingRecord.availability_date,
             newDateStr,
             'availability_date'
-          );
+          ) as string;
         }
       }
     }
@@ -121,7 +121,7 @@ export class SmartMerger {
         existingRecord.skills,
         JSON.stringify(newSkills),
         'skills'
-      );
+      ) as string;
     }
 
     // Update timestamp
@@ -130,13 +130,13 @@ export class SmartMerger {
     return merged;
   }
 
-  static generateMergePreview(existingRecord: any, newRecord: ContactCSVRow, options: MergeOptions) {
+  static generateMergePreview(existingRecord: DatabaseRecord, newRecord: ContactCSVRow, options: MergeOptions) {
     const merged = this.mergeContacts(existingRecord, newRecord, options);
     
     const changes: Array<{
       field: string;
-      oldValue: any;
-      newValue: any;
+      oldValue: unknown;
+      newValue: unknown;
       action: 'keep' | 'update' | 'merge'
     }> = [];
 

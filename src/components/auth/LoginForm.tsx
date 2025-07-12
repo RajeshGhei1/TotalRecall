@@ -25,8 +25,16 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
 interface LoginFormProps {
-  onSubmit: (data: LoginFormValues) => Promise<{ user: any; redirectPath: string }>;
+  onSubmit: (data: LoginFormValues) => Promise<{ user: User; redirectPath: string }>;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
@@ -55,9 +63,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       setTimeout(() => {
         navigate(result.redirectPath, { replace: true });
       }, 100);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('LoginForm: Login error:', err);
-      setError(err.message || 'Login failed. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

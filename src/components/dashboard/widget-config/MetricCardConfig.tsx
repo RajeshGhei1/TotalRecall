@@ -3,10 +3,11 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { WidgetConfig } from '@/types/common';
 
 interface MetricCardConfigProps {
-  config: any;
-  updateConfig: (key: string, value: any) => void;
+  config: WidgetConfig;
+  updateConfig: (key: string, value: unknown) => void;
 }
 
 const MetricCardConfig: React.FC<MetricCardConfigProps> = ({ config, updateConfig }) => {
@@ -14,7 +15,7 @@ const MetricCardConfig: React.FC<MetricCardConfigProps> = ({ config, updateConfi
     <div className="space-y-4">
       <div>
         <Label htmlFor="metric_type">Metric Type</Label>
-        <Select value={config.metric_type || 'count'} onValueChange={(value) => updateConfig('metric_type', value)}>
+        <Select value={String(config.metric_type || 'count')} onValueChange={(value) => updateConfig('metric_type', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select metric type" />
           </SelectTrigger>
@@ -29,7 +30,7 @@ const MetricCardConfig: React.FC<MetricCardConfigProps> = ({ config, updateConfi
       
       <div>
         <Label htmlFor="format">Format</Label>
-        <Select value={config.format || 'number'} onValueChange={(value) => updateConfig('format', value)}>
+        <Select value={String(config.format || 'number')} onValueChange={(value) => updateConfig('format', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select format" />
           </SelectTrigger>
@@ -44,7 +45,7 @@ const MetricCardConfig: React.FC<MetricCardConfigProps> = ({ config, updateConfi
       <div className="flex items-center space-x-2">
         <Checkbox
           id="trend_comparison"
-          checked={config.trend_comparison || false}
+          checked={Boolean(config.trend_comparison)}
           onCheckedChange={(checked) => updateConfig('trend_comparison', checked)}
         />
         <Label htmlFor="trend_comparison">Show trend comparison</Label>

@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChartData } from '@/types/common';
 
 interface TableWidgetProps {
-  data: any[];
+  data: ChartData[];
   config: {
     title: string;
     columns?: string[];

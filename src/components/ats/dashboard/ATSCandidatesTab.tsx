@@ -5,8 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Mail, Phone, MapPin } from 'lucide-react';
 
+interface Candidate {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  current_title?: string;
+  status?: string;
+}
+
 interface ATSCandidatesTabProps {
-  candidates: any[];
+  candidates: Candidate[];
   searchTerm: string;
   onCreateCandidate: () => void;
   loading: boolean;

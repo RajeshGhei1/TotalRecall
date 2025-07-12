@@ -54,7 +54,7 @@ export interface Application {
   ai_match_score?: number;
   ai_match_reasons: string[];
   recruiter_notes?: string;
-  interview_feedback: any[];
+  interview_feedback: Record<string, unknown>[];
   next_action?: string;
   next_action_date?: string;
   created_at: string;
@@ -75,7 +75,7 @@ export interface Interview {
   location?: string;
   meeting_link?: string;
   notes?: string;
-  feedback: any;
+  feedback: Record<string, unknown>;
   score?: number;
   status: string;
   created_at: string;

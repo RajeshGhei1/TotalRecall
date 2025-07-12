@@ -79,7 +79,7 @@ export class DuplicateDetector {
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i];
       const matches: DuplicateMatch[] = [];
-      let bestMatch: any = null;
+      let bestMatch: ExtendedPersonRecord | null = null;
       let highestConfidence = 0;
 
       for (const existing of existingPeople || []) {

@@ -2,16 +2,43 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mock } from 'vitest';
 import ModuleAccessGuard from '../ModuleAccessGuard';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
 import { useAuth } from '@/contexts/AuthContext';
 import { ModuleAccessService } from '@/services/moduleAccessService';
 
-// Mock the hooks
+// Mock the hooks and services
 vi.mock('@/hooks/subscriptions/useUnifiedModuleAccess');
 vi.mock('@/contexts/AuthContext');
-vi.mock('@/services/moduleAccessService');
+vi.mock('@/services/moduleAccessService', () => ({
+  ModuleAccessService: {
+    logModuleAccess: vi.fn(),
+  },
+}));
+
+// Types for mocked functions
+interface MockAuthReturn {
+  user: { id: string; email?: string } | null;
+  bypassAuth: boolean;
+}
+
+interface MockModuleAccessReturn {
+  data: {
+    hasAccess: boolean;
+    accessLevel?: string;
+    subscriptionDetails?: {
+      planName: string;
+      subscriptionType: string;
+    };
+  } | null;
+  isLoading: boolean;
+  error?: Error | null;
+}
+
+interface MockModuleAccessService {
+  logModuleAccess: ReturnType<typeof vi.fn>;
+}
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -46,9 +73,9 @@ const createWrapper = () => {
 };
 
 describe('ModuleAccessGuard', () => {
-  const mockUseUnifiedModuleAccess = useUnifiedModuleAccess as any;
-  const mockUseAuth = useAuth as any;
-  const mockModuleAccessService = ModuleAccessService as any;
+  const mockUseUnifiedModuleAccess = useUnifiedModuleAccess as unknown as Mock<() => MockModuleAccessReturn>;
+  const mockUseAuth = useAuth as unknown as Mock<() => MockAuthReturn>;
+  const mockModuleAccessService = ModuleAccessService as unknown as MockModuleAccessService;
 
   beforeEach(() => {
     vi.clearAllMocks();

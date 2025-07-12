@@ -3,10 +3,11 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DataSourceConfig } from '@/types/common';
 
 interface DataSourceFormProps {
-  config: any;
-  setConfig: (config: any) => void;
+  config: DataSourceConfig;
+  setConfig: (config: DataSourceConfig | ((prev: DataSourceConfig) => DataSourceConfig)) => void;
 }
 
 const DataSourceForm: React.FC<DataSourceFormProps> = ({ config, setConfig }) => {

@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { RevenueData } from '@/types/common';
 
 interface RevenueMetricProps {
-  data: any;
+  data: RevenueData;
   config: {
     title: string;
     metric_type: 'mrr' | 'arr' | 'churn_rate' | 'ltv';

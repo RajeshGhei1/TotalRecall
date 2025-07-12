@@ -10,11 +10,34 @@ import { useRealTimeCollaboration } from '@/hooks/collaboration/useRealTimeColla
 import { Users, Bell, AlertTriangle, Eye, Edit, Coffee } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+// Type definitions for collaboration
+interface Conflict {
+  type: string;
+  field: string;
+  userId: string;
+  timestamp: string;
+  data: Record<string, unknown>;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  notification_type: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  is_read: boolean;
+  created_at: string;
+  data: {
+    conflicts?: Conflict[];
+    [key: string]: unknown;
+  };
+}
+
 interface CollaborationPanelProps {
   entityType: 'form' | 'report';
   entityId: string;
   currentSection?: string;
-  onConflictDetected?: (conflicts: any[]) => void;
+  onConflictDetected?: (conflicts: Conflict[]) => void;
 }
 
 const CollaborationPanel: React.FC<CollaborationPanelProps> = ({
@@ -71,7 +94,7 @@ const CollaborationPanel: React.FC<CollaborationPanelProps> = ({
     });
   };
 
-  const handleNotificationClick = async (notification: any) => {
+  const handleNotificationClick = async (notification: Notification) => {
     if (!notification.is_read) {
       await markAsRead.mutateAsync(notification.id);
     }

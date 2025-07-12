@@ -64,7 +64,7 @@ export const useCompanies = () => {
 
   // Extract custom field values from form data
   const extractCustomFieldValues = (formData: CompanyFormValues) => {
-    const customFields: Record<string, any> = {};
+    const customFields: Record<string, unknown> = {};
     
     // Loop through all form values and extract those that start with "custom_"
     Object.entries(formData).forEach(([key, value]) => {
@@ -169,7 +169,7 @@ export const useCompanies = () => {
       const customFieldValues = extractCustomFieldValues(companyData);
       
       if (Object.keys(customFieldValues).length > 0) {
-        await saveCustomFieldValues('company', (data as any).id, customFieldValues);
+        await saveCustomFieldValues('company', (data as Company).id, customFieldValues);
       }
       
       return data;
@@ -178,7 +178,7 @@ export const useCompanies = () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
       toast.success('Company created successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Error creating company:", error);
       toast.error(`Failed to create company: ${error.message}`);
     },
@@ -267,7 +267,7 @@ export const useCompanies = () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
       toast.success('Company updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Error updating company:", error);
       toast.error(`Failed to update company: ${error.message}`);
     },
@@ -289,7 +289,7 @@ export const useCompanies = () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
       toast.success('Company deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("Error deleting company:", error);
       toast.error(`Failed to delete company: ${error.message}`);
     },

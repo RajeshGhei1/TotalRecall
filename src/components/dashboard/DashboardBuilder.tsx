@@ -10,21 +10,22 @@ import DataSourceConfig from './DataSourceConfig';
 import DashboardBuilderHeader from './builder/DashboardBuilderHeader';
 import WidgetPalette from './builder/WidgetPalette';
 import DashboardPreview from './builder/DashboardPreview';
+import { DashboardWidget, AvailableWidget, DataSource, WidgetConfig } from '@/types/common';
 
 const DashboardBuilder: React.FC = () => {
   const { user } = useAuth();
   const [dashboardName, setDashboardName] = useState('My Dashboard');
-  const [selectedWidgets, setSelectedWidgets] = useState<any[]>([]);
+  const [selectedWidgets, setSelectedWidgets] = useState<DashboardWidget[]>([]);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [dataSourceDialogOpen, setDataSourceDialogOpen] = useState(false);
-  const [editingWidget, setEditingWidget] = useState<{ widget: any; index: number } | null>(null);
+  const [editingWidget, setEditingWidget] = useState<{ widget: DashboardWidget; index: number } | null>(null);
   
   const { data: availableWidgets, isLoading: widgetsLoading } = useDashboardWidgets();
   const { data: dataSources, isLoading: dataSourcesLoading, refetch: refetchDataSources } = useWidgetDataSources();
   const { mutate: createDashboard, isPending: isSaving } = useCreateDashboardConfig();
 
-  const addWidget = (widget: any) => {
-    const newWidget = {
+  const addWidget = (widget: AvailableWidget) => {
+    const newWidget: DashboardWidget = {
       id: `widget-${Date.now()}`,
       widget_type: widget.widget_type,
       data_source_id: dataSources?.[0]?.id || '',
@@ -40,12 +41,12 @@ const DashboardBuilder: React.FC = () => {
     setSelectedWidgets(selectedWidgets.filter(w => w.id !== widgetId));
   };
 
-  const openWidgetConfig = (widget: any, index: number) => {
+  const openWidgetConfig = (widget: DashboardWidget, index: number) => {
     setEditingWidget({ widget, index });
     setConfigDialogOpen(true);
   };
 
-  const saveWidgetConfig = (config: any) => {
+  const saveWidgetConfig = (config: WidgetConfig) => {
     if (editingWidget) {
       const updatedWidgets = [...selectedWidgets];
       updatedWidgets[editingWidget.index] = {
@@ -57,7 +58,7 @@ const DashboardBuilder: React.FC = () => {
     }
   };
 
-  const saveDataSource = (dataSourceConfig: any) => {
+  const saveDataSource = (dataSourceConfig: Record<string, unknown>) => {
     console.log('Saving data source:', dataSourceConfig);
     toast.success('Data source configuration saved!');
     refetchDataSources();
@@ -85,7 +86,7 @@ const DashboardBuilder: React.FC = () => {
       layout_config: {
         columns: 4,
         row_height: 150,
-        margin: [16, 16]
+        margin: [16, 16] as [number, number]
       },
       widget_configs: selectedWidgets,
       filters: {},
@@ -123,7 +124,7 @@ const DashboardBuilder: React.FC = () => {
     }
     acc[widget.category].push(widget);
     return acc;
-  }, {} as Record<string, any[]>) || {};
+  }, {} as Record<string, AvailableWidget[]>) || {};
 
   return (
     <div className="space-y-6">

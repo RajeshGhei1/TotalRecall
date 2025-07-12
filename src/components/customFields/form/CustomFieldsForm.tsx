@@ -7,17 +7,18 @@ import CustomFieldsList from './CustomFieldsList';
 import CustomFieldsFormActions from './CustomFieldsFormActions';
 import LoadingState from './LoadingState';
 import { useCustomFieldsForm } from './useCustomFieldsForm';
+import { CustomFormData } from '@/types/common';
 
 interface CustomFieldsFormProps {
   entityType: string;
   entityId?: string;
   title?: string;
   description?: string;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: CustomFormData) => void;
   onCancel?: () => void;
   tenantId?: string;
   formContext?: string;
-  form?: UseFormReturn<any>;
+  form?: UseFormReturn<CustomFormData>;
   enableDragAndDrop?: boolean;
 }
 

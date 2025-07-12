@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { MetricData, ChartData } from '@/types/common';
 
 interface MetricCardProps {
-  data: any;
+  data: MetricData | ChartData[];
   config: {
     title: string;
     metric_type: 'count' | 'sum' | 'average' | 'percentage';
@@ -29,29 +30,34 @@ const MetricCard: React.FC<MetricCardProps> = ({ data, config }) => {
   };
 
   const getValue = () => {
-    if (config.metric_type === 'count' && data?.count !== undefined) {
-      return data.count;
+    if (!Array.isArray(data)) {
+      // Handle MetricData
+      if (config.metric_type === 'count' && typeof data?.count === 'number') {
+        return data.count;
+      }
+      return typeof data?.value === 'number' ? data.value : 0;
     }
     
-    if (Array.isArray(data) && data.length > 0) {
+    // Handle ChartData[]
+    if (data.length > 0) {
       switch (config.metric_type) {
         case 'count':
           return data.length;
         case 'sum':
-          return data.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+          return data.reduce((sum, item) => sum + (parseFloat(String(item.value || 0))), 0);
         case 'average':
-          const total = data.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+          const total = data.reduce((sum, item) => sum + (parseFloat(String(item.value || 0))), 0);
           return total / data.length;
         default:
           return data.length;
       }
     }
     
-    return data?.value || 0;
+    return 0;
   };
 
   const value = getValue();
-  const trend = data?.trend || 0;
+  const trend = !Array.isArray(data) && typeof data?.trend === 'number' ? data.trend : 0;
 
   return (
     <div className="space-y-2">

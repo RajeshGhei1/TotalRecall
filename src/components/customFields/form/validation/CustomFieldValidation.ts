@@ -106,9 +106,10 @@ export const textareaFieldSchema = baseFieldSchema.extend({
 );
 
 // Main validation function
-export const validateCustomField = (data: any) => {
+export const validateCustomField = (data: unknown) => {
   try {
-    switch (data.fieldType) {
+    const typedData = data as { fieldType: string };
+    switch (typedData.fieldType) {
       case 'text':
         return textFieldSchema.parse(data);
       case 'textarea':

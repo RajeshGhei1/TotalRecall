@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Save, Layout, Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { User, DashboardWidget, DataSource } from '@/types/common';
 
 interface DashboardBuilderHeaderProps {
   dashboardName: string;
@@ -14,9 +15,9 @@ interface DashboardBuilderHeaderProps {
   setDataSourceDialogOpen: (open: boolean) => void;
   saveDashboard: () => void;
   isSaving: boolean;
-  user: any;
-  selectedWidgets: any[];
-  dataSources: any[];
+  user: User | null;
+  selectedWidgets: DashboardWidget[];
+  dataSources: DataSource[];
 }
 
 const DashboardBuilderHeader: React.FC<DashboardBuilderHeaderProps> = ({

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { unifiedAIService } from '@/services/ai/unifiedAIService';
+import { unifiedAIService, AIServiceRegistration, UnifiedAIResponse } from '@/services/ai/unifiedAIService';
 import { useUnifiedAI } from '@/hooks/ai/useUnifiedAI';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -26,7 +26,7 @@ export const AIServiceRegistry: React.FC = () => {
     action: '',
     parameters: '{}'
   });
-  const [testResponse, setTestResponse] = useState<any>(null);
+  const [testResponse, setTestResponse] = useState<UnifiedAIResponse | null>(null);
 
   const services = unifiedAIService.getRegisteredServices();
 
@@ -52,7 +52,7 @@ export const AIServiceRegistry: React.FC = () => {
     }
   };
 
-  const renderServiceCard = (service: any) => (
+  const renderServiceCard = (service: AIServiceRegistration) => (
     <Card key={service.serviceId} className="h-full">
       <CardHeader>
         <div className="flex items-center justify-between">

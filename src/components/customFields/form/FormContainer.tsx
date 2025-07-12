@@ -2,10 +2,11 @@
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface FormContainerProps {
-  form: UseFormReturn<any>;
-  onSubmit: (data: any) => void;
+  form: UseFormReturn<CustomFormData>;
+  onSubmit: (data: CustomFormData) => void;
   children: React.ReactNode;
 }
 

@@ -15,13 +15,14 @@ import MetricCardConfig from './widget-config/MetricCardConfig';
 import ChartConfig from './widget-config/ChartConfig';
 import TableConfig from './widget-config/TableConfig';
 import RevenueConfig from './widget-config/RevenueConfig';
+import { WidgetConfig } from '@/types/common';
 
 interface WidgetConfigDialogProps {
   isOpen: boolean;
   onClose: () => void;
   widget: DashboardWidget | null;
-  initialConfig?: any;
-  onSave: (config: any) => void;
+  initialConfig?: WidgetConfig;
+  onSave: (config: WidgetConfig) => void;
 }
 
 const WidgetConfigDialog: React.FC<WidgetConfigDialogProps> = ({
@@ -31,7 +32,7 @@ const WidgetConfigDialog: React.FC<WidgetConfigDialogProps> = ({
   initialConfig,
   onSave,
 }) => {
-  const [config, setConfig] = useState<any>({});
+  const [config, setConfig] = useState<WidgetConfig>({ title: '' });
   const { data: dataSources } = useWidgetDataSources();
 
   useEffect(() => {
@@ -49,8 +50,8 @@ const WidgetConfigDialog: React.FC<WidgetConfigDialogProps> = ({
     onClose();
   };
 
-  const updateConfig = (key: string, value: any) => {
-    setConfig((prev: any) => ({ ...prev, [key]: value }));
+  const updateConfig = (key: string, value: unknown) => {
+    setConfig((prev: WidgetConfig) => ({ ...prev, [key]: value }));
   };
 
   if (!widget) return null;

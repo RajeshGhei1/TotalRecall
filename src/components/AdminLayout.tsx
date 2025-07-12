@@ -4,10 +4,11 @@ import { Sidebar } from './layout/Sidebar';
 import { MobileNavigation } from './layout/MobileNavigation';
 import TopHeader from './layout/TopHeader';
 import { WeakPasswordNotification } from './layout/WeakPasswordNotification';
+import { NavItem } from '@/types/navigation';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  navigation?: any[];
+  navigation?: NavItem[];
 }
 
 const AdminLayout = ({ children, navigation = [] }: AdminLayoutProps) => {

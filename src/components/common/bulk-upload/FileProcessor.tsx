@@ -33,15 +33,15 @@ export class FileProcessor {
     
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-      const row: any = {};
+      const row: Partial<ContactCSVRow> = {};
       
       headers.forEach((header, index) => {
         if (values[index]) {
-          row[header] = values[index];
+          (row as Record<string, string>)[header] = values[index];
         }
       });
       
-      rows.push(row);
+      rows.push(row as ContactCSVRow);
     }
     
     return rows;
@@ -59,27 +59,27 @@ export class FileProcessor {
           const worksheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[worksheetName];
           
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
           
           if (jsonData.length < 2) {
             throw new Error('File must have at least a header row and one data row');
           }
           
-          const headers = jsonData[0].map((h: any) => String(h).toLowerCase().trim());
+          const headers = jsonData[0].map((h: unknown) => String(h).toLowerCase().trim());
           const rows: ContactCSVRow[] = [];
           
           for (let i = 1; i < jsonData.length; i++) {
             const rowData = jsonData[i];
-            const row: any = {};
+            const row: Partial<ContactCSVRow> = {};
             
             headers.forEach((header, index) => {
               if (rowData[index] !== undefined && rowData[index] !== null && rowData[index] !== '') {
-                row[header] = String(rowData[index]).trim();
+                (row as Record<string, string>)[header] = String(rowData[index]).trim();
               }
             });
             
             if (row.full_name || row.email) {
-              rows.push(row);
+              rows.push(row as ContactCSVRow);
             }
           }
           

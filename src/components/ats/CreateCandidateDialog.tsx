@@ -53,7 +53,7 @@ const CreateCandidateDialog = ({ open, onOpenChange }: CreateCandidateDialogProp
       onOpenChange(false);
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message || "Failed to add candidate.",

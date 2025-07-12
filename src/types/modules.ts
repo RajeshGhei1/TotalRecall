@@ -52,14 +52,14 @@ export interface ModuleRoute {
   component: string;
   exact?: boolean;
   guards?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ModuleComponent {
   name: string;
   path: string;
   exports: string[];
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
 }
 
 export interface ModuleService {
@@ -93,7 +93,7 @@ export interface ModuleProgressData {
 
 export interface LoadedModule {
   manifest: ModuleManifest;
-  instance: any;
+  instance: Record<string, unknown>;
   status: 'loading' | 'loaded' | 'error' | 'unloaded';
   error?: string;
   loadedAt: Date;
@@ -104,7 +104,7 @@ export interface LoadedModule {
   ai_capabilities?: string[];
   ai_level?: 'high' | 'medium' | 'low' | 'none';
   ai_description?: string;
-  ai_features?: Record<string, any>;
+  ai_features?: Record<string, unknown>;
 }
 
 export interface ModuleContext {
@@ -112,7 +112,7 @@ export interface ModuleContext {
   tenantId: string;
   userId: string;
   permissions: string[];
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 export interface ModuleLoadOptions {

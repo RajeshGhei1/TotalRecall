@@ -9,7 +9,7 @@ export interface CacheMetrics {
 }
 
 export interface CachedResponse {
-  data: any;
+  data: Record<string, unknown>;
   timestamp: Date;
   hitCount: number;
   expiresAt: Date;
@@ -21,21 +21,21 @@ export class AICacheService {
   private cacheHits = 0;
   private readonly DEFAULT_TTL = 30 * 60 * 1000; // 30 minutes
 
-  generateCacheKey(request: any): string {
+  generateCacheKey(request: Record<string, unknown>): string {
     const { context, parameters } = request;
     const keyData = {
-      module: context.module,
-      action: context.action,
-      entity_type: context.entity_type,
-      entity_id: context.entity_id,
-      tenant_id: context.tenant_id,
+      module: (context as Record<string, unknown>).module,
+      action: (context as Record<string, unknown>).action,
+      entity_type: (context as Record<string, unknown>).entity_type,
+      entity_id: (context as Record<string, unknown>).entity_id,
+      tenant_id: (context as Record<string, unknown>).tenant_id,
       parameters: JSON.stringify(parameters)
     };
     
     return btoa(JSON.stringify(keyData)).replace(/[+/=]/g, '');
   }
 
-  async checkCache(request: any): Promise<any | null> {
+  async checkCache(request: Record<string, unknown>): Promise<Record<string, unknown> | null> {
     this.totalRequests++;
     
     const cacheKey = this.generateCacheKey(request);
@@ -59,7 +59,7 @@ export class AICacheService {
     return cached.data;
   }
 
-  async cacheResponse(request: any, response: any, ttl?: number): Promise<void> {
+  async cacheResponse(request: Record<string, unknown>, response: Record<string, unknown>, ttl?: number): Promise<void> {
     const cacheKey = this.generateCacheKey(request);
     const expirationTime = ttl || this.DEFAULT_TTL;
     
@@ -135,7 +135,7 @@ export class AICacheService {
   }
 
   // Get cache entries for debugging/monitoring
-  getCacheEntries(): Array<{ key: string; cached: CachedResponse }> {
+  getCacheEntries(): Array<{ key: string; cached: Omit<CachedResponse, 'data'> & { data: string } }> {
     return Array.from(this.cache.entries()).map(([key, cached]) => ({
       key: key.substring(0, 10) + '...',
       cached: {

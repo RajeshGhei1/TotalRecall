@@ -15,9 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CustomFormData } from '@/types/common';
 
 interface FormSelectProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
   name: string;
   label: string;
   options: { value: string; label: string }[];
@@ -70,8 +71,8 @@ const CustomFormSelect: React.FC<FormSelectProps> = ({
               field.onChange(value);
               handleValueChange(value);
             }} 
-            defaultValue={field.value}
-            value={field.value || undefined}
+            defaultValue={String(field.value || '')}
+            value={String(field.value || '')}
           >
             <FormControl>
               <SelectTrigger>

@@ -19,7 +19,7 @@ export interface AIAgent {
     accuracy?: number;
     response_time?: number;
     user_satisfaction?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   tenant_id?: string;
   created_by?: string;
@@ -51,8 +51,8 @@ export interface AIAgentActivityLog {
   user_id?: string;
   tenant_id?: string;
   action: string;
-  request_data: any;
-  response_data: any;
+  request_data: Record<string, unknown>;
+  response_data: Record<string, unknown>;
   duration_ms?: number;
   tokens_used?: number;
   cost_usd?: number;
@@ -244,7 +244,16 @@ export class AIAgentService {
   }
 
   // Get agent performance metrics
-  async getAgentPerformanceMetrics(agentId: string, days = 30): Promise<any> {
+  async getAgentPerformanceMetrics(agentId: string, days = 30): Promise<{
+    totalRequests: number;
+    successfulRequests: number;
+    successRate: number;
+    averageResponseTime: number;
+    totalTokens: number;
+    totalCost: number;
+    averageTokensPerRequest: number;
+    averageCostPerRequest: number;
+  }> {
     try {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
@@ -285,7 +294,18 @@ export class AIAgentService {
   }
 
   // Execute an agent (placeholder for actual AI execution)
-  async executeAgent(agentId: string, input: any, userId?: string, tenantId?: string): Promise<any> {
+  async executeAgent(
+    agentId: string, 
+    input: Record<string, unknown>, 
+    userId?: string, 
+    tenantId?: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    duration_ms: number;
+    agent: AIAgent;
+    data?: Record<string, unknown>;
+  }> {
     try {
       const startTime = Date.now();
       

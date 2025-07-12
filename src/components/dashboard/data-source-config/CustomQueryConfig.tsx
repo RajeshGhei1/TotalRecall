@@ -2,10 +2,11 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { DataSourceConfig } from '@/types/common';
 
 interface CustomQueryConfigProps {
-  config: any;
-  setConfig: (config: any) => void;
+  config: DataSourceConfig;
+  setConfig: (config: DataSourceConfig | ((prev: DataSourceConfig) => DataSourceConfig)) => void;
 }
 
 const CustomQueryConfig: React.FC<CustomQueryConfigProps> = ({ config, setConfig }) => {

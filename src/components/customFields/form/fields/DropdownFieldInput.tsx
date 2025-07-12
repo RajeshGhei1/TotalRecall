@@ -15,10 +15,12 @@ import { Loader2 } from 'lucide-react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { toast } from '@/hooks/use-toast';
 import BaseFieldInput from './BaseFieldInput';
+import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface DropdownFieldInputProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
   fieldName: string;
 }
 
@@ -90,7 +92,7 @@ const DropdownFieldInput: React.FC<DropdownFieldInputProps> = ({ field, form, fi
               }
               formField.onChange(value);
             }}
-            value={formField.value || ""}
+            value={String(formField.value || "")}
           >
             <SelectTrigger className="bg-background">
               <SelectValue placeholder={`Select ${field.name.toLowerCase()}`} />

@@ -10,10 +10,12 @@ import { toast } from '@/hooks/use-toast';
 import { FormMultiSelect } from '@/components/ui/form-multi-select';
 import { FormSelect } from '@/components/superadmin/tenant-form/fields';
 import BaseFieldInput from './BaseFieldInput';
+import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface EnhancedDropdownFieldInputProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
   fieldName: string;
 }
 
@@ -53,8 +55,9 @@ const EnhancedDropdownFieldInput: React.FC<EnhancedDropdownFieldInputProps> = ({
       
       // Update the form based on field type
       if (isMultiSelect) {
-        const currentValues = form.getValues(fieldName) || [];
-        form.setValue(fieldName, [...currentValues, newOption]);
+        const currentValues = form.getValues(fieldName);
+        const valuesArray = Array.isArray(currentValues) ? currentValues : [];
+        form.setValue(fieldName, [...valuesArray, newOption]);
       } else {
         form.setValue(fieldName, newOption);
       }

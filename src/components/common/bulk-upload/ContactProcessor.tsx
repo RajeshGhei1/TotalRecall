@@ -77,9 +77,10 @@ export class ContactProcessor {
         
         results.successful++;
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         results.failed++;
-        results.errors.push(`${contact.full_name || 'Unknown'}: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        results.errors.push(`${contact.full_name || 'Unknown'}: ${errorMessage}`);
       }
     }
     

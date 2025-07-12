@@ -20,10 +20,12 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format, isValid, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface DateFieldInputProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
   fieldName: string;
 }
 

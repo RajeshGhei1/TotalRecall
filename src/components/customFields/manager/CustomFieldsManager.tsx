@@ -98,10 +98,11 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
       toast.success('Custom field created', {
         description: `Field "${validatedData.name}" has been created successfully.`
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating field:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create custom field due to validation errors.';
       toast.error('Validation Error', {
-        description: error.message || 'Failed to create custom field due to validation errors.'
+        description: errorMessage
       });
     }
   };
@@ -116,10 +117,11 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         toast.success('Custom field deleted', {
           description: 'The field has been deleted successfully.'
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error deleting field:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Please try again.';
         toast.error('Error', {
-          description: `Failed to delete custom field: ${error.message || 'Please try again.'}`
+          description: `Failed to delete custom field: ${errorMessage}`
         });
       }
     }
@@ -134,10 +136,11 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
     try {
       await updateFieldsOrder(fieldsWithOrder, tenantId === 'global' ? undefined : tenantId);
       await refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error reordering fields:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
       toast.error('Error', {
-        description: `Failed to reorder custom fields: ${error.message || 'Please try again.'}`
+        description: `Failed to reorder custom fields: ${errorMessage}`
       });
     }
   };

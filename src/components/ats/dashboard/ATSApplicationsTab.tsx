@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, Briefcase } from 'lucide-react';
 
+interface Application {
+  id: string;
+  candidate_name?: string;
+  job_title?: string;
+  status?: 'new' | 'reviewing' | 'interviewing' | 'hired' | 'rejected';
+  stage?: string;
+  created_at?: string;
+}
+
 interface ATSApplicationsTabProps {
-  applications: any[];
+  applications: Application[];
   loading: boolean;
 }
 

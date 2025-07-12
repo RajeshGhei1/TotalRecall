@@ -4,10 +4,11 @@ import { UseFormReturn } from 'react-hook-form';
 import { CustomField } from '@/hooks/customFields/types';
 import RenderCustomField from './RenderCustomField';
 import SortableFieldList from './SortableFieldList';
+import { CustomFormData } from '@/types/common';
 
 interface CustomFieldsListProps {
   fields: CustomField[];
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
   enableDragAndDrop?: boolean;
   onDragEnd?: (oldIndex: number, newIndex: number) => void;
 }

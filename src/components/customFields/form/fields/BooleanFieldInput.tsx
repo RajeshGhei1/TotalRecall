@@ -7,10 +7,12 @@ import {
   FormItem,
   FormDescription,
 } from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface BooleanFieldInputProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
   fieldName: string;
 }
 
@@ -22,7 +24,7 @@ const BooleanFieldInput: React.FC<BooleanFieldInputProps> = ({ field, form, fiel
       render={({ field: formField }) => (
         <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
           <Checkbox
-            checked={formField.value}
+            checked={Boolean(formField.value)}
             onCheckedChange={formField.onChange}
             id={fieldName}
           />

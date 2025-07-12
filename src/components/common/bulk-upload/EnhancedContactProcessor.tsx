@@ -101,9 +101,10 @@ export class EnhancedContactProcessor {
           console.log(`Created new person: ${contact.full_name}`);
         }
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         results.failed++;
-        results.errors.push(`${contact.full_name || 'Unknown'}: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        results.errors.push(`${contact.full_name || 'Unknown'}: ${errorMessage}`);
         console.error(`Error processing ${contact.full_name}:`, error);
       }
     }

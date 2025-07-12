@@ -3,9 +3,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface FormFooterProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
   onCancel?: () => void;
   isSubmitting?: boolean;
 }

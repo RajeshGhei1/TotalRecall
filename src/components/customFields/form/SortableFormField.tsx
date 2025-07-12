@@ -6,10 +6,11 @@ import RenderCustomField from './RenderCustomField';
 import { CustomField } from '@/hooks/customFields/types';
 import { UseFormReturn } from 'react-hook-form';
 import { GripVertical } from 'lucide-react';
+import { CustomFormData } from '@/types/common';
 
 interface SortableFormFieldProps {
   field: CustomField;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CustomFormData>;
 }
 
 const SortableFormField: React.FC<SortableFormFieldProps> = ({ field, form }) => {

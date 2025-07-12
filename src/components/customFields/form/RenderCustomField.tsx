@@ -7,10 +7,12 @@ import NumberFieldInput from './fields/NumberFieldInput';
 import DateFieldInput from './fields/DateFieldInput';
 import DropdownFieldInput from './fields/DropdownFieldInput';
 import BooleanFieldInput from './fields/BooleanFieldInput';
+import { UseFormReturn } from 'react-hook-form';
+import { CustomFormData } from '@/types/common';
 
 interface RenderCustomFieldProps {
   field: CustomField;
-  form: any;
+  form: UseFormReturn<CustomFormData>;
 }
 
 const RenderCustomField: React.FC<RenderCustomFieldProps> = ({ field, form }) => {

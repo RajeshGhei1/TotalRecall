@@ -12,11 +12,12 @@ import DataSourceForm from './data-source-config/DataSourceForm';
 import SupabaseTableConfig from './data-source-config/SupabaseTableConfig';
 import CustomQueryConfig from './data-source-config/CustomQueryConfig';
 import CacheSettings from './data-source-config/CacheSettings';
+import { DataSourceConfig as DataSourceConfigType } from '@/types/common';
 
 interface DataSourceConfigProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (dataSource: any) => void;
+  onSave: (dataSource: DataSourceConfigType) => void;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({

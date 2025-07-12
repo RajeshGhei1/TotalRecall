@@ -7,7 +7,7 @@ interface BehavioralTrackingWrapperProps {
   children: React.ReactNode;
   module: string;
   action: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   trackOnMount?: boolean;
   userId?: string;
 }

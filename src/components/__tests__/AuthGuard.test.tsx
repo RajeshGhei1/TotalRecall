@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, MemoryRouter } from 'react-router-dom';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, Mock } from 'vitest';
 import AuthGuard from '../AuthGuard';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +25,23 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn(),
   },
 }));
+
+// Types for mocked hooks
+interface MockAuthReturn {
+  user: { id: string; email: string } | null;
+  session: { user: { id: string; email: string }; access_token: string } | null;
+  loading: boolean;
+  bypassAuth: boolean;
+  signIn: ReturnType<typeof vi.fn>;
+  signUp: ReturnType<typeof vi.fn>;
+  signOut: ReturnType<typeof vi.fn>;
+}
+
+interface MockSuperAdminReturn {
+  isSuperAdmin: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
 
 // Test component to render inside AuthGuard
 const TestComponent: React.FC = () => (
@@ -54,8 +71,8 @@ const createWrapper = (initialEntries = ['/protected']) => {
 };
 
 describe('AuthGuard', () => {
-  const mockUseAuth = useAuth as any;
-  const mockUseSuperAdminCheck = useSuperAdminCheck as any;
+  const mockUseAuth = useAuth as unknown as Mock<() => MockAuthReturn>;
+  const mockUseSuperAdminCheck = useSuperAdminCheck as unknown as Mock<() => MockSuperAdminReturn>;
 
   beforeEach(() => {
     vi.clearAllMocks();

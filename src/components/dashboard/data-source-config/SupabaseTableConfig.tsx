@@ -6,12 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { DataSourceConfig, FilterConfig } from '@/types/common';
 
 interface SupabaseTableConfigProps {
-  config: any;
-  setConfig: (config: any) => void;
-  newFilter: any;
-  setNewFilter: (filter: any) => void;
+  config: DataSourceConfig;
+  setConfig: (config: DataSourceConfig | ((prev: DataSourceConfig) => DataSourceConfig)) => void;
+  newFilter: FilterConfig;
+  setNewFilter: (filter: FilterConfig | ((prev: FilterConfig) => FilterConfig)) => void;
   addFilter: () => void;
   removeFilter: (index: number) => void;
 }
@@ -85,7 +86,7 @@ const SupabaseTableConfig: React.FC<SupabaseTableConfigProps> = ({
       <div>
         <Label>Filters</Label>
         <div className="space-y-2">
-          {config.query_config.filters.map((filter: any, index: number) => (
+          {config.query_config.filters.map((filter: FilterConfig, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <Badge variant="secondary" className="flex items-center gap-1">
                 {filter.column} {filter.operator} {filter.value}

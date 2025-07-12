@@ -2,10 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
+import { AvailableWidget } from '@/types/common';
 
 interface WidgetPaletteProps {
-  widgetsByCategory: Record<string, any[]>;
-  addWidget: (widget: any) => void;
+  widgetsByCategory: Record<string, AvailableWidget[]>;
+  addWidget: (widget: AvailableWidget) => void;
 }
 
 const WidgetPalette: React.FC<WidgetPaletteProps> = ({ widgetsByCategory, addWidget }) => {

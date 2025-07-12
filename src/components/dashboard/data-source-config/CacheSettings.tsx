@@ -2,10 +2,11 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { DataSourceConfig } from '@/types/common';
 
 interface CacheSettingsProps {
-  config: any;
-  setConfig: (config: any) => void;
+  config: DataSourceConfig;
+  setConfig: (config: DataSourceConfig | ((prev: DataSourceConfig) => DataSourceConfig)) => void;
 }
 
 const CacheSettings: React.FC<CacheSettingsProps> = ({ config, setConfig }) => {

@@ -6,12 +6,44 @@ import ATSCandidatesTab from './ATSCandidatesTab';
 import ATSApplicationsTab from './ATSApplicationsTab';
 import ATSAnalyticsTab from './ATSAnalyticsTab';
 
+// Define types to match the tab components
+interface Job {
+  id: string;
+  title?: string;
+  department?: string;
+  location?: string;
+  employment_type?: string;
+  status?: 'open' | 'closed' | 'draft';
+  applications_count?: number;
+  created_at?: string;
+}
+
+interface Candidate {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  current_title?: string;
+  status?: string;
+}
+
+interface Application {
+  id: string;
+  candidate_name?: string;
+  job_title?: string;
+  status?: 'new' | 'reviewing' | 'interviewing' | 'hired' | 'rejected';
+  stage?: string;
+  created_at?: string;
+}
+
 interface ATSTabsContentProps {
   activeTab: string;
   onTabChange: (value: string) => void;
-  jobs: any[];
-  candidates: any[];
-  applications: any[];
+  jobs: Job[];
+  candidates: Candidate[];
+  applications: Application[];
   searchTerm: string;
   onCreateCandidate: () => void;
   onCreateJob: () => void;

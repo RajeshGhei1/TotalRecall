@@ -9,6 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { useUnifiedAI } from '@/hooks/ai/useUnifiedAI';
 import { Mail, FormInput, FileText, TrendingUp, Lightbulb } from 'lucide-react';
 
+// Type definitions for AI components
+interface FormSuggestion {
+  value: string;
+  reasoning: string;
+  confidence: number;
+}
+
+interface ContentAnalysis {
+  sentiment: {
+    label: string;
+    score: number;
+  };
+  readabilityScore: number;
+  wordCount: number;
+  keywords: string[];
+  topics: string[];
+}
+
+interface PredictionResult {
+  outcome: string;
+  probability: number;
+  timeframe: string;
+  factors: string[];
+}
+
 interface AIEmailResponseGeneratorProps {
   emailContent: string;
   onResponseGenerated: (response: string) => void;
@@ -135,7 +160,7 @@ export const SmartFormField: React.FC<SmartFormFieldProps> = ({
   module
 }) => {
   const { getFormSuggestions, isLoading } = useUnifiedAI();
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<FormSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleGetSuggestions = async () => {
@@ -232,7 +257,7 @@ export const ContentAnalysisWidget: React.FC<ContentAnalysisWidgetProps> = ({
   module
 }) => {
   const { analyzeContent, isLoading } = useUnifiedAI();
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<ContentAnalysis | null>(null);
 
   const handleAnalyze = async () => {
     const response = await analyzeContent(content, {
@@ -327,7 +352,7 @@ export const ContentAnalysisWidget: React.FC<ContentAnalysisWidgetProps> = ({
 
 interface PredictiveInsightsWidgetProps {
   dataType: string;
-  historicalData: any[];
+  historicalData: Record<string, unknown>[];
   userId: string;
   tenantId?: string;
   module: string;
@@ -341,7 +366,7 @@ export const PredictiveInsightsWidget: React.FC<PredictiveInsightsWidgetProps> =
   module
 }) => {
   const { predictOutcome, isLoading } = useUnifiedAI();
-  const [prediction, setPrediction] = useState<any>(null);
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
 
   const handlePredict = async () => {
     const response = await predictOutcome(dataType, historicalData, {
