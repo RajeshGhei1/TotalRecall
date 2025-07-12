@@ -1,5 +1,18 @@
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+// Lazy load PDF libraries to reduce initial bundle size
+let jsPDF: any = null;
+let autoTable: any = null;
+
+// Initialize PDF libraries only when needed
+async function initializePDFLibraries() {
+  if (!jsPDF) {
+    const jsPDFModule = await import('jspdf');
+    jsPDF = jsPDFModule.jsPDF;
+  }
+  if (!autoTable) {
+    await import('jspdf-autotable');
+    autoTable = (window as any).jsPDF.API.autoTable;
+  }
+}
 
 export interface PDFExportOptions {
   includeLogo?: boolean;
@@ -78,7 +91,7 @@ const createLogo = (): string => {
 };
 
 export class PDFDocumentExporter {
-  private doc: jsPDF;
+  private doc: any;
   private options: PDFExportOptions;
   private currentY: number = 0;
   private pageHeight: number = 0;
@@ -96,7 +109,10 @@ export class PDFDocumentExporter {
       branding: BRAND_COLORS,
       ...options
     };
+  }
 
+  async initialize(): Promise<void> {
+    await initializePDFLibraries();
     this.doc = new jsPDF('p', 'mm', 'a4');
     this.pageHeight = this.doc.internal.pageSize.height;
     this.margin = this.options.margin || 20;
@@ -105,6 +121,7 @@ export class PDFDocumentExporter {
 
   async exportDocument(document: DocumentContent): Promise<Blob> {
     try {
+      await this.initialize();
       console.log('Starting PDF export for document:', document.title);
       
       // Add header with logo
@@ -143,6 +160,7 @@ export class PDFDocumentExporter {
 
   async exportMultipleDocuments(documents: DocumentContent[]): Promise<Blob> {
     try {
+      await this.initialize();
       console.log('Starting multi-document PDF export for', documents.length, 'documents');
       
       // Add cover page
