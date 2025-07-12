@@ -31,7 +31,7 @@ export const useCompanyDeletion = () => {
     }
 
     // Check branch offices - using type assertion since table is newly created
-    const { data: branchOffices } = await (supabase as any)
+    const { data: branchOffices } = await (supabase as unknown)
       .from('company_branch_offices')
       .select('id')
       .eq('company_id', company.id);
@@ -86,7 +86,7 @@ export const useCompanyDeletion = () => {
       }
 
       // 2. Delete branch offices - using type assertion
-      const { error: branchError } = await (supabase as any)
+      const { error: branchError } = await (supabase as unknown)
         .from('company_branch_offices')
         .delete()
         .eq('company_id', company.id);

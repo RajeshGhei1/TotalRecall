@@ -40,8 +40,8 @@ function generateRecommendations(summary: any) {
   const recommendations = [];
 
   // Risk-based recommendations
-  const highRisks = summary.risks.filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical');
-  highRisks.forEach((risk: any) => {
+  const highRisks = summary.risks.filter((r: unknown) => r.riskLevel === 'high' || r.riskLevel === 'critical');
+  highRisks.forEach((risk: unknown) => {
     recommendations.push({
       type: 'risk-mitigation',
       priority: 'high',
@@ -52,8 +52,8 @@ function generateRecommendations(summary: any) {
   });
 
   // Opportunity-based recommendations
-  const highOpportunities = summary.opportunities.filter((o: any) => o.potential === 'high');
-  highOpportunities.forEach((opportunity: any) => {
+  const highOpportunities = summary.opportunities.filter((o: unknown) => o.potential === 'high');
+  highOpportunities.forEach((opportunity: unknown) => {
     recommendations.push({
       type: 'growth-opportunity',
       priority: 'medium',
@@ -64,8 +64,8 @@ function generateRecommendations(summary: any) {
   });
 
   // Trend-based recommendations
-  const decreasingTrends = summary.trends.filter((t: any) => t.trend === 'decreasing');
-  decreasingTrends.forEach((trend: any) => {
+  const decreasingTrends = summary.trends.filter((t: unknown) => t.trend === 'decreasing');
+  decreasingTrends.forEach((trend: unknown) => {
     recommendations.push({
       type: 'trend-improvement',
       priority: 'medium',

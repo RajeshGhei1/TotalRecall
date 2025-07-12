@@ -35,7 +35,7 @@ const UserSubscriptionManager: React.FC<UserSubscriptionManagerProps> = ({
   const { data: plans } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -88,8 +88,8 @@ const UserSubscriptionManager: React.FC<UserSubscriptionManagerProps> = ({
 
   const filteredUserSubscriptions = overview?.userSubscriptions.filter(sub => {
     const matchesSearch = searchTerm === '' || 
-      (sub as any).profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (sub as any).profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      (sub as unknown).profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (sub as unknown).profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || sub.status === statusFilter;
     
@@ -225,10 +225,10 @@ const UserSubscriptionManager: React.FC<UserSubscriptionManagerProps> = ({
                       </div>
                       <div>
                         <h4 className="font-medium">
-                          {(userSub as any).profiles?.full_name || 'Unknown User'}
+                          {(userSub as unknown).profiles?.full_name || 'Unknown User'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          {(userSub as any).profiles?.email || 'No email'}
+                          {(userSub as unknown).profiles?.email || 'No email'}
                         </p>
                       </div>
                     </div>

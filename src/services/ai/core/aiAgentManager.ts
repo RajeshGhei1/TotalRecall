@@ -87,7 +87,7 @@ export class AIAgentManager {
       score += matchingCapabilities.length * 10;
 
       // Prefer tenant-specific agents if available
-      const agentTenantId = (agent.modelConfig as any)?.tenant_id;
+      const agentTenantId = (agent.modelConfig as unknown)?.tenant_id;
       if (agentTenantId === tenantId) {
         score += 5;
       }

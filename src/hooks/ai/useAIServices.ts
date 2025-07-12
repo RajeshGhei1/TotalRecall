@@ -130,7 +130,7 @@ export const useAIServices = () => {
     mutationFn: async ({ serviceId, updates }: { serviceId: string; updates: UpdateAIServiceRequest }) => {
       const updateData = {
         ...updates,
-        ...(updates.configuration && { configuration: updates.configuration as any })
+        ...(updates.configuration && { configuration: updates.configuration as unknown })
       };
       
       const { data, error } = await supabase

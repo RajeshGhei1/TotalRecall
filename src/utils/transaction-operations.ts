@@ -5,7 +5,7 @@ import type { TransactionOperation, RollbackOperation } from '@/types/transactio
 // Type-safe wrapper that bypasses strict table name typing
 const executeSupabaseOperation = async (operation: TransactionOperation) => {
   // Use type assertion to bypass strict typing for dynamic table names
-  const client = supabase as any;
+  const client = supabase as unknown;
   
   switch (operation.type) {
     case 'insert':
@@ -40,7 +40,7 @@ const executeSupabaseOperation = async (operation: TransactionOperation) => {
 };
 
 const executeRollbackOperation = async (rollbackOp: RollbackOperation) => {
-  const client = supabase as any;
+  const client = supabase as unknown;
   
   switch (rollbackOp.type) {
     case 'insert':
@@ -55,7 +55,7 @@ const executeRollbackOperation = async (rollbackOp: RollbackOperation) => {
 };
 
 const fetchCurrentData = async (table: string, filter: Record<string, any>) => {
-  const client = supabase as any;
+  const client = supabase as unknown;
   return await client
     .from(table)
     .select('*')

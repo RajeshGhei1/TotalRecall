@@ -208,7 +208,7 @@ export function MultiSelect({
                           )}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                              handleInputKeyDown(e as any)
+                              handleInputKeyDown(e as unknown)
                             }
                           }}
                           onMouseDown={(e) => {
@@ -244,7 +244,7 @@ export function MultiSelect({
                         )}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            handleInputKeyDown(e as any)
+                            handleInputKeyDown(e as unknown)
                           }
                         }}
                         onMouseDown={(e) => {
@@ -280,7 +280,7 @@ export function MultiSelect({
                     )}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleInputKeyDown(e as any)
+                        handleInputKeyDown(e as unknown)
                       }
                     }}
                     onMouseDown={(e) => {

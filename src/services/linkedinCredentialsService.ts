@@ -23,7 +23,7 @@ class LinkedInCredentialsService {
         return null;
       }
 
-      const config = data.connection_config as any;
+      const config = data.connection_config as unknown;
       
       if (!config?.client_id || !config?.client_secret) {
         return null;

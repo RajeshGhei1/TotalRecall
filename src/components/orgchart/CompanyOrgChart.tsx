@@ -122,7 +122,7 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
   }
 
   const totalPeople = Object.keys(orgChartData.allNodes).length;
-  const managersCount = Object.values(orgChartData.allNodes).filter((node: any) => node.isManager).length;
+  const managersCount = Object.values(orgChartData.allNodes).filter((node: unknown) => node.isManager).length;
 
   return (
     <div className="space-y-6">

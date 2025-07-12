@@ -37,7 +37,7 @@ const CompanyMetricsSection: React.FC<CompanyMetricsSectionProps> = ({ form }) =
         
         // Set the form value to the newly added option
         if (newOptionObj) {
-          form.setValue(addingType as any, newOptionObj.value);
+          form.setValue(addingType as unknown, newOptionObj.value);
         }
         
         setAddingType(null);

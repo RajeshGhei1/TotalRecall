@@ -126,7 +126,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
 };
 
 // Module metadata for registration
-(ContactForm as any).moduleMetadata = {
+(ContactForm as unknown).moduleMetadata = {
   id: 'contact-form',
   name: 'Contact Form',
   category: 'business',

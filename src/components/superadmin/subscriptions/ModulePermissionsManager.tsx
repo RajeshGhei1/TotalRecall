@@ -25,7 +25,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
   const { data: existingPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['module-permissions', planId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('module_permissions')
         .select('*')
         .eq('plan_id', planId);
@@ -33,7 +33,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
       if (error) throw error;
       
       const permissionsMap: Record<string, any> = {};
-      data?.forEach((perm: any) => {
+      data?.forEach((perm: unknown) => {
         permissionsMap[perm.module_name] = {
           is_enabled: perm.is_enabled,
           limits: perm.limits || {}
@@ -48,7 +48,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
   const savePermissionsMutation = useMutation({
     mutationFn: async () => {
       // Delete existing permissions for this plan
-      await (supabase as any)
+      await (supabase as unknown)
         .from('module_permissions')
         .delete()
         .eq('plan_id', planId);
@@ -62,7 +62,7 @@ const ModulePermissionsManager: React.FC<ModulePermissionsManagerProps> = ({ pla
       }));
 
       if (permissionsToInsert.length > 0) {
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as unknown)
           .from('module_permissions')
           .insert(permissionsToInsert);
 

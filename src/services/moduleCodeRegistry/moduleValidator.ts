@@ -40,7 +40,7 @@ export class ModuleValidator {
       }
 
       // Check if component has required metadata
-      const componentMetadata = (component as any).moduleMetadata;
+      const componentMetadata = (component as unknown).moduleMetadata;
       if (!componentMetadata) {
         warnings.push(`Component missing moduleMetadata: ${moduleId}`);
       }

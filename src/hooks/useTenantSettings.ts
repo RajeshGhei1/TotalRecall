@@ -39,7 +39,7 @@ export function useTenantSettings<T extends Record<string, any>>(
       
       // Use type assertion to handle the dynamic table name
       const { data, error } = await (supabase
-        .from(tableName as any)
+        .from(tableName as unknown)
         .select('*')
         .eq('tenant_id', selectedTenantId)
         .maybeSingle());
@@ -71,7 +71,7 @@ export function useTenantSettings<T extends Record<string, any>>(
       
       // Check if record exists
       const { data: existingData } = await (supabase
-        .from(tableName as any)
+        .from(tableName as unknown)
         .select(keyField)
         .eq('tenant_id', selectedTenantId)
         .maybeSingle());
@@ -81,8 +81,8 @@ export function useTenantSettings<T extends Record<string, any>>(
       if (existingData) {
         // Update
         const { data, error } = await (supabase
-          .from(tableName as any)
-          .update(dataToUpdate as any)
+          .from(tableName as unknown)
+          .update(dataToUpdate as unknown)
           .eq('tenant_id', selectedTenantId)
           .select());
         
@@ -91,8 +91,8 @@ export function useTenantSettings<T extends Record<string, any>>(
       } else {
         // Insert
         const { data, error } = await (supabase
-          .from(tableName as any)
-          .insert(dataToUpdate as any)
+          .from(tableName as unknown)
+          .insert(dataToUpdate as unknown)
           .select());
         
         if (error) throw error;

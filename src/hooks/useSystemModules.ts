@@ -77,7 +77,7 @@ export const useSystemModules = (activeOnly: boolean = true, maturityFilter?: st
       
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.category !== undefined) updateData.category = updates.category;
-      if (updates.type !== undefined) (updateData as any).type = updates.type;
+      if (updates.type !== undefined) (updateData as unknown).type = updates.type;
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
       if (updates.version !== undefined) updateData.version = updates.version;

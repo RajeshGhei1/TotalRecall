@@ -56,8 +56,8 @@ export const EditAIAgentDialog = ({ agent, open, onOpenChange }: EditAIAgentDial
         description: agent.description || '',
         type: agent.type,
         capabilities: agent.capabilities.join(', '),
-        preferredModel: (agent.model_config as any)?.preferred_model || '',
-        temperature: (agent.model_config as any)?.temperature || 0.7,
+        preferredModel: (agent.model_config as unknown)?.preferred_model || '',
+        temperature: (agent.model_config as unknown)?.temperature || 0.7,
       });
     }
   }, [agent, form]);
@@ -70,7 +70,7 @@ export const EditAIAgentDialog = ({ agent, open, onOpenChange }: EditAIAgentDial
         type: data.type as AIAgentType,
         capabilities: data.capabilities.split(',').map(cap => cap.trim()),
         model_config: {
-          ...(agent.model_config as any),
+          ...(agent.model_config as unknown),
           preferred_model: data.preferredModel,
           temperature: data.temperature,
         },

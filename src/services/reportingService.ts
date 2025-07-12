@@ -104,7 +104,7 @@ export const runDynamicReport = async (
   }
   
   // Build the query - fixed to use a type assertion to handle the dynamic table name
-  let query = supabase.from(entity as any).select(columns.join(','));
+  let query = supabase.from(entity as unknown).select(columns.join(','));
   
   // Apply filters
   filters.forEach(filter => {

@@ -240,7 +240,7 @@ export class AILearningDataService {
 
     // Analyze specific feedback data for more targeted recommendations
     entries.forEach(entry => {
-      const feedbackData = entry.feedback_data as any;
+      const feedbackData = entry.feedback_data as unknown;
       if (feedbackData && typeof feedbackData === 'object' && feedbackData.improvement_suggestions) {
         const suggestions = feedbackData.improvement_suggestions;
         if (Array.isArray(suggestions)) {
@@ -305,7 +305,7 @@ export class AILearningDataService {
       // Extract top issues and improvement areas with proper type checking
       const issues: string[] = [];
       learningData?.filter(d => d.feedback_type === 'negative').forEach(d => {
-        const feedbackData = d.feedback_data as any;
+        const feedbackData = d.feedback_data as unknown;
         if (feedbackData && typeof feedbackData === 'object' && feedbackData.improvement_suggestions) {
           const suggestions = feedbackData.improvement_suggestions;
           if (Array.isArray(suggestions)) {

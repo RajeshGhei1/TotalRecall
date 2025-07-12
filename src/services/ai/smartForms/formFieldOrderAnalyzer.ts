@@ -6,8 +6,16 @@ export interface FieldOrderSuggestion {
   reason: string;
 }
 
+interface FormField {
+  field_type?: string;
+  type?: string;
+  name?: string;
+  field_key?: string;
+  [key: string]: unknown;
+}
+
 export class FormFieldOrderAnalyzer {
-  static analyzeFieldOrder(fields: unknown[]): FieldOrderSuggestion[] {
+  static analyzeFieldOrder(fields: FormField[]): FieldOrderSuggestion[] {
     const suggestions: FieldOrderSuggestion[] = [];
     
     // Check if email comes before name

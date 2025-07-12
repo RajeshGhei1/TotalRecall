@@ -23,7 +23,7 @@ export class AIMetricsService {
           status,
           response_time_ms: responseTime || 0,
           error_message: error?.message,
-          context: request.context as any
+          context: request.context as unknown
         });
     } catch (logError) {
       console.error('Error logging request:', logError);

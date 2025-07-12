@@ -41,7 +41,7 @@ export const useModuleTemplates = (activeOnly: boolean = true) => {
         throw error;
       }
 
-      return (data || []).map((template: any) => ({
+      return (data || []).map((template: unknown) => ({
         ...template,
         tags: Array.isArray(template.tags) ? template.tags : [],
         dependencies: Array.isArray(template.dependencies) ? template.dependencies : [],

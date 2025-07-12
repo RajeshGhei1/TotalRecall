@@ -108,7 +108,7 @@ const CoreDashboard: React.FC<CoreDashboardProps> = ({
 };
 
 // Module metadata for registration
-(CoreDashboard as any).moduleMetadata = {
+(CoreDashboard as unknown).moduleMetadata = {
   id: 'core-dashboard',
   name: 'Core Dashboard',
   category: 'core',

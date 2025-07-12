@@ -1,6 +1,12 @@
 
+interface FormDefinition {
+  name?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
 export class FormTypeDetector {
-  static detectFormType(form: any): string {
+  static detectFormType(form: FormDefinition): string {
     const name = form.name?.toLowerCase() || '';
     const description = form.description?.toLowerCase() || '';
     

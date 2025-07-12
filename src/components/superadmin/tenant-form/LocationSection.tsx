@@ -129,7 +129,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({
       // Set the form value to the newly added option
       if (addingType && newOptionObj) {
         console.log(`Setting form value for ${addingType} to ${newOptionObj.value}`);
-        form.setValue(addingType as any, newOptionObj.value);
+        form.setValue(addingType as unknown, newOptionObj.value);
       }
       
       toast({

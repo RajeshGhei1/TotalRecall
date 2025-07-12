@@ -13,7 +13,7 @@ const TalentDatabase: React.FC<TalentDatabaseProps> = ({ view, showFilters, allo
 };
 
 // Module metadata for registration
-(TalentDatabase as any).moduleMetadata = {
+(TalentDatabase as unknown).moduleMetadata = {
   id: 'talent-database',
   name: 'Talent Database',
   category: 'recruitment',

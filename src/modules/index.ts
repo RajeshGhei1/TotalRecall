@@ -22,9 +22,9 @@ export const modules = {
 };
 
 export const moduleMetadata = {
-  'ats-core': (ATSCoreModule as any).moduleMetadata,
-  'talent-database': (TalentDatabaseModule as any).moduleMetadata,
-  'smart-talent-analytics': (SmartTalentAnalyticsModule as any).moduleMetadata,
-  'companies': (CompaniesModule as any).moduleMetadata,
-  'people': (PeopleModule as any).moduleMetadata
+  'ats-core': (ATSCoreModule as unknown).moduleMetadata,
+  'talent-database': (TalentDatabaseModule as unknown).moduleMetadata,
+  'smart-talent-analytics': (SmartTalentAnalyticsModule as unknown).moduleMetadata,
+  'companies': (CompaniesModule as unknown).moduleMetadata,
+  'people': (PeopleModule as unknown).moduleMetadata
 };

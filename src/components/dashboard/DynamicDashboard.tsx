@@ -137,7 +137,7 @@ const DynamicDashboard: React.FC = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {widgetConfigs.map((widgetConfig: any) => {
+        {widgetConfigs.map((widgetConfig: unknown) => {
           const widget = widgets?.find(w => w.widget_type === widgetConfig.widget_type);
           const dataSource = dataSources?.find(ds => ds.id === widgetConfig.data_source_id);
           

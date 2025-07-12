@@ -35,13 +35,13 @@ export class AIDecisionRecorder {
           agent_id: decision.agentId,
           user_id: decision.userId,
           tenant_id: decision.tenantId || null,
-          decision: decision.decision as any,
+          decision: decision.decision as unknown,
           context: {
             module: 'ai-orchestration',
             action: 'decision_recorded',
             timestamp: new Date().toISOString(),
             metadata: {}
-          } as any,
+          } as unknown,
           confidence_score: decision.confidence,
           created_at: new Date().toISOString()
         })
@@ -79,7 +79,7 @@ export class AIDecisionRecorder {
           outcome_feedback: { 
             feedback, 
             timestamp: new Date().toISOString() 
-          } as any
+          } as unknown
         })
         .eq('id', decisionId);
 

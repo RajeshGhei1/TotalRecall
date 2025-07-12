@@ -362,7 +362,7 @@ async function checkExistingModules() {
     return [];
   }
   
-  return data.map((m: any) => m.name);
+  return data.map((m: unknown) => m.name);
 }
 
 async function registerModule(moduleData: any) {

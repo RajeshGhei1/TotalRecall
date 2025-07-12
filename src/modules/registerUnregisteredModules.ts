@@ -27,7 +27,7 @@ async function getRegisteredModuleNames() {
     console.error('Error fetching registered modules:', error);
     return [];
   }
-  return data.map((m: any) => m.name);
+  return data.map((m: unknown) => m.name);
 }
 
 async function registerModule(moduleName: string) {

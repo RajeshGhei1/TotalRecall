@@ -244,7 +244,7 @@ export function LiveDocumentationPanel() {
                         <Clock className="h-3 w-3" />
                         {new Date(item.lastUpdated).toLocaleTimeString()}
                       </div>
-                      <Badge variant={getStatusColor(item.status) as any}>
+                      <Badge variant={getStatusColor(item.status) as unknown}>
                         {item.status}
                       </Badge>
                       <Button

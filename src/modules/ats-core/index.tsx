@@ -13,7 +13,7 @@ const AtsCore: React.FC<AtsCoreProps> = ({ view, showMetrics, allowCreate }) => 
 };
 
 // Module metadata for registration
-(AtsCore as any).moduleMetadata = {
+(AtsCore as unknown).moduleMetadata = {
   id: 'ats-core',
   name: 'ATS Core',
   category: 'recruitment',

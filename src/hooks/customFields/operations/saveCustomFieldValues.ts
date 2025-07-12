@@ -38,7 +38,7 @@ export async function saveCustomFieldValues(
       for (const item of upsertArray) {
         const existing = existingValues.find(ev => ev.field_id === item.field_id);
         if (existing && existing.id) {
-          (item as any).id = existing.id;
+          (item as unknown).id = existing.id;
         }
       }
     }

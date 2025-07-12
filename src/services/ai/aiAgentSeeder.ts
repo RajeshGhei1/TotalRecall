@@ -136,8 +136,8 @@ export class AIAgentSeeder {
         type: config.type,
         description: config.description,
         capabilities: config.capabilities,
-        model_config: config.model_config as any,
-        performance_metrics: config.performance_metrics as any,
+        model_config: config.model_config as unknown,
+        performance_metrics: config.performance_metrics as unknown,
         status: 'active',
         is_active: true,
         tenant_id: null, // Global agents

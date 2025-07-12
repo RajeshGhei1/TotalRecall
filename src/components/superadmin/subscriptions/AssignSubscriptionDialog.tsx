@@ -70,7 +70,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
   const { data: plans } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -87,7 +87,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
     queryFn: async () => {
       if (!selectedTenant?.id || assignmentType !== 'individual') return [];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('user_tenants')
         .select(`
           user_id,
@@ -103,7 +103,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
 
   const assignTenantSubscriptionMutation = useMutation({
     mutationFn: async (data: AssignSubscriptionFormData) => {
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .insert([{
           tenant_id: data.tenant_id,
@@ -260,7 +260,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
                 <SelectValue placeholder="Select plan" />
               </SelectTrigger>
               <SelectContent>
-                {plans?.map((plan: any) => (
+                {plans?.map((plan: unknown) => (
                   <SelectItem key={plan.id} value={plan.id}>
                     {plan.name} ({plan.plan_type})
                   </SelectItem>
@@ -278,7 +278,7 @@ const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
         <div className="space-y-2">
           <Label>Select Users</Label>
           <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
-            {tenantUsers.map((userTenant: any) => (
+            {tenantUsers.map((userTenant: unknown) => (
               <div key={userTenant.user_id} className="flex items-center space-x-2">
                 <Controller
                   name="selected_users"

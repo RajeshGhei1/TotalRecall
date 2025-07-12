@@ -43,7 +43,7 @@ const ModulePricingManager: React.FC = () => {
       }));
 
       for (const update of updates) {
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as unknown)
           .from('module_pricing')
           .upsert(update, { onConflict: 'module_name' });
         

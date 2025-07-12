@@ -1828,7 +1828,7 @@ const AiOrchestration: React.FC<AiOrchestrationProps> = ({
 };
 
 // Module metadata for registration
-(AiOrchestration as any).moduleMetadata = {
+(AiOrchestration as unknown).moduleMetadata = {
   id: 'ai-orchestration',
   name: 'AI Orchestration',
   category: 'ai',

@@ -64,7 +64,7 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 };
 
 // Module metadata for registration
-(DashboardWidget as any).moduleMetadata = {
+(DashboardWidget as unknown).moduleMetadata = {
   id: 'dashboard-widget',
   name: 'Dashboard Widget',
   category: 'core',

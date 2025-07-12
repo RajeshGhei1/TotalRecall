@@ -18,7 +18,7 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
       }
 
       // Get tenant's active subscription using type assertion
-      const { data: subscription, error: subError } = await (supabase as any)
+      const { data: subscription, error: subError } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .select(`
           *,
@@ -39,7 +39,7 @@ export const useModuleAccess = (tenantId: string | null, moduleName: string) => 
       }
 
       // Check module permissions for this plan
-      const { data: permission, error: permError } = await (supabase as any)
+      const { data: permission, error: permError } = await (supabase as unknown)
         .from('module_permissions')
         .select('*')
         .eq('plan_id', subscription.plan_id)

@@ -260,7 +260,7 @@ const EmailManagement: React.FC<EmailManagementProps> = ({
 };
 
 // Module metadata for registration
-(EmailManagement as any).moduleMetadata = {
+(EmailManagement as unknown).moduleMetadata = {
   id: 'email-management',
   name: 'Email Management',
   category: 'communication',

@@ -123,16 +123,16 @@ const ApprovalWorkflowManager: React.FC<ApprovalWorkflowManagerProps> = ({
                         {approval.status.replace('_', ' ').toUpperCase()}
                       </Badge>
                       <span className="text-sm text-gray-500">
-                        Version {(approval as any).entity_versions?.version_number}
+                        Version {(approval as unknown).entity_versions?.version_number}
                       </span>
                     </div>
                     
                     <h4 className="font-medium text-gray-900 mb-1">
-                      {(approval as any).entity_versions?.change_summary || `${entityType} approval request`}
+                      {(approval as unknown).entity_versions?.change_summary || `${entityType} approval request`}
                     </h4>
                     
                     <div className="text-sm text-gray-600 mb-2">
-                      Requested by {(approval as any).profiles?.full_name || (approval as any).profiles?.email}
+                      Requested by {(approval as unknown).profiles?.full_name || (approval as unknown).profiles?.email}
                     </div>
                     
                     <div className="text-xs text-gray-500">

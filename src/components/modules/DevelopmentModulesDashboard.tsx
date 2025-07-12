@@ -107,7 +107,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
     const systemModule: SystemModule = {
       id: module.manifest.id,
       name: module.manifest.name,
-      category: module.manifest.category as any,
+      category: module.manifest.category as unknown,
       description: module.manifest.description,
       version: module.manifest.version,
       is_active: module.status === 'loaded',

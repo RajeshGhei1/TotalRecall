@@ -29,7 +29,7 @@ export const useFormWorkflows = (formId?: string) => {
       return (data || []).map(workflow => ({
         ...workflow,
         trigger_conditions: workflow.trigger_conditions as Record<string, any>,
-        workflow_steps: Array.isArray(workflow.workflow_steps) ? workflow.workflow_steps as any[] : []
+        workflow_steps: Array.isArray(workflow.workflow_steps) ? workflow.workflow_steps as unknown[] : []
       })) as FormWorkflow[];
     },
   });
@@ -45,8 +45,8 @@ export const useCreateFormWorkflow = () => {
         .from('form_workflows')
         .insert({
           ...workflowData,
-          trigger_conditions: workflowData.trigger_conditions as any,
-          workflow_steps: workflowData.workflow_steps as any
+          trigger_conditions: workflowData.trigger_conditions as unknown,
+          workflow_steps: workflowData.workflow_steps as unknown
         })
         .select()
         .single();
@@ -59,7 +59,7 @@ export const useCreateFormWorkflow = () => {
       return {
         ...data,
         trigger_conditions: data.trigger_conditions as Record<string, any>,
-        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as any[] : []
+        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as unknown[] : []
       } as FormWorkflow;
     },
     onSuccess: () => {
@@ -82,8 +82,8 @@ export const useUpdateFormWorkflow = () => {
         .from('form_workflows')
         .update({
           ...updates,
-          trigger_conditions: updates.trigger_conditions as any,
-          workflow_steps: updates.workflow_steps as any
+          trigger_conditions: updates.trigger_conditions as unknown,
+          workflow_steps: updates.workflow_steps as unknown
         })
         .eq('id', id)
         .select()
@@ -97,7 +97,7 @@ export const useUpdateFormWorkflow = () => {
       return {
         ...data,
         trigger_conditions: data.trigger_conditions as Record<string, any>,
-        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as any[] : []
+        workflow_steps: Array.isArray(data.workflow_steps) ? data.workflow_steps as unknown[] : []
       } as FormWorkflow;
     },
     onSuccess: () => {
@@ -151,8 +151,8 @@ export const useCreateFormNotification = () => {
         .from('form_notifications')
         .insert({
           ...notificationData,
-          template_data: notificationData.template_data as any,
-          recipients: notificationData.recipients as any
+          template_data: notificationData.template_data as unknown,
+          recipients: notificationData.recipients as unknown
         })
         .select()
         .single();

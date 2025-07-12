@@ -31,7 +31,7 @@ export const useModulePermissionsSummary = (planId: string) => {
   return useQuery({
     queryKey: ['module-permissions-summary', planId],
     queryFn: async (): Promise<ModulePermissionSummary> => {
-      const { data: permissions, error } = await (supabase as any)
+      const { data: permissions, error } = await (supabase as unknown)
         .from('module_permissions')
         .select('*')
         .eq('plan_id', planId);

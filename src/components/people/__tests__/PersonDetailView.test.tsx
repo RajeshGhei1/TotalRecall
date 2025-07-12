@@ -80,13 +80,13 @@ describe('PersonDetailView', () => {
     const { usePersonQuery } = await import('@/hooks/people/usePersonQuery');
     const { usePersonEmploymentHistory } = await import('@/hooks/company-relationships/usePersonEmploymentHistory');
     
-    (usePersonQuery as any).mockReturnValue({
+    (usePersonQuery as unknown).mockReturnValue({
       data: mockPerson,
       isLoading: false,
       error: null
     });
 
-    (usePersonEmploymentHistory as any).mockReturnValue({
+    (usePersonEmploymentHistory as unknown).mockReturnValue({
       employmentHistory: mockEmploymentHistory,
       isLoading: false,
       error: null
@@ -104,13 +104,13 @@ describe('PersonDetailView', () => {
     const { usePersonQuery } = await import('@/hooks/people/usePersonQuery');
     const { usePersonEmploymentHistory } = await import('@/hooks/company-relationships/usePersonEmploymentHistory');
     
-    (usePersonQuery as any).mockReturnValue({
+    (usePersonQuery as unknown).mockReturnValue({
       data: null,
       isLoading: true,
       error: null
     });
 
-    (usePersonEmploymentHistory as any).mockReturnValue({
+    (usePersonEmploymentHistory as unknown).mockReturnValue({
       employmentHistory: [],
       isLoading: true,
       error: null
@@ -126,13 +126,13 @@ describe('PersonDetailView', () => {
     const { usePersonQuery } = await import('@/hooks/people/usePersonQuery');
     const { usePersonEmploymentHistory } = await import('@/hooks/company-relationships/usePersonEmploymentHistory');
     
-    (usePersonQuery as any).mockReturnValue({
+    (usePersonQuery as unknown).mockReturnValue({
       data: null,
       isLoading: false,
       error: new Error('Failed to load person')
     });
 
-    (usePersonEmploymentHistory as any).mockReturnValue({
+    (usePersonEmploymentHistory as unknown).mockReturnValue({
       employmentHistory: [],
       isLoading: false,
       error: null
@@ -148,13 +148,13 @@ describe('PersonDetailView', () => {
     const { usePersonQuery } = await import('@/hooks/people/usePersonQuery');
     const { usePersonEmploymentHistory } = await import('@/hooks/company-relationships/usePersonEmploymentHistory');
     
-    (usePersonQuery as any).mockReturnValue({
+    (usePersonQuery as unknown).mockReturnValue({
       data: null,
       isLoading: false,
       error: null
     });
 
-    (usePersonEmploymentHistory as any).mockReturnValue({
+    (usePersonEmploymentHistory as unknown).mockReturnValue({
       employmentHistory: [],
       isLoading: false,
       error: null

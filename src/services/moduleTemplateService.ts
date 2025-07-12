@@ -69,7 +69,7 @@ const BasicWidget: React.FC<BasicWidgetProps> = ({
 };
 
 // Module metadata for registration
-(BasicWidget as any).moduleMetadata = {
+(BasicWidget as unknown).moduleMetadata = {
   id: 'basic-widget',
   name: 'Basic Widget',
   category: 'widget',
@@ -214,7 +214,7 @@ export default AnalyticsDashboard;`
       name: moduleConfig.name,
       version: '1.0.0',
       description: moduleConfig.description || template.description,
-      category: template.category as any,
+      category: template.category as unknown,
       author: 'Developer',
       license: 'MIT',
       dependencies: template.dependencies,

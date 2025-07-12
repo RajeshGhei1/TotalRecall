@@ -168,8 +168,8 @@ export class DecisionContextManager {
   private determineOutcome(decision: any): 'success' | 'failure' | 'partial_success' {
     if (decision.ai_learning_data && decision.ai_learning_data.length > 0) {
       const feedbacks = decision.ai_learning_data;
-      const positiveCount = feedbacks.filter((f: any) => f.feedback_type === 'positive').length;
-      const negativeCount = feedbacks.filter((f: any) => f.feedback_type === 'negative').length;
+      const positiveCount = feedbacks.filter((f: unknown) => f.feedback_type === 'positive').length;
+      const negativeCount = feedbacks.filter((f: unknown) => f.feedback_type === 'negative').length;
 
       if (positiveCount > negativeCount) return 'success';
       if (negativeCount > positiveCount) return 'failure';
@@ -336,7 +336,7 @@ export class DecisionContextManager {
 
       // Safe access to success_rate with proper type checking
       const avgSuccessRate = patterns.reduce((sum, p) => {
-        const insightData = p.insight_data as any;
+        const insightData = p.insight_data as unknown;
         const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
           ? Number(insightData.success_rate) : 0;
         return sum + successRate;
@@ -345,7 +345,7 @@ export class DecisionContextManager {
       // Calculate risk distribution
       const riskDistribution = { low: 0, medium: 0, high: 0 };
       patterns.forEach(pattern => {
-        const insightData = pattern.insight_data as any;
+        const insightData = pattern.insight_data as unknown;
         const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
           ? Number(insightData.success_rate) : 0;
         
@@ -356,14 +356,14 @@ export class DecisionContextManager {
 
       const topPerforming = patterns
         .filter(p => {
-          const insightData = p.insight_data as any;
+          const insightData = p.insight_data as unknown;
           const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
             ? Number(insightData.success_rate) : 0;
           return successRate > 0.8;
         })
         .sort((a, b) => {
-          const aData = a.insight_data as any;
-          const bData = b.insight_data as any;
+          const aData = a.insight_data as unknown;
+          const bData = b.insight_data as unknown;
           const aRate = (aData && typeof aData === 'object' && aData.success_rate) ? Number(aData.success_rate) : 0;
           const bRate = (bData && typeof bData === 'object' && bData.success_rate) ? Number(bData.success_rate) : 0;
           return bRate - aRate;
@@ -372,14 +372,14 @@ export class DecisionContextManager {
 
       const problematic = patterns
         .filter(p => {
-          const insightData = p.insight_data as any;
+          const insightData = p.insight_data as unknown;
           const successRate = (insightData && typeof insightData === 'object' && insightData.success_rate) 
             ? Number(insightData.success_rate) : 0;
           return successRate < 0.5;
         })
         .sort((a, b) => {
-          const aData = a.insight_data as any;
-          const bData = b.insight_data as any;
+          const aData = a.insight_data as unknown;
+          const bData = b.insight_data as unknown;
           const aRate = (aData && typeof aData === 'object' && aData.success_rate) ? Number(aData.success_rate) : 0;
           const bRate = (bData && typeof bData === 'object' && bData.success_rate) ? Number(bData.success_rate) : 0;
           return aRate - bRate;

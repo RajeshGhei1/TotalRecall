@@ -162,7 +162,7 @@ export class ModuleRepository {
         p_action: 'module_upload',
         p_entity_type: 'module',
         p_entity_id: registryEntry.id,
-        p_new_values: registryEntry as any,
+        p_new_values: registryEntry as unknown,
         p_additional_context: { moduleId: modulePackage.id, size: modulePackage.size }
       });
 

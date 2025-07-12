@@ -6,8 +6,18 @@ export interface ValidationIssue {
   suggestion: string;
 }
 
+interface FormField {
+  field_type?: string;
+  type?: string;
+  name?: string;
+  field_key?: string;
+  required?: boolean;
+  validation_rules?: unknown;
+  [key: string]: unknown;
+}
+
 export class FormValidationAnalyzer {
-  static identifyValidationIssues(fields: unknown[]): ValidationIssue[] {
+  static identifyValidationIssues(fields: FormField[]): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     
     fields.forEach(field => {

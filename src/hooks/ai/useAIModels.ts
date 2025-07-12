@@ -48,7 +48,7 @@ export const useAIModels = () => {
         .from('ai_models')
         .insert([{
           ...modelData,
-          configuration: modelData.configuration as any
+          configuration: modelData.configuration as unknown
         }])
         .select()
         .single();
@@ -79,7 +79,7 @@ export const useAIModels = () => {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AIModel> }) => {
       const updateData = {
         ...updates,
-        ...(updates.configuration && { configuration: updates.configuration as any })
+        ...(updates.configuration && { configuration: updates.configuration as unknown })
       };
       
       const { data, error } = await supabase

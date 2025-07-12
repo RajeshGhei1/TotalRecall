@@ -98,8 +98,8 @@ describe('AuthContext', () => {
         error: null 
       });
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -116,8 +116,8 @@ describe('AuthContext', () => {
         error: null 
       });
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -137,8 +137,8 @@ describe('AuthContext', () => {
         error: null 
       });
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -155,8 +155,8 @@ describe('AuthContext', () => {
       });
       const mockGetSession = vi.fn().mockRejectedValue(new Error('Session error'));
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -172,8 +172,8 @@ describe('AuthContext', () => {
       const mockSignInResponse = { data: { user: mockUser }, error: null };
       const mockProfileResponse = { data: { role: 'tenant_admin' }, error: null };
 
-      (supabase.auth.signInWithPassword as any).mockResolvedValue(mockSignInResponse);
-      (supabase.from as any).mockReturnValue({
+      (supabase.auth.signInWithPassword as unknown).mockResolvedValue(mockSignInResponse);
+      (supabase.from as unknown).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue(mockProfileResponse),
@@ -197,7 +197,7 @@ describe('AuthContext', () => {
 
     it('should handle sign in error', async () => {
       const mockError = new Error('Invalid credentials');
-      (supabase.auth.signInWithPassword as any).mockRejectedValue(mockError);
+      (supabase.auth.signInWithPassword as unknown).mockRejectedValue(mockError);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -212,7 +212,7 @@ describe('AuthContext', () => {
 
     it('should handle successful sign up', async () => {
       const mockSignUpResponse = { data: { user: { id: 'user-123' } }, error: null };
-      (supabase.auth.signUp as any).mockResolvedValue(mockSignUpResponse);
+      (supabase.auth.signUp as unknown).mockResolvedValue(mockSignUpResponse);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -236,7 +236,7 @@ describe('AuthContext', () => {
 
     it('should handle sign up error', async () => {
       const mockError = new Error('Email already exists');
-      (supabase.auth.signUp as any).mockRejectedValue(mockError);
+      (supabase.auth.signUp as unknown).mockRejectedValue(mockError);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -250,7 +250,7 @@ describe('AuthContext', () => {
     });
 
     it('should handle successful sign out', async () => {
-      (supabase.auth.signOut as any).mockResolvedValue({ error: null });
+      (supabase.auth.signOut as unknown).mockResolvedValue({ error: null });
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -265,7 +265,7 @@ describe('AuthContext', () => {
 
     it('should handle sign out error gracefully', async () => {
       const mockError = new Error('Sign out failed');
-      (supabase.auth.signOut as any).mockRejectedValue(mockError);
+      (supabase.auth.signOut as unknown).mockRejectedValue(mockError);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -285,8 +285,8 @@ describe('AuthContext', () => {
       const mockSignInResponse = { data: { user: mockUser }, error: null };
       const mockProfileResponse = { data: { role: 'super_admin' }, error: null };
 
-      (supabase.auth.signInWithPassword as any).mockResolvedValue(mockSignInResponse);
-      (supabase.from as any).mockReturnValue({
+      (supabase.auth.signInWithPassword as unknown).mockResolvedValue(mockSignInResponse);
+      (supabase.from as unknown).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue(mockProfileResponse),
@@ -310,8 +310,8 @@ describe('AuthContext', () => {
       const mockSignInResponse = { data: { user: mockUser }, error: null };
       const mockProfileResponse = { data: { role: 'tenant_admin' }, error: null };
 
-      (supabase.auth.signInWithPassword as any).mockResolvedValue(mockSignInResponse);
-      (supabase.from as any).mockReturnValue({
+      (supabase.auth.signInWithPassword as unknown).mockResolvedValue(mockSignInResponse);
+      (supabase.from as unknown).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue(mockProfileResponse),
@@ -335,8 +335,8 @@ describe('AuthContext', () => {
       const mockSignInResponse = { data: { user: mockUser }, error: null };
       const mockProfileError = { error: new Error('Database error') };
 
-      (supabase.auth.signInWithPassword as any).mockResolvedValue(mockSignInResponse);
-      (supabase.from as any).mockReturnValue({
+      (supabase.auth.signInWithPassword as unknown).mockResolvedValue(mockSignInResponse);
+      (supabase.from as unknown).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue(mockProfileError),
@@ -372,8 +372,8 @@ describe('AuthContext', () => {
         error: null 
       });
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -399,8 +399,8 @@ describe('AuthContext', () => {
         error: null 
       });
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -423,8 +423,8 @@ describe('AuthContext', () => {
       });
       const mockGetSession = vi.fn().mockRejectedValue(new Error('Network error'));
 
-      (supabase.auth.onAuthStateChange as any).mockImplementation(mockAuthStateChange);
-      (supabase.auth.getSession as any).mockImplementation(mockGetSession);
+      (supabase.auth.onAuthStateChange as unknown).mockImplementation(mockAuthStateChange);
+      (supabase.auth.getSession as unknown).mockImplementation(mockGetSession);
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
@@ -438,8 +438,8 @@ describe('AuthContext', () => {
       const mockSignInResponse = { data: { user: mockUser }, error: null };
       const mockProfileError = { error: new Error('Permission denied') };
 
-      (supabase.auth.signInWithPassword as any).mockResolvedValue(mockSignInResponse);
-      (supabase.from as any).mockReturnValue({
+      (supabase.auth.signInWithPassword as unknown).mockResolvedValue(mockSignInResponse);
+      (supabase.from as unknown).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             maybeSingle: vi.fn().mockResolvedValue(mockProfileError),

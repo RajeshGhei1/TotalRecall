@@ -57,7 +57,7 @@ describe('PeopleList', () => {
 
   it('renders people list successfully', async () => {
     const { usePeople } = await import('@/hooks/usePeople');
-    (usePeople as any).mockReturnValue({
+    (usePeople as unknown).mockReturnValue({
       people: mockPeople,
       isLoading: false,
       isError: false,
@@ -83,7 +83,7 @@ describe('PeopleList', () => {
 
   it('shows loading state', async () => {
     const { usePeople } = await import('@/hooks/usePeople');
-    (usePeople as any).mockReturnValue({
+    (usePeople as unknown).mockReturnValue({
       people: [],
       isLoading: true,
       isError: false,
@@ -107,7 +107,7 @@ describe('PeopleList', () => {
 
   it('shows error state', async () => {
     const { usePeople } = await import('@/hooks/usePeople');
-    (usePeople as any).mockReturnValue({
+    (usePeople as unknown).mockReturnValue({
       people: [],
       isLoading: false,
       isError: true,
@@ -132,7 +132,7 @@ describe('PeopleList', () => {
 
   it('shows empty state when no people found', async () => {
     const { usePeople } = await import('@/hooks/usePeople');
-    (usePeople as any).mockReturnValue({
+    (usePeople as unknown).mockReturnValue({
       people: [],
       isLoading: false,
       isError: false,

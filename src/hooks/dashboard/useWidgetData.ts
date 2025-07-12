@@ -37,7 +37,7 @@ const fetchTableData = async (config: Record<string, any>) => {
   let query = supabase.from(table).select(columns);
   
   // Apply filters
-  filters.forEach((filter: any) => {
+  filters.forEach((filter: unknown) => {
     if (filter.column && filter.operator && filter.value !== undefined) {
       query = query.filter(filter.column, filter.operator, filter.value);
     }

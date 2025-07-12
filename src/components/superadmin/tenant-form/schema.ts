@@ -42,19 +42,19 @@ export type TenantFormValues = z.infer<typeof tenantFormSchema>;
 
 // Define empty formOptions for compatibility
 export const formOptions = {
-  regionOptions: [] as any[],
-  countryOptions: [] as any[],
-  industryOptions: [] as any[],
-  companyTypeOptions: [] as any[],
-  entityTypeOptions: [] as any[],
-  segmentOptions: [] as any[],
-  companyStatusOptions: [] as any[],
-  localRegionOptions: [] as any[],
-  locationOptions: [] as any[],
-  companySectorOptions: [] as any[],
-  yearOptions: [] as any[],
-  employeeRangeOptions: [] as any[],
-  turnoverRangeOptions: [] as any[],
-  specializationOptions: [] as any[],
-  serviceLineOptions: [] as any[]
+  regionOptions: [] as unknown[],
+  countryOptions: [] as unknown[],
+  industryOptions: [] as unknown[],
+  companyTypeOptions: [] as unknown[],
+  entityTypeOptions: [] as unknown[],
+  segmentOptions: [] as unknown[],
+  companyStatusOptions: [] as unknown[],
+  localRegionOptions: [] as unknown[],
+  locationOptions: [] as unknown[],
+  companySectorOptions: [] as unknown[],
+  yearOptions: [] as unknown[],
+  employeeRangeOptions: [] as unknown[],
+  turnoverRangeOptions: [] as unknown[],
+  specializationOptions: [] as unknown[],
+  serviceLineOptions: [] as unknown[]
 };

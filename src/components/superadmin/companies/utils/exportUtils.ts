@@ -116,7 +116,7 @@ export const exportCompanies = async (
 };
 
 const getFieldValue = (company: Company, fieldKey: string): unknown => {
-  const value = (company as any)[fieldKey];
+  const value = (company as unknown)[fieldKey];
   
   // Handle special cases
   if (fieldKey === 'created_at' || fieldKey === 'updated_at') {

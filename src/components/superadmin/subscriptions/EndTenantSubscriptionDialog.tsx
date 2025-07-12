@@ -45,7 +45,7 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
 
       console.log('Ending subscription with ID:', subscription.id);
 
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .update({
           status: 'cancelled',
@@ -104,7 +104,7 @@ const EndTenantSubscriptionDialog: React.FC<EndTenantSubscriptionDialogProps> = 
           <AlertDialogTitle>End Tenant Subscription</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to end the subscription for{' '}
-            <strong>{(subscription as any).tenants?.name || 'this tenant'}</strong>?
+            <strong>{(subscription as unknown).tenants?.name || 'this tenant'}</strong>?
             <br />
             <br />
             This will:

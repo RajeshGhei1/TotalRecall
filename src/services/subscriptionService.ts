@@ -29,7 +29,7 @@ export class SubscriptionService {
    */
   static async getUserSubscriptionsForTenant(tenantId: string): Promise<UserSubscription[]> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('user_subscriptions')
         .select(`
           *,
@@ -52,7 +52,7 @@ export class SubscriptionService {
    */
   static async createUserSubscription(subscription: Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>): Promise<UserSubscription | null> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('user_subscriptions')
         .insert([subscription])
         .select(`
@@ -75,7 +75,7 @@ export class SubscriptionService {
    */
   static async updateUserSubscription(id: string, updates: Partial<UserSubscription>): Promise<UserSubscription | null> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('user_subscriptions')
         .update(updates)
         .eq('id', id)
@@ -99,7 +99,7 @@ export class SubscriptionService {
    */
   static async deleteUserSubscription(id: string): Promise<boolean> {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown)
         .from('user_subscriptions')
         .delete()
         .eq('id', id);
@@ -118,7 +118,7 @@ export class SubscriptionService {
   static async getTenantSubscriptionOverview(tenantId: string) {
     try {
       // Get tenant subscription
-      const { data: tenantSub, error: tenantError } = await (supabase as any)
+      const { data: tenantSub, error: tenantError } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .select(`
           *,
@@ -134,7 +134,7 @@ export class SubscriptionService {
       const userSubscriptions = await this.getUserSubscriptionsForTenant(tenantId);
 
       // Get all users in the tenant - fix the ambiguous relationship
-      const { data: tenantUsers, error: usersError } = await (supabase as any)
+      const { data: tenantUsers, error: usersError } = await (supabase as unknown)
         .from('user_tenants')
         .select(`
           user_id,

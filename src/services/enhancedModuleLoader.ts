@@ -77,7 +77,7 @@ class EnhancedModuleLoader {
       return loadedModule;
     } catch (error) {
       const errorModule: LoadedModule = {
-        manifest: await this.getModuleManifest(moduleId) || {} as any,
+        manifest: await this.getModuleManifest(moduleId) || {} as unknown,
         instance: null,
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error',

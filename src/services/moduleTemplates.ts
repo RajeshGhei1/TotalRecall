@@ -110,7 +110,7 @@ class ModuleTemplateService {
         name: moduleConfig.name,
         version: '1.0.0',
         description: moduleConfig.description || template.description,
-        category: template.category as any,
+        category: template.category as unknown,
         author: 'Developer',
         license: 'MIT',
         dependencies: template.dependencies,
@@ -152,10 +152,10 @@ class ModuleTemplateService {
           name: template.name,
           description: template.description,
           category: template.category,
-          tags: template.tags as any,
-          manifest_template: template.manifest_template as any,
-          files: template.files as any,
-          dependencies: template.dependencies as any,
+          tags: template.tags as unknown,
+          manifest_template: template.manifest_template as unknown,
+          files: template.files as unknown,
+          dependencies: template.dependencies as unknown,
           is_built_in: false,
           is_active: true
         });

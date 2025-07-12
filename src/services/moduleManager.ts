@@ -220,7 +220,7 @@ export class ModuleManager {
 
       for (const [moduleId, modules] of moduleMap) {
         const currentVersion = modules[0]?.version || '1.0.0';
-        const availableVersions = modules.map((m: any) => m.version);
+        const availableVersions = modules.map((m: unknown) => m.version);
         const isRegistered = registeredIds.has(moduleId);
         
         // Determine health status

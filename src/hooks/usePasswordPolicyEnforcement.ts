@@ -87,7 +87,7 @@ export function usePasswordPolicyEnforcement() {
         action_type: action.action_type as 'notification_sent' | 'forced_reset' | 'grace_period_granted',
         enforcement_date: action.enforcement_date,
         status: action.status as 'pending' | 'completed' | 'failed',
-        user_email: (action.profiles as any)?.email
+        user_email: (action.profiles as unknown)?.email
       }));
 
       setActions(formattedActions);

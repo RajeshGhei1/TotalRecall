@@ -30,7 +30,7 @@ export const useModulePricing = () => {
   return useQuery({
     queryKey: ['module-pricing'],
     queryFn: async (): Promise<ModulePricing[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('module_pricing')
         .select('*')
         .eq('is_active', true)
@@ -51,7 +51,7 @@ export const usePricingCalculation = (planId: string, enabledModules: string[] =
       console.log('Calculating pricing for plan:', planId, 'with modules:', enabledModules);
       
       // Get plan base pricing
-      const { data: plan, error: planError } = await (supabase as any)
+      const { data: plan, error: planError } = await (supabase as unknown)
         .from('subscription_plans')
         .select('base_price_monthly, base_price_annually, use_module_pricing, price_monthly, price_annually')
         .eq('id', planId)

@@ -22,7 +22,7 @@ const TenantSubscriptionManager = () => {
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['tenant-subscriptions'],
     queryFn: async (): Promise<TenantSubscription[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .select(`
           *,
@@ -148,7 +148,7 @@ const TenantSubscriptionManager = () => {
                           </div>
                           <div>
                             <h4 className="font-medium">
-                              {(subscription as any).tenants?.name || 'Unknown Tenant'}
+                              {(subscription as unknown).tenants?.name || 'Unknown Tenant'}
                             </h4>
                             <Badge variant={getStatusColor(subscription.status)} className="mt-1">
                               {subscription.status}

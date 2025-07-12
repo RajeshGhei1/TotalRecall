@@ -47,7 +47,7 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
     version: module.version || '1.0.0',
     is_active: module.is_active,
     category: module.category || 'business',
-    type: (module as any).type || 'business',
+    type: (module as unknown).type || 'business',
     dependencies: module.dependencies || [],
     default_limits: module.default_limits || {}
   });
@@ -61,7 +61,7 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
         version: module.version || '1.0.0',
         is_active: module.is_active,
         category: module.category || 'business',
-        type: (module as any).type || 'business',
+        type: (module as unknown).type || 'business',
         dependencies: module.dependencies || [],
         default_limits: module.default_limits || {}
       });
@@ -75,7 +75,7 @@ const ModuleSettingsDialog: React.FC<ModuleSettingsDialogProps> = ({
         id: module.id, 
         name: module.name, 
         category: module.category, 
-        type: (module as any).type 
+        type: (module as unknown).type 
       });
       
       // Update the module in the database

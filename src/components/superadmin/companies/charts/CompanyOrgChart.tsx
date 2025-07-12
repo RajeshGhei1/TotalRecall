@@ -76,7 +76,7 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
   const peopleByType = useMemo(() => {
     if (!orgChartData) return {};
     const types: Record<string, number> = {};
-    Object.values(orgChartData.allNodes).forEach((node: any) => {
+    Object.values(orgChartData.allNodes).forEach((node: unknown) => {
       types[node.type] = (types[node.type] || 0) + 1;
     });
     return types;
@@ -314,7 +314,7 @@ const OrgChartNode: React.FC<OrgChartNodeProps> = ({
       
       {expanded && hasChildren && (
         <div className="border-l-2 border-dashed border-muted pl-4 ml-2">
-          {node.children.map((child: any) => (
+          {node.children.map((child: unknown) => (
             <OrgChartNode 
               key={child.id} 
               node={child} 

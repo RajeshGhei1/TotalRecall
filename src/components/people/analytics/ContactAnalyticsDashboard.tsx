@@ -60,7 +60,7 @@ const ContactAnalyticsDashboard: React.FC = () => {
 
   const processCompanyData = (data: unknown[]) => {
     const companyCount: Record<string, number> = {};
-    data.forEach((item: any) => {
+    data.forEach((item: unknown) => {
       const companyName = item.companies?.name || 'Unknown';
       companyCount[companyName] = (companyCount[companyName] || 0) + 1;
     });
@@ -73,7 +73,7 @@ const ContactAnalyticsDashboard: React.FC = () => {
 
   const processTrendsData = (trends: unknown[]) => {
     const monthlyCount: Record<string, number> = {};
-    trends.forEach((contact: any) => {
+    trends.forEach((contact: unknown) => {
       const month = new Date(contact.created_at).toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'short' 

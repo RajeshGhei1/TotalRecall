@@ -13,7 +13,7 @@ const SmartTalentAnalytics: React.FC<SmartTalentAnalyticsProps> = (props) => {
 };
 
 // Module metadata for registration
-(SmartTalentAnalytics as any).moduleMetadata = {
+(SmartTalentAnalytics as unknown).moduleMetadata = {
   id: 'smart-talent-analytics',
   name: 'Smart Talent Analytics',
   category: 'analytics',

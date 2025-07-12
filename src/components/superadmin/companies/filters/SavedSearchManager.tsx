@@ -37,7 +37,7 @@ const SavedSearchManager: React.FC<SavedSearchManagerProps> = ({
     const saved = localStorage.getItem('company-saved-searches');
     if (saved) {
       try {
-        const searches = JSON.parse(saved).map((search: any) => ({
+        const searches = JSON.parse(saved).map((search: unknown) => ({
           ...search,
           createdAt: new Date(search.createdAt),
         }));

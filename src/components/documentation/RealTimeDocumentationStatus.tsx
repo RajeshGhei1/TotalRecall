@@ -48,7 +48,7 @@ export function RealTimeDocumentationStatus() {
           </div>
           <div className="flex items-center gap-2">
             {getStatusIcon()}
-            <Badge variant={getStatusColor() as any}>
+            <Badge variant={getStatusColor() as unknown}>
               {getStatusText()}
             </Badge>
           </div>

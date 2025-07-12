@@ -68,7 +68,7 @@ const EditTenantSubscriptionDialog: React.FC<EditTenantSubscriptionDialogProps> 
   const { data: plans } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -83,7 +83,7 @@ const EditTenantSubscriptionDialog: React.FC<EditTenantSubscriptionDialogProps> 
     mutationFn: async (data: EditTenantSubscriptionFormData) => {
       if (!subscription) throw new Error('No subscription to update');
 
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown)
         .from('tenant_subscriptions')
         .update({
           plan_id: data.plan_id,
@@ -138,7 +138,7 @@ const EditTenantSubscriptionDialog: React.FC<EditTenantSubscriptionDialogProps> 
                     <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    {plans?.map((plan: any) => (
+                    {plans?.map((plan: unknown) => (
                       <SelectItem key={plan.id} value={plan.id}>
                         {plan.name} ({plan.plan_type})
                       </SelectItem>

@@ -76,7 +76,7 @@ class ModuleRegistryService {
         name: module.name,
         version: module.version,
         description: module.description,
-        category: module.category as any,
+        category: module.category as unknown,
         author: 'System',
         license: 'MIT',
         dependencies: [],

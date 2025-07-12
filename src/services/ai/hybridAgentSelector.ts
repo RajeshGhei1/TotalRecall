@@ -142,7 +142,7 @@ export class HybridAgentSelector {
       score += matchingCapabilities.length * 15;
 
       // Performance metrics
-      const performance = agent.performance_metrics as any;
+      const performance = agent.performance_metrics as unknown;
       if (performance.accuracy) score += performance.accuracy * 10;
       if (performance.response_time < 1000) score += 5;
 

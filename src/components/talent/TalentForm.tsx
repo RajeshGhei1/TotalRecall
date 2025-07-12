@@ -142,7 +142,7 @@ const TalentForm: React.FC<TalentFormProps> = ({ talentId, onSuccess }) => {
         years_of_experience: talentData.years_of_experience || undefined,
         current_salary: talentData.current_salary || undefined,
         desired_salary: talentData.desired_salary || undefined,
-        availability_status: talentData.availability_status as any || "available",
+        availability_status: talentData.availability_status as unknown || "available",
         bio: talentData.bio || undefined,
       });
     }

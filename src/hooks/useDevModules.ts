@@ -123,7 +123,7 @@ export const useDevModules = () => {
           name: dbModule.name,
           version: dbModule.version || '1.0.0',
           description: dbModule.description || '',
-          category: dbModule.category as any,
+          category: dbModule.category as unknown,
           author: 'System',
           license: 'MIT',
           dependencies: dbModule.dependencies || [],

@@ -1,6 +1,20 @@
 
+interface FormDefinition {
+  name?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface FormField {
+  field_type?: string;
+  type?: string;
+  name: string;
+  required?: boolean;
+  [key: string]: unknown;
+}
+
 export class FormUsabilityScorer {
-  static calculateUsabilityScore(form: any, fields: unknown[]): number {
+  static calculateUsabilityScore(form: FormDefinition, fields: FormField[]): number {
     let score = 50; // Base score
     
     // Field count scoring

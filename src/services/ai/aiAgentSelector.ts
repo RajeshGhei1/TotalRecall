@@ -22,7 +22,7 @@ export class AIAgentSelector {
       score += matchingCapabilities.length * 10;
 
       // Performance metrics
-      const performance = agent.performance_metrics as any;
+      const performance = agent.performance_metrics as unknown;
       if (performance.accuracy) score += performance.accuracy * 5;
       if (performance.response_time < 1000) score += 5; // Bonus for fast response
 

@@ -64,7 +64,7 @@ export const useAIEmailResponse = () => {
       let suggestions: string[] = [];
 
       if (aiResponse.result && typeof aiResponse.result === 'object') {
-        const result = aiResponse.result as any;
+        const result = aiResponse.result as unknown;
         responseText = result.generated_response || result.response || JSON.stringify(result);
         tone = result.tone || 'professional';
         suggestions = result.suggestions || [];
@@ -114,7 +114,7 @@ export const useAIEmailResponse = () => {
 
       // Handle response structure properly with null safety
       if (aiResponse.result && typeof aiResponse.result === 'object') {
-        const result = aiResponse.result as any;
+        const result = aiResponse.result as unknown;
         return result.improved_response || result.response || JSON.stringify(result);
       } else if (aiResponse.result) {
         return String(aiResponse.result);

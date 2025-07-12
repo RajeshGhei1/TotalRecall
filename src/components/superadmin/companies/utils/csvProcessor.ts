@@ -59,7 +59,7 @@ export interface CSVRow {
   branch_office_1_gst_number?: string;
   branch_office_1_is_headquarters?: string;
   branch_office_1_is_active?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface BranchOfficeData {
@@ -387,16 +387,16 @@ export function mapCSVRowToCompany(csvRow: any, mappings: CSVFieldMapping[]): Pa
       if (mapping.companyField === 'founded') {
         const foundedYear = parseInt(trimmedValue);
         if (!isNaN(foundedYear) && foundedYear > 1800 && foundedYear <= new Date().getFullYear()) {
-          (company as any)[mapping.companyField] = foundedYear;
+          (company as unknown)[mapping.companyField] = foundedYear;
         }
       } else if (mapping.companyField === 'hierarchy_level') {
         // Handle hierarchy level as integer
         const level = parseInt(trimmedValue);
         if (!isNaN(level) && level >= 0) {
-          (company as any)[mapping.companyField] = level;
+          (company as unknown)[mapping.companyField] = level;
         }
       } else {
-        (company as any)[mapping.companyField] = trimmedValue;
+        (company as unknown)[mapping.companyField] = trimmedValue;
       }
       
       if (mapping.companyField === 'name') {
@@ -457,14 +457,14 @@ export function validateCompanyData(company: Partial<Company>): string[] {
 
   // Social media URL validation
   ['linkedin', 'twitter', 'facebook'].forEach(field => {
-    const url = (company as any)[field];
+    const url = (company as unknown)[field];
     if (url) {
       try {
         new URL(url);
       } catch {
         try {
           new URL(`https://${url}`);
-          (company as any)[field] = `https://${url}`;
+          (company as unknown)[field] = `https://${url}`;
         } catch {
           errors.push(`Invalid ${field} URL`);
         }
@@ -502,7 +502,7 @@ export function parseCSV(file: File): Promise<string[][]> {
           const worksheet = workbook.Sheets[sheetName];
           const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
           // Ensure all rows are arrays of strings
-          const rows = (json as any[][]).map(row => row.map(cell => (cell == null ? '' : String(cell))));
+          const rows = (json as unknown[][]).map(row => row.map(cell => (cell == null ? '' : String(cell))));
           resolve(rows);
         } catch (err) {
           reject(new Error('Failed to parse Excel file.'));

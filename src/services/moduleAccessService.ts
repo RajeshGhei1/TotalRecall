@@ -92,7 +92,7 @@ export class ModuleAccessService {
     userAgent?: string
   ): Promise<string | null> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('module_access_logs')
         .insert({
           tenant_id: tenantId,

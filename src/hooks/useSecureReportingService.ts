@@ -187,7 +187,7 @@ export const useSecureRunDynamicReport = () => {
       }
       
       // Build the query with proper typing
-      let query = supabase.from(entity as any).select(columns.join(','));
+      let query = supabase.from(entity as unknown).select(columns.join(','));
       
       // Apply filters
       filters.forEach(filter => {

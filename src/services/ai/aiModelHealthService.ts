@@ -132,7 +132,7 @@ export class AIModelHealthService {
             model_id: status.modelId,
             provider: status.provider,
             error_count: status.errorCount
-          } as any
+          } as unknown
         });
     } catch (error) {
       console.error('Error logging health status:', error);
@@ -161,7 +161,7 @@ export class AIModelHealthService {
             alert_type: 'model_health',
             model_id: modelId,
             consecutive_failures: true
-          } as any
+          } as unknown
         });
     } catch (error) {
       console.error('Error logging health alert:', error);

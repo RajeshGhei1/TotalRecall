@@ -138,7 +138,7 @@ const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({
 };
 
 // Module metadata for registration
-(AnalyticsPanel as any).moduleMetadata = {
+(AnalyticsPanel as unknown).moduleMetadata = {
   id: 'analytics-panel',
   name: 'Analytics Panel',
   category: 'analytics',

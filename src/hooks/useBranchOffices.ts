@@ -46,7 +46,7 @@ export const useBranchOffices = (companyId?: string) => {
       if (!companyId) return [];
       
       // Using type assertion since table is newly created
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown)
         .from('company_branch_offices')
         .select('*')
         .eq('company_id', companyId)
@@ -61,7 +61,7 @@ export const useBranchOffices = (companyId?: string) => {
 
   const createBranchOffice = useMutation({
     mutationFn: async ({ companyId, data }: { companyId: string; data: BranchOfficeFormData }) => {
-      const { data: result, error } = await (supabase as any)
+      const { data: result, error } = await (supabase as unknown)
         .from('company_branch_offices')
         .insert([{ ...data, company_id: companyId }])
         .select()
@@ -88,7 +88,7 @@ export const useBranchOffices = (companyId?: string) => {
 
   const updateBranchOffice = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<BranchOfficeFormData> }) => {
-      const { data: result, error } = await (supabase as any)
+      const { data: result, error } = await (supabase as unknown)
         .from('company_branch_offices')
         .update(data)
         .eq('id', id)
@@ -116,7 +116,7 @@ export const useBranchOffices = (companyId?: string) => {
 
   const deleteBranchOffice = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown)
         .from('company_branch_offices')
         .delete()
         .eq('id', id);

@@ -96,7 +96,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({ form }) =
       
       // Set the form value to the newly added option
       if (addingType && newOptionObj) {
-        form.setValue(addingType as any, newOptionObj.value);
+        form.setValue(addingType as unknown, newOptionObj.value);
       }
       
       setAddingType(null);

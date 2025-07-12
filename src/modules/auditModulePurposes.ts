@@ -257,7 +257,7 @@ function generateAuditReport(results: ModuleAuditResult[], modulesByCategory: an
   Object.entries(modulesByCategory).forEach(([category, modules]: [string, any]) => {
     if (modules && modules.length > 0) {
       console.log(`\n📁 ${category.toUpperCase()} MODULES (${modules.length}):`);
-      modules.forEach((module: any) => {
+      modules.forEach((module: unknown) => {
         const result = results.find(r => r.name === module.name);
         console.log(`   • ${module.name} - ${result?.purpose}`);
         if (result?.potentialDuplicates.length > 0) {

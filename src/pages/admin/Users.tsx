@@ -57,7 +57,7 @@ const Users = () => {
     if (currentUser && isEditDialogOpen) {
       form.setValue("email", currentUser.email);
       form.setValue("full_name", currentUser.full_name || "");
-      form.setValue("role", currentUser.role as any);
+      form.setValue("role", currentUser.role as unknown);
     } else if (!isEditDialogOpen && !isCreateDialogOpen) {
       form.reset();
     }

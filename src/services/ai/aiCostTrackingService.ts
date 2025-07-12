@@ -131,7 +131,7 @@ export class AICostTrackingService {
       // Group by model
       const costByModel: Record<string, number> = {};
       logs.forEach(log => {
-        const modelId = (log.context as any)?.model_id || 'unknown';
+        const modelId = (log.context as unknown)?.model_id || 'unknown';
         costByModel[modelId] = (costByModel[modelId] || 0) + (log.total_cost || 0);
       });
 
@@ -219,7 +219,7 @@ export class AICostTrackingService {
 
     // Group by model
     logs.forEach(log => {
-      const modelId = (log.context as any)?.model_id || 'unknown';
+      const modelId = (log.context as unknown)?.model_id || 'unknown';
       report.costByModel[modelId] = (report.costByModel[modelId] || 0) + (log.total_cost || 0);
     });
 

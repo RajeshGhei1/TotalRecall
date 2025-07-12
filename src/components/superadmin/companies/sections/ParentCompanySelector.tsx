@@ -103,7 +103,7 @@ const ParentCompanySelector: React.FC<ParentCompanySelectorProps> = ({
                         key={company.id}
                         value={company.id}
                         onSelect={() => {
-                          form.setValue(name, company.id as any);
+                          form.setValue(name, company.id as unknown);
                           // Auto-populate group name if not already set
                           if (!form.getValues('companyGroupName') && company.company_group_name) {
                             form.setValue('companyGroupName', company.company_group_name);
@@ -142,7 +142,7 @@ const ParentCompanySelector: React.FC<ParentCompanySelectorProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => {
-                form.setValue(name, undefined as any);
+                form.setValue(name, undefined as unknown);
               }}
               className="mt-1"
               disabled={disabled}

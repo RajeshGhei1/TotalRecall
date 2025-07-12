@@ -5,7 +5,7 @@ interface LinkedInConnectionConfig {
   access_token?: string;
   refresh_token?: string;
   token_expires_at?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface LinkedInProfile {
@@ -206,7 +206,7 @@ class LinkedInApiService {
         return null;
       }
 
-      const linkedinData = data.linkedin_data as any;
+      const linkedinData = data.linkedin_data as unknown;
       
       return {
         id: linkedinData?.id || `enriched-${personId}`,

@@ -40,7 +40,7 @@ export const useModuleDeployments = (tenantId?: string) => {
         }
 
         // Transform the data to match our interface
-        return (data || []).map((item: any) => ({
+        return (data || []).map((item: unknown) => ({
           id: item.id,
           module_name: item.module_name,
           version: item.version,

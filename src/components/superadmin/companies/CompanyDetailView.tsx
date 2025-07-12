@@ -313,7 +313,7 @@ const CompanyDetailView: React.FC = () => {
         {/* People Tab */}
         <TabsContent value="people">
           <PeopleSection 
-            form={{ getValues: () => ({ id: companyId }) } as any}
+            form={{ getValues: () => ({ id: companyId }) } as unknown}
             showFullView={true}
           />
         </TabsContent>

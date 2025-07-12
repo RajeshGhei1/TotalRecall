@@ -375,7 +375,7 @@ class CodeAnalysisService {
       content += `| Name | Type | Required | Default | Description |\n`;
       content += `|------|------|----------|---------|-------------|\n`;
       
-      analysis.props.forEach((prop: any) => {
+      analysis.props.forEach((prop: unknown) => {
         content += `| ${prop.name} | \`${prop.type}\` | ${prop.required ? 'Yes' : 'No'} | ${prop.defaultValue || '-'} | ${prop.description || '-'} |\n`;
       });
       content += '\n';
@@ -384,7 +384,7 @@ class CodeAnalysisService {
     if (analysis.type === 'hook') {
       if (analysis.parameters?.length > 0) {
         content += `## Parameters\n\n`;
-        analysis.parameters.forEach((param: any) => {
+        analysis.parameters.forEach((param: unknown) => {
           content += `- **${param.name}** (\`${param.type}\`): ${param.required ? 'Required' : 'Optional'}${param.defaultValue ? ` - Default: ${param.defaultValue}` : ''}\n`;
         });
         content += '\n';
@@ -404,12 +404,12 @@ class CodeAnalysisService {
 
     if (analysis.methods?.length > 0) {
       content += `## Methods\n\n`;
-      analysis.methods.forEach((method: any) => {
+      analysis.methods.forEach((method: unknown) => {
         content += `### ${method.name}\n\n`;
         content += `${method.description}\n\n`;
         if (method.parameters?.length > 0) {
           content += `**Parameters:**\n`;
-          method.parameters.forEach((param: any) => {
+          method.parameters.forEach((param: unknown) => {
             content += `- ${param.name}: \`${param.type}\`\n`;
           });
         }

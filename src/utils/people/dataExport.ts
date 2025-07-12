@@ -113,7 +113,7 @@ export const exportPeopleData = async (options: ExportOptions) => {
     }
 
     // Transform data for export
-    const exportData = baseData.map((person: any) => {
+    const exportData = baseData.map((person: unknown) => {
       const basePersonData = {
         'Full Name': person.full_name || '',
         'Email': person.email || '',
