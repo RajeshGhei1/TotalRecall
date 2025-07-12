@@ -1,13 +1,14 @@
 import React from 'react';
 import ModuleTypeItem from './ModuleTypeItem';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleNavigationContentProps {
-  groupedModules: Record<string, any[]>;
+  groupedModules: Record<string, SystemModule[]>;
   expandedTypes: Set<string>;
   expandedModules: Set<string>;
   onToggleType: (typeKey: string) => void;
   onToggleModule: (moduleId: string) => void;
-  onModuleClick: (module: unknown) => void;
+  onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
 }
 

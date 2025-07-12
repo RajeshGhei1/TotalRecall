@@ -9,10 +9,10 @@ export const normalizeModuleName = (moduleName: string): string => {
 };
 
 // Group modules by category
-export const groupModulesByCategory = (modules: unknown[]) => {
+export const groupModulesByCategory = (modules: SystemModule[]) => {
   if (!modules) return {};
   
-  const grouped: Record<string, any[]> = {};
+  const grouped: Record<string, SystemModule[]> = {};
   
   modules.forEach(module => {
     let category = 'core_system'; // default category
@@ -64,10 +64,10 @@ export const groupModulesByCategory = (modules: unknown[]) => {
 };
 
 // Group modules by type (super_admin vs foundation vs business)
-export const groupModulesByType = (modules: unknown[]) => {
+export const groupModulesByType = (modules: SystemModule[]) => {
   if (!modules) return {};
   
-  const grouped: Record<string, any[]> = {};
+  const grouped: Record<string, SystemModule[]> = {};
   
   modules.forEach(module => {
     // Use the type field from the database, defaulting to 'business' if not set

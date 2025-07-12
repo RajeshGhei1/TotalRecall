@@ -19,7 +19,7 @@ const SmartSuggestionsPanel: React.FC<SmartSuggestionsPanelProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [formContext, setFormContext] = useState<Record<string, any>>({});
+  const [formContext, setFormContext] = useState<FormContext>({});
 
   // Derive form type from name, description, or default to 'general'
   const getFormType = (form: FormDefinition): string => {

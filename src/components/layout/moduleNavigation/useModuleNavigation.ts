@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSystemModules } from '@/hooks/useSystemModules';
+import { useSystemModules, SystemModule } from '@/hooks/useSystemModules';
 import { groupModulesByType } from './utils';
 
 export const useModuleNavigation = () => {

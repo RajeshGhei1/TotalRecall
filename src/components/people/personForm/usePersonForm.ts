@@ -36,7 +36,7 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
     mutationFn: async (values: PersonFormValues) => {
       // Extract custom field values from form data
       const standardFields = ['full_name', 'email', 'phone', 'location', 'company_id', 'role', 'type'];
-      const customFieldValues: Record<string, any> = {};
+      const customFieldValues: Record<string, unknown> = {};
       
       // Extract any fields starting with 'custom_' as custom field values
       Object.keys(values).forEach(key => {

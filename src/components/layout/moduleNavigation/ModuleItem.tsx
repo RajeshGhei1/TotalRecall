@@ -4,12 +4,13 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { getDisplayName } from '@/utils/moduleNameMapping';
 import { normalizeModuleName } from './utils';
 import { MODULE_SUB_COMPONENTS } from './constants';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleItemProps {
-  module: any;
+  module: SystemModule;
   isExpanded: boolean;
   onToggle: () => void;
-  onModuleClick: (module: unknown) => void;
+  onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
 }
 

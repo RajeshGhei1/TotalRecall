@@ -7,6 +7,7 @@ import { Brain, Zap, TrendingUp } from 'lucide-react';
 import { useSmartFormAssistance } from '@/hooks/ai/useSmartFormAssistance';
 import { SmartSuggestionsPanel } from './SmartSuggestionsPanel';
 import { FormSuggestion } from '@/services/ai/smartForms/formSuggestionEngine';
+import { FormValues } from '@/types/common';
 
 interface CognitiveFormWrapperProps {
   children: React.ReactNode;
@@ -27,7 +28,7 @@ export const CognitiveFormWrapper: React.FC<CognitiveFormWrapperProps> = ({
   autoSuggest = true,
   showSuggestionsPanel = true
 }) => {
-  const [userHistory] = useState<Record<string, any>[]>([]);
+  const [userHistory] = useState<FormValues[]>([]);
   const [lastSuggestionTime, setLastSuggestionTime] = useState(0);
 
   const {

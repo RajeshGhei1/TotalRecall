@@ -2,15 +2,16 @@ import React from 'react';
 import { ChevronDown, ChevronRight, Blocks } from 'lucide-react';
 import { TYPE_CONFIG } from './constants';
 import ModuleItem from './ModuleItem';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleTypeItemProps {
   typeKey: string;
-  typeModules: unknown[];
+  typeModules: SystemModule[];
   isTypeExpanded: boolean;
   expandedModules: Set<string>;
   onToggleType: (typeKey: string) => void;
   onToggleModule: (moduleId: string) => void;
-  onModuleClick: (module: unknown) => void;
+  onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
 }
 

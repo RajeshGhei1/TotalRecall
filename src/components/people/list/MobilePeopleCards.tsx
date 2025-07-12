@@ -9,7 +9,7 @@ interface MobilePeopleCardsProps {
   people: Person[];
   onLinkToCompany: (id: string) => void;
   onDeletePerson: (id: string) => void;
-  onEditPerson: (person: unknown) => void;
+  onEditPerson: (person: Person)) => void;
   onViewPerson: (id: string) => void;
 }
 

@@ -3,15 +3,16 @@ import React from 'react';
 import { ChevronDown, ChevronRight, Blocks } from 'lucide-react';
 import { CATEGORY_CONFIG } from './constants';
 import ModuleItem from './ModuleItem';
+import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleCategoryItemProps {
   categoryKey: string;
-  categoryModules: unknown[];
+  categoryModules: SystemModule[];
   isCategoryExpanded: boolean;
   expandedModules: Set<string>;
   onToggleCategory: (categoryKey: string) => void;
   onToggleModule: (moduleId: string) => void;
-  onModuleClick: (module: unknown) => void;
+  onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
 }
 

@@ -13,6 +13,7 @@ import {
   Plus,
   Filter
 } from 'lucide-react';
+import { Person } from '@/types/person';
 import ContactTypeManager from '../contact-types/ContactTypeManager';
 import ContactAnalyticsDashboard from '../analytics/ContactAnalyticsDashboard';
 import IntelligentContactSearch from '../search/IntelligentContactSearch';
@@ -33,8 +34,8 @@ const EnhancedPeopleManager: React.FC<EnhancedPeopleManagerProps> = ({
   onAddPerson
 }) => {
   const [activeTab, setActiveTab] = useState('contacts');
-  const [searchResults, setSearchResults] = useState<unknown[]>([]);
-  const [searchFilters, setSearchFilters] = useState<unknown>({});
+  const [searchResults, setSearchResults] = useState<Person[]>([]);
+  const [searchFilters, setSearchFilters] = useState<Record<string, unknown>>({});
   const [isExporting, setIsExporting] = useState(false);
 
   const { processedData, isLoading } = usePeoplePerformance();
