@@ -8,7 +8,7 @@ import { FileText } from 'lucide-react';
 
 interface FormNavigationItemProps {
   placement: FormPlacement & {
-    form_definitions: any;
+    form_definitions: unknown;
   };
   isCollapsed?: boolean;
 }
@@ -18,7 +18,7 @@ const FormNavigationItem: React.FC<FormNavigationItemProps> = ({
   isCollapsed = false 
 }) => {
   const { openForm } = useFormContext();
-  const form = placement.form_definitions;
+  const form = placement.form_definitions as { id: string; name: string; description?: string };
 
   const handleClick = () => {
     openForm(form, placement.id);

@@ -151,7 +151,7 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({
   const createField = useCreateFormField();
   const { toast } = useToast();
 
-  const handleAddField = async (fieldDef: FieldDefinition | any) => {
+  const handleAddField = async (fieldDef: FieldDefinition | unknown) => {
     try {
       const fieldKey = (fieldDef.label || fieldDef.name || 'New Field').toLowerCase().replace(/\s+/g, '_');
       
@@ -176,7 +176,7 @@ const FieldPalette: React.FC<FieldPaletteProps> = ({
       console.error('Error adding field:', error);
       toast({
         title: 'Error',
-        description: `Failed to add field: ${error.message}`,
+        description: `Failed to add field: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive',
       });
     }

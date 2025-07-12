@@ -45,7 +45,7 @@ const FormAnalyticsDashboard: React.FC = () => {
     title: string;
     value: string | number;
     subtitle?: string;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     trend?: number;
     color?: 'default' | 'success' | 'warning' | 'destructive';
   }) => (
