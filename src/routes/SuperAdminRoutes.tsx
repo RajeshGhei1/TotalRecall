@@ -23,8 +23,6 @@ import DynamicModulePage from '@/components/modules/DynamicModulePage';
 import ATS from '@/pages/superadmin/ATS';
 import ATSRoutes from '@/routes/ats/ATSRoutes';
 
-
-
 const SuperAdminRoutes = () => {
   const location = useLocation();
   

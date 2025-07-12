@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CompanyFormValues } from '@/components/superadmin/companies/schema';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
@@ -176,18 +176,11 @@ export const useCompanies = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
-      toast({
-        title: 'Company created',
-        description: 'The company has been created successfully',
-      });
+      toast.success('Company created successfully');
     },
     onError: (error: any) => {
       console.error("Error creating company:", error);
-      toast({
-        title: 'Error',
-        description: `Failed to create company: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast.error(`Failed to create company: ${error.message}`);
     },
   });
 
@@ -272,18 +265,11 @@ export const useCompanies = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
-      toast({
-        title: 'Company updated',
-        description: 'The company has been updated successfully',
-      });
+      toast.success('Company updated successfully');
     },
     onError: (error: any) => {
       console.error("Error updating company:", error);
-      toast({
-        title: 'Error',
-        description: `Failed to update company: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast.error(`Failed to update company: ${error.message}`);
     },
   });
 
@@ -301,18 +287,11 @@ export const useCompanies = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createSecureKey(['companies']) });
-      toast({
-        title: 'Company deleted',
-        description: 'The company has been deleted successfully',
-      });
+      toast.success('Company deleted successfully');
     },
     onError: (error: any) => {
       console.error("Error deleting company:", error);
-      toast({
-        title: 'Error',
-        description: `Failed to delete company: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast.error(`Failed to delete company: ${error.message}`);
     },
   });
 
