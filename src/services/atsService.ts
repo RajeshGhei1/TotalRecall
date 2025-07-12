@@ -3,7 +3,7 @@ import { Job, Candidate, Application, Interview, CandidateTag, ATSFilters } from
 
 class ATSService {
   // Helper function to safely convert Json to string array
-  private jsonToStringArray(json: any): string[] {
+  private jsonToStringArray(json: unknown): string[] {
     if (Array.isArray(json)) {
       return json.filter(item => typeof item === 'string');
     }
@@ -19,7 +19,7 @@ class ATSService {
   }
 
   // Helper function to convert database job to Job interface
-  private convertDbJobToJob(dbJob: any): Job {
+  private convertDbJobToJob(dbJob: unknown): Job {
     return {
       ...dbJob,
       requirements: this.jsonToStringArray(dbJob.requirements)
@@ -27,7 +27,7 @@ class ATSService {
   }
 
   // Helper function to convert database candidate to Candidate interface
-  private convertDbCandidateToCandidate(dbCandidate: any): Candidate {
+  private convertDbCandidateToCandidate(dbCandidate: unknown): Candidate {
     return {
       ...dbCandidate,
       skills: this.jsonToStringArray(dbCandidate.skills),
@@ -36,7 +36,7 @@ class ATSService {
   }
 
   // Helper function to convert database application to Application interface
-  private convertDbApplicationToApplication(dbApplication: any): Application {
+  private convertDbApplicationToApplication(dbApplication: unknown): Application {
     return {
       ...dbApplication,
       ai_match_reasons: this.jsonToStringArray(dbApplication.ai_match_reasons),

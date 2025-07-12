@@ -352,7 +352,7 @@ class CodeAnalysisService {
     return [];
   }
 
-  private async generateDocumentationForFile(filePath: string, analysis: any): Promise<void> {
+  private async generateDocumentationForFile(filePath: string, analysis: unknown): Promise<void> {
     const content = this.generateMarkdownContent(analysis);
     const documentPath = this.getDocumentationPath(filePath);
 
@@ -360,7 +360,7 @@ class CodeAnalysisService {
     await this.storeDocumentation(documentPath, content, analysis);
   }
 
-  private generateMarkdownContent(analysis: any): string {
+  private generateMarkdownContent(analysis: unknown): string {
     let content = `# ${analysis.name}\n\n`;
     content += `**File:** \`${analysis.filePath}\`\n\n`;
     content += `**Generated:** ${new Date().toISOString()}\n\n`;
@@ -441,7 +441,7 @@ class CodeAnalysisService {
     return filePath.replace('src/', 'docs/').replace(/\.(tsx?|jsx?)$/, '.md');
   }
 
-  private async storeDocumentation(documentPath: string, content: string, analysis: any): Promise<void> {
+  private async storeDocumentation(documentPath: string, content: string, analysis: unknown): Promise<void> {
     try {
       const { error } = await supabase
         .from('documentation_updates')

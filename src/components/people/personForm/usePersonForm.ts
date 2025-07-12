@@ -101,7 +101,7 @@ export const usePersonForm = ({ personType, onSuccess }: UsePersonFormProps) => 
       onSuccess();
       toast.success(`${personType === 'talent' ? 'Talent' : 'Contact'} created successfully`);
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       console.error('Error creating person:', err);
       setError(err.message);
       toast.error(`Failed to create ${personType}. Please try again.`);

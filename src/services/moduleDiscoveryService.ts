@@ -48,7 +48,7 @@ export class ModuleDiscoveryService {
     return this.discoveryEngine.discoverAndLoadModules();
   }
 
-  async loadModule(moduleId: string, options?: any): Promise<LoadedModule | undefined> {
+  async loadModule(moduleId: string, options?: unknown): Promise<LoadedModule | undefined> {
     return this.discoveryEngine.loadModule(moduleId, options);
   }
 
@@ -91,7 +91,7 @@ export class ModuleDiscoveryService {
     return fileInfo?.path;
   }
 
-  registerTemplate(templateId: string, template: any): void {
+  registerTemplate(templateId: string, template: unknown): void {
     if (this.templates[templateId]) {
       console.warn(`⚠️ Template with id "${templateId}" already registered.`);
     }

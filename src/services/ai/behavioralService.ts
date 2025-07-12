@@ -196,7 +196,7 @@ export class BehavioralAnalyticsService {
     }
   }
 
-  private createBehaviorAnalysisPrompt(interactions: UserInteraction[], basicAnalysis: any): string {
+  private createBehaviorAnalysisPrompt(interactions: UserInteraction[], basicAnalysis: unknown): string {
     const interactionSummary = interactions.slice(0, 10).map(i => ({
       type: i.interaction_type,
       module: i.context.module,

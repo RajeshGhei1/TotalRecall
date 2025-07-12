@@ -17,7 +17,7 @@ interface PeopleTableProps {
   people: Person[];
   onLinkToCompany: (id: string) => void;
   onDeletePerson: (id: string) => void;
-  onEditPerson: (person: any) => void;
+  onEditPerson: (person: unknown) => void;
   onViewPerson: (id: string) => void;
 }
 

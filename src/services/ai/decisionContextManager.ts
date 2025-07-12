@@ -109,7 +109,7 @@ export class DecisionContextManager {
     }
   }
 
-  private calculateContextSimilarity(context1: AIContext, context2: any): number {
+  private calculateContextSimilarity(context1: AIContext, context2: unknown): number {
     if (!context2) return 0;
 
     let similarity = 0;
@@ -263,7 +263,7 @@ export class DecisionContextManager {
   }
 
   async storeContextPattern(
-    contextFingerprint: any,
+    contextFingerprint: unknown,
     successRate: number,
     outcomes: unknown[],
     optimalAgentType: string

@@ -127,7 +127,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({
   showStatus = false,
   containerClassName
 }) => {
-  const [moduleComponent, setModuleComponent] = React.useState<React.ComponentType<any> | null>(null);
+  const [moduleComponent, setModuleComponent] = React.useState<React.ComponentType<Record<string, unknown>> | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 

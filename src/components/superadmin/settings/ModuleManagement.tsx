@@ -24,12 +24,12 @@ const ModuleManagement: React.FC = () => {
   // Only fetch production modules for the System Module Library
   const { data: modules, isLoading } = useSystemModules(true, 'production');
 
-  const handleEditModule = (module: any) => {
+  const handleEditModule = (module: unknown) => {
     setSelectedModule(module);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteModule = (module: any) => {
+  const handleDeleteModule = (module: unknown) => {
     setSelectedModule(module);
     setDeleteDialogOpen(true);
   };

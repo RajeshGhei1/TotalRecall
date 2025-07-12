@@ -72,7 +72,7 @@ export class AIRequestProcessor {
     };
   }
 
-  private createPromptFromContext(context: AIContext, parameters: any): string {
+  private createPromptFromContext(context: AIContext, parameters: unknown): string {
     let prompt = `Context: ${context.action} in ${context.module} module\n`;
     
     if (context.entity_type && context.entity_id) {

@@ -7,7 +7,7 @@ import SmartSuggestionsPanel from './SmartSuggestionsPanel';
 
 interface FieldSuggestionButtonProps {
   form: FormDefinition;
-  onAddField: (fieldData: any) => void;
+  onAddField: (fieldData: unknown) => void;
 }
 
 const FieldSuggestionButton: React.FC<FieldSuggestionButtonProps> = ({

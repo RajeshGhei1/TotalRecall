@@ -46,7 +46,7 @@ const ModuleSelectionStep: React.FC<ModuleSelectionStepProps> = ({
     onUpdate(newSelected, moduleConfigs);
   };
 
-  const handleConfigUpdate = (moduleId: string, config: any) => {
+  const handleConfigUpdate = (moduleId: string, config: unknown) => {
     const newConfigs = {
       ...moduleConfigs,
       [moduleId]: { ...moduleConfigs[moduleId], ...config }

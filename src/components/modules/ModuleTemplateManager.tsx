@@ -105,7 +105,7 @@ const ModuleTemplateManager: React.FC = () => {
     }
   };
 
-  const handleExportTemplate = (template: any) => {
+  const handleExportTemplate = (template: unknown) => {
     const exportData = {
       template_id: template.template_id,
       name: template.name,
@@ -133,7 +133,7 @@ const ModuleTemplateManager: React.FC = () => {
     });
   };
 
-  const handleDuplicateTemplate = async (template: any) => {
+  const handleDuplicateTemplate = async (template: unknown) => {
     const duplicatedTemplate = {
       ...template,
       template_id: `${template.template_id}-copy`,

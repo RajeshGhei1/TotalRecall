@@ -91,7 +91,7 @@ async function auditModulePurposes() {
   }
 }
 
-function analyzeModulePurpose(module: any, allModules: unknown[]): ModuleAuditResult {
+function analyzeModulePurpose(module: unknown, allModules: unknown[]): ModuleAuditResult {
   const name = module.name.toLowerCase();
   const description = (module.description || '').toLowerCase();
   const searchText = `${name} ${description}`;
@@ -143,7 +143,7 @@ function analyzeModulePurpose(module: any, allModules: unknown[]): ModuleAuditRe
   };
 }
 
-function generateRecommendations(module: any, duplicates: string[], purpose: string): string[] {
+function generateRecommendations(module: unknown, duplicates: string[], purpose: string): string[] {
   const recommendations: string[] = [];
   const name = module.name.toLowerCase();
   
@@ -173,7 +173,7 @@ function generateRecommendations(module: any, duplicates: string[], purpose: str
   return recommendations;
 }
 
-function generateAuditReport(results: ModuleAuditResult[], modulesByCategory: any) {
+function generateAuditReport(results: ModuleAuditResult[], modulesByCategory: unknown) {
   console.log('=' .repeat(80));
   console.log('📋 COMPREHENSIVE MODULE AUDIT REPORT');
   console.log('=' .repeat(80));

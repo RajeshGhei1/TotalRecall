@@ -5,7 +5,7 @@ import { executeRollbackOperation, fetchCurrentData } from './transaction-operat
 export class RollbackManager {
   private rollbackOperations: RollbackOperation[] = [];
 
-  async prepareRollback(operation: TransactionOperation, result: any): Promise<void> {
+  async prepareRollback(operation: TransactionOperation, result: unknown): Promise<void> {
     try {
       switch (operation.type) {
         case 'insert':

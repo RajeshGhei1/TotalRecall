@@ -55,7 +55,7 @@ class AutomationEngineService {
 
   async executeWorkflowWithAutomation(
     workflowId: string, 
-    workflowData: any, 
+    workflowData: unknown, 
     automationRules: AutomationRule[]
   ): Promise<{
     executionId: string;

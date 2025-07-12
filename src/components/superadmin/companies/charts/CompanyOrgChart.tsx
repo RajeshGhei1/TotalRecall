@@ -36,7 +36,7 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
   const filteredData = useMemo(() => {
     if (!orgChartData) return null;
     
-    const filterNode = (node: any): unknown | null => {
+    const filterNode = (node: unknown): unknown | null => {
       const matchesSearch = !searchTerm || 
         node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         node.role.toLowerCase().includes(searchTerm.toLowerCase()) ||

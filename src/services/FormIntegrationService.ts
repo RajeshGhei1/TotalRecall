@@ -106,7 +106,7 @@ export class FormIntegrationService {
   private evaluateConditions(conditions: Record<string, any>, context: Record<string, unknown>): boolean {
     if (!conditions.rules) return true;
 
-    return conditions.rules.every((rule: any) => {
+    return conditions.rules.every((rule: unknown) => {
       const contextValue = context[rule.field];
       const ruleValue = rule.value;
 
@@ -239,7 +239,7 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeWorkflow(workflow: any, responseId: string, responseData: Record<string, any>) {
+  private async executeWorkflow(workflow: unknown, responseId: string, responseData: Record<string, any>) {
     try {
       // Create execution log
       const { data: executionLog, error: logError } = await supabase
@@ -286,7 +286,7 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeWorkflowStep(step: any, responseData: Record<string, any>) {
+  private async executeWorkflowStep(step: unknown, responseData: Record<string, any>) {
     switch (step.type) {
       case 'notification':
         return await this.executeNotificationStep(step, responseData);
@@ -300,19 +300,19 @@ export class FormIntegrationService {
     }
   }
 
-  private async executeNotificationStep(step: any, responseData: Record<string, any>) {
+  private async executeNotificationStep(step: unknown, responseData: Record<string, any>) {
     // This would integrate with email/SMS services
     console.log('Executing notification step:', step, responseData);
     return { message: 'Notification sent', action: step.action };
   }
 
-  private async executeDataProcessingStep(step: any, responseData: Record<string, any>) {
+  private async executeDataProcessingStep(step: unknown, responseData: Record<string, any>) {
     // This would process the data according to the step configuration
     console.log('Executing data processing step:', step, responseData);
     return { message: 'Data processed', action: step.action };
   }
 
-  private async executeWebhookStep(step: any, responseData: Record<string, any>) {
+  private async executeWebhookStep(step: unknown, responseData: Record<string, any>) {
     // This would call external webhooks
     console.log('Executing webhook step:', step, responseData);
     return { message: 'Webhook called', action: step.action };

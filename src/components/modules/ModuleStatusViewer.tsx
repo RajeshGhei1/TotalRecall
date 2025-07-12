@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 interface ModuleStatusViewerProps {
-  module: any;
+  module: Record<string, unknown>;
   onClose: () => void;
 }
 

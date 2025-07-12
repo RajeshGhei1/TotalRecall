@@ -275,7 +275,7 @@ export class AIDecisionService {
     return await this.updateDecisionInstance(instanceId, updates);
   }
 
-  private async simulateAIAnalysis(contextData: any, rule: AIDecisionRule): Promise<unknown> {
+  private async simulateAIAnalysis(contextData: unknown, rule: AIDecisionRule): Promise<unknown> {
     // Simulate AI analysis based on rule conditions
     const conditions = rule.conditions;
     let confidence = 0.5; // Base confidence
@@ -306,7 +306,7 @@ export class AIDecisionService {
     };
   }
 
-  private evaluateCondition(fieldValue: any, operator: string, expectedValue: any): boolean {
+  private evaluateCondition(fieldValue: unknown, operator: string, expectedValue: unknown): boolean {
     switch (operator) {
       case '>=':
         return fieldValue >= expectedValue;

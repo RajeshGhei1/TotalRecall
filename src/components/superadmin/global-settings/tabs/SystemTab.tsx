@@ -11,7 +11,7 @@ const SystemTab: React.FC = () => {
   const { data: healthMetrics, isLoading: healthLoading } = useSystemHealthSummary();
   const { data: settings } = useGlobalSettings();
 
-  const getHealthStatus = (metric: any) => {
+  const getHealthStatus = (metric: unknown) => {
     if (!metric.threshold_warning && !metric.threshold_critical) {
       return 'unknown';
     }

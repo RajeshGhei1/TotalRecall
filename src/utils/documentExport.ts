@@ -452,8 +452,8 @@ export class PDFDocumentExporter {
     return headings;
   }
 
-  private parseMarkdownContent(content: string): Array<{type: string, content: any, level?: number, ordered?: boolean}> {
-    const sections: Array<{type: string, content: any, level?: number, ordered?: boolean}> = [];
+  private parseMarkdownContent(content: string): Array<{type: string, content: unknown, level?: number, ordered?: boolean}> {
+    const sections: Array<{type: string, content: unknown, level?: number, ordered?: boolean}> = [];
     const lines = content.split('\n');
     
     let currentSection: unknown = null;

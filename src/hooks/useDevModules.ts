@@ -22,7 +22,7 @@ const parseDevelopmentStage = (developmentStage: unknown): DevelopmentStageData 
 };
 
 // Helper function to parse progress data
-const parseProgressData = (progressTracking: any): ModuleProgressData => {
+const parseProgressData = (progressTracking: unknown): ModuleProgressData => {
   if (!progressTracking) {
     return {
       overall_progress: 0,

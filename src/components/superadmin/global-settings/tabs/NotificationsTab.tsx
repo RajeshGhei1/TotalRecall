@@ -70,7 +70,7 @@ const NotificationsTab: React.FC = () => {
     resetForm();
   };
 
-  const handleEdit = (notification: any) => {
+  const handleEdit = (notification: unknown) => {
     setFormData({
       title: notification.title,
       message: notification.message,

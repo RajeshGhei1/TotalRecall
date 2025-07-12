@@ -7,10 +7,10 @@ import ContactAnalyticsDashboard from '../analytics/ContactAnalyticsDashboard';
 
 // Mock Recharts components
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div data-testid="chart-container">{children}</div>,
-  BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
-  PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
-  LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
+  ResponsiveContainer: ({ children }: unknown) => <div data-testid="chart-container">{children}</div>,
+  BarChart: ({ children }: unknown) => <div data-testid="bar-chart">{children}</div>,
+  PieChart: ({ children }: unknown) => <div data-testid="pie-chart">{children}</div>,
+  LineChart: ({ children }: unknown) => <div data-testid="line-chart">{children}</div>,
   Bar: () => <div data-testid="bar" />,
   Pie: () => <div data-testid="pie" />,
   Line: () => <div data-testid="line" />,

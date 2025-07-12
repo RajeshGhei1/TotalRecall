@@ -54,7 +54,7 @@ const RealModuleDashboard: React.FC = () => {
     { value: 'integrations', label: 'Integrations', count: systemModules.filter(m => m.category === 'integrations').length },
   ];
 
-  const handleViewModule = (module: any) => {
+  const handleViewModule = (module: Record<string, unknown>) => {
     const normalizedId = normalizeModuleName(module.name);
     const route = moduleNavigationService.getModuleRoute(normalizedId);
     

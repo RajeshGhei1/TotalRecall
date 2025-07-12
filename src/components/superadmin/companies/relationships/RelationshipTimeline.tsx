@@ -49,14 +49,14 @@ const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({ companyId }
     );
   }
 
-  const getEventIcon = (relationship: any) => {
+  const getEventIcon = (relationship: unknown) => {
     if (!relationship.is_active && relationship.end_date) {
       return <TrendingDown className="h-4 w-4 text-red-500" />;
     }
     return <TrendingUp className="h-4 w-4 text-green-500" />;
   };
 
-  const getEventType = (relationship: any) => {
+  const getEventType = (relationship: unknown) => {
     if (!relationship.is_active && relationship.end_date) {
       return 'Relationship Ended';
     }

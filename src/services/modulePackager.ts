@@ -36,7 +36,7 @@ export class ModulePackager {
     };
   }
 
-  async validatePackage(packageData: any): Promise<PackageValidationResult> {
+  async validatePackage(packageData: unknown): Promise<PackageValidationResult> {
     // Stub implementation for development
     return {
       isValid: true,

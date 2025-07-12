@@ -32,7 +32,7 @@ export const useModuleNavigation = () => {
     setExpandedModules(newExpanded);
   };
 
-  const handleModuleClick = (module: any) => {
+  const handleModuleClick = (module: unknown) => {
     const moduleSlug = module.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
     
     // Check if module has dedicated page

@@ -64,7 +64,7 @@ const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
     setPage(1);
   };
 
-  const handleViewDetails = (log: any) => {
+  const handleViewDetails = (log: unknown) => {
     setSelectedLog(log);
     setShowDetailDialog(true);
   };

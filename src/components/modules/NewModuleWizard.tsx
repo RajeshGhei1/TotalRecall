@@ -21,7 +21,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 interface NewModuleWizardProps {
-  onComplete: (moduleData: any) => void;
+  onComplete: (moduleData: Record<string, unknown>) => void;
   onCancel: () => void;
 }
 

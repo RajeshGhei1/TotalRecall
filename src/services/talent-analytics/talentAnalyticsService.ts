@@ -64,14 +64,14 @@ class TalentAnalyticsService {
     return [];
   }
 
-  private extractRecommendations(aiResult: any): unknown[] {
+  private extractRecommendations(aiResult: unknown): unknown[] {
     if (aiResult && aiResult.suggestions) {
       return Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [aiResult.suggestions];
     }
     return [];
   }
 
-  private extractConfidence(aiResult: any): number {
+  private extractConfidence(aiResult: unknown): number {
     if (aiResult && typeof aiResult.confidence_score === 'number') {
       return aiResult.confidence_score;
     }

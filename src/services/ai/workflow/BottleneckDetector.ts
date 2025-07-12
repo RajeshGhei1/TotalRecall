@@ -160,7 +160,7 @@ class BottleneckDetectorService {
     
     executionData.forEach(execution => {
       if (execution.steps) {
-        execution.steps.forEach((step: any, index: number) => {
+        execution.steps.forEach((step: unknown, index: number) => {
           const stepId = step.id;
           stepStarts.set(stepId, (stepStarts.get(stepId) || 0) + 1);
           

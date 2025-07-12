@@ -58,7 +58,7 @@ const ModuleConfigurationManager: React.FC<ModuleConfigurationManagerProps> = ({
     !['tenant_management', 'user_management', 'subscription_management', 'security_audit', 'global_settings'].includes(module.name)
   ) || [];
 
-  const renderModule = (module: any, isAssignable: boolean = false) => {
+  const renderModule = (module: unknown, isAssignable: boolean = false) => {
     const IconComponent = categoryIcons[module.category as keyof typeof categoryIcons] || Package;
     const isCore = coreModules.includes(module);
     const isFunction = isFunctionalModule(module.name);

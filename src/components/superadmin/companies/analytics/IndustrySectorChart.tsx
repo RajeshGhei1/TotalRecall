@@ -70,7 +70,7 @@ const IndustrySectorChart: React.FC = () => {
     );
   }
 
-  const CustomizedContent = (props: any) => {
+  const CustomizedContent = (props: unknown) => {
     const { root, depth, x, y, width, height, index, payload } = props;
     
     return (

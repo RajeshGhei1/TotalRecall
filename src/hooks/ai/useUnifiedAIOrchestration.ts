@@ -74,7 +74,7 @@ export const useUnifiedAIOrchestration = () => {
     }, 1000);
   }, []);
 
-  const requestPrediction = async (request: any) => {
+  const requestPrediction = async (request: unknown) => {
     setIsRequesting(true);
     try {
       // Mock prediction
@@ -88,12 +88,12 @@ export const useUnifiedAIOrchestration = () => {
     }
   };
 
-  const provideFeedback = async (feedback: any) => {
+  const provideFeedback = async (feedback: unknown) => {
     // Mock feedback submission
     console.log('Feedback provided:', feedback);
   };
 
-  const recordOutcome = async (outcome: any) => {
+  const recordOutcome = async (outcome: unknown) => {
     // Mock outcome recording
     console.log('Outcome recorded:', outcome);
   };

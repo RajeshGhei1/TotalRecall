@@ -20,7 +20,7 @@ export interface EnhancedSystemModule {
 }
 
 // Helper function to safely convert Json to Record<string, any>
-const parseJsonField = (jsonValue: any): Record<string, any> => {
+const parseJsonField = (jsonValue: unknown): Record<string, any> => {
   if (!jsonValue) return {};
   if (typeof jsonValue === 'string') {
     try {
@@ -34,7 +34,7 @@ const parseJsonField = (jsonValue: any): Record<string, any> => {
 };
 
 // Helper function to convert database row to EnhancedSystemModule
-const mapDatabaseRowToModule = (row: any): EnhancedSystemModule => ({
+const mapDatabaseRowToModule = (row: unknown): EnhancedSystemModule => ({
   name: row.name,
   description: row.description,
   category: row.category,

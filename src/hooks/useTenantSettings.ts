@@ -49,7 +49,7 @@ export function useTenantSettings<T extends Record<string, any>>(
     },
     enabled: !!selectedTenantId,
     meta: {
-      onSuccess: (fetchedData: any) => {
+      onSuccess: (fetchedData: unknown) => {
         if (fetchedData) {
           setData({...defaultValue, ...fetchedData});
         } else {

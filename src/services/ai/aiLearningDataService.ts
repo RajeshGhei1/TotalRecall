@@ -34,7 +34,7 @@ export class AILearningDataService {
     userId: string,
     tenantId: string | undefined,
     feedbackType: 'positive' | 'negative' | 'correction' | 'enhancement',
-    feedbackData: any,
+    feedbackData: unknown,
     learningWeight: number = 1.0
   ): Promise<void> {
     try {

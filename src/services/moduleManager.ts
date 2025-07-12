@@ -227,7 +227,7 @@ export class ModuleManager {
         let deploymentHealth: 'healthy' | 'warning' | 'error' = 'healthy';
         if (!isRegistered) {
           deploymentHealth = 'error';
-        } else if (modules.some((m: any) => !m.is_active)) {
+        } else if (modules.some((m: unknown) => !m.is_active)) {
           deploymentHealth = 'warning';
         }
 

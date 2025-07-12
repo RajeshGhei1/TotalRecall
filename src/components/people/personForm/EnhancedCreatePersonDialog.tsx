@@ -49,7 +49,7 @@ export const EnhancedCreatePersonDialog: React.FC<EnhancedCreatePersonDialogProp
   const formContext = personType === 'talent' ? 'talent_form' : 'contact_form';
   const formId = `create_${personType}_${Date.now()}`;
 
-  const handleFormSubmit = async (values: any) => {
+  const handleFormSubmit = async (values: unknown) => {
     // Generate suggestions based on current form values before submission
     await generateSuggestions(values, []);
     await handleCreatePerson(values);

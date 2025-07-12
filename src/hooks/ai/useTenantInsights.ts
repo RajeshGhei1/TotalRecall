@@ -36,7 +36,7 @@ export const useTenantInsights = () => {
   };
 };
 
-function generateRecommendations(summary: any) {
+function generateRecommendations(summary: unknown) {
   const recommendations = [];
 
   // Risk-based recommendations

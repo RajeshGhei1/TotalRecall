@@ -9,7 +9,7 @@ interface ModuleItemProps {
   module: any;
   isExpanded: boolean;
   onToggle: () => void;
-  onModuleClick: (module: any) => void;
+  onModuleClick: (module: unknown) => void;
   onSubComponentClick: (path: string) => void;
 }
 

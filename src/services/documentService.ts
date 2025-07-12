@@ -58,7 +58,7 @@ class DocumentService {
   }
 
   // Helper method to create document content from embedded data
-  createDocumentContent(doc: any): DocumentContent {
+  createDocumentContent(doc: unknown): DocumentContent {
     return {
       title: doc.title,
       content: doc.content,

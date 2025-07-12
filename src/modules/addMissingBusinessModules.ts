@@ -365,7 +365,7 @@ async function checkExistingModules() {
   return data.map((m: unknown) => m.name);
 }
 
-async function registerModule(moduleData: any) {
+async function registerModule(moduleData: unknown) {
   const moduleToCreate = {
     name: moduleData.name,
     category: moduleData.category,

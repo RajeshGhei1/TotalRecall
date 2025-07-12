@@ -12,8 +12,8 @@ import { formatDistanceToNow } from 'date-fns';
 interface VersionHistoryPanelProps {
   entityType: 'form' | 'report';
   entityId: string;
-  onVersionSelect?: (version: any) => void;
-  onVersionRestore?: (version: any) => void;
+  onVersionSelect?: (version: unknown) => void;
+  onVersionRestore?: (version: unknown) => void;
 }
 
 const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({
@@ -53,7 +53,7 @@ const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({
     }
   };
 
-  const handleVersionClick = (version: any) => {
+  const handleVersionClick = (version: unknown) => {
     setSelectedVersion(version.id);
     onVersionSelect?.(version);
   };
@@ -66,7 +66,7 @@ const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({
     }
   };
 
-  const handleRestore = async (version: any) => {
+  const handleRestore = async (version: unknown) => {
     try {
       await restoreFromVersion.mutateAsync({
         entityType,

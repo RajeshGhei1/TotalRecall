@@ -30,7 +30,7 @@ export class DiscoveryEngine {
     return { loaded, failed };
   }
 
-  async loadModule(moduleId: string, options?: any): Promise<LoadedModule | undefined> {
+  async loadModule(moduleId: string, options?: unknown): Promise<LoadedModule | undefined> {
     const existingModule = this.modules.get(moduleId);
     if (existingModule && !options?.force) {
       console.warn(`⚠️ Module "${moduleId}" already loaded. Use force option to reload.`);

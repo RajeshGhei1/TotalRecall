@@ -26,7 +26,7 @@ const MultiSelectFieldEditor: React.FC<MultiSelectFieldEditorProps> = ({
   const [newOption, setNewOption] = useState('');
   
   // Type guard to check if options is enhanced format
-  const isEnhancedOptions = (options: any): options is EnhancedFieldOptions => {
+  const isEnhancedOptions = (options: unknown): options is EnhancedFieldOptions => {
     return options && typeof options === 'object' && !Array.isArray(options);
   };
 

@@ -84,7 +84,7 @@ const ModuleMarketplace: React.FC = () => {
     console.log(`Installing module: ${moduleId}`);
   };
 
-  const renderModuleCard = (module: any) => (
+  const renderModuleCard = (module: Record<string, unknown>) => (
     <Card key={module.id} className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-start justify-between">
