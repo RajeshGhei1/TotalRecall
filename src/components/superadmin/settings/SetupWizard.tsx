@@ -23,9 +23,16 @@ interface SetupWizardProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface TenantData {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
 interface WizardData {
   selectedTenantId: string | null;
-  tenantData: any;
+  tenantData: TenantData | null;
   selectedModules: string[];
   moduleConfigs: Record<string, unknown>;
   integrationSettings: Record<string, unknown>;
@@ -91,7 +98,7 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
     },
     enabled: !!wizardData.selectedTenantId,
     meta: {
-      onSuccess: (data: unknown) => {
+      onSuccess: (data: TenantData) => {
         if (data) {
           console.log("Setting tenant data:", data);
           setWizardData(prev => ({ ...prev, tenantData: data }));
@@ -265,7 +272,7 @@ const SetupWizard = ({ open, onOpenChange }: SetupWizardProps) => {
                   {currentStep === 1 && (
                     <BasicInfoStep 
                       tenantData={wizardData.tenantData}
-                      onUpdate={(data) => updateWizardData({ tenantData: { ...wizardData.tenantData, ...data } })}
+                      onUpdate={(data) => updateWizardData({ tenantData: wizardData.tenantData ? { ...wizardData.tenantData, ...data } : null })}
                     />
                   )}
                   {currentStep === 2 && (

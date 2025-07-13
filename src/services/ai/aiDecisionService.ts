@@ -18,13 +18,22 @@ export interface AIDecisionRule {
   updated_at: string;
 }
 
+export interface AIAnalysis {
+  confidence: number;
+  reason: string;
+  analysis_timestamp: string;
+  conditions_evaluated: number;
+  factors?: Record<string, unknown>;
+  recommendations?: string[];
+}
+
 export interface AIDecisionInstance {
   id: string;
   tenant_id: string;
   rule_id: string;
   decision_type: string;
   context_data: Record<string, unknown>;
-  ai_analysis?: any;
+  ai_analysis?: AIAnalysis;
   confidence_score?: number;
   decision_result: 'approved' | 'rejected' | 'pending' | 'escalated';
   decision_reason?: string;
@@ -86,7 +95,7 @@ export interface CreateDecisionInstanceRequest {
   rule_id: string;
   decision_type: string;
   context_data: Record<string, unknown>;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class AIDecisionService {
@@ -275,7 +284,7 @@ export class AIDecisionService {
     return await this.updateDecisionInstance(instanceId, updates);
   }
 
-  private async simulateAIAnalysis(contextData: unknown, rule: AIDecisionRule): Promise<unknown> {
+  private async simulateAIAnalysis(contextData: unknown, rule: AIDecisionRule): Promise<AIAnalysis> {
     // Simulate AI analysis based on rule conditions
     const conditions = rule.conditions;
     let confidence = 0.5; // Base confidence

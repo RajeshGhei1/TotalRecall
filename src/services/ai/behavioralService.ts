@@ -1,6 +1,18 @@
 import { supabase } from '@/integrations/supabase/client';
 import { UserInteraction, BehavioralPattern } from '@/types/ai';
 import { tenantAIModelService } from './tenantAIModelService';
+import type { Json } from '@/integrations/supabase/types';
+
+export interface BasicBehaviorAnalysis {
+  patterns: {
+    interactionTypes: Record<string, number>;
+    timePatterns: Record<string, number[]>;
+    moduleUsage: Record<string, unknown>;
+  };
+  insights: string[];
+  recommendations: string[];
+  totalInteractions: number;
+}
 
 export class BehavioralAnalyticsService {
   private sessionId: string;
@@ -58,7 +70,11 @@ export class BehavioralAnalyticsService {
 
       const { error } = await supabase
         .from('user_interactions')
-        .insert(interactions);
+        .insert(interactions.map(interaction => ({
+          ...interaction,
+          context: interaction.context as Json,
+          metadata: interaction.metadata as Json
+        })));
 
       if (error) {
         console.error('Error saving interactions:', error);
@@ -148,14 +164,19 @@ export class BehavioralAnalyticsService {
       return analysis;
     } catch (error) {
       console.error('Error analyzing user behavior:', error);
-      return { patterns: [], insights: [], recommendations: [] };
+      return { 
+        patterns: { interactionTypes: {}, timePatterns: {}, moduleUsage: {} },
+        insights: [],
+        recommendations: [],
+        totalInteractions: 0
+      };
     }
   }
 
   private async performAIEnhancedAnalysis(
     interactions: UserInteraction[], 
     tenantId: string, 
-    basicAnalysis: any
+    basicAnalysis: BasicBehaviorAnalysis
   ): Promise<unknown> {
     try {
       const prompt = this.createBehaviorAnalysisPrompt(interactions, basicAnalysis);
@@ -196,7 +217,7 @@ export class BehavioralAnalyticsService {
     }
   }
 
-  private createBehaviorAnalysisPrompt(interactions: UserInteraction[], basicAnalysis: unknown): string {
+  private createBehaviorAnalysisPrompt(interactions: UserInteraction[], basicAnalysis: BasicBehaviorAnalysis): string {
     const interactionSummary = interactions.slice(0, 10).map(i => ({
       type: i.interaction_type,
       module: i.context.module,
@@ -252,7 +273,7 @@ Format your response as JSON with "insights" and "recommendations" arrays.
     return { insights, recommendations };
   }
 
-  private performBehaviorAnalysis(interactions: UserInteraction[]): unknown {
+  private performBehaviorAnalysis(interactions: UserInteraction[]): BasicBehaviorAnalysis {
     const typeFrequency: Record<string, number> = {};
     const timePatterns: Record<string, number[]> = {};
     const contextPatterns: Record<string, unknown> = {};
@@ -269,8 +290,9 @@ Format your response as JSON with "insights" and "recommendations" arrays.
       timePatterns[interaction.interaction_type].push(hour);
 
       // Context analysis
-      if (interaction.context.module) {
-        contextPatterns[interaction.context.module] = (contextPatterns[interaction.context.module] || 0) + 1;
+      if (interaction.context.module && typeof interaction.context.module === 'string') {
+        const currentCount = contextPatterns[interaction.context.module];
+        contextPatterns[interaction.context.module] = (typeof currentCount === 'number' ? currentCount : 0) + 1;
       }
     });
 

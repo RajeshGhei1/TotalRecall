@@ -56,9 +56,19 @@ export const useFormPlacements = (tenantId?: string) => {
       }
 
       return data as (FormPlacement & {
-        form_definitions: any;
+        form_definitions: {
+          id: string;
+          name: string;
+          description?: string;
+          [key: string]: unknown;
+        };
         form_deployment_points: FormDeploymentPoint;
-        system_modules?: any;
+        system_modules?: {
+          id: string;
+          name: string;
+          category: string;
+          [key: string]: unknown;
+        };
       })[];
     },
     enabled: !!tenantId,
@@ -92,7 +102,12 @@ export const useFormPlacementsByLocation = (location: DeploymentLocation, tenant
       }
 
       return data as (FormPlacement & {
-        form_definitions: any;
+        form_definitions: {
+          id: string;
+          name: string;
+          description?: string;
+          [key: string]: unknown;
+        };
         form_deployment_points: FormDeploymentPoint;
         form_triggers: FormTrigger[];
       })[];

@@ -1,8 +1,8 @@
 import React from 'react';
 import { ChevronDown, ChevronRight, Blocks } from 'lucide-react';
+import { SystemModule } from '@/hooks/useSystemModules';
 import { TYPE_CONFIG } from './constants';
 import ModuleItem from './ModuleItem';
-import { SystemModule } from '@/hooks/useSystemModules';
 
 interface ModuleTypeItemProps {
   typeKey: string;
@@ -13,6 +13,12 @@ interface ModuleTypeItemProps {
   onToggleModule: (moduleId: string) => void;
   onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
+  getModuleStatus: (module: SystemModule) => {
+    status: string;
+    color: string;
+    label: string;
+    description: string;
+  };
 }
 
 const ModuleTypeItem: React.FC<ModuleTypeItemProps> = ({
@@ -24,6 +30,7 @@ const ModuleTypeItem: React.FC<ModuleTypeItemProps> = ({
   onToggleModule,
   onModuleClick,
   onSubComponentClick,
+  getModuleStatus,
 }) => {
   const typeConfig = TYPE_CONFIG[typeKey as keyof typeof TYPE_CONFIG];
   const TypeIcon = typeConfig?.icon || Blocks;
@@ -62,6 +69,7 @@ const ModuleTypeItem: React.FC<ModuleTypeItemProps> = ({
               onToggle={() => onToggleModule(module.id)}
               onModuleClick={onModuleClick}
               onSubComponentClick={onSubComponentClick}
+              getModuleStatus={getModuleStatus}
             />
           ))}
         </div>

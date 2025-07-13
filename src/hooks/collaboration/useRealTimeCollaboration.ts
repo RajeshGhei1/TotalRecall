@@ -6,6 +6,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface CursorPosition {
+  x: number;
+  y: number;
+  elementId?: string;
+  section?: string;
+  timestamp: number;
+}
+
 interface RealTimeSession {
   id: string;
   user_id: string;
@@ -15,7 +23,7 @@ interface RealTimeSession {
   joined_at: string;
   last_seen: string;
   status: 'active' | 'away' | 'editing';
-  cursor_position?: any;
+  cursor_position?: CursorPosition;
   current_section?: string;
   metadata: unknown;
   profiles?: {
@@ -53,14 +61,14 @@ export const useRealTimeCollaboration = (entityType: 'form' | 'report', entityId
   const [sessionId] = useState(() => `session-${Date.now()}-${Math.random()}`);
   const [activeUsers, setActiveUsers] = useState<RealTimeSession[]>([]);
   const [notifications, setNotifications] = useState<RealTimeNotification[]>([]);
-  const [conflictWarnings, setConflictWarnings] = useState<Map<string, any>>(new Map());
+  const [conflictWarnings, setConflictWarnings] = useState<Map<string, Record<string, unknown>>>(new Map());
 
   // Join collaboration session
   const joinSession = useMutation({
     mutationFn: async (params: {
       status?: 'active' | 'away' | 'editing';
       currentSection?: string;
-      metadata?: any;
+      metadata?: Record<string, unknown>;
     }) => {
       const { status = 'active', currentSection, metadata = {} } = params;
       
@@ -121,7 +129,7 @@ export const useRealTimeCollaboration = (entityType: 'form' | 'report', entityId
   const updatePresence = useMutation({
     mutationFn: async (params: {
       status: 'active' | 'away' | 'editing';
-      cursorPosition?: any;
+      cursorPosition?: CursorPosition;
       currentSection?: string;
     }) => {
       const { status, cursorPosition, currentSection } = params;
@@ -152,7 +160,7 @@ export const useRealTimeCollaboration = (entityType: 'form' | 'report', entityId
       type: RealTimeNotification['notification_type'];
       title: string;
       message: string;
-      data?: any;
+      data?: Record<string, unknown>;
       priority?: 'low' | 'medium' | 'high' | 'urgent';
       recipientIds?: string[];
     }) => {

@@ -5,6 +5,25 @@ import { aiModelHealthService } from './aiModelHealthService';
 import { aiCostTrackingService } from './aiCostTrackingService';
 import { aiCacheService } from './aiCacheService';
 
+export interface HealthMetrics {
+  uptime: number;
+  responseTime: number;
+  errorRate: number;
+  memoryUsage: number;
+  cpuUsage: number;
+  requestCount: number;
+  lastHealthCheck: string;
+}
+
+export interface CacheMetrics {
+  hitRate: number;
+  missRate: number;
+  totalRequests: number;
+  cacheSize: number;
+  evictionCount: number;
+  averageResponseTime: number;
+}
+
 export class AIInitializationService {
   private initialized = false;
 
@@ -71,8 +90,8 @@ export class AIInitializationService {
   async getSystemStatus(): Promise<{
     initialized: boolean;
     orchestrationStatus: string;
-    healthMetrics: any;
-    cacheMetrics: any;
+    healthMetrics: unknown;
+    cacheMetrics: unknown;
     agentCount: number;
   }> {
     const healthMetrics = aiModelHealthService.getHealthMetrics();

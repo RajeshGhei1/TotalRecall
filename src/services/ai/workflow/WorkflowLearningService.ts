@@ -26,7 +26,7 @@ export interface StepInteraction {
   type: 'click' | 'input' | 'focus' | 'scroll' | 'hover';
   target: string;
   timestamp: Date;
-  value?: any;
+  value?: unknown;
 }
 
 export interface StepError {
@@ -396,13 +396,13 @@ class WorkflowLearningService {
 
   async getPredictions(workflowContext: Record<string, unknown>): Promise<Array<{
     metric: string;
-    prediction: any;
+    prediction: unknown;
     confidence: number;
     basedOnPattern: string;
   }>> {
     const predictions: Array<{
       metric: string;
-      prediction: any;
+      prediction: unknown;
       confidence: number;
       basedOnPattern: string;
     }> = [];

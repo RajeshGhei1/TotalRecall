@@ -33,9 +33,10 @@ export const useAIAgents = () => {
       });
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create AI agent";
       toast({
         title: "Error",
-        description: error.message || "Failed to create AI agent",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -53,9 +54,10 @@ export const useAIAgents = () => {
       });
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update AI agent";
       toast({
         title: "Error",
-        description: error.message || "Failed to update AI agent",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -72,9 +74,10 @@ export const useAIAgents = () => {
       });
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete AI agent";
       toast({
         title: "Error",
-        description: error.message || "Failed to delete AI agent",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -82,15 +85,16 @@ export const useAIAgents = () => {
 
   // Execute agent mutation
   const executeAgentMutation = useMutation({
-    mutationFn: ({ agentId, input }: { agentId: string; input: any }) =>
+    mutationFn: ({ agentId, input }: { agentId: string; input: Record<string, unknown> }) =>
       aiAgentService.executeAgent(agentId, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-agents', selectedTenantId] });
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : "Failed to execute AI agent";
       toast({
         title: "Error",
-        description: error.message || "Failed to execute AI agent",
+        description: errorMessage,
         variant: "destructive"
       });
     }

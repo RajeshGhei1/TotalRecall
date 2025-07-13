@@ -243,8 +243,14 @@ const generateJSON = (data: unknown[]) => {
   };
 };
 
+export interface ExportResult {
+  content: string | Blob | ArrayBuffer;
+  filename: string;
+  mimeType: string;
+}
+
 // Utility function to trigger download
-export const downloadExportedFile = (exportResult: { content: any; filename: string; mimeType: string }) => {
+export const downloadExportedFile = (exportResult: ExportResult) => {
   const blob = new Blob([exportResult.content], { type: exportResult.mimeType });
   const url = URL.createObjectURL(blob);
   

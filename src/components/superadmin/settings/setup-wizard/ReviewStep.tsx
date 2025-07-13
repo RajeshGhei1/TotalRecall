@@ -4,9 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Building2, Blocks, Settings, Globe, Send } from 'lucide-react';
 
+interface TenantData {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
 interface ReviewStepProps {
   wizardData: {
-    tenantData: any;
+    tenantData: TenantData | null;
     selectedModules: string[];
     moduleConfigs: Record<string, unknown>;
     integrationSettings: Record<string, unknown>;

@@ -1526,7 +1526,7 @@ interface CustomFieldConfig {
   // Type-specific options
   options?: SelectOption[];
   validation?: FieldValidation;
-  defaultValue?: any;
+        defaultValue?: unknown;
   helpText?: string;
   
   // Display options
@@ -1854,3 +1854,18 @@ interface Prediction {
 *These advanced integrations and features provide enterprise-level functionality for complex recruitment operations.*`
   }
 ];
+
+export interface FormFieldConfig {
+  type: string;
+  label: string;
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+  defaultValue?: string | number | boolean | null;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    message?: string;
+  };
+}

@@ -11,10 +11,18 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSystemModules } from '@/hooks/useSystemModules';
 
+interface ModuleData {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  is_active: boolean;
+}
+
 interface DeleteModuleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  module: any;
+  module: ModuleData | null;
 }
 
 const DeleteModuleDialog: React.FC<DeleteModuleDialogProps> = ({ 

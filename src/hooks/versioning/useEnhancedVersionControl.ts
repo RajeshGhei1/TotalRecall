@@ -7,22 +7,40 @@ import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
 import { useCacheInvalidation } from '@/hooks/security/useCacheInvalidation';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface EntityVersion {
+export interface DataSnapshot {
+  timestamp: string;
+  version: string;
+  entity_type: string;
+  entity_id: string;
+  changes: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}
+
+export interface WorkflowConfig {
+  approval_required: boolean;
+  auto_publish: boolean;
+  notification_settings: {
+    notify_on_create: boolean;
+    notify_on_publish: boolean;
+    notify_on_rollback: boolean;
+  };
+  retention_policy: {
+    max_versions: number;
+    auto_cleanup: boolean;
+  };
+}
+
+export interface VersionData {
   id: string;
-  entity_type: 'form' | 'report';
+  entity_type: string;
   entity_id: string;
   version_number: number;
-  data_snapshot: any;
-  created_at: string;
+  data_snapshot: DataSnapshot;
   created_by: string;
-  change_summary?: string;
-  approval_status: string;
-  is_published: boolean;
-  profiles?: {
-    id: string;
-    email: string;
-    full_name?: string;
-  };
+  created_at: string;
+  description?: string;
+  is_current: boolean;
+  workflow_config?: WorkflowConfig;
 }
 
 interface ApprovalWorkflow {
@@ -62,7 +80,7 @@ export const useEnhancedVersionControl = () => {
           .order('version_number', { ascending: false });
 
         if (error) throw error;
-        return data as EntityVersion[];
+        return data as VersionData[];
       },
       enabled: !!entityId,
     });
@@ -82,7 +100,7 @@ export const useEnhancedVersionControl = () => {
           .single();
 
         if (error) throw error;
-        return data as EntityVersion;
+        return data as VersionData;
       },
       enabled: !!entityId,
     });
@@ -145,7 +163,7 @@ export const useEnhancedVersionControl = () => {
       data: unknown;
       changeSummary?: string;
       approvalRequired?: boolean;
-      workflowConfig?: any;
+      workflowConfig?: WorkflowConfig;
     }) => {
       const { entityType, entityId, data, changeSummary, approvalRequired = true, workflowConfig } = params;
       

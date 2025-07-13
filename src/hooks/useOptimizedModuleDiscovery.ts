@@ -2,17 +2,32 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-interface OptimizedModuleResult {
-  moduleId: string;
-  isEnabled: boolean;
-  source: 'subscription';
-  metadata?: any;
+export interface ModuleMetadata {
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  dependencies?: string[];
+  tags?: string[];
+  lastModified: string;
+  fileSize: number;
+  complexity?: number;
+}
+
+export interface ModuleDiscoveryResult {
+  id: string;
+  module_name: string;
+  file_path: string;
+  discovered_at: string;
+  metadata?: ModuleMetadata;
+  is_valid: boolean;
+  error_message?: string;
 }
 
 export const useOptimizedModuleDiscovery = (tenantId: string | null) => {
   return useQuery({
     queryKey: ['optimized-module-discovery', tenantId],
-    queryFn: async (): Promise<OptimizedModuleResult[]> => {
+    queryFn: async (): Promise<ModuleDiscoveryResult[]> => {
       if (!tenantId) return [];
 
       // Only check subscription-based modules now

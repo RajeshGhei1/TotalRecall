@@ -4,8 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Calendar, Globe } from 'lucide-react';
 
+interface TenantData {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
 interface BasicInfoStepProps {
-  tenantData: any;
+  tenantData: TenantData;
   onUpdate: (data: unknown) => void;
 }
 

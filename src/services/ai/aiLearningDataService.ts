@@ -1,5 +1,24 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
+
+export interface UserCorrection {
+  field: string;
+  original_value: unknown;
+  corrected_value: unknown;
+  reason?: string;
+  confidence?: number;
+}
+
+export interface OutcomeData {
+  [key: string]: Json;
+  outcome_type: string;
+  outcome_value: Json;
+  metrics?: Record<string, number>;
+  duration?: number;
+  error_details?: string;
+  success_indicators?: string[];
+}
 
 export interface LearningDataEntry {
   id: string;
@@ -9,7 +28,7 @@ export interface LearningDataEntry {
   feedback_type: 'positive' | 'negative' | 'correction' | 'enhancement';
   feedback_data: {
     original_decision: Record<string, unknown>;
-    user_correction?: any;
+    user_correction?: UserCorrection[];
     satisfaction_score?: number;
     improvement_suggestions?: string[];
     context_relevance?: number;
@@ -67,7 +86,7 @@ export class AILearningDataService {
   async recordDecisionOutcome(
     decisionId: string,
     outcome: 'success' | 'failure' | 'partial_success',
-    outcomeData: any
+    outcomeData: OutcomeData
   ): Promise<void> {
     try {
       // Update the original decision with outcome

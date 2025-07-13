@@ -10,7 +10,7 @@ interface VersionInfo {
   entity_type: 'form' | 'report';
   entity_id: string;
   version_number: number;
-  data_snapshot: any;
+  data_snapshot: unknown;
   created_at: string;
   created_by: string;
   change_summary?: string;

@@ -90,7 +90,7 @@ export const useSuperAdminNavigation = () => {
     },
     { 
       id: 'settings',
-      label: 'System Settings', 
+      label: 'System Settings • Module Management', 
       icon: Settings, 
       href: '/superadmin/settings'
     },

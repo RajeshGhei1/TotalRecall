@@ -37,27 +37,28 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
     if (!orgChartData) return null;
     
     const filterNode = (node: unknown): unknown | null => {
+      const nodeTyped = node as { name: string; role: string; email?: string; type: string; children?: unknown[] };
       const matchesSearch = !searchTerm || 
-        node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        node.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (node.email && node.email.toLowerCase().includes(searchTerm.toLowerCase()));
+        nodeTyped.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        nodeTyped.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (nodeTyped.email && nodeTyped.email.toLowerCase().includes(searchTerm.toLowerCase()));
       
-      const matchesFilter = filterByType === 'all' || node.type === filterByType;
+      const matchesFilter = filterByType === 'all' || nodeTyped.type === filterByType;
       
-      const filteredChildren = node.children
-        ?.map(filterNode)
-        .filter(Boolean) || [];
+      const filteredChildren = (nodeTyped.children || [])
+        .map(filterNode)
+        .filter(Boolean);
       
       if (matchesSearch && matchesFilter) {
-        return { ...node, children: filteredChildren };
+        return { ...nodeTyped, children: filteredChildren };
       } else if (filteredChildren.length > 0) {
-        return { ...node, children: filteredChildren };
+        return { ...nodeTyped, children: filteredChildren };
       }
       
       return null;
     };
     
-    const filteredRootNodes = orgChartData.rootNodes
+    const filteredRootNodes = (orgChartData.rootNodes as unknown[])
       .map(filterNode)
       .filter(Boolean);
     
@@ -77,7 +78,8 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
     if (!orgChartData) return {};
     const types: Record<string, number> = {};
     Object.values(orgChartData.allNodes).forEach((node: unknown) => {
-      types[node.type] = (types[node.type] || 0) + 1;
+      const nodeTyped = node as { type: string };
+      types[nodeTyped.type] = (types[nodeTyped.type] || 0) + 1;
     });
     return types;
   }, [orgChartData]);
@@ -211,7 +213,15 @@ const CompanyOrgChart: React.FC<CompanyOrgChartProps> = ({ companyId }) => {
 };
 
 interface OrgChartNodeProps {
-  node: any;
+  node: {
+    id: string;
+    name: string;
+    role: string;
+    email?: string;
+    type: string;
+    isManager: boolean;
+    children?: unknown[];
+  };
   onPersonClick: (personId: string) => void;
   level?: number;
   searchTerm?: string;
@@ -314,16 +324,19 @@ const OrgChartNode: React.FC<OrgChartNodeProps> = ({
       
       {expanded && hasChildren && (
         <div className="border-l-2 border-dashed border-muted pl-4 ml-2">
-          {node.children.map((child: unknown) => (
-            <OrgChartNode 
-              key={child.id} 
-              node={child} 
-              onPersonClick={onPersonClick}
-              level={level + 1}
-              searchTerm={searchTerm}
-              expandAll={expandAll}
-            />
-          ))}
+          {node.children?.map((child: unknown) => {
+            const childTyped = child as { id: string; name: string; role: string; email?: string; type: string; isManager: boolean; children?: unknown[] };
+            return (
+              <OrgChartNode 
+                key={childTyped.id} 
+                node={childTyped} 
+                onPersonClick={onPersonClick}
+                level={level + 1}
+                searchTerm={searchTerm}
+                expandAll={expandAll}
+              />
+            );
+          })}
         </div>
       )}
     </div>

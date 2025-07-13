@@ -21,16 +21,28 @@ const editModuleSchema = z.object({
   type: z.string().min(1, "Type is required"),
   version: z.string().min(1, "Version is required"),
   is_active: z.boolean(),
-  default_limits: z.record(z.any()).optional(),
+  default_limits: z.record(z.unknown()).optional(),
   dependencies: z.array(z.string()).optional()
 });
 
 type EditModuleFormData = z.infer<typeof editModuleSchema>;
 
+interface EditableModuleData {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  type: string;
+  version?: string;
+  is_active: boolean;
+  default_limits?: Record<string, unknown>;
+  dependencies?: string[];
+}
+
 interface EditModuleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  module: any;
+  module: EditableModuleData | null;
 }
 
 const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange, module }) => {

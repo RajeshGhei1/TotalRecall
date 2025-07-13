@@ -2,18 +2,41 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface DeploymentConfig {
+  environment: 'development' | 'staging' | 'production';
+  auto_deploy: boolean;
+  rollback_strategy: 'immediate' | 'gradual' | 'manual';
+  health_checks: {
+    enabled: boolean;
+    timeout: number;
+    retries: number;
+  };
+  scaling: {
+    min_instances: number;
+    max_instances: number;
+    target_cpu: number;
+  };
+  notifications: {
+    success: boolean;
+    failure: boolean;
+    webhooks: string[];
+  };
+}
+
 export interface ModuleDeployment {
   id: string;
-  module_name: string;
+  module_id: string;
   version: string;
-  deployment_type: string;
-  status: string;
-  tenant_id: string;
-  deployed_by: string;
-  started_at: string;
-  completed_at?: string;
-  deployment_config?: any;
-  deployment_log?: unknown[];
+  environment: string;
+  status: 'pending' | 'deploying' | 'deployed' | 'failed' | 'rolled_back';
+  deployment_config?: DeploymentConfig;
+  deployed_at?: string;
+  deployed_by?: string;
+  rollback_version?: string;
+  health_check_status?: string;
+  logs?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useModuleDeployments = (tenantId?: string) => {

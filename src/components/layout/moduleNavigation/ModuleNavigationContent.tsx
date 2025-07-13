@@ -1,6 +1,6 @@
 import React from 'react';
-import ModuleTypeItem from './ModuleTypeItem';
 import { SystemModule } from '@/hooks/useSystemModules';
+import ModuleTypeItem from './ModuleTypeItem';
 
 interface ModuleNavigationContentProps {
   groupedModules: Record<string, SystemModule[]>;
@@ -10,6 +10,12 @@ interface ModuleNavigationContentProps {
   onToggleModule: (moduleId: string) => void;
   onModuleClick: (module: SystemModule) => void;
   onSubComponentClick: (path: string) => void;
+  getModuleStatus: (module: SystemModule) => {
+    status: string;
+    color: string;
+    label: string;
+    description: string;
+  };
 }
 
 const ModuleNavigationContent: React.FC<ModuleNavigationContentProps> = ({
@@ -20,6 +26,7 @@ const ModuleNavigationContent: React.FC<ModuleNavigationContentProps> = ({
   onToggleModule,
   onModuleClick,
   onSubComponentClick,
+  getModuleStatus,
 }) => {
   return (
     <div className="ml-2 mt-1 space-y-1">
@@ -34,6 +41,7 @@ const ModuleNavigationContent: React.FC<ModuleNavigationContentProps> = ({
           onToggleModule={onToggleModule}
           onModuleClick={onModuleClick}
           onSubComponentClick={onSubComponentClick}
+          getModuleStatus={getModuleStatus}
         />
       ))}
     </div>
