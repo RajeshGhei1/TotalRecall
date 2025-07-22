@@ -148,7 +148,11 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({ companyId, co
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedRelationship(relationship)}
+                            onClick={() => {
+                              console.log('✏️ Editing relationship:', relationship);
+                              setSelectedRelationship(relationship);
+                              setIsCreateDialogOpen(true);
+                            }}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

@@ -8,12 +8,20 @@ export const useCompanyRelationshipTypes = () => {
   return useQuery({
     queryKey: ['company-relationship-types'],
     queryFn: async () => {
+      console.log('🔍 Fetching company relationship types...');
       const { data, error } = await supabase
         .from('company_relationship_types')
         .select('*')
         .order('name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching relationship types:', error);
+        throw error;
+      }
+      
+      console.log('✅ Relationship types data:', data);
+      console.log('📊 Number of relationship types:', data?.length || 0);
+      
       return data as CompanyRelationshipType[];
     },
   });
@@ -24,6 +32,8 @@ export const useCompanyRelationshipsAdvanced = (companyId: string) => {
   return useQuery({
     queryKey: ['company-relationships-advanced', companyId],
     queryFn: async () => {
+      console.log('🔍 Fetching relationships for company:', companyId);
+      
       const { data, error } = await supabase
         .from('company_relationships_advanced')
         .select(`
@@ -36,7 +46,15 @@ export const useCompanyRelationshipsAdvanced = (companyId: string) => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      console.log('📥 Relationships fetch - result:', data);
+      console.log('📥 Relationships fetch - error:', error);
+      console.log('📊 Relationships count:', data?.length || 0);
+      
+      if (error) {
+        console.error('❌ Relationships fetch error:', error);
+        throw error;
+      }
+      
       return data as CompanyRelationshipAdvanced[];
     },
     enabled: !!companyId,
@@ -135,29 +153,75 @@ export const useCompanyRelationshipMutations = () => {
 
   const createRelationship = useMutation({
     mutationFn: async (data: Omit<CompanyRelationshipAdvanced, 'id' | 'created_at' | 'updated_at'>) => {
+      console.log('🔍 Attempting to create relationship with data:', data);
+      
+      const insertData = {
+        ...data,
+        metadata: (data.metadata || {}) as any
+      };
+      
+      console.log('📤 Sending to Supabase:', insertData);
+      
       const { data: result, error } = await supabase
         .from('company_relationships_advanced')
-        .insert([{
-          ...data,
-          metadata: data.metadata || {}
-        }])
+        .insert([insertData])
         .select()
         .single();
       
-      if (error) throw error;
+      console.log('📥 Supabase response - result:', result);
+      console.log('📥 Supabase response - error:', error);
+      
+      if (error) {
+        console.error('❌ Database insert error:', error);
+        throw error;
+      }
+      
+      if (!result) {
+        console.error('❌ No result returned from database');
+        throw new Error('No result returned from database insert');
+      }
+      
+      console.log('✅ Successfully created relationship:', result);
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Invalidate all relationship queries for both companies involved
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
-      queryClient.invalidateQueries({ queryKey: ['company-network'] });
+      if (result) {
+        queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced', result.parent_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced', result.child_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-network', result.parent_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-network', result.child_company_id] });
+      }
     },
   });
 
   const updateRelationship = useMutation({
     mutationFn: async ({ id, ...data }: Partial<CompanyRelationshipAdvanced> & { id: string }) => {
+      // Clean the data object to only include valid database fields
+      const cleanData = {
+        parent_company_id: data.parent_company_id,
+        child_company_id: data.child_company_id,
+        relationship_type_id: data.relationship_type_id,
+        ownership_percentage: data.ownership_percentage,
+        effective_date: data.effective_date,
+        end_date: data.end_date,
+        is_active: data.is_active,
+        metadata: (data.metadata || {}) as any,
+        notes: data.notes,
+        created_by: data.created_by,
+      };
+      
+      // Remove undefined fields
+      Object.keys(cleanData).forEach(key => {
+        if (cleanData[key as keyof typeof cleanData] === undefined) {
+          delete cleanData[key as keyof typeof cleanData];
+        }
+      });
+      
       const { data: result, error } = await supabase
         .from('company_relationships_advanced')
-        .update(data)
+        .update(cleanData)
         .eq('id', id)
         .select()
         .single();
@@ -165,9 +229,15 @@ export const useCompanyRelationshipMutations = () => {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Invalidate all relationship queries for both companies involved
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
-      queryClient.invalidateQueries({ queryKey: ['company-network'] });
+      if (result) {
+        queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced', result.parent_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced', result.child_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-network', result.parent_company_id] });
+        queryClient.invalidateQueries({ queryKey: ['company-network', result.child_company_id] });
+      }
     },
   });
 
@@ -181,6 +251,7 @@ export const useCompanyRelationshipMutations = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate all relationship and network queries since we don't know which companies were affected
       queryClient.invalidateQueries({ queryKey: ['company-relationships-advanced'] });
       queryClient.invalidateQueries({ queryKey: ['company-network'] });
     },

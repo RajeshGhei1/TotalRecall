@@ -54,8 +54,13 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
   onSuccess,
 }) => {
   const { companies = [] } = useCompanies();
-  const { data: relationshipTypes = [] } = useCompanyRelationshipTypes();
+  const { data: relationshipTypes = [], isLoading: isLoadingTypes, error: typesError } = useCompanyRelationshipTypes();
   const { createRelationship, updateRelationship } = useCompanyRelationshipMutations();
+
+  // Debug logging
+  console.log('🔧 CreateRelationshipDialog - relationshipTypes:', relationshipTypes);
+  console.log('🔧 CreateRelationshipDialog - isLoadingTypes:', isLoadingTypes);
+  console.log('🔧 CreateRelationshipDialog - typesError:', typesError);
 
   const form = useForm<RelationshipFormData>({
     resolver: zodResolver(relationshipSchema),
@@ -77,6 +82,7 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
 
   useEffect(() => {
     if (relationship) {
+      console.log('✏️ Edit mode: Populating form with relationship data:', relationship);
       form.reset({
         parent_company_id: relationship.parent_company_id,
         child_company_id: relationship.child_company_id,
@@ -88,6 +94,7 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
         notes: relationship.notes || '',
       });
     } else {
+      console.log('➕ Create mode: Resetting form for new relationship');
       form.reset({
         parent_company_id: '',
         child_company_id: companyId,
@@ -118,14 +125,19 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
       };
 
       if (relationship) {
+        console.log('🔄 Updating relationship:', relationshipData);
         await updateRelationship.mutateAsync({
           id: relationship.id,
           ...relationshipData,
         });
+        console.log('✅ Relationship updated successfully');
       } else {
-        await createRelationship.mutateAsync(relationshipData);
+        console.log('➕ Creating new relationship:', relationshipData);
+        const result = await createRelationship.mutateAsync(relationshipData);
+        console.log('✅ Relationship created successfully:', result);
       }
       
+      console.log('🔄 Calling onSuccess callback');
       onSuccess();
     } catch (error) {
       console.error('Error saving relationship:', error);
@@ -156,20 +168,25 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Parent Company</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select parent company" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        onChange={(e) => {
+                          console.log('✅ Parent company selected:', e.target.value);
+                          field.onChange(e.target.value);
+                        }}
+                      >
+                        <option value="">
+                          {companies.length === 0 ? "No companies available" : "Select parent company"}
+                        </option>
                         {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
+                          <option key={company.id} value={company.id}>
                             {company.name}
-                          </SelectItem>
+                          </option>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </select>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -181,52 +198,61 @@ const CreateRelationshipDialog: React.FC<CreateRelationshipDialogProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Child Company</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select child company" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        onChange={(e) => {
+                          console.log('✅ Child company selected:', e.target.value);
+                          field.onChange(e.target.value);
+                        }}
+                      >
+                        <option value="">
+                          {companies.length === 0 ? "No companies available" : "Select child company"}
+                        </option>
                         {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
+                          <option key={company.id} value={company.id}>
                             {company.name}
-                          </SelectItem>
+                          </option>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </select>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            <FormField
+
+
+                        <FormField
               control={form.control}
               name="relationship_type_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Relationship Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select relationship type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {relationshipTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: type.color }}
-                            />
-                            <span>{type.name}</span>
-                          </div>
-                        </SelectItem>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      onChange={(e) => {
+                        console.log('✅ Native select value:', e.target.value);
+                        field.onChange(e.target.value);
+                      }}
+                    >
+                      <option value="">
+                        {isLoadingTypes ? "Loading relationship types..." : 
+                         typesError ? "Error loading types" :
+                         relationshipTypes.length === 0 ? "No relationship types available" :
+                         "Select relationship type"}
+                      </option>
+                      {!isLoadingTypes && !typesError && relationshipTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

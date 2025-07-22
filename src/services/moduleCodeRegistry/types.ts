@@ -18,4 +18,3 @@ export interface ValidationResult {
 export interface DiscoveryResult {
   registered: string[];
   failed: { moduleId: string; error: string }[];
-}
