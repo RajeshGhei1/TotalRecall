@@ -31,6 +31,10 @@ To be the only final application that an enterprise will ever need across depart
 - [Integration Patterns](./INTEGRATION_PATTERNS.md) - Event-driven communication patterns
 - [Knowledge Management](./KNOWLEDGE_MANAGEMENT.md) - Intelligent knowledge orchestration vision
 
+### External Projects Analysis
+- [External Projects](./external-projects/) - Documentation for analyzed external systems
+  - [CRM System Documentation](./external-projects/crm-system/) - Comprehensive .NET CRM analysis
+
 ### Implementation Guides
 - [User Guides](./user-guides/) - End-user documentation for each module
 - [Admin Guides](./admin-guides/) - Administrative procedures and best practices
