@@ -1,0 +1,42 @@
+SIMPLE CRM ANALYSIS PROMPTS (EASIER TO COPY/PASTE)
+====================================================
+
+PROMPT A: START HERE
+====================
+
+Analyze this .NET CRM codebase and create comprehensive documentation. Start with system architecture, API endpoints, database schema, business logic flows, integrations, deployment guide, and developer onboarding documentation.
+
+====================================================
+
+PROMPT B: DETAILED ANALYSIS  
+===========================
+
+Create detailed documentation for entity relationships, security implementation, error handling patterns, performance optimizations, and testing strategies. Focus on CRM-specific features like lead management, contact management, and sales pipeline.
+
+====================================================
+
+PROMPT C: CODE EXAMPLES
+========================
+
+Provide detailed code examples and technical implementation details including API usage examples, database queries, configuration guides, troubleshooting guides, and integration examples with actual code snippets.
+
+====================================================
+
+PROMPT D: BUSINESS PROCESSES
+=============================
+
+Document business processes including sales pipeline flow, customer lifecycle, reporting workflows, user permissions matrix, and data flow diagrams. Focus on business rules and process automation.
+
+====================================================
+
+QUICK START INSTRUCTIONS:
+=========================
+
+1. Switch to your .NET CRM workspace
+2. Copy PROMPT A and paste it
+3. Wait for completion
+4. Use additional prompts as needed
+5. Copy generated docs to TotalRecall
+
+Copy command:
+cp /path/to/crm/docs/*.md /Users/rajeshghei/Desktop/TotalRecall/docs/external-projects/crm-system/ 

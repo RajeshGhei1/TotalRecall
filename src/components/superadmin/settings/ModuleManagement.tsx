@@ -23,6 +23,7 @@ import {
 import { useSystemModules, SystemModule } from '@/hooks/useSystemModules';
 import CreateModuleDialog from './modules/CreateModuleDialog';
 import EditModuleDialog from './modules/EditModuleDialog';
+import EditModuleDialogWithFeatures from './modules/EditModuleDialogWithFeatures';
 import DeleteModuleDialog from './modules/DeleteModuleDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
@@ -591,7 +592,7 @@ const ModuleManagement: React.FC = () => {
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen} 
       />
-      <EditModuleDialog 
+      <EditModuleDialogWithFeatures 
         open={editDialogOpen} 
         onOpenChange={setEditDialogOpen} 
         module={selectedModule as any}

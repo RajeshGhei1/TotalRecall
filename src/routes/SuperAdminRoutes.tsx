@@ -18,6 +18,8 @@ import GlobalSettings from '@/pages/superadmin/GlobalSettings';
 import SubscriptionPlans from '@/pages/superadmin/SubscriptionPlans';
 import ModuleDevelopment from '@/pages/superadmin/ModuleDevelopment';
 import ModuleTesting from '@/pages/superadmin/ModuleTesting';
+import FeatureManagement from '@/pages/superadmin/FeatureManagement';
+import ConsolidatedFeatureManagement from '@/components/features/ConsolidatedFeatureManagement';
 import CompanyDetailView from '@/components/superadmin/companies/CompanyDetailView';
 import DynamicModulePage from '@/components/modules/DynamicModulePage';
 import ATS from '@/pages/superadmin/ATS';
@@ -31,12 +33,44 @@ const SuperAdminRoutes = () => {
     console.log('SuperAdminRoutes - Location state:', location.state);
   }, [location]);
   
-  console.log('SuperAdminRoutes component rendering for path:', location.pathname);
+  console.log('🔥 SuperAdminRoutes component rendering for path:', location.pathname);
+  console.log('🔥 SuperAdminRoutes - Full URL:', window.location.href);
+  console.log('🔥 SuperAdminRoutes - Search params:', location.search);
   
   return (
     <Routes>
+      {/* SIMPLE TEST ROUTE - FIRST PRIORITY */}
+      <Route path="simple-test" element={
+        <div style={{
+          padding: '40px',
+          background: 'lightgreen',
+          margin: '20px',
+          border: '3px solid green'
+        }}>
+          <h1>🎉 SIMPLE TEST SUCCESS!</h1>
+          <p><strong>Path:</strong> {location.pathname}</p>
+          <p><strong>URL:</strong> {window.location.href}</p>
+          <p style={{color: 'green', fontWeight: 'bold'}}>✅ SuperAdminRoutes is working!</p>
+        </div>
+      } />
+      
       {/* Default route - redirect to dashboard */}
       <Route index element={<Navigate to="dashboard" replace />} />
+      
+      {/* SIMPLE TEST ROUTE - FIRST PRIORITY */}
+      <Route path="simple-test" element={
+        <div style={{
+          padding: '40px',
+          background: 'lightgreen',
+          margin: '20px',
+          border: '3px solid green'
+        }}>
+          <h1>🎉 SIMPLE TEST SUCCESS!</h1>
+          <p><strong>Path:</strong> {location.pathname}</p>
+          <p><strong>URL:</strong> {window.location.href}</p>
+          <p style={{color: 'green', fontWeight: 'bold'}}>✅ SuperAdminRoutes is working!</p>
+        </div>
+      } />
       
       {/* Test route to verify routing works */}
       <Route path="test-route" element={<div style={{padding: '20px', background: 'lightgreen'}}>TEST ROUTE WORKS!</div>} />
@@ -47,6 +81,9 @@ const SuperAdminRoutes = () => {
       <Route path="users" element={<Users />} />
       <Route path="subscription-plans" element={<SubscriptionPlans />} />
       <Route path="module-development" element={<ModuleDevelopment />} />
+      <Route path="feature-management" element={<ConsolidatedFeatureManagement />} />
+      <Route path="feature-management-legacy" element={<FeatureManagement />} />
+      <Route path="feature-management-consolidated" element={<ConsolidatedFeatureManagement />} />
       <Route path="module-testing" element={<ModuleTesting />} />
       <Route path="security-dashboard" element={<SecurityDashboard />} />
       <Route path="audit-logs" element={<AuditLogs />} />

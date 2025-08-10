@@ -1,0 +1,97 @@
+CRM ANALYSIS PROMPTS - COPY AND PASTE THESE INTO .NET CRM WORKSPACE
+=======================================================================
+
+PROMPT 1: INITIAL COMPREHENSIVE ANALYSIS
+==========================================
+
+Please analyze this .NET CRM codebase and create comprehensive documentation. I need:
+
+1. **ARCHITECTURE_ANALYSIS.md** - Complete system architecture overview
+2. **API_DOCUMENTATION.md** - All endpoints with request/response examples  
+3. **DATABASE_SCHEMA.md** - Complete database schema documentation
+4. **BUSINESS_LOGIC_FLOW.md** - Core business processes and workflows
+5. **INTEGRATION_POINTS.md** - External integrations and dependencies
+6. **DEPLOYMENT_GUIDE.md** - Complete deployment instructions
+7. **DEVELOPER_ONBOARDING.md** - Setup and development guide
+
+Start with a codebase exploration to understand the structure, then create these documentation files systematically.
+
+=======================================================================
+
+PROMPT 2: DEEPER BUSINESS LOGIC ANALYSIS
+==========================================
+
+Please dive deeper into the business logic and create additional documentation:
+
+1. **ENTITY_RELATIONSHIPS.md** - Detailed entity relationship diagrams
+2. **SECURITY_IMPLEMENTATION.md** - Authentication, authorization, and security measures
+3. **ERROR_HANDLING.md** - Error handling patterns and exception management
+4. **PERFORMANCE_OPTIMIZATION.md** - Performance considerations and optimizations
+5. **TESTING_STRATEGY.md** - Testing approach and test coverage
+
+Focus on the core CRM functionality like lead management, contact management, sales pipeline, etc.
+
+=======================================================================
+
+PROMPT 3: SPECIFIC AREA ANALYSIS (USE AS NEEDED)
+=================================================
+
+Please analyze and document the [SPECIFIC AREA]:
+- Lead management system
+- Contact management workflows  
+- Sales pipeline processes
+- Reporting and analytics
+- User management and permissions
+- Data import/export functionality
+
+Create detailed documentation for [SPECIFIC AREA] including code examples and business rules.
+
+=======================================================================
+
+PROMPT 4: CODE EXAMPLES AND TECHNICAL DETAILS
+==============================================
+
+Please provide detailed code examples and technical implementation details for:
+
+1. **API_EXAMPLES.md** - Complete API usage examples with request/response samples
+2. **DATABASE_QUERIES.md** - Common database queries and stored procedures
+3. **CONFIGURATION_GUIDE.md** - Configuration files and environment setup
+4. **TROUBLESHOOTING_GUIDE.md** - Common issues and solutions
+5. **INTEGRATION_EXAMPLES.md** - Third-party integration code samples
+
+Include actual code snippets, configuration examples, and step-by-step implementation guides.
+
+=======================================================================
+
+PROMPT 5: BUSINESS PROCESS DOCUMENTATION
+=========================================
+
+Please create detailed business process documentation:
+
+1. **SALES_PIPELINE_FLOW.md** - Complete sales process from lead to close
+2. **CUSTOMER_LIFECYCLE.md** - Customer journey and lifecycle management
+3. **REPORTING_WORKFLOWS.md** - Report generation and analytics processes
+4. **USER_PERMISSIONS_MATRIX.md** - Role-based access control documentation
+5. **DATA_FLOW_DIAGRAMS.md** - How data moves through the system
+
+Focus on business rules, validation logic, and process automation.
+
+=======================================================================
+
+TIPS FOR USING THESE PROMPTS:
+==============================
+
+1. **Copy one prompt at a time** - Start with PROMPT 1
+2. **Wait for completion** - Let each analysis finish before the next prompt
+3. **Review results** - Check generated documentation before proceeding
+4. **Customize as needed** - Modify prompts based on your specific CRM features
+5. **Save frequently** - Commit documentation after each major analysis
+
+COPY PATH FOR TRANSFERRING TO TOTALRECALL:
+==========================================
+
+Copy from: YourCRMProject/docs/
+Copy to: /Users/rajeshghei/Desktop/TotalRecall/docs/external-projects/crm-system/
+
+Command to copy:
+cp /path/to/your/crm/docs/*.md /Users/rajeshghei/Desktop/TotalRecall/docs/external-projects/crm-system/ 

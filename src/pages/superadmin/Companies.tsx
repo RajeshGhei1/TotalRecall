@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/AdminLayout';
 import { 
   Breadcrumb,
@@ -10,8 +11,9 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Database, BarChart, Download, History } from 'lucide-react';
+import { Plus, Upload, Database, BarChart, Download, History, Settings, Crown, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import CompanyEnhancedListContainer from '@/components/superadmin/companies/CompanyEnhancedListContainer';
 import CompanyMetricsDashboard from '@/components/superadmin/companies/CompanyMetricsDashboard';
@@ -20,12 +22,14 @@ import EnhancedBulkUploadDialog from '@/components/superadmin/companies/Enhanced
 import EnhancedExportDialog from '@/components/superadmin/companies/EnhancedExportDialog';
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
 import ImportHistoryDialog from '@/components/superadmin/companies/ImportHistoryDialog';
+import ModuleFeatureIntegration from '@/components/modules/ModuleFeatureIntegration';
 import { useCompanies, Company } from '@/hooks/useCompanies';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
 
 const Companies = () => {
+  const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -150,7 +154,12 @@ const Companies = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Button onClick={() => {
+              console.log('🔵 Create Company button clicked');
+              console.log('🔵 Current isCreateDialogOpen state:', isCreateDialogOpen);
+              setIsCreateDialogOpen(true);
+              console.log('🔵 setIsCreateDialogOpen(true) called');
+            }}>
               <Plus className="mr-2 h-4 w-4" /> Add Company
             </Button>
             <Button variant="outline" onClick={() => setIsBulkUploadDialogOpen(true)}>
@@ -174,6 +183,10 @@ const Companies = () => {
             <TabsTrigger value="dashboard" className="flex items-center gap-1">
               <BarChart className="h-4 w-4" />
               <span>Enhanced Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="features" className="flex items-center gap-1">
+              <Settings className="h-4 w-4" />
+              <span>Module Features</span>
             </TabsTrigger>
           </TabsList>
           
@@ -204,14 +217,62 @@ const Companies = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="features">
+            <Card>
+              <CardHeader>
+                <CardTitle>Companies Module Features</CardTitle>
+                <CardDescription>
+                  View and manage features assigned to the Companies module through dynamic feature assignment
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Global Custom Fields Notice */}
+                <Alert className="border-blue-200 bg-blue-50">
+                  <Crown className="h-4 w-4 text-blue-600" />
+                  <AlertDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <strong className="text-blue-900">Need to create global custom fields?</strong>
+                        <p className="text-blue-700 text-sm mt-1">
+                          As Super Admin, create global custom fields that all tenants can use by going to Settings → Custom Fields.
+                        </p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-blue-600 border-blue-300 hover:bg-blue-100"
+                        onClick={() => navigate('/superadmin/settings?tab=custom-fields')}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Go to Settings
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+                
+                <ModuleFeatureIntegration 
+                  moduleName="companies"
+                  entityType="company"
+                  className="mt-4"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Enhanced Dialogs */}
         <CreateCompanyDialog
           isOpen={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
+          onClose={() => {
+            console.log('🔴 CreateCompanyDialog onClose called');
+            setIsCreateDialogOpen(false);
+          }}
           onSubmit={(data) => {
+            console.log('🟢 CreateCompanyDialog onSubmit called with data:', data);
+            console.log('🟢 About to call createCompany.mutate');
             createCompany.mutate(data);
+            console.log('🟢 createCompany.mutate called, closing dialog');
             setIsCreateDialogOpen(false);
           }}
           isSubmitting={createCompany.isPending}

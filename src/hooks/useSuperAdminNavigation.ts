@@ -20,7 +20,8 @@ import {
   BarChart3,
   Code,
   Blocks,
-  Monitor
+  Monitor,
+  CheckCircle
 } from 'lucide-react';
 import { useNavigationPreferences, NavItem } from './useNavigationPreferences';
 
@@ -57,6 +58,12 @@ export const useSuperAdminNavigation = () => {
       label: 'Module Development', 
       icon: Code, 
       href: '/superadmin/module-development'
+    },
+    { 
+      id: 'feature-management',
+      label: 'Feature Management', 
+      icon: CheckCircle, 
+      href: '/superadmin/feature-management'
     },
     { 
       id: 'documentation',

@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import FeatureSelector from '@/components/common/FeatureSelector';
 
 interface NewModuleWizardProps {
   onComplete: (moduleData: Record<string, unknown>) => void;
@@ -34,6 +35,7 @@ const NewModuleWizard: React.FC<NewModuleWizardProps> = ({ onComplete, onCancel 
     version: '1.0.0',
     templateId: '',
     features: [] as string[],
+    ai_capabilities: [] as string[],
     dependencies: [] as string[],
     configuration: {}
   });
@@ -65,19 +67,6 @@ const NewModuleWizard: React.FC<NewModuleWizardProps> = ({ onComplete, onCancel 
     { id: 'blank', name: 'Blank Module', description: 'Start from scratch with minimal boilerplate' }
   ];
 
-  const availableFeatures = [
-    'User Authentication',
-    'Data Persistence',
-    'Real-time Updates',
-    'File Upload',
-    'Email Notifications',
-    'API Endpoints',
-    'Scheduled Tasks',
-    'Data Export',
-    'Custom Fields',
-    'Workflow Integration'
-  ];
-
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -98,13 +87,12 @@ const NewModuleWizard: React.FC<NewModuleWizardProps> = ({ onComplete, onCancel 
     onComplete(moduleData);
   };
 
-  const toggleFeature = (feature: string) => {
-    setModuleData(prev => ({
-      ...prev,
-      features: prev.features.includes(feature)
-        ? prev.features.filter(f => f !== feature)
-        : [...prev.features, feature]
-    }));
+  const handleFeaturesChange = (features: string[]) => {
+    setModuleData(prev => ({ ...prev, features }));
+  };
+
+  const handleAICapabilitiesChange = (ai_capabilities: string[]) => {
+    setModuleData(prev => ({ ...prev, ai_capabilities }));
   };
 
   return (
@@ -221,24 +209,18 @@ const NewModuleWizard: React.FC<NewModuleWizardProps> = ({ onComplete, onCancel 
 
           {currentStep === 2 && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Select Features</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {availableFeatures.map((feature) => (
-                    <div
-                      key={feature}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        moduleData.features.includes(feature)
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => toggleFeature(feature)}
-                    >
-                      <span className="text-sm font-medium">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FeatureSelector
+                selectedFeatures={moduleData.features}
+                selectedAICapabilities={moduleData.ai_capabilities}
+                onFeaturesChange={handleFeaturesChange}
+                onAICapabilitiesChange={handleAICapabilitiesChange}
+                moduleType={moduleData.category}
+                moduleCategory={moduleData.category}
+                showRecommendations={true}
+                showStats={true}
+                title="Select Module Features"
+                description="Choose the features and AI capabilities your module will provide"
+              />
             </div>
           )}
 
@@ -261,13 +243,26 @@ const NewModuleWizard: React.FC<NewModuleWizardProps> = ({ onComplete, onCancel 
                     <p className="mt-1 text-sm text-muted-foreground">{moduleData.description}</p>
                   </div>
                   <div>
-                    <h4 className="font-medium">Selected Features</h4>
+                    <h4 className="font-medium">Selected Features ({moduleData.features.length})</h4>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {moduleData.features.map((feature) => (
                         <Badge key={feature} variant="secondary">{feature}</Badge>
                       ))}
+                      {moduleData.features.length === 0 && (
+                        <span className="text-sm text-gray-500">No features selected</span>
+                      )}
                     </div>
                   </div>
+                  {moduleData.ai_capabilities.length > 0 && (
+                    <div>
+                      <h4 className="font-medium">Selected AI Capabilities ({moduleData.ai_capabilities.length})</h4>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {moduleData.ai_capabilities.map((capability) => (
+                          <Badge key={capability} variant="outline" className="bg-purple-50">{capability}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

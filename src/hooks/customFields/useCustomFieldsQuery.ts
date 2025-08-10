@@ -5,6 +5,9 @@ import { CustomField } from './types';
 
 /**
  * Hook for querying custom fields using React Query
+ * Supports multi-level architecture:
+ * - Super Admin (global): See only global fields (tenant_id = null)
+ * - Tenant Admin/Users: See both global fields AND tenant-specific fields
  */
 export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
   const { data, isLoading, error, refetch } = useQuery({
@@ -16,15 +19,18 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
           .from('custom_fields')
           .select('*');
         
-        // Add tenant filter if provided
+        // Enhanced tenant filter logic to support multi-level architecture
         if (tenantId) {
           if (tenantId === 'global') {
-            // For global, get fields where tenant_id is null
+            // Super Admin: Only see global fields (tenant_id = null)
             query = query.is('tenant_id', null);
           } else {
-            // For specific tenant
-            query = query.eq('tenant_id', tenantId);
+            // Tenant Admin/Users: See BOTH global AND tenant-specific fields
+            query = query.or(`tenant_id.is.null,tenant_id.eq.${tenantId}`);
           }
+        } else {
+          // No tenant specified: default to global fields only
+          query = query.is('tenant_id', null);
         }
         
         // Add form context filter if provided
@@ -51,7 +57,7 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
         
         if (error) throw error;
         
-        // Convert the result to the CustomField type
+        // Convert the result to the CustomField type and add scope information
         const typedFields: CustomField[] = (data || []).map((field, index) => {
           // Handle options parsing safely
           let parsedOptions: unknown;
@@ -77,6 +83,10 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
             applicableForms = field.applicable_forms as string[] || null;
           }
           
+          // Determine field scope for UI display
+          const isGlobalField = field.tenant_id === null;
+          const fieldScope = isGlobalField ? 'global' : 'tenant';
+          
           return {
             ...field,
             id: field.id,
@@ -91,11 +101,23 @@ export function useCustomFieldsQuery(tenantId?: string, formContext?: string) {
             options: parsedOptions,
             applicable_forms: applicableForms,
             created_at: field.created_at,
-            updated_at: field.updated_at
+            updated_at: field.updated_at,
+            // Add scope metadata for UI differentiation
+            field_scope: fieldScope,
+            is_global: isGlobalField
           } as CustomField;
         });
         
-        return typedFields;
+        // Sort fields with global fields first, then tenant-specific
+        const sortedFields = typedFields.sort((a, b) => {
+          // Global fields come first
+          if (a.is_global && !b.is_global) return -1;
+          if (!a.is_global && b.is_global) return 1;
+          // Then by sort_order
+          return (a.sort_order || 0) - (b.sort_order || 0);
+        });
+        
+        return sortedFields;
       } catch (error) {
         console.error("Error in useCustomFieldsQuery:", error);
         throw error;

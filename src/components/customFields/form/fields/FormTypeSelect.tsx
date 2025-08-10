@@ -48,7 +48,13 @@ const FormTypeSelect: React.FC<FormTypeSelectProps> = ({ form }) => {
                 <SelectValue placeholder="Select field type" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent className="z-[1000] bg-white">
+            <SelectContent 
+              className="z-[9999] bg-white border shadow-lg"
+              position="popper"
+              side="bottom"
+              align="start"
+              sideOffset={4}
+            >
               {fieldTypeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

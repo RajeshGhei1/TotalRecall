@@ -18,6 +18,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DynamicFormWidget from '@/components/forms/integration/DynamicFormWidget';
 import { FormProvider } from '@/contexts/FormContext';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const isMobile = useIsMobile();

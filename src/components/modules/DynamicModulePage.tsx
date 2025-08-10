@@ -68,8 +68,26 @@ const DynamicModulePage = () => {
 
   // If no matching module found, redirect to dashboard
   if (!matchingModule) {
-    console.log('DynamicModulePage - No matching module found, redirecting to dashboard');
-    console.log('DynamicModulePage - Available modules:', modules?.map(m => m.name));
+    console.log('🚨 DynamicModulePage - No matching module found for:', moduleSlug);
+    console.log('🚨 DynamicModulePage - Current path:', window.location.pathname);
+    console.log('🚨 DynamicModulePage - Available modules:', modules?.map(m => m.name));
+    
+    // TEMP FIX: Don't redirect test-route or settings, show debug info instead
+    if (moduleSlug === 'test-route' || moduleSlug === 'settings') {
+      return (
+        <div style={{padding: '20px', background: 'orange', margin: '20px'}}>
+          <h1>🚨 CAUGHT BY DYNAMIC MODULE PAGE!</h1>
+          <p><strong>Module Slug:</strong> {moduleSlug}</p>
+          <p><strong>Current Path:</strong> {window.location.pathname}</p>
+          <p><strong>This should NOT happen!</strong> {moduleSlug} should be caught by SuperAdminRoutes first.</p>
+          <p>This means there's a routing issue in SuperAdminRoutes.</p>
+          <hr />
+          <p><strong>Expected behavior:</strong> {moduleSlug} should be handled by a specific route in SuperAdminRoutes.tsx</p>
+        </div>
+      );
+    }
+    
+    console.log('🚨 DynamicModulePage - Redirecting to dashboard');
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 

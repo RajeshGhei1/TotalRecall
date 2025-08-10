@@ -13,14 +13,19 @@ import { useSystemModules } from '@/hooks/useSystemModules';
 import { toast } from '@/hooks/use-toast';
 import ModuleDependencySelector from './ModuleDependencySelector';
 import ModuleLimitsEditor from './ModuleLimitsEditor';
+import FeatureSelector from '@/components/common/FeatureSelector';
 
 const editModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
   description: z.string().optional(),
   category: z.string().min(1, "Category is required"),
-  type: z.string().min(1, "Type is required"),
+  type: z.enum(['super_admin', 'foundation', 'business']),
   version: z.string().min(1, "Version is required"),
+  maturity_status: z.enum(['planning', 'alpha', 'beta', 'production']).optional(),
+  ai_level: z.enum(['high', 'medium', 'low', 'none']).optional(),
   is_active: z.boolean(),
+  features: z.array(z.string()).optional(),
+  ai_capabilities: z.array(z.string()).optional(),
   default_limits: z.record(z.unknown()).optional(),
   dependencies: z.array(z.string()).optional()
 });
@@ -32,9 +37,13 @@ interface EditableModuleData {
   name: string;
   description?: string;
   category: string;
-  type: string;
+  type?: 'super_admin' | 'foundation' | 'business';
   version?: string;
+  maturity_status?: 'planning' | 'alpha' | 'beta' | 'production';
+  ai_level?: 'high' | 'medium' | 'low' | 'none';
   is_active: boolean;
+  features?: string[];
+  ai_capabilities?: string[];
   default_limits?: Record<string, unknown>;
   dependencies?: string[];
 }
@@ -54,9 +63,13 @@ const EditModuleDialog: React.FC<EditModuleDialogProps> = ({ open, onOpenChange,
       name: module?.name || '',
       description: module?.description || '',
       category: module?.category || '',
-      type: module?.type || '',
+      type: module?.type || 'business',
       version: module?.version || '1.0.0',
+      maturity_status: module?.maturity_status || 'planning',
+      ai_level: module?.ai_level || 'medium',
       is_active: module?.is_active || true,
+      features: module?.features || [],
+      ai_capabilities: module?.ai_capabilities || [],
       default_limits: module?.default_limits || {},
       dependencies: module?.dependencies || []
     }

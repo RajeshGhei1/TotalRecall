@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSystemModules } from '@/hooks/useSystemModules';
 import { X, Plus } from 'lucide-react';
+import FeatureSelector from '@/components/common/FeatureSelector';
 
 const createModuleSchema = z.object({
   name: z.string().min(1, "Module name is required"),
@@ -36,180 +37,10 @@ interface CreateModuleDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Standard feature categories with predefined options
-const STANDARD_FEATURES = {
-  'Core Infrastructure': [
-    'Multi-tenant isolation',
-    'Real-time synchronization',
-    'Data security and encryption',
-    'Audit trail and logging',
-    'API access and webhooks',
-    'Performance monitoring',
-    'Backup and recovery',
-    'Scalability management'
-  ],
-  'User Management': [
-    'User registration and authentication',
-    'Role-based access control',
-    'Permission management',
-    'User profile management',
-    'Team and group management',
-    'Single sign-on (SSO)',
-    'Multi-factor authentication',
-    'Session management'
-  ],
-  'Data Management': [
-    'Data import and export',
-    'Data validation and cleaning',
-    'Duplicate detection and merging',
-    'Data archiving and retention',
-    'Custom field management',
-    'Data relationships and linking',
-    'Search and filtering',
-    'Data visualization'
-  ],
-  'Communication': [
-    'Email composition and sending',
-    'Template management and personalization',
-    'Automated email sequences',
-    'Email tracking and analytics',
-    'SMS and messaging',
-    'Notification management',
-    'Communication history',
-    'Multi-channel messaging'
-  ],
-  'Analytics & Reporting': [
-    'Dashboard creation and customization',
-    'Report generation and scheduling',
-    'Data visualization and charts',
-    'KPI tracking and alerts',
-    'Predictive analytics',
-    'Trend analysis',
-    'Performance metrics',
-    'Executive reporting'
-  ],
-  'Workflow & Automation': [
-    'Business process automation',
-    'Custom workflow creation',
-    'Rule-based automation',
-    'Event-driven triggers',
-    'Approval workflows',
-    'Task management and assignment',
-    'Process optimization',
-    'Integration workflows'
-  ],
-  'Forms & Templates': [
-    'Dynamic form builder',
-    'Drag-and-drop interface',
-    'Custom field creation',
-    'Form template library',
-    'Form deployment and embedding',
-    'Form analytics and submissions',
-    'Validation and conditional logic',
-    'Multi-step forms'
-  ],
-  'Sales & CRM': [
-    'Lead capture and management',
-    'Sales pipeline management',
-    'Opportunity tracking',
-    'Contact and account management',
-    'Deal tracking and forecasting',
-    'Sales automation workflows',
-    'Customer lifecycle tracking',
-    'Sales performance analytics'
-  ],
-  'Marketing': [
-    'Campaign management and automation',
-    'Lead nurturing workflows',
-    'A/B testing capabilities',
-    'Social media integration',
-    'Content management',
-    'SEO optimization',
-    'Landing page creation',
-    'Marketing analytics and ROI'
-  ],
-  'Project Management': [
-    'Project planning and tracking',
-    'Resource allocation',
-    'Task management and collaboration',
-    'Milestone tracking',
-    'Time tracking and billing',
-    'Project analytics and reporting',
-    'Team collaboration tools',
-    'Resource utilization analysis'
-  ],
-  'Integration': [
-    'API connectivity and management',
-    'Data synchronization',
-    'Third-party integrations',
-    'Webhook management',
-    'Authentication handling',
-    'Rate limiting and throttling',
-    'Error handling and recovery',
-    'Integration monitoring'
-  ],
-  'AI & Intelligence': [
-    'Machine learning model management',
-    'Natural language processing',
-    'Predictive modeling',
-    'Pattern recognition',
-    'Automated insights generation',
-    'Intelligent recommendations',
-    'Anomaly detection',
-    'Decision support systems'
-  ]
-};
-
-const AI_CAPABILITIES = [
-  'Behavioral authentication',
-  'Intelligent role suggestions',
-  'Anomaly detection',
-  'Adaptive permissions',
-  'Agent orchestration',
-  'Cognitive processing',
-  'Knowledge synthesis',
-  'Decision support',
-  'Learning algorithms',
-  'Smart template suggestions',
-  'Communication optimization',
-  'Sentiment analysis',
-  'Automated response suggestions',
-  'Intelligent data mapping',
-  'Automated integration setup',
-  'Error prediction and resolution',
-  'Performance optimization',
-  'Automated insights generation',
-  'Intelligent dashboard layouts',
-  'Predictive analytics',
-  'Smart form field suggestions',
-  'Automated form layout optimization',
-  'Intelligent validation rules',
-  'Template recommendations',
-  'Lead scoring algorithms',
-  'Sales forecasting',
-  'Customer behavior analysis',
-  'Opportunity prioritization',
-  'Churn prediction',
-  'Campaign optimization',
-  'Content personalization',
-  'Market trend analysis',
-  'Social media insights',
-  'Automated segmentation',
-  'Project timeline optimization',
-  'Resource allocation optimization',
-  'Risk prediction',
-  'Workload balancing',
-  'Performance insights',
-  'Process optimization',
-  'Bottleneck detection',
-  'Intelligent routing',
-  'Workflow recommendations'
-];
+// Features and AI capabilities are now managed by the centralized FeatureSelector component
 
 const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenChange }) => {
   const { createModule } = useSystemModules();
-  const [customFeature, setCustomFeature] = useState('');
-  const [customAICapability, setCustomAICapability] = useState('');
   
   const form = useForm<CreateModuleFormData>({
     resolver: zodResolver(createModuleSchema),
@@ -258,48 +89,12 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
     ]
   };
 
-  const addCustomFeature = () => {
-    if (customFeature.trim()) {
-      const currentFeatures = form.getValues('features');
-      form.setValue('features', [...currentFeatures, customFeature.trim()]);
-      setCustomFeature('');
-    }
+  const handleFeaturesChange = (features: string[]) => {
+    form.setValue('features', features);
   };
 
-  const addCustomAICapability = () => {
-    if (customAICapability.trim()) {
-      const currentCapabilities = form.getValues('ai_capabilities');
-      form.setValue('ai_capabilities', [...currentCapabilities, customAICapability.trim()]);
-      setCustomAICapability('');
-    }
-  };
-
-  const removeFeature = (feature: string) => {
-    const currentFeatures = form.getValues('features');
-    form.setValue('features', currentFeatures.filter(f => f !== feature));
-  };
-
-  const removeAICapability = (capability: string) => {
-    const currentCapabilities = form.getValues('ai_capabilities');
-    form.setValue('ai_capabilities', currentCapabilities.filter(c => c !== capability));
-  };
-
-  const toggleFeature = (feature: string) => {
-    const currentFeatures = form.getValues('features');
-    if (currentFeatures.includes(feature)) {
-      form.setValue('features', currentFeatures.filter(f => f !== feature));
-    } else {
-      form.setValue('features', [...currentFeatures, feature]);
-    }
-  };
-
-  const toggleAICapability = (capability: string) => {
-    const currentCapabilities = form.getValues('ai_capabilities');
-    if (currentCapabilities.includes(capability)) {
-      form.setValue('ai_capabilities', currentCapabilities.filter(c => c !== capability));
-    } else {
-      form.setValue('ai_capabilities', [...currentCapabilities, capability]);
-    }
+  const handleAICapabilitiesChange = (capabilities: string[]) => {
+    form.setValue('ai_capabilities', capabilities);
   };
 
   const onSubmit = async (data: CreateModuleFormData) => {
@@ -430,122 +225,19 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({ open, onOpenCha
             </div>
           </div>
 
-          {/* Features Section */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-semibold">Module Features</Label>
-              <p className="text-sm text-gray-600">Select the business features and functionality this module provides</p>
-            </div>
-
-            {/* Selected Features */}
-            {selectedFeatures.length > 0 && (
-              <div>
-                <Label className="text-sm font-medium">Selected Features ({selectedFeatures.length})</Label>
-                <div className="flex flex-wrap gap-2 mt-2 p-3 bg-gray-50 rounded-md">
-                  {selectedFeatures.map((feature) => (
-                    <Badge key={feature} variant="secondary" className="flex items-center gap-1">
-                      {feature}
-                      <X 
-                        className="h-3 w-3 cursor-pointer" 
-                        onClick={() => removeFeature(feature)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Feature Categories */}
-            <div className="space-y-3 max-h-64 overflow-y-auto border rounded-md p-4">
-              {Object.entries(STANDARD_FEATURES).map(([categoryName, features]) => (
-                <div key={categoryName}>
-                  <Label className="text-sm font-medium text-gray-700">{categoryName}</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    {features.map((feature) => (
-                      <div key={feature} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={feature}
-                          checked={selectedFeatures.includes(feature)}
-                          onCheckedChange={() => toggleFeature(feature)}
-                        />
-                        <Label htmlFor={feature} className="text-sm cursor-pointer">
-                          {feature}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Add Custom Feature */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add custom feature..."
-                value={customFeature}
-                onChange={(e) => setCustomFeature(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomFeature())}
-              />
-              <Button type="button" onClick={addCustomFeature} size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* AI Capabilities Section */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-semibold">AI Capabilities</Label>
-              <p className="text-sm text-gray-600">Select AI features and intelligent capabilities this module provides</p>
-            </div>
-
-            {/* Selected AI Capabilities */}
-            {selectedAICapabilities.length > 0 && (
-              <div>
-                <Label className="text-sm font-medium">Selected AI Capabilities ({selectedAICapabilities.length})</Label>
-                <div className="flex flex-wrap gap-2 mt-2 p-3 bg-blue-50 rounded-md">
-                  {selectedAICapabilities.map((capability) => (
-                    <Badge key={capability} variant="outline" className="flex items-center gap-1 bg-blue-100">
-                      {capability}
-                      <X 
-                        className="h-3 w-3 cursor-pointer" 
-                        onClick={() => removeAICapability(capability)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* AI Capabilities Grid */}
-            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-md p-4">
-              {AI_CAPABILITIES.map((capability) => (
-                <div key={capability} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={capability}
-                    checked={selectedAICapabilities.includes(capability)}
-                    onCheckedChange={() => toggleAICapability(capability)}
-                  />
-                  <Label htmlFor={capability} className="text-sm cursor-pointer">
-                    {capability}
-                  </Label>
-                </div>
-              ))}
-            </div>
-
-            {/* Add Custom AI Capability */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add custom AI capability..."
-                value={customAICapability}
-                onChange={(e) => setCustomAICapability(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomAICapability())}
-              />
-              <Button type="button" onClick={addCustomAICapability} size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          {/* Comprehensive Feature Selection */}
+          <FeatureSelector
+            selectedFeatures={selectedFeatures}
+            selectedAICapabilities={selectedAICapabilities}
+            onFeaturesChange={handleFeaturesChange}
+            onAICapabilitiesChange={handleAICapabilitiesChange}
+            moduleType={selectedType}
+            moduleCategory={form.watch('category')}
+            showRecommendations={true}
+            showStats={true}
+            title="Module Features & AI Capabilities"
+            description="Select the features and AI capabilities this module will provide"
+          />
 
           {/* Subscription Tiers */}
           <div className="space-y-2">

@@ -14,12 +14,13 @@ import {
   CheckCircle,
   Package
 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
 import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
 import DevelopmentModulesDashboard from './DevelopmentModulesDashboard';
+import ModuleFeatureUpgradeHelper from '@/components/common/ModuleFeatureUpgradeHelper';
 
 interface ModuleData {
   name: string;
@@ -28,12 +29,14 @@ interface ModuleData {
   version: string;
   templateId: string;
   features: string[];
+  ai_capabilities: string[];
   dependencies: string[];
   configuration: Record<string, unknown>;
 }
 
 const ModuleDevSandbox: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('development');
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [currentModule, setCurrentModule] = useState<ModuleData | null>(null);
@@ -58,6 +61,7 @@ const ModuleDevSandbox: React.FC = () => {
         version: '1.0.0',
         templateId: 'default',
         features: [],
+        ai_capabilities: [],
         dependencies: [],
         configuration: {}
       };
@@ -86,14 +90,26 @@ const ModuleDevSandbox: React.FC = () => {
     setActiveTab('create');
   };
 
-  const handleModuleCreated = (moduleData: ModuleData) => {
-    setCurrentModule(moduleData);
+  const handleModuleCreated = (moduleData: Record<string, unknown>) => {
+    const typedModuleData: ModuleData = {
+      name: moduleData.name as string,
+      description: moduleData.description as string,
+      category: moduleData.category as string,
+      version: moduleData.version as string,
+      templateId: moduleData.templateId as string,
+      features: (moduleData.features as string[]) || [],
+      ai_capabilities: (moduleData.ai_capabilities as string[]) || [],
+      dependencies: (moduleData.dependencies as string[]) || [],
+      configuration: (moduleData.configuration as Record<string, unknown>) || {}
+    };
+    
+    setCurrentModule(typedModuleData);
     setIsCreatingModule(false);
     setActiveTab('code');
     
     toast({
       title: 'Module Created',
-      description: `${moduleData.name} is ready for development.`,
+      description: `${typedModuleData.name} is ready for development.`,
     });
   };
 
@@ -171,10 +187,14 @@ const ModuleDevSandbox: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="development">
             <Package className="h-4 w-4 mr-2" />
             Development Modules
+          </TabsTrigger>
+          <TabsTrigger value="upgrade">
+            <Settings className="h-4 w-4 mr-2" />
+            Upgrade Modules
           </TabsTrigger>
           <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule}>
             Create Module
@@ -190,6 +210,15 @@ const ModuleDevSandbox: React.FC = () => {
 
         <TabsContent value="development" className="space-y-6">
           <DevelopmentModulesDashboard />
+        </TabsContent>
+
+        <TabsContent value="upgrade" className="space-y-6">
+          {/* Module Upgrade Helper */}
+          <ModuleFeatureUpgradeHelper 
+            moduleCount={currentModule ? 1 : 0}
+            onViewModules={() => navigate('/superadmin/settings/modules')}
+            onUpgradeModules={() => navigate('/superadmin/settings/modules')}
+          />
         </TabsContent>
 
         <TabsContent value="create">

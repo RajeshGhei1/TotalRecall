@@ -1,11 +1,14 @@
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Loader } from 'lucide-react';
+import { Loader, Settings } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { companyFormSchema, CompanyFormValues, formOptions } from './schema';
 import BasicInfoSection from './sections/BasicInfoSection';
@@ -14,7 +17,10 @@ import SocialMediaSection from './sections/SocialMediaSection';
 import PeopleSection from './sections/PeopleSection';
 import GroupStructureSection from './sections/GroupStructureSection';
 import CustomFieldsForm from '@/components/CustomFieldsForm';
-import { useCustomFields } from '@/hooks/useCustomFields';
+import { useCustomFieldsQuery } from '@/hooks/customFields/useCustomFieldsQuery';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import sections from tenant form
 import LocationSection from '@/components/superadmin/tenant-form/LocationSection';
@@ -36,9 +42,38 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   initialData = {},
   isEdit = false
 }) => {
-  const { customFields, isLoading: customFieldsLoading } = useCustomFields('global', {
-    formContext: 'company_creation'
+  const navigate = useNavigate();
+  const { user, bypassAuth } = useAuth();
+  
+  // Get current tenant ID using the standard pattern
+  const { data: tenantData } = useQuery({
+    queryKey: ['currentTenantData', user?.id],
+    queryFn: async () => {
+      if (bypassAuth) {
+        return { tenant_id: 'mock-tenant-id' };
+      }
+      
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_tenants')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user || bypassAuth,
   });
+
+  const currentTenantId = tenantData?.tenant_id || null;
+
+  // Fetch custom fields for companies
+  const { fields: customFields = [], isLoading: customFieldsLoading } = useCustomFieldsQuery(
+    currentTenantId || 'global',
+    'company' // Form context for companies
+  );
   
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -98,7 +133,22 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   }, [customFields, form]);
 
   const handleFormSubmit = (data: CompanyFormValues) => {
-    onSubmit(data);
+    // Extract custom field values from the form data
+    const customFieldValues: Record<string, any> = {};
+    customFields.forEach(field => {
+      const fieldKey = `custom_${field.field_key}`;
+      if (data[fieldKey] !== undefined) {
+        customFieldValues[field.field_key] = data[fieldKey];
+      }
+    });
+
+    // Include custom field values in the submission
+    const submissionData = {
+      ...data,
+      customFieldValues
+    };
+
+    onSubmit(submissionData);
   };
 
   return (
@@ -197,27 +247,76 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
             <PeopleSection form={form} />
           </div>
 
-          {/* Custom Fields Section */}
-          {!customFieldsLoading && customFields.length > 0 && (
+          {/* Enhanced Custom Fields Section */}
+          {customFieldsLoading ? (
+            <Card className="border-dashed border-gray-300">
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500 py-8">
+                  <Loader className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                  <p>Loading custom fields...</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : customFields.length > 0 ? (
             <>
               <Separator />
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-foreground">Custom Fields</h2>
-                    <p className="text-sm text-muted-foreground">Additional custom information</p>
+                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                      <Settings className="h-5 w-5 text-purple-600" />
+                      Custom Fields
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Additional custom information for this company</p>
                   </div>
-                  <div className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-1">
-                    {customFields.length} fields
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-purple-50 border-purple-200">
+                      {customFields.length} fields available
+                    </Badge>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open('/superadmin/settings?tab=custom-fields', '_blank')}
+                    >
+                      Manage Global Fields
+                    </Button>
                   </div>
                 </div>
-                <CustomFieldsForm
-                  formContext="company_creation"
-                  entityType="company"
-                  form={form}
-                />
+                
+                <Card className="border-purple-200 bg-purple-50">
+                  <CardContent className="pt-6">
+                    <CustomFieldsForm
+                      formContext="company"
+                      entityType="company"
+                      entityId={initialData.id}
+                      form={form}
+                      title=""
+                      description=""
+                      tenantId={currentTenantId || 'global'}
+                    />
+                  </CardContent>
+                </Card>
               </div>
             </>
+          ) : (
+            <Card className="border-dashed border-gray-300">
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500 py-8">
+                  <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="mb-2">No custom fields configured</p>
+                  <p className="text-sm mb-4">Create custom fields to collect additional company information</p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/superadmin/settings?tab=custom-fields')}
+                  >
+                    Create Global Custom Fields
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Form Actions */}

@@ -16,6 +16,9 @@ export interface CustomField {
   created_at: string;
   updated_at: string;
   sort_order?: number;  // This must be optional since it might not exist in DB
+  // Multi-level architecture scope properties
+  field_scope?: 'global' | 'tenant';
+  is_global?: boolean;
 }
 
 export interface CustomFieldValue {

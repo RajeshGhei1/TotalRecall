@@ -16,8 +16,19 @@ const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: checkingRole } = useSuperAdminCheck();
   
+  // 🚨 TEMP FIX: Check current URL to prevent unwanted redirects
+  const currentPath = window.location.pathname;
+  console.log('🚨 AuthenticatedRedirect - Current path:', currentPath);
+  
+  // If user is already on a superadmin or tenant-admin route, don't redirect
+  if (currentPath.startsWith('/superadmin/') || currentPath.startsWith('/tenant-admin/')) {
+    console.log('🚨 AuthenticatedRedirect - User already on protected route, skipping redirect');
+    return null; // Let the existing route handle it
+  }
+  
   // Show loading while checking authentication or role
   if (loading || checkingRole) {
+    console.log('🚨 AuthenticatedRedirect - Loading state');
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -30,17 +41,18 @@ const AuthenticatedRedirect: React.FC = () => {
 
   // If no user, show marketing page
   if (!user) {
+    console.log('🚨 AuthenticatedRedirect - No user, showing Index');
     return <Index />;
   }
 
   // Smart role-based redirects using database role check
   if (isSuperAdmin) {
-    console.log('AuthenticatedRedirect: User is super admin, redirecting to super admin portal');
+    console.log('🚨 AuthenticatedRedirect - User is super admin, redirecting to super admin portal');
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 
   // Regular users go to tenant admin portal
-  console.log('AuthenticatedRedirect: User is tenant admin, redirecting to tenant admin portal');
+  console.log('🚨 AuthenticatedRedirect - User is tenant admin, redirecting to tenant admin portal');
   return <Navigate to="/tenant-admin" replace />;
 };
 

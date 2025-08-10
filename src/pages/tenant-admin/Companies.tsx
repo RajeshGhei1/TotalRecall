@@ -1,44 +1,67 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import AdminLayout from "@/components/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Building } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus, Settings } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CompanyEnhancedListContainer from '@/components/superadmin/companies/CompanyEnhancedListContainer';
+import ModuleFeatureIntegration from '@/components/modules/ModuleFeatureIntegration';
 
-const TenantAdminCompanies = () => {
-  const navigate = useNavigate();
+const Companies: React.FC = () => {
+  const [activeTab, setActiveTab] = React.useState("companies");
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Companies</h1>
-          <Button onClick={() => navigate("/tenant-admin/companies/add")}>
-            <Plus className="h-4 w-4 mr-2" /> Add Company
-          </Button>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Company Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center p-12">
-              <Building className="h-16 w-16 mx-auto text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium">No companies yet</h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Get started by adding your first company
-              </p>
-              <Button className="mt-4" onClick={() => navigate("/tenant-admin/companies/add")}>
-                <Plus className="h-4 w-4 mr-2" /> Add Company
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Companies</h1>
+        <p className="text-muted-foreground">
+          Manage your company database and relationships
+        </p>
       </div>
-    </AdminLayout>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="companies">Companies</TabsTrigger>
+          <TabsTrigger value="features" className="flex items-center gap-1">
+            <Settings className="h-4 w-4" />
+            <span>Module Features</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="companies">
+          <Card>
+            <CardHeader>
+              <CardTitle>Company Database</CardTitle>
+              <CardDescription>
+                View and manage your company records
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CompanyEnhancedListContainer />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="features">
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Features</CardTitle>
+              <CardDescription>
+                Features available in the Companies module based on your subscription
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ModuleFeatureIntegration 
+                moduleName="companies"
+                entityType="company"
+                className="mt-4"
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
-export default TenantAdminCompanies;
+export default Companies;
