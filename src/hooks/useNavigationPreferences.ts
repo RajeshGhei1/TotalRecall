@@ -9,6 +9,11 @@ export interface NavItem {
   href: string;
   requiresModule?: string;
   badge?: string | number;
+  category?: string;
+  priority?: number;
+  isSuperAdminModule?: boolean;
+  isCollapsible?: boolean;
+  // Updated interface to support navigation categorization
 }
 
 export interface NavigationState {

@@ -25,6 +25,56 @@ import DynamicModulePage from '@/components/modules/DynamicModulePage';
 import ATS from '@/pages/superadmin/ATS';
 import ATSRoutes from '@/routes/ats/ATSRoutes';
 
+// Super Admin Module Components (placeholder components)
+const SystemAdministrationSuite = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">System Administration Suite</h1>
+    <p className="text-gray-600">Comprehensive system administration including user management, security policies, and global configuration.</p>
+    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+      <h3 className="font-semibold text-blue-800">Features:</h3>
+      <ul className="mt-2 text-blue-700 list-disc list-inside">
+        <li>Multi-tenant user management</li>
+        <li>Role-based access control</li>
+        <li>System-wide security policies</li>
+        <li>Global configuration management</li>
+        <li>Cross-tenant analytics and monitoring</li>
+      </ul>
+    </div>
+  </div>
+);
+
+const ModuleRegistryDeployment = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Module Registry & Deployment</h1>
+    <p className="text-gray-600">Module discovery, registration, deployment, and lifecycle management across the platform.</p>
+    <div className="mt-4 p-4 bg-green-50 rounded-lg">
+      <h3 className="font-semibold text-green-800">Features:</h3>
+      <ul className="mt-2 text-green-700 list-disc list-inside">
+        <li>Intelligent module recommendations</li>
+        <li>Automated dependency resolution</li>
+        <li>Predictive performance analysis</li>
+        <li>Module lifecycle management</li>
+      </ul>
+    </div>
+  </div>
+);
+
+const EnterpriseMonitoringAudit = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Enterprise Monitoring & Audit</h1>
+    <p className="text-gray-600">System-wide monitoring, audit trails, compliance reporting, and security analytics.</p>
+    <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+      <h3 className="font-semibold text-purple-800">Features:</h3>
+      <ul className="mt-2 text-purple-700 list-disc list-inside">
+        <li>Anomaly detection</li>
+        <li>Predictive failure analysis</li>
+        <li>Compliance insights</li>
+        <li>Security analytics</li>
+      </ul>
+    </div>
+  </div>
+);
+
 const SuperAdminRoutes = () => {
   const location = useLocation();
   
@@ -89,6 +139,11 @@ const SuperAdminRoutes = () => {
       <Route path="audit-logs" element={<AuditLogs />} />
       <Route path="global-settings" element={<GlobalSettings />} />
       <Route path="settings" element={<Settings />} />
+      
+      {/* Super Admin Modules - Core Platform Administration */}
+      <Route path="system-administration-suite" element={<SystemAdministrationSuite />} />
+      <Route path="module-registry-deployment" element={<ModuleRegistryDeployment />} />
+      <Route path="enterprise-monitoring-audit" element={<EnterpriseMonitoringAudit />} />
       
       {/* Redirect upgrade path to dashboard - Super Admins don't need upgrades */}
       <Route path="upgrade" element={<Navigate to="dashboard" replace />} />

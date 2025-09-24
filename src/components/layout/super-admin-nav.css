@@ -1,0 +1,230 @@
+/* Super Admin Navigation Styling */
+
+/* All navigation items - uniform white background */
+.nav-item {
+  background: white;
+  color: #374151;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  margin: 0.125rem 0;
+  border-radius: 0.375rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Remove any special styling for Super Admin modules */
+.super-admin-module {
+  background: white;
+  color: #374151;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  margin: 0.125rem 0;
+  border-radius: 0.375rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Remove special effects */
+.super-admin-module::before {
+  display: none;
+}
+
+.super-admin-module:hover {
+  background: #f9fafb;
+  transform: translateX(2px);
+  border-color: #d1d5db;
+}
+
+.super-admin-module .nav-icon {
+  color: #6b7280;
+}
+
+/* Category headers with collapsible functionality */
+.nav-category-header {
+  margin: 1rem 0 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-category-header:hover {
+  background-color: #f8fafc;
+  transform: translateX(2px);
+}
+
+.nav-category {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+}
+
+.nav-category::after {
+  content: '';
+  position: absolute;
+  bottom: -0.25rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 1px;
+}
+
+/* Collapsible category items with smooth animation */
+.nav-category-items {
+  margin-left: 0.5rem;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.nav-category-items.collapsed {
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+}
+
+/* Smooth chevron rotation */
+.nav-category-header .chevron-icon {
+  transition: transform 0.2s ease;
+}
+
+.nav-category-header.collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+/* Priority-based ordering */
+.nav-item[data-priority="1"] {
+  order: 1;
+}
+
+.nav-item[data-priority="2"] {
+  order: 2;
+}
+
+.nav-item[data-priority="3"] {
+  order: 3;
+}
+
+.nav-item[data-priority="4"] {
+  order: 4;
+}
+
+.nav-item[data-priority="5"] {
+  order: 5;
+}
+
+/* Super Admin Module indicators */
+.super-admin-module::after {
+  content: '👑';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* Uniform styling for all navigation items */
+.nav-item {
+  background: white;
+  color: #374151;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  margin: 0.125rem 0;
+  border-radius: 0.375rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: #f9fafb;
+  transform: translateX(2px);
+  border-color: #d1d5db;
+}
+
+.nav-item:active {
+  transform: translateX(1px);
+  background: #f3f4f6;
+}
+
+/* Remove all tier-based styling - everything is uniform */
+.nav-item[data-tier="1"],
+.nav-item[data-tier="2"] {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  font-weight: 500;
+}
+
+.nav-item[data-tier="1"]:hover,
+.nav-item[data-tier="2"]:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* Remove active state special styling */
+.super-admin-module.active {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+/* Remove category-specific color coding - everything is uniform */
+.nav-item[data-category="overview"],
+.nav-item[data-category="tenant_management"],
+.nav-item[data-category="system_configuration"],
+.nav-item[data-category="monitoring_security"] {
+  border: 1px solid #e5e7eb;
+}
+
+/* Collapsible modules section - uniform styling */
+.nav-item[data-collapsible="true"] {
+  border: 1px solid #e5e7eb;
+  margin: 0.125rem 0;
+  background: white;
+  border-radius: 0.375rem;
+}
+
+/* Status indicators */
+.nav-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.nav-status-active {
+  background-color: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+}
+
+.nav-status-planning {
+  background-color: #3b82f6;
+  box-shadow: 0 0 4px rgba(59, 130, 246, 0.4);
+}
+
+.nav-status-development {
+  background-color: #f59e0b;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .super-admin-module {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .nav-category {
+    font-size: 0.625rem;
+  }
+}
