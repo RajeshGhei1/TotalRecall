@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { useSuperAdminNavigation } from '@/hooks/useSuperAdminNavigation';
 import SortableNavigation from './SortableNavigation';
 import ModuleNavigationItem from './ModuleNavigationItem';
+import FeaturesOverview from '@/components/features/FeaturesOverview';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import './super-admin-nav.css';
 
 const SuperAdminNav = () => {
   const { items, reorderItems } = useSuperAdminNavigation();
   const [isModulesExpanded, setIsModulesExpanded] = useState(false);
+  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     overview: true,
     super_admin_modules: true,
@@ -130,6 +132,14 @@ const SuperAdminNav = () => {
           />
         </div>
       )}
+      
+      {/* Features hierarchical item */}
+      <div className="pt-2">
+        <FeaturesOverview
+          isExpanded={isFeaturesExpanded}
+          onToggle={() => setIsFeaturesExpanded(!isFeaturesExpanded)}
+        />
+      </div>
     </div>
   );
 };

@@ -11,6 +11,7 @@ import CreatePlanDialog from './CreatePlanDialog';
 import ModulePermissionsManager from './ModulePermissionsManager';
 import ModulePricingManager from './module-pricing/ModulePricingManager';
 import PricingDisplay from './pricing/PricingDisplay';
+import SubscriptionPlansDebug from '@/components/debug/SubscriptionPlansDebug';
 
 const SubscriptionPlansManager = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -34,6 +35,9 @@ const SubscriptionPlansManager = () => {
 
   return (
     <div className="space-y-8">
+      {/* Debug Component - Remove this after fixing */}
+      <SubscriptionPlansDebug />
+      
       {/* Header Card */}
       <Card className="border-2 border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardHeader className="flex flex-row items-center justify-between pb-6">
