@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bypassAuth] = useState(true); // Set to true for development bypass - TEMP ENABLED
+  const [bypassAuth] = useState(false); // Set to false to use real authentication
 
   // Add session logging
   // useSessionLogger();

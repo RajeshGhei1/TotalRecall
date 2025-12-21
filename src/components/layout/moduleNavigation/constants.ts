@@ -116,19 +116,19 @@ export const CATEGORY_CONFIG = {
 // Type configuration for module grouping by type
 export const TYPE_CONFIG = {
   'super_admin': {
-    name: 'Super Admin Modules',
+    name: 'Super Admin Apps',
     icon: Shield,
-    description: 'System administration and platform management modules'
+    description: 'System administration and platform management apps'
   },
   'foundation': {
-    name: 'Foundation Modules',
+    name: 'Foundation Apps',
     icon: Settings,
-    description: 'Core platform modules that provide foundational capabilities'
+    description: 'Core platform apps that provide foundational capabilities'
   },
   'business': {
-    name: 'Business Modules',
+    name: 'Business Apps',
     icon: Building,
-    description: 'Business functionality and specialized feature modules'
+    description: 'Business functionality and specialized feature apps'
   }
 };
 

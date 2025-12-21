@@ -19,9 +19,9 @@ const DevelopmentModulesDashboardHeader: React.FC<DevelopmentModulesDashboardHea
   return (
     <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Development Modules</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Development Apps</h2>
         <p className="text-gray-600">
-          Manage, test, and deploy your modular components
+          Manage, test, and deploy your app components
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -60,7 +60,7 @@ const DevelopmentModulesDashboardHeader: React.FC<DevelopmentModulesDashboardHea
           className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh Modules
+          Refresh Apps
         </Button>
       </div>
     </div>

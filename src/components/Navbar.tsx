@@ -10,19 +10,67 @@ export const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-bold text-indigo-600">
-              Total Recall
+              Total Recall AI
             </Link>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-6">
+            <a 
+              href="#apps" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('apps')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Apps
+            </a>
+            <a 
+              href="#features" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Features
+            </a>
+            <a 
+              href="#industries" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('industries')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Industries
+            </a>
             <Link to="/pricing">
-              <Button variant="ghost">
+              <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
                 Pricing
               </Button>
             </Link>
+            <a 
+              href="#help" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('help')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Help
+            </a>
+          </div>
+          
+          <div className="flex items-center space-x-4">
             <Link to="/auth">
-              <Button>
+              <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
                 Sign In
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button className="bg-indigo-600 hover:bg-indigo-700">
+                Try it free
               </Button>
             </Link>
           </div>

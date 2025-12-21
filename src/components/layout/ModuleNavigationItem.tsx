@@ -53,7 +53,7 @@ const ModuleNavigationItem: React.FC<ModuleNavigationItemProps> = ({
       >
         <div className="flex items-center gap-2">
           <Blocks className="h-4 w-4 text-blue-600" />
-          <span>Modules</span>
+          <span>Apps</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">

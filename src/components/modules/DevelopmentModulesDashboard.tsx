@@ -148,7 +148,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
         </div>
         <Select value={selectedTypeFilter} onValueChange={setSelectedTypeFilter}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Select module type..." />
+            <SelectValue placeholder="Select app type..." />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
@@ -209,7 +209,7 @@ const DevelopmentModulesDashboard: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full font-medium">
-                      {categoryModules.length} modules
+                      {categoryModules.length} apps
                     </span>
                     {isCategoryExpanded ? (
                       <ChevronDown className="h-4 w-4 text-gray-500" />

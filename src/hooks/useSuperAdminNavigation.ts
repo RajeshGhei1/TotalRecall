@@ -139,7 +139,7 @@ export const useSuperAdminNavigation = () => {
     },
     { 
       id: 'module-development',
-      label: 'Module Development', 
+      label: 'App Development', 
       icon: Code, 
       href: '/superadmin/module-development',
       category: 'system_configuration',

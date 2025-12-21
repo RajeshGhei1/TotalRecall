@@ -56,7 +56,7 @@ const ModuleDevSandbox: React.FC = () => {
       // Create a temporary module data for the selected module
       const moduleData: ModuleData = {
         name: state.moduleName,
-        description: `Module: ${state.moduleName}`,
+        description: `App: ${state.moduleName}`,
         category: 'development',
         version: '1.0.0',
         templateId: 'default',
@@ -72,13 +72,13 @@ const ModuleDevSandbox: React.FC = () => {
       if (state.action === 'preview') {
         setActiveTab('development'); // Show in development tab with preview
         toast({
-          title: 'Module Preview Mode',
+          title: 'App Preview Mode',
           description: `Previewing ${state.moduleName}`,
         });
       } else if (state.action === 'edit') {
         setActiveTab('code');
         toast({
-          title: 'Module Edit Mode',
+          title: 'App Edit Mode',
           description: `Editing ${state.moduleName}`,
         });
       }
@@ -108,7 +108,7 @@ const ModuleDevSandbox: React.FC = () => {
     setActiveTab('code');
     
     toast({
-      title: 'Module Created',
+      title: 'App Created',
       description: `${typedModuleData.name} is ready for development.`,
     });
   };
@@ -121,8 +121,8 @@ const ModuleDevSandbox: React.FC = () => {
   const handleDeploymentComplete = (moduleId: string) => {
     setDeployedModules(prev => [...prev, moduleId]);
     toast({
-      title: 'Module Deployed',
-      description: 'Your module has been successfully deployed to the system.',
+      title: 'App Deployed',
+      description: 'Your app has been successfully deployed to the system.',
     });
   };
 
@@ -137,9 +137,9 @@ const ModuleDevSandbox: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Module Development Environment</h2>
+          <h2 className="text-2xl font-bold text-gray-900">App Development Environment</h2>
           <p className="text-gray-600 mt-1">
-            Manage development modules and create new ones for the Total Recall system
+            Manage development apps and create new ones for the Total Recall system
           </p>
         </div>
         <div className="flex gap-2">
@@ -150,7 +150,7 @@ const ModuleDevSandbox: React.FC = () => {
           )}
           <Button onClick={handleCreateModule} disabled={isCreatingModule}>
             <Plus className="h-4 w-4 mr-2" />
-            Create New Module
+            Create New App
           </Button>
         </div>
       </div>
@@ -190,14 +190,14 @@ const ModuleDevSandbox: React.FC = () => {
         <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="development">
             <Package className="h-4 w-4 mr-2" />
-            Development Modules
+            Development Apps
           </TabsTrigger>
           <TabsTrigger value="upgrade">
             <Settings className="h-4 w-4 mr-2" />
-            Upgrade Modules
+            Upgrade Apps
           </TabsTrigger>
           <TabsTrigger value="create" disabled={!isCreatingModule && !!currentModule}>
-            Create Module
+            Create App
           </TabsTrigger>
           <TabsTrigger value="code" disabled={!currentModule}>
             Code Editor
@@ -266,7 +266,7 @@ const ModuleDevSandbox: React.FC = () => {
                   <div className="space-y-2">
                     <label className="flex items-center gap-2">
                       <input type="checkbox" defaultChecked />
-                      <span className="text-sm">Auto-save module changes</span>
+                      <span className="text-sm">Auto-save app changes</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input type="checkbox" defaultChecked />
