@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { CompanyFormValues } from '@/components/superadmin/companies/schema';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { logger } from '@/utils/logger';
 
 export interface Company {
   id: string;
@@ -93,7 +94,7 @@ export const useCompanies = () => {
 
       if (error) throw error;
       
-      return (data as unknown) as Compunknown[];
+      return (data as unknown) as Company[];
     },
   });
 
@@ -179,7 +180,7 @@ export const useCompanies = () => {
       toast.success('Company created successfully');
     },
     onError: (error: Error) => {
-      console.error("Error creating company:", error);
+      logger.error("Error creating company:", error);
       toast.error(`Failed to create company: ${error.message}`);
     },
   });
@@ -268,7 +269,7 @@ export const useCompanies = () => {
       toast.success('Company updated successfully');
     },
     onError: (error: Error) => {
-      console.error("Error updating company:", error);
+      logger.error("Error updating company:", error);
       toast.error(`Failed to update company: ${error.message}`);
     },
   });
@@ -290,7 +291,7 @@ export const useCompanies = () => {
       toast.success('Company deleted successfully');
     },
     onError: (error: Error) => {
-      console.error("Error deleting company:", error);
+      logger.error("Error deleting company:", error);
       toast.error(`Failed to delete company: ${error.message}`);
     },
   });

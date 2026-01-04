@@ -27,6 +27,7 @@ import { useCompanies, Company } from '@/hooks/useCompanies';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
+import { logger } from '@/utils/logger';
 
 const Companies = () => {
   const navigate = useNavigate();
@@ -115,7 +116,7 @@ const Companies = () => {
         if (branchOfficesData && branchOfficesData.length > 0) {
           const branchData = branchOfficesData.find(b => b.companyIndex === i);
           if (branchData && branchData.branchOffices.length > 0) {
-            console.log(`Branch offices for company ${company.name} will be processed when branch_offices table is available`);
+            logger.debug(`Branch offices for company ${company.name} will be processed when branch_offices table is available`);
           }
         }
       }
@@ -125,7 +126,7 @@ const Companies = () => {
       
       toast.success(`Successfully imported ${results.length} companies`);
     } catch (error) {
-      console.error('Bulk import failed:', error);
+      logger.error('Bulk import failed:', error);
       toast.error(`Bulk import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw error;
     }
@@ -155,10 +156,8 @@ const Companies = () => {
           </div>
           <div className="flex gap-2">
             <Button onClick={() => {
-              console.log('🔵 Create Company button clicked');
-              console.log('🔵 Current isCreateDialogOpen state:', isCreateDialogOpen);
+              logger.debug('Create Company button clicked');
               setIsCreateDialogOpen(true);
-              console.log('🔵 setIsCreateDialogOpen(true) called');
             }}>
               <Plus className="mr-2 h-4 w-4" /> Add Company
             </Button>
@@ -265,14 +264,12 @@ const Companies = () => {
         <CreateCompanyDialog
           isOpen={isCreateDialogOpen}
           onClose={() => {
-            console.log('🔴 CreateCompanyDialog onClose called');
+            logger.debug('CreateCompanyDialog onClose called');
             setIsCreateDialogOpen(false);
           }}
           onSubmit={(data) => {
-            console.log('🟢 CreateCompanyDialog onSubmit called with data:', data);
-            console.log('🟢 About to call createCompany.mutate');
+            logger.debug('CreateCompanyDialog onSubmit called with data:', data);
             createCompany.mutate(data);
-            console.log('🟢 createCompany.mutate called, closing dialog');
             setIsCreateDialogOpen(false);
           }}
           isSubmitting={createCompany.isPending}
