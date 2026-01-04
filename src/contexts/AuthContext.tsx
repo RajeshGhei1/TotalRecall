@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 // import { useSessionLogger } from '@/hooks/useSessionLogger';
 
 interface AuthContextType {
@@ -33,11 +34,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // useSessionLogger();
 
   useEffect(() => {
-    console.log('AuthProvider: Initializing auth state');
+    logger.debug('AuthProvider: Initializing auth state');
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, 'Session:', !!session, 'User:', !!session?.user);
+      logger.debug('Auth state changed:', event, 'Session:', !!session, 'User:', !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -48,14 +49,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('Error getting session:', error);
+          logger.error('Error getting session:', error);
         } else {
-          console.log('Initial session check:', !!session, 'User:', !!session?.user);
+          logger.debug('Initial session check:', !!session, 'User:', !!session?.user);
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        logger.error('Auth initialization error:', error);
       } finally {
         setLoading(false);
       }
@@ -68,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = async (userId: string): Promise<string> => {
     try {
-      console.log('Checking user role for:', userId);
+      logger.debug('Checking user role for:', userId);
       // Check if user is super admin
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -77,27 +78,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking user role:', error);
+        logger.error('Error checking user role:', error);
         return '/tenant-admin/dashboard'; // Default to tenant admin
       }
 
-      console.log('User profile:', profile);
+      logger.debug('User profile:', profile);
       if (profile?.role === 'super_admin') {
-        console.log('User is super admin, redirecting to superadmin dashboard');
+        logger.debug('User is super admin, redirecting to superadmin dashboard');
         return '/superadmin/dashboard';
       }
 
       // Default to tenant admin for authenticated users
-      console.log('User is tenant admin, redirecting to tenant admin dashboard');
+      logger.debug('User is tenant admin, redirecting to tenant admin dashboard');
       return '/tenant-admin/dashboard';
     } catch (error) {
-      console.error('Error determining user role:', error);
+      logger.error('Error determining user role:', error);
       return '/tenant-admin/dashboard';
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting to sign in with:', email);
+    logger.debug('Attempting to sign in with:', email);
     setLoading(true);
     
     try {
@@ -107,17 +108,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error('Sign in error:', error);
+        logger.error('Sign in error:', error);
         throw error;
       }
       
-      console.log('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
+      logger.debug('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
       
       // Determine redirect path based on user role
       let redirectPath = '/tenant-admin/dashboard';
       if (data.user) {
         redirectPath = await checkUserRole(data.user.id);
-        console.log('Determined redirect path:', redirectPath);
+        logger.debug('Determined redirect path:', redirectPath);
       }
       
       return { user: data.user, redirectPath };
@@ -129,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    console.log('Attempting to sign up with:', email);
+    logger.debug('Attempting to sign up with:', email);
     setLoading(true);
     
     try {
@@ -147,11 +148,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error('Sign up error:', error);
+        logger.error('Sign up error:', error);
         throw error;
       }
       
-      console.log('Sign up successful:', !!data.user);
+      logger.debug('Sign up successful:', !!data.user);
     } catch (error) {
       throw error;
     } finally {
@@ -160,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('Attempting to sign out');
+    logger.debug('Attempting to sign out');
     setLoading(true);
     
     try {
@@ -170,13 +171,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Sign out error:', error);
+        logger.error('Sign out error:', error);
         // Don't throw the error, just log it since we already cleared local state
       } else {
-        console.log('Sign out successful');
+        logger.debug('Sign out successful');
       }
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error:', error);
       // Don't throw the error, the local state is already cleared
     } finally {
       setLoading(false);
