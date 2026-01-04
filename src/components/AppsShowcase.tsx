@@ -142,7 +142,14 @@ const getDisplayCategoryName = (rawCategory: string, moduleName: string = ''): s
 
 // Helper function to organize modules by type and category
 const organizeModulesByType = (modules: SystemModule[]): AppTypeSection[] => {
-  const typeSections: Record<string, AppTypeSection> = {
+  const typeSections: Record<string, {
+    type: 'super_admin' | 'foundation' | 'business';
+    name: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    categories: Record<string, AppCategory>;
+  }> = {
     'super_admin': {
       type: 'super_admin',
       name: 'Super Admin Apps',

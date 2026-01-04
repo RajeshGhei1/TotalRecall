@@ -237,4 +237,3 @@ const FeaturesShowcase: React.FC = () => {
 };
 
 export default FeaturesShowcase;
-
