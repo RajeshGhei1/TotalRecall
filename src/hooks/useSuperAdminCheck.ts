@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 interface SuperAdminCheckResult {
   isSuperAdmin: boolean | null;
@@ -23,7 +24,7 @@ export const useSuperAdminCheck = (): SuperAdminCheckResult => {
       try {
         // In bypass mode, automatically grant super admin access
         if (bypassAuth) {
-          console.log('useSuperAdminCheck: Bypass mode enabled, granting super admin access');
+          logger.debug('useSuperAdminCheck: Bypass mode enabled, granting super admin access');
           setIsSuperAdmin(true);
           setIsLoading(false);
           return;
@@ -36,7 +37,7 @@ export const useSuperAdminCheck = (): SuperAdminCheckResult => {
           return;
         }
 
-        console.log('useSuperAdminCheck: Checking super admin status for user:', user.id);
+        logger.debug('useSuperAdminCheck: Checking super admin status for user:', user.id);
         
         // Check user role from profiles table
         const { data, error: profileError } = await supabase
@@ -46,15 +47,15 @@ export const useSuperAdminCheck = (): SuperAdminCheckResult => {
           .single();
         
         if (profileError) {
-          console.error('useSuperAdminCheck: Error checking admin status:', profileError);
+          logger.error('useSuperAdminCheck: Error checking admin status:', profileError);
           throw profileError;
         }
         
         const isAdmin = data.role === 'super_admin';
-        console.log('useSuperAdminCheck: User role check result:', { role: data.role, isAdmin });
+        logger.debug('useSuperAdminCheck: User role check result:', { role: data.role, isAdmin });
         setIsSuperAdmin(isAdmin);
       } catch (err: unknown) {
-        console.error('useSuperAdminCheck: Error checking admin status:', err);
+        logger.error('useSuperAdminCheck: Error checking admin status:', err);
         setError('Failed to verify admin privileges');
         setIsSuperAdmin(false);
       } finally {

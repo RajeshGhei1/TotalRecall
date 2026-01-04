@@ -1,9 +1,20 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 
 export const Navbar = () => {
+  const { user, signOut } = useAuth();
+  const { isSuperAdmin } = useSuperAdminCheck();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,11 +56,20 @@ export const Navbar = () => {
             >
               Industries
             </a>
-            <Link to="/pricing">
-              <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
-                Pricing
-              </Button>
-            </Link>
+            {!user && (
+              <Link to="/pricing">
+                <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
+                  Pricing
+                </Button>
+              </Link>
+            )}
+            {user && (
+              <Link to={isSuperAdmin ? "/superadmin/dashboard" : "/tenant-admin"}>
+                <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
+                  Dashboard
+                </Button>
+              </Link>
+            )}
             <a 
               href="#help" 
               onClick={(e) => {
@@ -63,16 +83,27 @@ export const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Link to="/auth">
-              <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button className="bg-indigo-600 hover:bg-indigo-700">
-                Try it free
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-600">{user.email}</span>
+                <Button variant="ghost" onClick={handleSignOut} className="text-gray-700 hover:text-indigo-600">
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    Try it free
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { logger } from "@/utils/logger";
 
 // Schema for login validation
 export const loginSchema = z.object({
@@ -51,20 +52,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = async (data: LoginFormValues) => {
-    console.log('LoginForm: Starting login process');
+    logger.debug('LoginForm: Starting login process');
     setIsLoading(true);
     setError(null);
     
     try {
       const result = await onSubmit(data);
-      console.log('LoginForm: Login successful, redirecting to:', result.redirectPath);
+      logger.debug('LoginForm: Login successful, redirecting to:', result.redirectPath);
       
       // Add a small delay to ensure auth state is updated
       setTimeout(() => {
         navigate(result.redirectPath, { replace: true });
       }, 100);
     } catch (err: unknown) {
-      console.error('LoginForm: Login error:', err);
+      logger.error('LoginForm: Login error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setError(errorMessage);
     } finally {

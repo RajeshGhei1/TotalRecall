@@ -11,6 +11,7 @@ import { SignupForm, SignupFormValues } from "@/components/auth/SignupForm";
 import { SuperAdminForm, SuperAdminEmailFormValues } from "@/components/auth/SuperAdminForm";
 import LinkedInOAuthCallback from "@/components/auth/LinkedInOAuthCallback";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
@@ -27,7 +28,7 @@ const Auth = () => {
   // Handle bypass auth redirect
   useEffect(() => {
     if (bypassAuth && !loading) {
-      console.log('Bypass auth enabled, redirecting to superadmin dashboard');
+      logger.debug('Bypass auth enabled, redirecting to superadmin dashboard');
       navigate("/superadmin/dashboard");
     }
   }, [bypassAuth, loading, navigate]);
@@ -37,10 +38,10 @@ const Auth = () => {
     return (
       <LinkedInOAuthCallback 
         onSuccess={(tenantId) => {
-          console.log('LinkedIn OAuth successful for tenant:', tenantId);
+          logger.debug('LinkedIn OAuth successful for tenant:', tenantId);
         }}
         onError={(error) => {
-          console.error('LinkedIn OAuth error:', error);
+          logger.error('LinkedIn OAuth error:', error);
           toast({
             title: "OAuth Error",
             description: "Failed to authenticate with LinkedIn",
@@ -77,7 +78,7 @@ const Auth = () => {
       });
       return result;
     } catch (error: unknown) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       throw error; // Re-throw to be handled by LoginForm
     }
   };
@@ -91,10 +92,11 @@ const Auth = () => {
       });
       setActiveTab("login");
     } catch (error: unknown) {
-      console.error("Signup error:", error);
+      logger.error("Signup error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to create account. Please try again.";
       toast({
         title: "Signup failed",
-        description: error.message || "Failed to create account. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -112,7 +114,7 @@ const Auth = () => {
         });
       }
     } catch (error) {
-      console.error("Error making super admin:", error);
+      logger.error("Error making super admin:", error);
       toast({
         title: "Error",
         description: "Failed to create super admin.",

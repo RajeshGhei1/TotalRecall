@@ -25,18 +25,14 @@ const LoadingFallback = () => (
 );
 
 // Enhanced component to handle smart authenticated user redirects
+// Allow home page to be accessible even when logged in
 const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: checkingRole } = useSuperAdminCheck();
-  const location = useLocation(); // Use router hook instead of window.location
+  const location = useLocation();
   
-  // If user is already on a superadmin or tenant-admin route, don't redirect
-  if (location.pathname.startsWith('/superadmin/') || location.pathname.startsWith('/tenant-admin/')) {
-    logger.debug('AuthenticatedRedirect - User already on protected route, skipping redirect');
-    return null; // Let the existing route handle it
-  }
-  
-  // Show loading while checking authentication or role
+  // Always show the home page (Index) - users can navigate to their dashboard via navbar
+  // This allows logged-in users to see the apps listing and marketing content
   if (loading || checkingRole) {
     logger.debug('AuthenticatedRedirect - Loading state');
     return (
@@ -49,25 +45,13 @@ const AuthenticatedRedirect: React.FC = () => {
     );
   }
 
-  // If no user, show marketing page
-  if (!user) {
-    logger.debug('AuthenticatedRedirect - No user, showing Index');
-    return (
-      <Suspense fallback={<LoadingFallback />}>
-        <Index />
-      </Suspense>
-    );
-  }
-
-  // Smart role-based redirects using database role check
-  if (isSuperAdmin) {
-    logger.debug('AuthenticatedRedirect - User is super admin, redirecting to super admin portal');
-    return <Navigate to="/superadmin/dashboard" replace />;
-  }
-
-  // Regular users go to tenant admin portal
-  logger.debug('AuthenticatedRedirect - User is tenant admin, redirecting to tenant admin portal');
-  return <Navigate to="/tenant-admin" replace />;
+  // Always show the home page - authenticated users can access it
+  logger.debug('AuthenticatedRedirect - Showing Index page');
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <Index />
+    </Suspense>
+  );
 };
 
 function App() {
