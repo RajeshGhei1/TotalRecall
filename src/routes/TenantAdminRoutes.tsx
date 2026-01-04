@@ -15,8 +15,7 @@ import SocialMediaSettings from "@/pages/tenant-admin/settings/SocialMediaSettin
 import IntelligentWorkflowsPage from "@/components/workflow/IntelligentWorkflowsPage";
 import UnifiedModuleAccessGuard from "@/components/access-control/UnifiedModuleAccessGuard";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import PredictiveInsights from "@/pages/tenant-admin/PredictiveInsights";
 import LinkedInIntegrationPage from "@/pages/tenant-admin/LinkedInIntegration";
 import SmartTalentMatcher from "@/components/talent-matching/SmartTalentMatcher";
@@ -27,29 +26,7 @@ import TalentDatabase from "@/modules/talent-database";
 
 // Smart redirect component for intelligent default routing
 const SmartTenantRedirect: React.FC = () => {
-  const { user, bypassAuth } = useAuth();
-
-  const { data: tenantData } = useQuery({
-    queryKey: ['currentTenantData', user?.id],
-    queryFn: async () => {
-      if (bypassAuth) {
-        return { tenant_id: 'mock-tenant-id' };
-      }
-      
-      if (!user) return null;
-      
-      const { data, error } = await supabase
-        .from('user_tenants')
-        .select('tenant_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user || bypassAuth,
-  });
-
+  const { data: tenantData } = useCurrentTenant();
   const currentTenantId = tenantData?.tenant_id || null;
 
   // Check available modules and redirect to the first available one
@@ -62,30 +39,8 @@ const SmartTenantRedirect: React.FC = () => {
 };
 
 const TenantAdminRoutes = () => {
-  const { user, bypassAuth } = useAuth();
-
-  // Get current tenant ID for module access checks
-  const { data: tenantData } = useQuery({
-    queryKey: ['currentTenantData', user?.id],
-    queryFn: async () => {
-      if (bypassAuth) {
-        return { tenant_id: 'mock-tenant-id' };
-      }
-      
-      if (!user) return null;
-      
-      const { data, error } = await supabase
-        .from('user_tenants')
-        .select('tenant_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user || bypassAuth,
-  });
-
+  const { user } = useAuth();
+  const { data: tenantData } = useCurrentTenant();
   const currentTenantId = tenantData?.tenant_id || null;
 
   return (

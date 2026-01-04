@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useSuperAdminCheck } from "@/hooks/useSuperAdminCheck";
+import { logger } from "@/utils/logger";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
   const location = useLocation();
   const { isSuperAdmin, isLoading: checkingRole, error } = useSuperAdminCheck();
 
-  console.log('AuthGuard state:', { 
+  logger.debug('AuthGuard state:', { 
     user: !!user, 
     loading, 
     bypassAuth, 
@@ -25,9 +26,30 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
     pathname: location.pathname 
   });
 
+  // Move toast side effects into useEffect
+  useEffect(() => {
+    if (requiresSuperAdmin && !isSuperAdmin && !loading && !checkingRole && user) {
+      toast({
+        title: "Access Denied",
+        description: "You need super admin privileges to access this area.",
+        variant: "destructive",
+      });
+    }
+  }, [requiresSuperAdmin, isSuperAdmin, loading, checkingRole, user]);
+
+  useEffect(() => {
+    if (error && requiresSuperAdmin && !loading && !checkingRole) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, requiresSuperAdmin, loading, checkingRole]);
+
   // Show loading while checking authentication or role
   if (loading || (requiresSuperAdmin && checkingRole)) {
-    console.log('AuthGuard: Showing loading state');
+    logger.debug('AuthGuard: Showing loading state');
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -40,37 +62,22 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiresSuperAdmin = fa
 
   // In bypass mode, allow access
   if (bypassAuth) {
-    console.log('AuthGuard: Allowing access in bypass mode');
+    logger.debug('AuthGuard: Allowing access in bypass mode');
     return <>{children}</>;
   }
 
   // If no user, redirect to login
   if (!user) {
-    console.log('AuthGuard: No user found, redirecting to auth');
+    logger.debug('AuthGuard: No user found, redirecting to auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // If super admin required but user is not super admin, redirect to home
   if (requiresSuperAdmin && !isSuperAdmin) {
-    console.log('AuthGuard: Super admin required but user is not super admin');
-    toast({
-      title: "Access Denied",
-      description: "You need super admin privileges to access this area.",
-      variant: "destructive",
-    });
     return <Navigate to="/" replace />;
   }
 
-  // Show error if there was an issue checking role
-  if (error && requiresSuperAdmin) {
-    toast({
-      title: "Error",
-      description: error,
-      variant: "destructive",
-    });
-  }
-
-  console.log('AuthGuard: Access granted, showing protected content');
+  logger.debug('AuthGuard: Access granted, showing protected content');
   return <>{children}</>;
 };
 

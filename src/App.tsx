@@ -1,11 +1,12 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import './App.css'; // General application styles
 import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 import { useSessionLogger } from '@/hooks/useSessionLogger';
+import { logger } from '@/utils/logger';
 
 // Lazy load routes and pages for code splitting
 const Index = lazy(() => import('@/pages/Index'));
@@ -27,20 +28,17 @@ const LoadingFallback = () => (
 const AuthenticatedRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   const { isSuperAdmin, isLoading: checkingRole } = useSuperAdminCheck();
-  
-  // 🚨 TEMP FIX: Check current URL to prevent unwanted redirects
-  const currentPath = window.location.pathname;
-  console.log('🚨 AuthenticatedRedirect - Current path:', currentPath);
+  const location = useLocation(); // Use router hook instead of window.location
   
   // If user is already on a superadmin or tenant-admin route, don't redirect
-  if (currentPath.startsWith('/superadmin/') || currentPath.startsWith('/tenant-admin/')) {
-    console.log('🚨 AuthenticatedRedirect - User already on protected route, skipping redirect');
+  if (location.pathname.startsWith('/superadmin/') || location.pathname.startsWith('/tenant-admin/')) {
+    logger.debug('AuthenticatedRedirect - User already on protected route, skipping redirect');
     return null; // Let the existing route handle it
   }
   
   // Show loading while checking authentication or role
   if (loading || checkingRole) {
-    console.log('🚨 AuthenticatedRedirect - Loading state');
+    logger.debug('AuthenticatedRedirect - Loading state');
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -53,7 +51,7 @@ const AuthenticatedRedirect: React.FC = () => {
 
   // If no user, show marketing page
   if (!user) {
-    console.log('🚨 AuthenticatedRedirect - No user, showing Index');
+    logger.debug('AuthenticatedRedirect - No user, showing Index');
     return (
       <Suspense fallback={<LoadingFallback />}>
         <Index />
@@ -63,12 +61,12 @@ const AuthenticatedRedirect: React.FC = () => {
 
   // Smart role-based redirects using database role check
   if (isSuperAdmin) {
-    console.log('🚨 AuthenticatedRedirect - User is super admin, redirecting to super admin portal');
+    logger.debug('AuthenticatedRedirect - User is super admin, redirecting to super admin portal');
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 
   // Regular users go to tenant admin portal
-  console.log('🚨 AuthenticatedRedirect - User is tenant admin, redirecting to tenant admin portal');
+  logger.debug('AuthenticatedRedirect - User is tenant admin, redirecting to tenant admin portal');
   return <Navigate to="/tenant-admin" replace />;
 };
 
