@@ -1,15 +1,27 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'; // General application styles
-import Index from '@/pages/Index';
-import Auth from '@/pages/Auth';
-import SuperAdminRoutes from '@/routes/SuperAdminRoutes';
-import TenantAdminRoutes from '@/routes/TenantAdminRoutes';
 import AuthGuard from '@/components/AuthGuard';
 import { TenantProvider } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 import { useSessionLogger } from '@/hooks/useSessionLogger';
+
+// Lazy load routes and pages for code splitting
+const Index = lazy(() => import('@/pages/Index'));
+const Auth = lazy(() => import('@/pages/Auth'));
+const SuperAdminRoutes = lazy(() => import('@/routes/SuperAdminRoutes'));
+const TenantAdminRoutes = lazy(() => import('@/routes/TenantAdminRoutes'));
+
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 // Enhanced component to handle smart authenticated user redirects
 const AuthenticatedRedirect: React.FC = () => {
@@ -42,7 +54,11 @@ const AuthenticatedRedirect: React.FC = () => {
   // If no user, show marketing page
   if (!user) {
     console.log('🚨 AuthenticatedRedirect - No user, showing Index');
-    return <Index />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <Index />
+      </Suspense>
+    );
   }
 
   // Smart role-based redirects using database role check
@@ -62,36 +78,38 @@ function App() {
     <TenantProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          <Routes>
-            {/* Home route - shows marketing page for unauthenticated users, smart redirects for authenticated users */}
-            <Route path="/" element={<AuthenticatedRedirect />} />
-            
-            {/* Auth Route */}
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Superadmin Routes - Protected, no subscription checks */}
-            <Route 
-              path="/superadmin/*" 
-              element={
-                <AuthGuard requiresSuperAdmin={true}>
-                  <SuperAdminRoutes />
-                </AuthGuard>
-              } 
-            />
-            
-            {/* Tenant Admin Routes - Protected with Smart Module Independence */}
-            <Route 
-              path="/tenant-admin/*" 
-              element={
-                <AuthGuard>
-                  <TenantAdminRoutes />
-                </AuthGuard>
-              } 
-            />
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              {/* Home route - shows marketing page for unauthenticated users, smart redirects for authenticated users */}
+              <Route path="/" element={<AuthenticatedRedirect />} />
+              
+              {/* Auth Route */}
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Superadmin Routes - Protected, no subscription checks */}
+              <Route 
+                path="/superadmin/*" 
+                element={
+                  <AuthGuard requiresSuperAdmin={true}>
+                    <SuperAdminRoutes />
+                  </AuthGuard>
+                } 
+              />
+              
+              {/* Tenant Admin Routes - Protected with Smart Module Independence */}
+              <Route 
+                path="/tenant-admin/*" 
+                element={
+                  <AuthGuard>
+                    <TenantAdminRoutes />
+                  </AuthGuard>
+                } 
+              />
 
-            {/* Catch all other routes and redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Catch all other routes and redirect to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </div>
       </Router>
     </TenantProvider>
