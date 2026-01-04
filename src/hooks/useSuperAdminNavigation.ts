@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { logger } from '@/utils/logger';
 import { 
   BarChart2,
   Building2, 
@@ -236,7 +237,7 @@ export const useSuperAdminNavigation = () => {
     },
   ], []);
 
-  console.log('Super Admin Navigation: Updated with proper hierarchy', allNavItems.length);
+  logger.debug('Super Admin Navigation: Updated with proper hierarchy', allNavItems.length);
   
   return useNavigationPreferences('super_admin', allNavItems);
 };

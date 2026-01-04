@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 import NewModuleWizard from './NewModuleWizard';
 import EnhancedLiveCodeEditor from './EnhancedLiveCodeEditor';
 import ModuleDeploymentPipeline from './ModuleDeploymentPipeline';
@@ -51,7 +52,7 @@ const ModuleDevSandbox: React.FC = () => {
     };
 
     if (state?.action && state?.moduleId && state?.moduleName) {
-      console.log('Received navigation state:', state);
+      logger.debug('Received navigation state:', state);
       
       // Create a temporary module data for the selected module
       const moduleData: ModuleData = {
