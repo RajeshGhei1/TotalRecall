@@ -100,40 +100,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
-      // First, test if Supabase is reachable
-      logger.debug('Testing Supabase connection...');
-      logger.debug('Supabase URL:', supabase.supabaseUrl || 'Not available');
-      
-      try {
-        // Test with a simple query that should work even without auth
-        const { data: healthCheck, error: healthError } = await supabase
-          .from('system_modules')
-          .select('id')
-          .limit(1);
-        
-        if (healthError) {
-          logger.error('Supabase connection test failed with error:', healthError);
-          logger.error('Error details:', {
-            message: healthError.message,
-            code: (healthError as unknown as { code?: string }).code,
-            details: healthError.details,
-            hint: healthError.hint
-          });
-          
-          // Don't throw if it's just a permission error - that means Supabase is reachable
-          if (healthError.message?.includes('permission denied') || healthError.message?.includes('JWT')) {
-            logger.debug('Supabase is reachable (permission error is expected without auth)');
-          } else {
-            throw new Error(`Cannot connect to Supabase: ${healthError.message}`);
-          }
-        } else {
-          logger.debug('Supabase connection test successful');
-        }
-      } catch (healthError) {
-        logger.error('Supabase connection test exception:', healthError);
-        const errorMessage = healthError instanceof Error ? healthError.message : 'Unknown connection error';
-        throw new Error(`Cannot connect to Supabase: ${errorMessage}. Please check your connection and ensure Supabase is active.`);
-      }
+      // Skip connection test - it's causing "Failed to fetch" errors
+      // The auth request itself will tell us if Supabase is reachable
+      logger.debug('Skipping connection test, proceeding directly to authentication');
       
       // Log the request attempt with full details
       console.log('🔵 AuthContext: Calling supabase.auth.signInWithPassword...', { email: email.trim() });
