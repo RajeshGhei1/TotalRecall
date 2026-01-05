@@ -95,33 +95,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     logger.debug('Attempting to sign in with:', email);
+    logger.debug('Supabase client initialized:', !!supabase);
     setLoading(true);
     
     try {
-      // Log the request attempt
-      logger.debug('Calling supabase.auth.signInWithPassword...');
+      // First, test if Supabase is reachable
+      logger.debug('Testing Supabase connection...');
+      try {
+        const { data: healthCheck } = await supabase.from('system_modules').select('id').limit(1);
+        logger.debug('Supabase connection test successful');
+      } catch (healthError) {
+        logger.error('Supabase connection test failed:', healthError);
+        throw new Error('Cannot connect to Supabase. Please check your connection and ensure Supabase is active.');
+      }
+      
+      // Log the request attempt with full details
+      logger.debug('Calling supabase.auth.signInWithPassword...', { email });
       const signInPromise = supabase.auth.signInWithPassword({ 
-        email, 
+        email: email.trim(), // Trim whitespace
         password 
       });
       
       // Add timeout to detect if request is hanging
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login request timed out - Supabase may be unreachable')), 10000)
+        setTimeout(() => reject(new Error('Login request timed out after 10 seconds. Supabase may be unreachable or slow.')), 10000)
       );
       
-      const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
-      logger.debug('Sign in response received:', { hasData: !!data, hasError: !!error });
+      logger.debug('Waiting for authentication response...');
+      const result = await Promise.race([signInPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
+      const { data, error } = result;
+      
+      logger.debug('Sign in response received:', { 
+        hasData: !!data, 
+        hasError: !!error,
+        hasUser: !!data?.user,
+        userId: data?.user?.id,
+        errorMessage: error?.message,
+        errorStatus: error?.status
+      });
       
       if (error) {
-        logger.error('Sign in error:', error);
-        logger.error('Error details:', { 
+        logger.error('Sign in error received from Supabase:', error);
+        logger.error('Full error details:', { 
           message: error.message, 
           status: error.status, 
-          name: error.name 
+          name: error.name,
+          code: (error as unknown as { code?: string }).code
         });
+        
+        // Provide user-friendly error messages
+        let userMessage = 'Invalid email or password';
+        if (error.message) {
+          if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid')) {
+            userMessage = 'Invalid email or password. Please check your credentials.';
+          } else if (error.message.includes('Email not confirmed')) {
+            userMessage = 'Please confirm your email address before signing in.';
+          } else if (error.message.includes('Too many requests')) {
+            userMessage = 'Too many login attempts. Please try again later.';
+          } else {
+            userMessage = error.message;
+          }
+        }
+        
         // Ensure error has a message property for better error handling
-        const authError = new Error(error.message || 'Invalid email or password');
+        const authError = new Error(userMessage);
         (authError as unknown as { status?: number; code?: string }).status = error.status;
         (authError as unknown as { status?: number; code?: string }).code = error.name;
         throw authError;
