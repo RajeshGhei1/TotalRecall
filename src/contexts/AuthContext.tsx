@@ -124,6 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       logger.debug('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
       
+      // Wait a moment for auth state to propagate
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Determine redirect path based on user role
       let redirectPath = '/tenant-admin/dashboard';
       try {
@@ -134,6 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Continue with default path even if role check fails
       }
       
+      logger.debug('Sign in complete, returning user and redirect path');
       return { user: data.user, redirectPath };
     } catch (error) {
       logger.error('Sign in exception:', error);

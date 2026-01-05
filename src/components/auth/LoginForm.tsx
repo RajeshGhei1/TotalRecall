@@ -59,11 +59,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     try {
       const result = await onSubmit(data);
       logger.debug('LoginForm: Login successful, redirecting to:', result.redirectPath);
+      logger.debug('LoginForm: User data:', result.user);
       
-      // Add a small delay to ensure auth state is updated
+      // Wait a bit longer to ensure auth state is fully updated
+      // This is important because onAuthStateChange might take a moment
       setTimeout(() => {
+        logger.debug('LoginForm: Navigating to:', result.redirectPath);
         navigate(result.redirectPath, { replace: true });
-      }, 100);
+      }, 300);
     } catch (err: unknown) {
       logger.error('LoginForm: Login error:', err);
       

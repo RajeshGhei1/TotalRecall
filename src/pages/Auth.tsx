@@ -71,14 +71,23 @@ const Auth = () => {
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     try {
+      logger.debug("Auth page: Starting login for:", data.email);
       const result = await signIn(data.email, data.password);
+      logger.debug("Auth page: Login successful, user:", result.user?.id);
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
       return result;
     } catch (error: unknown) {
-      logger.error("Login error:", error);
+      logger.error("Auth page: Login error:", error);
+      // Extract error message for better user feedback
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw error; // Re-throw to be handled by LoginForm
     }
   };
