@@ -66,7 +66,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       }, 100);
     } catch (err: unknown) {
       logger.error('LoginForm: Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      
+      // Handle Supabase errors which have a different structure
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (err && typeof err === 'object') {
+        // Supabase errors have a 'message' property
+        if ('message' in err && typeof err.message === 'string') {
+          errorMessage = err.message;
+        } else if ('error' in err && err.error && typeof err.error === 'object' && 'message' in err.error) {
+          // Sometimes errors are nested
+          errorMessage = String(err.error.message);
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);

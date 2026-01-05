@@ -105,20 +105,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         logger.error('Sign in error:', error);
-        throw error;
+        logger.error('Error details:', { 
+          message: error.message, 
+          status: error.status, 
+          name: error.name 
+        });
+        // Ensure error has a message property for better error handling
+        const authError = new Error(error.message || 'Invalid email or password');
+        (authError as unknown as { status?: number; code?: string }).status = error.status;
+        (authError as unknown as { status?: number; code?: string }).code = error.name;
+        throw authError;
+      }
+      
+      if (!data.user) {
+        logger.error('Sign in succeeded but no user data returned');
+        throw new Error('Login failed: No user data received');
       }
       
       logger.debug('Sign in successful:', !!data.user, 'User ID:', data.user?.id);
       
       // Determine redirect path based on user role
       let redirectPath = '/tenant-admin/dashboard';
-      if (data.user) {
+      try {
         redirectPath = await checkUserRole(data.user.id);
         logger.debug('Determined redirect path:', redirectPath);
+      } catch (roleError) {
+        logger.error('Error checking user role, using default path:', roleError);
+        // Continue with default path even if role check fails
       }
       
       return { user: data.user, redirectPath };
     } catch (error) {
+      logger.error('Sign in exception:', error);
       throw error;
     } finally {
       setLoading(false);
