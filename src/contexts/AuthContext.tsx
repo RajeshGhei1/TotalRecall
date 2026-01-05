@@ -94,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('🔵 AuthContext.signIn: Starting', { email });
     logger.debug('Attempting to sign in with:', email);
     logger.debug('Supabase client initialized:', !!supabase);
     setLoading(true);
@@ -101,29 +102,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // First, test if Supabase is reachable
       logger.debug('Testing Supabase connection...');
+      logger.debug('Supabase URL:', supabase.supabaseUrl || 'Not available');
+      
       try {
-        const { data: healthCheck } = await supabase.from('system_modules').select('id').limit(1);
-        logger.debug('Supabase connection test successful');
+        // Test with a simple query that should work even without auth
+        const { data: healthCheck, error: healthError } = await supabase
+          .from('system_modules')
+          .select('id')
+          .limit(1);
+        
+        if (healthError) {
+          logger.error('Supabase connection test failed with error:', healthError);
+          logger.error('Error details:', {
+            message: healthError.message,
+            code: (healthError as unknown as { code?: string }).code,
+            details: healthError.details,
+            hint: healthError.hint
+          });
+          
+          // Don't throw if it's just a permission error - that means Supabase is reachable
+          if (healthError.message?.includes('permission denied') || healthError.message?.includes('JWT')) {
+            logger.debug('Supabase is reachable (permission error is expected without auth)');
+          } else {
+            throw new Error(`Cannot connect to Supabase: ${healthError.message}`);
+          }
+        } else {
+          logger.debug('Supabase connection test successful');
+        }
       } catch (healthError) {
-        logger.error('Supabase connection test failed:', healthError);
-        throw new Error('Cannot connect to Supabase. Please check your connection and ensure Supabase is active.');
+        logger.error('Supabase connection test exception:', healthError);
+        const errorMessage = healthError instanceof Error ? healthError.message : 'Unknown connection error';
+        throw new Error(`Cannot connect to Supabase: ${errorMessage}. Please check your connection and ensure Supabase is active.`);
       }
       
       // Log the request attempt with full details
+      console.log('🔵 AuthContext: Calling supabase.auth.signInWithPassword...', { email: email.trim() });
       logger.debug('Calling supabase.auth.signInWithPassword...', { email });
+      
       const signInPromise = supabase.auth.signInWithPassword({ 
         email: email.trim(), // Trim whitespace
         password 
       });
+      
+      console.log('🔵 AuthContext: Sign in promise created, waiting for response...');
       
       // Add timeout to detect if request is hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Login request timed out after 10 seconds. Supabase may be unreachable or slow.')), 10000)
       );
       
+      console.log('🔵 AuthContext: Waiting for authentication response...');
       logger.debug('Waiting for authentication response...');
       const result = await Promise.race([signInPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
       const { data, error } = result;
+      
+      console.log('🔵 AuthContext: Response received', { 
+        hasData: !!data, 
+        hasError: !!error,
+        hasUser: !!data?.user,
+        userId: data?.user?.id,
+        errorMessage: error?.message,
+        errorStatus: error?.status
+      });
       
       logger.debug('Sign in response received:', { 
         hasData: !!data, 

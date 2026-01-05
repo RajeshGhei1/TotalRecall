@@ -15,8 +15,16 @@ if (import.meta.env.DEV) {
   console.log('🔧 Supabase Configuration:', {
     url: SUPABASE_URL,
     hasKey: !!SUPABASE_PUBLISHABLE_KEY,
-    keyLength: SUPABASE_PUBLISHABLE_KEY?.length || 0
+    keyLength: SUPABASE_PUBLISHABLE_KEY?.length || 0,
+    keyPrefix: SUPABASE_PUBLISHABLE_KEY?.substring(0, 20) + '...'
   });
+  
+  // Test if we can create the client
+  try {
+    console.log('✅ Supabase client created successfully');
+  } catch (err) {
+    console.error('❌ Failed to create Supabase client:', err);
+  }
 }
 
 // Import the supabase client like this:

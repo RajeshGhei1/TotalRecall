@@ -52,22 +52,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = async (data: LoginFormValues) => {
+    console.log('🔵 LoginForm: Starting login process', { email: data.email });
     logger.debug('LoginForm: Starting login process');
     setIsLoading(true);
     setError(null);
     
     try {
+      console.log('🔵 LoginForm: Calling onSubmit...');
       const result = await onSubmit(data);
+      console.log('🟢 LoginForm: Login successful!', { 
+        redirectPath: result.redirectPath, 
+        userId: result.user?.id 
+      });
       logger.debug('LoginForm: Login successful, redirecting to:', result.redirectPath);
       logger.debug('LoginForm: User data:', result.user);
       
       // Wait a bit longer to ensure auth state is fully updated
       // This is important because onAuthStateChange might take a moment
       setTimeout(() => {
+        console.log('🔵 LoginForm: Navigating to:', result.redirectPath);
         logger.debug('LoginForm: Navigating to:', result.redirectPath);
         navigate(result.redirectPath, { replace: true });
-      }, 300);
+      }, 500);
     } catch (err: unknown) {
+      console.error('🔴 LoginForm: Login error caught:', err);
       logger.error('LoginForm: Login error:', err);
       
       // Handle Supabase errors which have a different structure
@@ -77,17 +85,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         // Supabase errors have a 'message' property
         if ('message' in err && typeof err.message === 'string') {
           errorMessage = err.message;
+          console.error('🔴 Error message:', err.message);
         } else if ('error' in err && err.error && typeof err.error === 'object' && 'message' in err.error) {
           // Sometimes errors are nested
           errorMessage = String(err.error.message);
+          console.error('🔴 Nested error message:', err.error.message);
         } else if (err instanceof Error) {
           errorMessage = err.message;
+          console.error('🔴 Error instance message:', err.message);
         }
       }
       
+      console.error('🔴 Setting error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      console.log('🔵 LoginForm: Process complete, loading set to false');
     }
   };
 
