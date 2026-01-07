@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 const AppsShowcase = lazy(() => import('@/components/AppsShowcase'));
 const FeaturesShowcase = lazy(() => import('@/components/FeaturesShowcase'));
 const IndustriesShowcase = lazy(() => import('@/components/IndustriesShowcase'));
+const SubscriptionPlansShowcase = lazy(() => import('@/components/SubscriptionPlansShowcase'));
 
 // Loading component for showcase sections
 const ShowcaseLoader = () => (
@@ -37,6 +38,9 @@ const Index = () => {
           <FeaturesShowcase />
         </Suspense>
       </div>
+      <Suspense fallback={<ShowcaseLoader />}>
+        <SubscriptionPlansShowcase />
+      </Suspense>
       <div id="industries">
         <Suspense fallback={<ShowcaseLoader />}>
           <IndustriesShowcase />

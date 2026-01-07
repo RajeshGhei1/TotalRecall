@@ -108,21 +108,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('🔵 AuthContext: Calling supabase.auth.signInWithPassword...', { email: email.trim() });
       logger.debug('Calling supabase.auth.signInWithPassword...', { email });
       
-      const signInPromise = supabase.auth.signInWithPassword({ 
-        email: email.trim(), // Trim whitespace
-        password 
-      });
+      let result;
+      try {
+        result = await supabase.auth.signInWithPassword({ 
+          email: email.trim(), // Trim whitespace
+          password 
+        });
+        console.log('🔵 AuthContext: Sign in response received');
+      } catch (networkError) {
+        console.log('🔴 AuthContext: Network error during sign in:', networkError);
+        logger.error('Network error during sign in:', networkError);
+        // Handle network errors (CORS, connection refused, etc.)
+        if (networkError instanceof TypeError && networkError.message.includes('fetch')) {
+          throw new Error('Cannot connect to Supabase. Please check your internet connection and ensure Supabase is active.');
+        }
+        throw networkError;
+      }
       
-      console.log('🔵 AuthContext: Sign in promise created, waiting for response...');
-      
-      // Add timeout to detect if request is hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login request timed out after 10 seconds. Supabase may be unreachable or slow.')), 10000)
-      );
-      
-      console.log('🔵 AuthContext: Waiting for authentication response...');
-      logger.debug('Waiting for authentication response...');
-      const result = await Promise.race([signInPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
       const { data, error } = result;
       
       console.log('🔵 AuthContext: Response received', { 

@@ -267,35 +267,24 @@ const IndustriesShowcase: React.FC = () => {
                 {/* Apps List */}
                 <div className="p-6 space-y-3">
                   {industry.apps.slice(0, 8).map((app) => {
-                    const route = getModuleRoute(app);
+                    // Create subscription link with app context
+                    const subscriptionLink = `/subscribe?app=${encodeURIComponent(app.name)}`;
+                    
                     return (
                       <div key={app.id} className="border-b border-gray-100 last:border-0 pb-3 last:pb-0">
-                        {route ? (
-                          <Link
-                            to={route}
-                            className="block group"
-                          >
-                            <div className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                              {app.name}
-                            </div>
-                            {app.description && (
-                              <div className="text-sm text-gray-600 mt-1 line-clamp-2">
-                                {app.description}
-                              </div>
-                            )}
-                          </Link>
-                        ) : (
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {app.name}
-                            </div>
-                            {app.description && (
-                              <div className="text-sm text-gray-600 mt-1 line-clamp-2">
-                                {app.description}
-                              </div>
-                            )}
+                        <Link
+                          to={subscriptionLink}
+                          className="block group"
+                        >
+                          <div className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            {app.name}
                           </div>
-                        )}
+                          {app.description && (
+                            <div className="text-sm text-gray-600 mt-1 line-clamp-2">
+                              {app.description}
+                            </div>
+                          )}
+                        </Link>
                       </div>
                     );
                   })}

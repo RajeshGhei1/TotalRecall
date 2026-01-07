@@ -21,6 +21,10 @@ const Auth = () => {
   const [superAdminPromoting, setSuperAdminPromoting] = useState(false);
   const [superAdminPromoted, setSuperAdminPromoted] = useState(false);
   const { toast } = useToast();
+  
+  // Get app context and next action from URL params
+  const appName = searchParams.get('app');
+  const nextAction = searchParams.get('next'); // 'subscribe' or other actions
 
   // Check if this is a LinkedIn OAuth callback
   const isLinkedInCallback = searchParams.get('code') && searchParams.get('state');
@@ -78,6 +82,16 @@ const Auth = () => {
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
+      
+      // Redirect based on context
+      if (nextAction === 'subscribe' && appName) {
+        navigate(`/subscribe?app=${encodeURIComponent(appName)}`, { replace: true });
+      } else if (appName) {
+        navigate(`/subscribe?app=${encodeURIComponent(appName)}`, { replace: true });
+      } else {
+        // Default redirect handled by LoginForm
+      }
+      
       return result;
     } catch (error: unknown) {
       logger.error("Auth page: Login error:", error);
@@ -99,7 +113,18 @@ const Auth = () => {
         title: "Account created!",
         description: "Please check your email to confirm your account.",
       });
-      setActiveTab("login");
+      
+      // If app context exists, switch to login tab so user can sign in
+      // After login, they'll be redirected to subscription page
+      if (appName) {
+        setActiveTab("login");
+        toast({
+          title: "Next Step",
+          description: "Please sign in to continue to subscription selection.",
+        });
+      } else {
+        setActiveTab("login");
+      }
     } catch (error: unknown) {
       logger.error("Signup error:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to create account. Please try again.";
@@ -138,6 +163,16 @@ const Auth = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <AuthHeader bypassAuth={bypassAuth} />
+        {appName && (
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <p className="text-sm text-indigo-900">
+              <strong>Getting access to:</strong> {appName}
+            </p>
+            <p className="text-xs text-indigo-700 mt-1">
+              Sign in or create an account to view subscription plans for this app.
+            </p>
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
           <TabsList className="grid w-full grid-cols-2">

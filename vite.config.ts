@@ -6,8 +6,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: true, // Allow access from network (0.0.0.0)
     port: 8080,
+    strictPort: false, // Try next available port if 8080 is taken
   },
   plugins: [
     react(),
@@ -64,7 +65,8 @@ export default defineConfig(({ mode }) => ({
           // Showcase components (homepage)
           if (id.includes('/components/AppsShowcase') || 
               id.includes('/components/FeaturesShowcase') || 
-              id.includes('/components/IndustriesShowcase')) {
+              id.includes('/components/IndustriesShowcase') ||
+              id.includes('/components/SubscriptionPlansShowcase')) {
             return 'showcase';
           }
           

@@ -11,6 +11,7 @@ import { logger } from '@/utils/logger';
 // Lazy load routes and pages for code splitting
 const Index = lazy(() => import('@/pages/Index'));
 const Auth = lazy(() => import('@/pages/Auth'));
+const AppSubscription = lazy(() => import('@/pages/AppSubscription'));
 const SuperAdminRoutes = lazy(() => import('@/routes/SuperAdminRoutes'));
 const TenantAdminRoutes = lazy(() => import('@/routes/TenantAdminRoutes'));
 
@@ -67,6 +68,9 @@ function App() {
               
               {/* Auth Route */}
               <Route path="/auth" element={<Auth />} />
+              
+              {/* App Subscription Route - Public, handles auth internally */}
+              <Route path="/subscribe" element={<AppSubscription />} />
               
               {/* Superadmin Routes - Protected, no subscription checks */}
               <Route 

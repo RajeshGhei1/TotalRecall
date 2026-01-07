@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSystemModules, SystemModule } from '@/hooks/useSystemModules';
+import { Badge } from '@/components/ui/badge';
 
 interface AppCategory {
   name: string;
@@ -73,6 +74,38 @@ const getCategoryTagInfo = (categoryName: string): { label: string; color: strin
   };
   
   return tagMap[categoryName] || { label: categoryName, color: 'bg-gray-100 text-gray-800' };
+};
+
+// Helper function to get maturity status badge info
+const getMaturityStatusInfo = (status?: string): { label: string; color: string; bgColor: string } => {
+  switch (status) {
+    case 'production':
+      return { label: 'Production', color: 'text-green-700', bgColor: 'bg-green-100 border-green-300' };
+    case 'beta':
+      return { label: 'Beta', color: 'text-blue-700', bgColor: 'bg-blue-100 border-blue-300' };
+    case 'alpha':
+      return { label: 'Alpha', color: 'text-yellow-700', bgColor: 'bg-yellow-100 border-yellow-300' };
+    case 'planning':
+      return { label: 'Planning', color: 'text-gray-700', bgColor: 'bg-gray-100 border-gray-300' };
+    default:
+      return { label: 'Unknown', color: 'text-gray-700', bgColor: 'bg-gray-100 border-gray-300' };
+  }
+};
+
+// Helper function to get AI level badge info
+const getAILevelInfo = (level?: string): { label: string; color: string; bgColor: string } | null => {
+  if (!level || level === 'none') return null;
+  
+  switch (level) {
+    case 'high':
+      return { label: 'High AI', color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-300' };
+    case 'medium':
+      return { label: 'Medium AI', color: 'text-indigo-700', bgColor: 'bg-indigo-100 border-indigo-300' };
+    case 'low':
+      return { label: 'Low AI', color: 'text-blue-700', bgColor: 'bg-blue-100 border-blue-300' };
+    default:
+      return null;
+  }
 };
 
 // Helper function to get display category name
@@ -325,44 +358,115 @@ const AppsShowcase: React.FC = () => {
                 </div>
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {typeSection.categories.map((category) => {
                     const CategoryIcon = category.icon;
                     return (
-                      <div key={category.name} className="space-y-3">
+                      <div key={category.name} className="space-y-4">
                         {/* Category Header */}
-                        <div className={`${category.color} text-white px-4 py-2 rounded-t-lg`}>
+                        <div className={`${category.color} text-white px-4 py-3 rounded-lg`}>
                           <div className="flex items-center gap-2">
-                            <CategoryIcon className="h-4 w-4" />
-                            <h4 className="font-bold text-xs uppercase tracking-wide">
+                            <CategoryIcon className="h-5 w-5" />
+                            <h4 className="font-bold text-sm uppercase tracking-wide">
                               {category.name}
                             </h4>
+                            <Badge variant="secondary" className="ml-auto text-xs bg-white/20 text-white border-white/30">
+                              {category.apps.length} {category.apps.length === 1 ? 'app' : 'apps'}
+                            </Badge>
                           </div>
                         </div>
                         
-                        {/* Apps List */}
-                        <div className="bg-gray-50 rounded-b-lg border border-gray-200 border-t-0 p-4 space-y-2">
+                        {/* Apps Cards */}
+                        <div className="space-y-3">
                           {category.apps.map((app) => {
                             const route = getModuleRoute(app);
+                            const maturityInfo = getMaturityStatusInfo(app.maturity_status);
+                            const aiLevelInfo = getAILevelInfo(app.ai_level);
+                            
+                            // Create subscription link with app context
+                            const subscriptionLink = `/subscribe?app=${encodeURIComponent(app.name)}`;
+                            
+                            const AppCard = (
+                              <div className="bg-white rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-md transition-all">
+                                {/* App Header */}
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex-1 min-w-0">
+                                    <Link
+                                      to={subscriptionLink}
+                                      className="block"
+                                    >
+                                      <h5 className="font-semibold text-sm text-gray-900 hover:text-indigo-600 transition-colors line-clamp-1">
+                                        {app.name}
+                                      </h5>
+                                    </Link>
+                                  </div>
+                                  {!app.is_active && (
+                                    <Badge variant="outline" className="text-xs border-red-300 text-red-700 ml-2 flex-shrink-0">
+                                      Inactive
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {/* Description */}
+                                {app.description && (
+                                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                                    {app.description}
+                                  </p>
+                                )}
+                                
+                                {/* Badges */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {/* Maturity Status */}
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${maturityInfo.bgColor} ${maturityInfo.color} border`}
+                                  >
+                                    {maturityInfo.label}
+                                  </Badge>
+                                  
+                                  {/* AI Level */}
+                                  {aiLevelInfo && (
+                                    <Badge 
+                                      variant="outline" 
+                                      className={`text-xs ${aiLevelInfo.bgColor} ${aiLevelInfo.color} border`}
+                                    >
+                                      <Brain className="h-3 w-3 mr-1 inline" />
+                                      {aiLevelInfo.label}
+                                    </Badge>
+                                  )}
+                                  
+                                  {/* Version */}
+                                  {app.version && (
+                                    <Badge variant="outline" className="text-xs">
+                                      v{app.version}
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {/* AI Capabilities Preview */}
+                                {app.ai_capabilities && app.ai_capabilities.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-gray-100">
+                                    <p className="text-xs text-gray-500 mb-1">AI Features:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {app.ai_capabilities.slice(0, 2).map((capability, idx) => (
+                                        <span key={idx} className="text-xs text-gray-600 bg-gray-50 px-2 py-0.5 rounded">
+                                          {capability}
+                                        </span>
+                                      ))}
+                                      {app.ai_capabilities.length > 2 && (
+                                        <span className="text-xs text-gray-500">
+                                          +{app.ai_capabilities.length - 2} more
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
                             
                             return (
                               <div key={app.id}>
-                                {route ? (
-                                  <Link
-                                    to={route}
-                                    className="block text-sm text-gray-700 hover:text-indigo-600 hover:font-medium transition-colors py-1"
-                                    title={app.description || app.name}
-                                  >
-                                    {app.name}
-                                  </Link>
-                                ) : (
-                                  <div 
-                                    className="text-sm text-gray-700 py-1"
-                                    title={app.description || app.name}
-                                  >
-                                    {app.name}
-                                  </div>
-                                )}
+                                {AppCard}
                               </div>
                             );
                           })}
