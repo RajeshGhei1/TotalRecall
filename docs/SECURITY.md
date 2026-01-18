@@ -157,6 +157,14 @@ END;
 $$;
 ```
 
+### Supabase-Specific Controls
+- **Admin actions via Edge Functions**: privileged user management uses `create-user` and `delete-user` functions, protected by service role + super admin check.
+- **Restricted analytics RPCs**: `execute_custom_query` is super-admin-only and enforces SELECT-only execution with single-statement validation.
+- **Module access RPCs**: `check_module_access` resolves subscription plan access at the database layer for consistent enforcement.
+- **Subscription RLS**: `tenant_subscriptions` and `user_subscriptions` are protected with tenant member read access and tenant-admin write access.
+- **Reporting RLS**: `saved_reports` is locked to report owners (or super admins) with anon access removed.
+- **Feature controls**: `module_features` is read-only for authenticated users and writable only by super admins.
+
 ## Data Protection
 
 ### Encryption Strategy

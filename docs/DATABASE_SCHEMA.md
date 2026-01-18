@@ -499,15 +499,33 @@ CREATE TABLE public.subscription_plans (
 CREATE TABLE public.tenant_subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  plan_id UUID NOT NULL REFERENCES public.subscription_plans(id),
+  plan_id UUID NOT NULL REFERENCES public.subscription_plans(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'active',
   billing_cycle TEXT NOT NULL DEFAULT 'monthly',
-  current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,
-  current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,
-  trial_end TIMESTAMP WITH TIME ZONE,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  starts_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  ends_at TIMESTAMP WITH TIME ZONE,
+  subscription_level TEXT DEFAULT 'tenant',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+```
+
+#### user_subscriptions
+**Purpose**: User-specific subscription overrides within a tenant
+```sql
+CREATE TABLE public.user_subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  plan_id UUID NOT NULL REFERENCES public.subscription_plans(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'active',
+  billing_cycle TEXT NOT NULL DEFAULT 'monthly',
+  starts_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  ends_at TIMESTAMP WITH TIME ZONE,
+  assigned_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE (user_id, tenant_id)
 );
 ```
 
@@ -635,6 +653,63 @@ BEGIN
   RETURN tenant_id;
 END;
 $$;
+
+-- Subscription access checks
+CREATE OR REPLACE FUNCTION public.check_module_access(
+  p_tenant_id uuid,
+  p_module_name text,
+  p_user_id uuid DEFAULT NULL
+)
+RETURNS TABLE(has_access boolean, reason text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  resolved_user_id uuid := COALESCE(p_user_id, auth.uid());
+  resolved_plan_id uuid;
+BEGIN
+  SELECT plan_id
+    INTO resolved_plan_id
+    FROM public.resolve_user_subscription(resolved_user_id, p_tenant_id)
+    LIMIT 1;
+
+  IF resolved_plan_id IS NULL THEN
+    RETURN QUERY SELECT false, 'no_subscription';
+    RETURN;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM public.module_permissions
+     WHERE plan_id = resolved_plan_id
+       AND module_name = p_module_name
+       AND is_enabled = true
+  ) THEN
+    RETURN QUERY SELECT true, 'allowed';
+  ELSE
+    RETURN QUERY SELECT false, 'module_disabled';
+  END IF;
+END;
+$$;
+
+-- Super-admin-only SELECT RPC for analytics
+CREATE OR REPLACE FUNCTION public.execute_custom_query(query_text text)
+RETURNS SETOF jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NOT public.is_current_user_super_admin() THEN
+    RAISE EXCEPTION 'Insufficient permissions';
+  END IF;
+
+  IF lower(trim(query_text)) NOT LIKE 'select%' THEN
+    RAISE EXCEPTION 'Only SELECT queries are allowed';
+  END IF;
+
+  RETURN QUERY EXECUTE format('SELECT to_jsonb(t) FROM (%s) AS t', query_text);
+END;
+$$;
 ```
 
 ## Row Level Security (RLS) Policies
@@ -658,6 +733,33 @@ CREATE POLICY "Admins have full access"
   ON table_name 
   FOR ALL 
   USING (public.is_current_user_admin());
+
+-- Subscription table policies
+CREATE POLICY "Tenant members can view tenant subscriptions"
+  ON public.tenant_subscriptions
+  FOR SELECT
+  USING (public.is_current_user_tenant_member(tenant_id) OR public.is_current_user_super_admin());
+
+CREATE POLICY "Tenant admins can manage tenant subscriptions"
+  ON public.tenant_subscriptions
+  FOR ALL
+  USING (public.is_current_user_tenant_admin(tenant_id))
+  WITH CHECK (public.is_current_user_tenant_admin(tenant_id));
+
+CREATE POLICY "Users can view their own subscriptions"
+  ON public.user_subscriptions
+  FOR SELECT
+  USING (
+    user_id = auth.uid()
+    OR public.is_current_user_tenant_admin(tenant_id)
+    OR public.is_current_user_super_admin()
+  );
+
+CREATE POLICY "Tenant admins can manage user subscriptions"
+  ON public.user_subscriptions
+  FOR ALL
+  USING (public.is_current_user_tenant_admin(tenant_id))
+  WITH CHECK (public.is_current_user_tenant_admin(tenant_id));
 ```
 
 ### Specific Table Policies
