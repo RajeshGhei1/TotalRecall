@@ -7,6 +7,36 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       ai_agents: {
@@ -586,7 +616,7 @@ export type Database = {
           entity_id: string | null
           entity_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           module_name: string | null
           new_values: Json | null
           old_values: Json | null
@@ -604,7 +634,7 @@ export type Database = {
           entity_id?: string | null
           entity_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           module_name?: string | null
           new_values?: Json | null
           old_values?: Json | null
@@ -622,7 +652,7 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           module_name?: string | null
           new_values?: Json | null
           old_values?: Json | null
@@ -1687,6 +1717,108 @@ export type Database = {
           },
         ]
       }
+      feature_events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          event_name: string
+          event_schema: Json
+          feature_id: string
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          event_name: string
+          event_schema?: Json
+          feature_id: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          event_name?: string
+          event_schema?: Json
+          feature_id?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      feature_interfaces: {
+        Row: {
+          created_at: string | null
+          feature_id: string
+          id: string
+          interface_path: string
+          interface_props: Json | null
+          interface_type: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_id: string
+          id?: string
+          interface_path: string
+          interface_props?: Json | null
+          interface_type: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_id?: string
+          id?: string
+          interface_path?: string
+          interface_props?: Json | null
+          interface_type?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      feature_usage_analytics: {
+        Row: {
+          created_at: string | null
+          feature_id: string
+          id: string
+          last_used_at: string | null
+          module_name: string
+          session_duration_minutes: number | null
+          tenant_id: string
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_id: string
+          id?: string
+          last_used_at?: string | null
+          module_name: string
+          session_duration_minutes?: number | null
+          tenant_id: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_id?: string
+          id?: string
+          last_used_at?: string | null
+          module_name?: string
+          session_duration_minutes?: number | null
+          tenant_id?: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       form_change_history: {
         Row: {
           change_reason: string | null
@@ -1696,7 +1828,7 @@ export type Database = {
           created_at: string
           form_id: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           session_id: string | null
@@ -1710,7 +1842,7 @@ export type Database = {
           created_at?: string
           form_id: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           session_id?: string | null
@@ -1724,7 +1856,7 @@ export type Database = {
           created_at?: string
           form_id?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           session_id?: string | null
@@ -2010,7 +2142,7 @@ export type Database = {
           event_type: string
           form_id: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           placement_id: string | null
           response_id: string | null
           session_id: string | null
@@ -2023,7 +2155,7 @@ export type Database = {
           event_type: string
           form_id: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           placement_id?: string | null
           response_id?: string | null
           session_id?: string | null
@@ -2036,7 +2168,7 @@ export type Database = {
           event_type?: string
           form_id?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           placement_id?: string | null
           response_id?: string | null
           session_id?: string | null
@@ -2718,6 +2850,78 @@ export type Database = {
           tenant_id?: string | null
           updated_at?: string | null
           version?: string
+        }
+        Relationships: []
+      }
+      module_features: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          dependencies: string[] | null
+          feature_category: string | null
+          feature_config: Json | null
+          feature_description: string | null
+          feature_id: string
+          feature_name: string
+          id: string
+          input_schema: Json | null
+          is_active: boolean | null
+          is_enabled_by_default: boolean | null
+          is_premium_feature: boolean | null
+          module_name: string
+          output_schema: Json | null
+          requirements: string[] | null
+          sort_order: number | null
+          tags: string[] | null
+          ui_component_path: string | null
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: string[] | null
+          feature_category?: string | null
+          feature_config?: Json | null
+          feature_description?: string | null
+          feature_id: string
+          feature_name: string
+          id?: string
+          input_schema?: Json | null
+          is_active?: boolean | null
+          is_enabled_by_default?: boolean | null
+          is_premium_feature?: boolean | null
+          module_name: string
+          output_schema?: Json | null
+          requirements?: string[] | null
+          sort_order?: number | null
+          tags?: string[] | null
+          ui_component_path?: string | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          dependencies?: string[] | null
+          feature_category?: string | null
+          feature_config?: Json | null
+          feature_description?: string | null
+          feature_id?: string
+          feature_name?: string
+          id?: string
+          input_schema?: Json | null
+          is_active?: boolean | null
+          is_enabled_by_default?: boolean | null
+          is_premium_feature?: boolean | null
+          module_name?: string
+          output_schema?: Json | null
+          requirements?: string[] | null
+          sort_order?: number | null
+          tags?: string[] | null
+          ui_component_path?: string | null
+          updated_at?: string | null
+          version?: string | null
         }
         Relationships: []
       }
@@ -3594,7 +3798,7 @@ export type Database = {
           changed_by: string | null
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           report_id: string
@@ -3608,7 +3812,7 @@ export type Database = {
           changed_by?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           report_id: string
@@ -3622,7 +3826,7 @@ export type Database = {
           changed_by?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           report_id?: string
@@ -3859,6 +4063,10 @@ export type Database = {
       }
       system_modules: {
         Row: {
+          ai_capabilities: string[] | null
+          ai_description: string | null
+          ai_features: Json | null
+          ai_level: string | null
           author: string | null
           auto_load: boolean | null
           can_unload: boolean | null
@@ -3892,10 +4100,15 @@ export type Database = {
           sandboxed: boolean | null
           services: Json | null
           subscription_tiers: Json | null
+          type: string
           updated_at: string
           version: string | null
         }
         Insert: {
+          ai_capabilities?: string[] | null
+          ai_description?: string | null
+          ai_features?: Json | null
+          ai_level?: string | null
           author?: string | null
           auto_load?: boolean | null
           can_unload?: boolean | null
@@ -3929,10 +4142,15 @@ export type Database = {
           sandboxed?: boolean | null
           services?: Json | null
           subscription_tiers?: Json | null
+          type?: string
           updated_at?: string
           version?: string | null
         }
         Update: {
+          ai_capabilities?: string[] | null
+          ai_description?: string | null
+          ai_features?: Json | null
+          ai_level?: string | null
           author?: string | null
           auto_load?: boolean | null
           can_unload?: boolean | null
@@ -3966,6 +4184,7 @@ export type Database = {
           sandboxed?: boolean | null
           services?: Json | null
           subscription_tiers?: Json | null
+          type?: string
           updated_at?: string
           version?: string | null
         }
@@ -4328,6 +4547,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_feature_overrides: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          feature_id: string
+          id: string
+          is_enabled: boolean
+          module_name: string
+          override_reason: string | null
+          override_type: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          feature_id: string
+          id?: string
+          is_enabled: boolean
+          module_name: string
+          override_reason?: string | null
+          override_type?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          feature_id?: string
+          id?: string
+          is_enabled?: boolean
+          module_name?: string
+          override_reason?: string | null
+          override_type?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tenant_outreach_configurations: {
         Row: {
           automation_workflows: Json | null
@@ -4562,7 +4823,7 @@ export type Database = {
           created_at: string | null
           id: string
           interaction_type: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           session_id: string | null
           tenant_id: string | null
@@ -4574,7 +4835,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           interaction_type: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           session_id?: string | null
           tenant_id?: string | null
@@ -4586,7 +4847,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           interaction_type?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           session_id?: string | null
           tenant_id?: string | null
@@ -4641,7 +4902,7 @@ export type Database = {
         Row: {
           device_info: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean | null
           last_activity_at: string | null
           login_at: string
@@ -4655,7 +4916,7 @@ export type Database = {
         Insert: {
           device_info?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity_at?: string | null
           login_at?: string
@@ -4669,7 +4930,7 @@ export type Database = {
         Update: {
           device_info?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity_at?: string | null
           login_at?: string
@@ -4974,107 +5235,83 @@ export type Database = {
       }
     }
     Functions: {
-      backfill_tr_ids: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      backfill_tr_ids: { Args: never; Returns: undefined }
       can_access_entity: {
-        Args: { p_entity_type: string; p_entity_id: string }
+        Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
       }
       check_password_policy_compliance: {
-        Args: { user_password_hash: string; user_id: string }
+        Args: { user_id: string; user_password_hash: string }
         Returns: boolean
       }
       cleanup_old_audit_logs: {
         Args: { retention_days?: number }
         Returns: number
       }
-      cleanup_old_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_old_sessions: { Args: never; Returns: number }
       create_user_profile: {
         Args: { user_email: string; user_full_name: string; user_role: string }
         Returns: string
       }
-      delete_test_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      delete_test_data: { Args: never; Returns: undefined }
       find_entity_by_tr_id: {
         Args: { p_tr_id: string }
         Returns: {
-          entity_type: string
           entity_id: string
           entity_name: string
+          entity_type: string
           tr_id: string
         }[]
       }
-      generate_tr_id: {
-        Args: { entity_prefix: string }
-        Returns: string
-      }
-      get_current_user_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_tr_id: { Args: { entity_prefix: string }; Returns: string }
+      get_current_user_id: { Args: never; Returns: string }
       get_next_version_number: {
-        Args: { p_entity_type: string; p_entity_id: string }
+        Args: { p_entity_id: string; p_entity_type: string }
         Returns: number
       }
       initialize_module_progress: {
         Args: { p_module_id: string; p_planning_data: Json }
         Returns: undefined
       }
-      is_current_user_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_current_user_super_admin: { Args: never; Returns: boolean }
+      is_super_admin: { Args: { user_id: string }; Returns: boolean }
       log_audit_event: {
         Args: {
-          p_user_id: string
-          p_tenant_id: string
           p_action: string
-          p_entity_type: string
+          p_additional_context?: Json
           p_entity_id?: string
-          p_old_values?: Json
-          p_new_values?: Json
+          p_entity_type: string
           p_ip_address?: unknown
-          p_user_agent?: string
+          p_module_name?: string
+          p_new_values?: Json
+          p_old_values?: Json
           p_session_id?: string
           p_severity?: string
-          p_module_name?: string
-          p_additional_context?: Json
+          p_tenant_id: string
+          p_user_agent?: string
+          p_user_id: string
         }
         Returns: string
       }
-      publish_version: {
-        Args: { p_version_id: string }
-        Returns: boolean
-      }
+      publish_version: { Args: { p_version_id: string }; Returns: boolean }
       resolve_user_subscription: {
-        Args: { p_user_id: string; p_tenant_id: string }
+        Args: { p_tenant_id: string; p_user_id: string }
         Returns: {
-          subscription_id: string
-          plan_id: string
-          status: string
           billing_cycle: string
-          subscription_type: string
-          starts_at: string
           ends_at: string
+          plan_id: string
+          starts_at: string
+          status: string
+          subscription_id: string
+          subscription_type: string
         }[]
       }
       update_module_progress: {
         Args: {
-          p_module_id: string
-          p_metric_type: string
           p_increment_value: number
           p_metadata?: Json
+          p_metric_type: string
+          p_module_id: string
         }
         Returns: undefined
       }
@@ -5117,23 +5354,532 @@ export type Database = {
       [_ in never]: never
     }
   }
+  storage: {
+    Tables: {
+      buckets: {
+        Row: {
+          allowed_mime_types: string[] | null
+          avif_autodetection: boolean | null
+          created_at: string | null
+          file_size_limit: number | null
+          id: string
+          name: string
+          owner: string | null
+          owner_id: string | null
+          public: boolean | null
+          type: Database["storage"]["Enums"]["buckettype"]
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id: string
+          name: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id?: string
+          name?: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      buckets_analytics: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          format: string
+          id: string
+          name: string
+          type: Database["storage"]["Enums"]["buckettype"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          format?: string
+          id?: string
+          name: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          format?: string
+          id?: string
+          name?: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      buckets_vectors: {
+        Row: {
+          created_at: string
+          id: string
+          type: Database["storage"]["Enums"]["buckettype"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          type?: Database["storage"]["Enums"]["buckettype"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      migrations: {
+        Row: {
+          executed_at: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Insert: {
+          executed_at?: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Update: {
+          executed_at?: string | null
+          hash?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      objects: {
+        Row: {
+          bucket_id: string | null
+          created_at: string | null
+          id: string
+          last_accessed_at: string | null
+          level: number | null
+          metadata: Json | null
+          name: string | null
+          owner: string | null
+          owner_id: string | null
+          path_tokens: string[] | null
+          updated_at: string | null
+          user_metadata: Json | null
+          version: string | null
+        }
+        Insert: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          level?: number | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          user_metadata?: Json | null
+          version?: string | null
+        }
+        Update: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          level?: number | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          user_metadata?: Json | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objects_bucketId_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prefixes: {
+        Row: {
+          bucket_id: string
+          created_at: string | null
+          level: number
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string | null
+          level?: number
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string | null
+          level?: number
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prefixes_bucketId_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      s3_multipart_uploads: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          in_progress_size: number
+          key: string
+          owner_id: string | null
+          upload_signature: string
+          user_metadata: Json | null
+          version: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          id: string
+          in_progress_size?: number
+          key: string
+          owner_id?: string | null
+          upload_signature: string
+          user_metadata?: Json | null
+          version: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          in_progress_size?: number
+          key?: string
+          owner_id?: string | null
+          upload_signature?: string
+          user_metadata?: Json | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      s3_multipart_uploads_parts: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          etag: string
+          id: string
+          key: string
+          owner_id: string | null
+          part_number: number
+          size: number
+          upload_id: string
+          version: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          etag: string
+          id?: string
+          key: string
+          owner_id?: string | null
+          part_number: number
+          size?: number
+          upload_id: string
+          version: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          etag?: string
+          id?: string
+          key?: string
+          owner_id?: string | null
+          part_number?: number
+          size?: number
+          upload_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "s3_multipart_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vector_indexes: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          data_type: string
+          dimension: number
+          distance_metric: string
+          id: string
+          metadata_configuration: Json | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          data_type: string
+          dimension: number
+          distance_metric: string
+          id?: string
+          metadata_configuration?: Json | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          data_type?: string
+          dimension?: number
+          distance_metric?: string
+          id?: string
+          metadata_configuration?: Json | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vector_indexes_bucket_id_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets_vectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      add_prefixes: {
+        Args: { _bucket_id: string; _name: string }
+        Returns: undefined
+      }
+      can_insert_object: {
+        Args: { bucketid: string; metadata: Json; name: string; owner: string }
+        Returns: undefined
+      }
+      delete_leaf_prefixes: {
+        Args: { bucket_ids: string[]; names: string[] }
+        Returns: undefined
+      }
+      delete_prefix: {
+        Args: { _bucket_id: string; _name: string }
+        Returns: boolean
+      }
+      extension: { Args: { name: string }; Returns: string }
+      filename: { Args: { name: string }; Returns: string }
+      foldername: { Args: { name: string }; Returns: string[] }
+      get_level: { Args: { name: string }; Returns: number }
+      get_prefix: { Args: { name: string }; Returns: string }
+      get_prefixes: { Args: { name: string }; Returns: string[] }
+      get_size_by_bucket: {
+        Args: never
+        Returns: {
+          bucket_id: string
+          size: number
+        }[]
+      }
+      list_multipart_uploads_with_delimiter: {
+        Args: {
+          bucket_id: string
+          delimiter_param: string
+          max_keys?: number
+          next_key_token?: string
+          next_upload_token?: string
+          prefix_param: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          key: string
+        }[]
+      }
+      list_objects_with_delimiter: {
+        Args: {
+          bucket_id: string
+          delimiter_param: string
+          max_keys?: number
+          next_token?: string
+          prefix_param: string
+          start_after?: string
+        }
+        Returns: {
+          id: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
+      lock_top_prefixes: {
+        Args: { bucket_ids: string[]; names: string[] }
+        Returns: undefined
+      }
+      operation: { Args: never; Returns: string }
+      search: {
+        Args: {
+          bucketname: string
+          levels?: number
+          limits?: number
+          offsets?: number
+          prefix: string
+          search?: string
+          sortcolumn?: string
+          sortorder?: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          last_accessed_at: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
+      search_legacy_v1: {
+        Args: {
+          bucketname: string
+          levels?: number
+          limits?: number
+          offsets?: number
+          prefix: string
+          search?: string
+          sortcolumn?: string
+          sortorder?: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          last_accessed_at: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
+      search_v1_optimised: {
+        Args: {
+          bucketname: string
+          levels?: number
+          limits?: number
+          offsets?: number
+          prefix: string
+          search?: string
+          sortcolumn?: string
+          sortorder?: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          last_accessed_at: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
+      search_v2: {
+        Args: {
+          bucket_name: string
+          levels?: number
+          limits?: number
+          prefix: string
+          sort_column?: string
+          sort_column_after?: string
+          sort_order?: string
+          start_after?: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          key: string
+          last_accessed_at: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
+    }
+    Enums: {
+      buckettype: "STANDARD" | "ANALYTICS" | "VECTOR"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -5151,14 +5897,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -5174,14 +5922,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -5197,14 +5947,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -5212,19 +5964,24 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       ai_agent_status: ["active", "inactive", "training", "error"],
@@ -5263,6 +6020,11 @@ export const Constants = {
         "manual",
       ],
       user_role: ["user", "tenant_admin", "super_admin"],
+    },
+  },
+  storage: {
+    Enums: {
+      buckettype: ["STANDARD", "ANALYTICS", "VECTOR"],
     },
   },
 } as const
