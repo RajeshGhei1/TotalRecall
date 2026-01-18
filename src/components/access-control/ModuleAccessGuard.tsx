@@ -57,12 +57,25 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
     user?.id
   );
 
+  const accessRank: Record<'view' | 'edit' | 'admin', number> = {
+    view: 1,
+    edit: 2,
+    admin: 3,
+  };
+
+  const resolvedAccessLevel =
+    (accessResult?.accessLevel as 'view' | 'edit' | 'admin' | undefined) ?? 'view';
+
+  const hasRequiredAccess =
+    !!accessResult?.hasAccess &&
+    accessRank[resolvedAccessLevel] >= accessRank[requiredAccess];
+
   // Log access attempt
   React.useEffect(() => {
-    if (accessResult && user && currentTenantId) {
+  if (accessResult && user && currentTenantId) {
       const logAccess = async () => {
         try {
-          const accessType = accessResult.hasAccess ? 'allowed' : 'denied';
+          const accessType = hasRequiredAccess ? 'allowed' : 'denied';
 
           await ModuleAccessService.logModuleAccess(
             currentTenantId,
@@ -88,7 +101,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
     );
   }
 
-  if (!accessResult?.hasAccess) {
+  if (!hasRequiredAccess) {
     if (fallback) {
       return <>{fallback}</>;
     }
@@ -101,7 +114,7 @@ const ModuleAccessGuard: React.FC<ModuleAccessGuardProps> = ({
           </div>
           <CardTitle className="text-xl">Subscription Required</CardTitle>
           <p className="text-muted-foreground">
-            Access to "{moduleName.replace('_', ' ')}" requires an active subscription
+            Access to "{moduleName.replace(/_/g, ' ')}" requires an active subscription
           </p>
         </CardHeader>
         <CardContent className="text-center space-y-4">

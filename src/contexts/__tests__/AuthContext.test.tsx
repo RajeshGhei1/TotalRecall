@@ -37,17 +37,26 @@ const TestComponent: React.FC = () => {
       <div data-testid="bypass">{bypassAuth ? 'bypass' : 'no-bypass'}</div>
       <button 
         data-testid="signin-btn" 
-        onClick={() => signIn('test@example.com', 'password')}
+        onClick={() => {
+          void signIn('test@example.com', 'password').catch(() => {});
+        }}
       >
         Sign In
       </button>
       <button 
         data-testid="signup-btn" 
-        onClick={() => signUp('test@example.com', 'password', 'Test User')}
+        onClick={() => {
+          void signUp('test@example.com', 'password', 'Test User').catch(() => {});
+        }}
       >
         Sign Up
       </button>
-      <button data-testid="signout-btn" onClick={() => signOut()}>
+      <button
+        data-testid="signout-btn"
+        onClick={() => {
+          void signOut().catch(() => {});
+        }}
+      >
         Sign Out
       </button>
     </div>
@@ -80,6 +89,15 @@ describe('AuthContext', () => {
     Object.defineProperty(window, 'location', {
       value: { origin: 'http://localhost:3000' },
       writable: true,
+    });
+
+    const mockSubscription = { unsubscribe: vi.fn() };
+    (supabase.auth.onAuthStateChange as unknown).mockReturnValue({
+      data: { subscription: mockSubscription },
+    });
+    (supabase.auth.getSession as unknown).mockResolvedValue({
+      data: { session: null },
+      error: null,
     });
   });
 
@@ -302,7 +320,9 @@ describe('AuthContext', () => {
         signInButton.click();
       });
 
-      expect(supabase.from).toHaveBeenCalledWith('profiles');
+      await waitFor(() => {
+        expect(supabase.from).toHaveBeenCalledWith('profiles');
+      });
     });
 
     it('should redirect tenant admin to tenant admin dashboard', async () => {
@@ -327,7 +347,9 @@ describe('AuthContext', () => {
         signInButton.click();
       });
 
-      expect(supabase.from).toHaveBeenCalledWith('profiles');
+      await waitFor(() => {
+        expect(supabase.from).toHaveBeenCalledWith('profiles');
+      });
     });
 
     it('should handle role check error gracefully', async () => {
@@ -352,7 +374,9 @@ describe('AuthContext', () => {
         signInButton.click();
       });
 
-      expect(supabase.from).toHaveBeenCalledWith('profiles');
+      await waitFor(() => {
+        expect(supabase.from).toHaveBeenCalledWith('profiles');
+      });
     });
   });
 
@@ -377,8 +401,15 @@ describe('AuthContext', () => {
 
       render(<TestComponent />, { wrapper: createWrapper() });
 
+      await waitFor(() => {
+        expect(authStateCallback).toBeDefined();
+      });
+
       await act(async () => {
-        authStateCallback('SIGNED_IN', mockSession);
+        (authStateCallback as (event: string, session: typeof mockSession | null) => void)(
+          'SIGNED_IN',
+          mockSession
+        );
       });
 
       await waitFor(() => {
@@ -455,7 +486,9 @@ describe('AuthContext', () => {
         signInButton.click();
       });
 
-      expect(supabase.from).toHaveBeenCalledWith('profiles');
+      await waitFor(() => {
+        expect(supabase.from).toHaveBeenCalledWith('profiles');
+      });
     });
   });
 

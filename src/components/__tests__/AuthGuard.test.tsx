@@ -4,12 +4,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach, afterEach, Mock } from 'vitest';
 import AuthGuard from '../AuthGuard';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 
 // Mock the hooks
-vi.mock('@/contexts/AuthContext');
+vi.mock('@/contexts/AuthContext', async () => {
+  const actual = await vi.importActual<typeof import('@/contexts/AuthContext')>('@/contexts/AuthContext');
+  return {
+    ...actual,
+    useAuth: vi.fn(),
+  };
+});
 vi.mock('@/hooks/useSuperAdminCheck');
 vi.mock('@/hooks/use-toast', () => ({
   toast: vi.fn(),
@@ -62,9 +67,7 @@ const createWrapper = (initialEntries = ['/protected']) => {
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={initialEntries}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        {children}
       </MemoryRouter>
     </QueryClientProvider>
   );
@@ -317,14 +320,22 @@ describe('AuthGuard', () => {
       });
 
       render(
-        <AuthGuard requiresSuperAdmin>
-          <TestComponent />
-        </AuthGuard>,
+        <Routes>
+          <Route
+            path="/protected"
+            element={
+              <AuthGuard requiresSuperAdmin>
+                <TestComponent />
+              </AuthGuard>
+            }
+          />
+          <Route path="/" element={<div data-testid="home-page">Home Page</div>} />
+        </Routes>,
         { wrapper: createWrapper() }
       );
 
-      // The error should be handled by the toast system
-      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+      // The error should be handled by the toast system and redirect to home
+      expect(screen.getByTestId('home-page')).toBeInTheDocument();
     });
   });
 
@@ -403,14 +414,22 @@ describe('AuthGuard', () => {
       });
 
       render(
-        <AuthGuard requiresSuperAdmin>
-          <TestComponent />
-        </AuthGuard>,
+        <Routes>
+          <Route
+            path="/protected"
+            element={
+              <AuthGuard requiresSuperAdmin>
+                <TestComponent />
+              </AuthGuard>
+            }
+          />
+          <Route path="/" element={<div data-testid="home-page">Home Page</div>} />
+        </Routes>,
         { wrapper: createWrapper() }
       );
 
-      // Should still show content but with error handling
-      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+      // Should redirect to home while error toast is handled
+      expect(screen.getByTestId('home-page')).toBeInTheDocument();
     });
   });
 

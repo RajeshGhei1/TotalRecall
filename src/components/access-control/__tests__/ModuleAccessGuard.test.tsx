@@ -7,6 +7,7 @@ import ModuleAccessGuard from '../ModuleAccessGuard';
 import { useUnifiedModuleAccess } from '@/hooks/subscriptions/useUnifiedModuleAccess';
 import { useAuth } from '@/contexts/AuthContext';
 import { ModuleAccessService } from '@/services/moduleAccessService';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock the hooks and services
 vi.mock('@/hooks/subscriptions/useUnifiedModuleAccess');
@@ -92,6 +93,17 @@ describe('ModuleAccessGuard', () => {
     });
 
     mockModuleAccessService.logModuleAccess = vi.fn().mockResolvedValue(undefined);
+
+    (supabase.from as unknown).mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { tenant_id: 'tenant-123' },
+            error: null,
+          }),
+        }),
+      }),
+    });
   });
 
   afterEach(() => {
@@ -112,7 +124,7 @@ describe('ModuleAccessGuard', () => {
         { wrapper: createWrapper() }
       );
 
-      expect(screen.getByRole('status')).toBeInTheDocument(); // Loading spinner
+      expect(document.querySelector('svg.lucide-loader-circle')).toBeInTheDocument();
       expect(screen.queryByTestId('module-content')).not.toBeInTheDocument();
     });
 
