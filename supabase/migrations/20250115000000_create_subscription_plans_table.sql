@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS public.subscription_plans (
   is_active BOOLEAN DEFAULT true,
   plan_type TEXT NOT NULL CHECK (plan_type IN ('recruitment', 'employer', 'talent')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(name)
 );
 
 -- Create indexes for better performance

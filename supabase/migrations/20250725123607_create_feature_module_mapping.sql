@@ -98,7 +98,7 @@ CREATE POLICY "Tenant admins can view their feature overrides"
   USING (
     tenant_id IN (
       SELECT tenant_id FROM public.user_tenants 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')
+      WHERE user_id = auth.uid() AND user_role IN ('tenant_admin', 'super_admin')
     )
   );
 
@@ -108,7 +108,7 @@ CREATE POLICY "Tenant admins can manage their feature overrides"
   USING (
     tenant_id IN (
       SELECT tenant_id FROM public.user_tenants 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')
+      WHERE user_id = auth.uid() AND user_role IN ('tenant_admin', 'super_admin')
     )
   );
 
@@ -173,6 +173,19 @@ CREATE TRIGGER trigger_update_tenant_feature_overrides_updated_at
     FOR EACH ROW EXECUTE FUNCTION public.update_tenant_feature_overrides_updated_at();
 
 -- Populate with current implemented features from TotalRecall
+-- Ensure referenced modules exist in system_modules
+INSERT INTO public.system_modules (name, description, category, is_active, version, default_limits)
+VALUES
+  ('forms_templates', 'Forms and templates', 'forms', true, '1.0.0', '{}'::jsonb),
+  ('analytics', 'Analytics', 'analytics', true, '1.0.0', '{}'::jsonb),
+  ('data_management', 'Data management', 'data', true, '1.0.0', '{}'::jsonb),
+  ('integrations', 'Integrations', 'integrations', true, '1.0.0', '{}'::jsonb),
+  ('ai_core', 'AI core', 'ai', true, '1.0.0', '{}'::jsonb),
+  ('ats_core', 'ATS core', 'recruitment', true, '1.0.0', '{}'::jsonb),
+  ('companies', 'Companies', 'crm', true, '1.0.0', '{}'::jsonb),
+  ('people', 'People', 'crm', true, '1.0.0', '{}'::jsonb)
+ON CONFLICT (name) DO NOTHING;
+
 INSERT INTO public.module_features (module_name, feature_id, feature_name, feature_description, feature_category, is_premium_feature, sort_order) VALUES
 
 -- Forms & Templates Module Features
