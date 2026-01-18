@@ -81,26 +81,18 @@ const Users = () => {
 
   const createMutation = useMutation({
     mutationFn: async (values: UserFormValues) => {
-      // First, create the auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: values.email,
-        email_confirm: true,
-        user_metadata: { full_name: values.full_name },
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: values.email,
+          fullName: values.full_name,
+          role: values.role,
+        },
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
+      if (!data?.user) throw new Error("User was not created");
 
-      // Update the role in profiles table if needed (the trigger should have created the profile)
-      if (values.role !== "user") {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ role: values.role })
-          .eq("id", authData.user.id);
-          
-        if (updateError) throw updateError;
-      }
-
-      return authData.user;
+      return data.user;
     },
     onSuccess: () => {
       toast({
@@ -159,12 +151,11 @@ const Users = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Delete the user from auth (this will cascade delete the profile too)
-      const { error } = await supabase.auth.admin.deleteUser(id);
+      const { error } = await supabase.functions.invoke("delete-user", {
+        body: { userId: id },
+      });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
       toast({
