@@ -1,0 +1,178 @@
+category_serial,category_row_serial,category_total,category,group,item,details,status,implementation_level,scope
+1,1,15,Core Capability,Access Control,Subscription Plans,Grant module access; gates features via module access,implemented,complete,full_e2e
+1,2,15,Core Capability,Access Control,Module Access,Primary gate for apps/modules; check_module_access,implemented,complete,full_e2e
+1,3,15,Core Capability,Access Control,Feature Access,Module features + tenant overrides; module_features,implemented,complete,full_e2e
+1,4,15,Core Capability,Access Control,Tenant Overrides,tenant_feature_overrides enable/disable features per tenant,implemented,complete,full_e2e
+1,5,15,Core Capability,Security,Auth & RBAC,profiles/user_tenants/user_roles; role checks,implemented,complete,full_e2e
+1,6,15,Core Capability,Security,Multi-tenancy,tenant isolation via RLS and tenant_id scoping,implemented,complete,full_e2e
+1,7,15,Core Capability,Security,Audit Logging,audit_logs and audit hooks,implemented,complete,full_e2e
+1,8,15,Core Capability,Collaboration,Realtime Presence,real_time_sessions and subscriptions,implemented,complete,full_e2e
+1,9,15,Core Capability,Collaboration,Realtime Notifications,real_time_notifications and subscriptions,implemented,complete,full_e2e
+1,10,15,Core Capability,Versioning,Entity Versioning,entity_versions history,implemented,complete,full_e2e
+1,11,15,Core Capability,Versioning,Approval Workflows,workflow_approvals,implemented,complete,full_e2e
+1,12,15,Core Capability,Analytics,Feature Usage,feature_usage_analytics,implemented,complete,full_e2e
+1,13,15,Core Capability,Billing,Subscription Access,tenant_subscriptions/module_permissions,implemented,complete,full_e2e
+1,14,15,Core Capability,Data,Import/Export,data import/export features and dialogs,implemented,partial,full_e2e
+1,15,15,Core Capability,AI,AI Infrastructure,ai_* tables and AI services,in_development,partial,safety_only
+2,1,5,Navigation,Super Admin Sections,Dashboard & Overview,"Dashboard, Core Dashboard, Dashboard Widget, User Activity",implemented,complete,full_e2e
+2,2,5,Navigation,Super Admin Sections,Super Admin Modules,"System Administration Suite, Module Registry & Deployment, Enterprise Monitoring & Audit",implemented,complete,full_e2e
+2,3,5,Navigation,Super Admin Sections,Tenant Management,"Tenants, Tenant Users, Subscription Plans",implemented,complete,full_e2e
+2,4,5,Navigation,Super Admin Sections,System Configuration,"Feature Management, App Development, Global Settings, System Settings, Cognitive Assistance, Knowledge Synthesis, Workflow Automation",implemented,complete,full_e2e
+2,5,5,Navigation,Super Admin Sections,Monitoring & Security,"Enterprise Monitoring & Audit, Security Dashboard, Audit Logs, Documentation",implemented,complete,full_e2e
+3,1,68,App,super_admin,Cognitive Assistance,AI-powered user assistance and smart suggestions,in_development,partial,safety_only
+3,2,68,App,super_admin,Core Dashboard,Essential dashboard functionality with basic analytics and overview,implemented,complete,full_e2e
+3,3,68,App,super_admin,dashboard-widget,Reusable dashboard widget components.,in_development,partial,safety_only
+3,4,68,App,super_admin,Enterprise Monitoring & Audit,"System-wide monitoring, audit trails, compliance reporting, and security analytics",planning,metadata,safety_only
+3,5,68,App,super_admin,Knowledge Synthesis,Cross-domain intelligent knowledge management,in_development,partial,safety_only
+3,6,68,App,super_admin,Module Registry & Deployment,"Module discovery, registration, deployment, and lifecycle management across the platform",planning,metadata,safety_only
+3,7,68,App,super_admin,System Administration Suite,"Comprehensive system administration including user management, security policies, and global configuration",planning,metadata,safety_only
+3,8,68,App,super_admin,Workflow Automation,AI-driven process optimization and automation,in_development,partial,safety_only
+3,9,68,App,foundation,AI Core Foundation,"Core AI infrastructure providing agent orchestration, cognitive services, and machine learning capabilities",in_development,partial,safety_only
+3,10,68,App,foundation,AI Orchestration,Core AI agent coordination and management system,implemented,complete,full_e2e
+3,11,68,App,foundation,ai_analytics,Behavioral Intelligence System - Real-time user interaction tracking and AI-powered personalization,in_development,partial,safety_only
+3,12,68,App,foundation,Analytics Foundation,"Core analytics infrastructure providing dashboards, reporting, and data visualization capabilities",in_development,partial,safety_only
+3,13,68,App,foundation,Communication Foundation,"Core communication infrastructure for email, messaging, notifications, and multi-channel communication",planning,metadata,safety_only
+3,14,68,App,foundation,companies,Company management and related features.,implemented,complete,full_e2e
+3,15,68,App,foundation,document_parsing,"AI-powered document parsing for resumes, job descriptions, and candidate profile extraction",in_development,partial,safety_only
+3,16,68,App,foundation,Email Communication,Email sending and template management capabilities,in_development,partial,safety_only
+3,17,68,App,foundation,email_automation,"Advanced email features including tracking, custom signatures, automated campaigns, and enhanced templates",in_development,partial,safety_only
+3,18,68,App,foundation,email-management,Handles transactional and system email services.,in_development,partial,safety_only
+3,19,68,App,foundation,Integration Foundation,"Core integration infrastructure for APIs, third-party systems, and real-time collaboration",planning,metadata,safety_only
+3,20,68,App,foundation,people,People and contact management features.,testing,partial,safety_only
+3,21,68,App,foundation,supply_chain_management,"Supplier management, procurement, and supply chain optimization",planning,metadata,safety_only
+3,22,68,App,foundation,training_management,"Employee training, certification tracking, and skill development",in_development,partial,safety_only
+3,23,68,App,business,Advanced Analytics,Comprehensive analytics with custom reports and data visualization,testing,partial,safety_only
+3,24,68,App,business,Advanced Business Analytics,"Advanced business analytics with AI-powered insights, predictive modeling, and business intelligence",in_development,partial,safety_only
+3,25,68,App,business,analytics-panel,Analytics dashboard and reporting features.,in_development,partial,safety_only
+3,26,68,App,business,api_connectors,"Custom API integrations, database connections, and webhook notifications for external system connectivity",inactive,inactive,inactive
+3,27,68,App,business,ATS Core,Applicant tracking system with job posting and candidate management,implemented,complete,full_e2e
+3,28,68,App,business,Behavioral Analytics,User behavior analysis and pattern recognition,inactive,inactive,inactive
+3,29,68,App,business,billing_integrations,"Integration with billing and accounting platforms like Stripe, QuickBooks, and Xero for automated invoicing",in_development,partial,safety_only
+3,30,68,App,business,business_intelligence,"Advanced business analytics, reporting, and data visualization",planning,metadata,safety_only
+3,31,68,App,business,communication_platforms,"Integration with communication platforms like Slack, Teams, WhatsApp, and SMS for candidate messaging and team notifications",in_development,partial,safety_only
+3,32,68,App,business,compliance_management,"Regulatory compliance, audit trails, and governance tools",planning,metadata,safety_only
+3,33,68,App,business,contact-form,Contact form creation and management.,in_development,partial,safety_only
+3,34,68,App,business,customer_lifecycle,Customer lifecycle management and retention tracking,planning,metadata,safety_only
+3,35,68,App,business,customer_support,"Help desk, ticket management, and customer service tools",planning,metadata,safety_only
+3,36,68,App,business,Enterprise Integration Suite,"Specialized business integrations including LinkedIn, CRM systems, and communication platforms",planning,metadata,safety_only
+3,37,68,App,business,Enterprise Workflow Engine,Advanced workflow automation and business process management with AI-powered optimization,planning,metadata,safety_only
+3,38,68,App,business,Financial Operations Suite,"Comprehensive financial management including billing, invoicing, and purchase order processing",planning,metadata,safety_only
+3,39,68,App,business,financial_operations,"Billing, invoicing, payment processing, and financial management",planning,metadata,safety_only
+3,40,68,App,business,fulfillment_logistics,"Order fulfillment, shipping, and logistics management",planning,metadata,safety_only
+3,41,68,App,business,integration_hub,"Third-party integrations, API management, and data synchronization",planning,metadata,safety_only
+3,42,68,App,business,inventory_management,"Product catalog, stock management, and inventory tracking",planning,metadata,safety_only
+3,43,68,App,business,knowledge_management,"Document management, knowledge base, and information sharing",planning,metadata,safety_only
+3,44,68,App,business,lead_management,"Lead capture, scoring, nurturing, and qualification system",planning,metadata,safety_only
+3,45,68,App,business,LinkedIn Integration,LinkedIn API integration for talent sourcing and outreach,in_development,partial,safety_only
+3,46,68,App,business,market_intelligence,"Market research, competitive analysis, and industry insights",planning,metadata,safety_only
+3,47,68,App,business,Marketing Automation Suite,"Comprehensive marketing automation with campaigns, social media, and market intelligence",planning,metadata,safety_only
+3,48,68,App,business,marketing_automation,"Marketing campaigns, email marketing, and automation workflows",planning,metadata,safety_only
+3,49,68,App,business,Operations Management Suite,"Comprehensive operations management including inventory, supply chain, and operational analytics",planning,metadata,safety_only
+3,50,68,App,business,order_management,"Order processing, tracking, and management system",planning,metadata,safety_only
+3,51,68,App,business,outreach_automation,"Automated outreach campaigns, template management, and multi-channel candidate engagement",in_development,partial,safety_only
+3,52,68,App,business,predictive_analytics,"Predictive modeling, forecasting, and trend analysis",planning,metadata,safety_only
+3,53,68,App,business,Project & Resource Management,"Comprehensive project management with resource planning, workflow design, and collaboration tools",planning,metadata,safety_only
+3,54,68,App,business,project_management,"Project planning, task management, and collaboration tools",planning,metadata,safety_only
+3,55,68,App,business,purchase_order_processing,"Purchase order creation, approval workflows, and vendor management",planning,metadata,safety_only
+3,56,68,App,business,quality_management,"Quality assurance, testing, and continuous improvement",planning,metadata,safety_only
+3,57,68,App,business,resource_planning,"Resource allocation, capacity planning, and utilization tracking",planning,metadata,safety_only
+3,58,68,App,business,Sales & CRM Suite,Comprehensive sales and customer relationship management with pipeline tracking and analytics,planning,metadata,safety_only
+3,59,68,App,business,sales_pipeline,"Sales pipeline management with opportunities, deals, and forecasting",planning,metadata,safety_only
+3,60,68,App,business,service_management,"Service delivery, maintenance, and field service management",planning,metadata,safety_only
+3,61,68,App,business,simple-test-1751910410803,Simple test,planning,metadata,safety_only
+3,62,68,App,business,smart-talent-analytics,Advanced talent analytics and insights.,in_development,partial,safety_only
+3,63,68,App,business,Social Media Outreach,Multi-platform social media management and outreach,in_development,partial,safety_only
+3,64,68,App,business,social_media_integration,"Integration with social media platforms including Instagram, LinkedIn, Facebook, Twitter, and Canva for job posting and company branding",in_development,partial,safety_only
+3,65,68,App,business,Talent Database,Comprehensive talent management and skills tracking,implemented,complete,full_e2e
+3,66,68,App,business,Test,testing,in_development,partial,safety_only
+3,67,68,App,business,video_conferencing,Integration with video conferencing platforms like Zoom and Google Meet for interview scheduling and management,in_development,partial,safety_only
+3,68,68,App,business,workflow_engine,Business process automation and workflow management,planning,metadata,safety_only
+4,1,72,Consolidated Feature,core_infrastructure,Multi-tenant Isolation,multi-tenant-isolation,implemented,complete,full_e2e
+4,2,72,Consolidated Feature,core_infrastructure,Real-time Synchronization,real-time-sync,implemented,complete,full_e2e
+4,3,72,Consolidated Feature,core_infrastructure,Data Security & Encryption,data-security,implemented,complete,full_e2e
+4,4,72,Consolidated Feature,core_infrastructure,Audit Trail & Logging,audit-logging,implemented,complete,full_e2e
+4,5,72,Consolidated Feature,core_infrastructure,API Access & Webhooks,api-webhooks,implemented,complete,full_e2e
+4,6,72,Consolidated Feature,core_infrastructure,Performance Monitoring,performance-monitoring,implemented,complete,full_e2e
+4,7,72,Consolidated Feature,core_infrastructure,Backup & Recovery,backup-recovery,planned,metadata,safety_only
+4,8,72,Consolidated Feature,core_infrastructure,Scalability Management,scalability-management,planned,metadata,safety_only
+4,9,72,Consolidated Feature,user_access_management,User Authentication,user-authentication,implemented,complete,full_e2e
+4,10,72,Consolidated Feature,user_access_management,Role-based Access Control,role-permissions,implemented,complete,full_e2e
+4,11,72,Consolidated Feature,user_access_management,User Profile Management,user-profiles,implemented,complete,full_e2e
+4,12,72,Consolidated Feature,user_access_management,Team & Group Management,team-management,implemented,complete,full_e2e
+4,13,72,Consolidated Feature,user_access_management,Single Sign-On (SSO),sso-integration,planned,metadata,safety_only
+4,14,72,Consolidated Feature,user_access_management,Multi-factor Authentication,multi-factor-auth,planned,metadata,safety_only
+4,15,72,Consolidated Feature,user_access_management,Session Management,session-management,implemented,complete,full_e2e
+4,16,72,Consolidated Feature,data_management,Data Import & Export,data-import-export,implemented,complete,full_e2e
+4,17,72,Consolidated Feature,data_management,Data Validation & Cleaning,data-validation,implemented,complete,full_e2e
+4,18,72,Consolidated Feature,data_management,Duplicate Detection & Merging,duplicate-detection,planned,metadata,safety_only
+4,19,72,Consolidated Feature,data_management,Data Archiving & Retention,data-archiving,planned,metadata,safety_only
+4,20,72,Consolidated Feature,data_management,Custom Field Management,custom-fields,implemented,complete,full_e2e
+4,21,72,Consolidated Feature,data_management,Data Relationships & Linking,data-relationships,planned,metadata,safety_only
+4,22,72,Consolidated Feature,data_management,Advanced Search & Filtering,search-filtering,implemented,complete,full_e2e
+4,23,72,Consolidated Feature,data_management,Data Visualization,data-visualization,implemented,complete,full_e2e
+4,24,72,Consolidated Feature,communication_engagement,Email Management System,email-management,implemented,complete,full_e2e
+4,25,72,Consolidated Feature,communication_engagement,Template Management,template-management,implemented,complete,full_e2e
+4,26,72,Consolidated Feature,communication_engagement,Email Automation & Sequences,email-automation,planned,metadata,safety_only
+4,27,72,Consolidated Feature,communication_engagement,Email Tracking & Analytics,email-analytics,planned,metadata,safety_only
+4,28,72,Consolidated Feature,communication_engagement,SMS & Multi-channel Messaging,sms-messaging,planned,metadata,safety_only
+4,29,72,Consolidated Feature,communication_engagement,Notification Management,notification-system,implemented,complete,full_e2e
+4,30,72,Consolidated Feature,communication_engagement,Communication History,communication-history,implemented,complete,full_e2e
+4,31,72,Consolidated Feature,analytics_intelligence,Dashboard Builder,dashboard-builder,implemented,complete,full_e2e
+4,32,72,Consolidated Feature,analytics_intelligence,Report Builder,report-builder,implemented,complete,full_e2e
+4,33,72,Consolidated Feature,analytics_intelligence,KPI Tracking & Alerts,kpi-tracking,planned,metadata,safety_only
+4,34,72,Consolidated Feature,analytics_intelligence,Data Export & Sharing,data-export,implemented,complete,full_e2e
+4,35,72,Consolidated Feature,analytics_intelligence,Real-time Analytics,real-time-analytics,planned,metadata,safety_only
+4,36,72,Consolidated Feature,analytics_intelligence,Custom Metrics & Calculations,custom-metrics,planned,metadata,safety_only
+4,37,72,Consolidated Feature,sales_crm,Lead Management,lead-management,planned,metadata,safety_only
+4,38,72,Consolidated Feature,sales_crm,Sales Pipeline Management,sales-pipeline,planned,metadata,safety_only
+4,39,72,Consolidated Feature,sales_crm,Contact & Account Management,contact-management,implemented,complete,full_e2e
+4,40,72,Consolidated Feature,sales_crm,Opportunity Tracking,opportunity-tracking,planned,metadata,safety_only
+4,41,72,Consolidated Feature,sales_crm,Sales Activity Tracking,sales-activity,planned,metadata,safety_only
+4,42,72,Consolidated Feature,sales_crm,Customer Support Integration,customer-support,planned,metadata,safety_only
+4,43,72,Consolidated Feature,marketing_campaigns,Campaign Management,campaign-management,planned,metadata,safety_only
+4,44,72,Consolidated Feature,marketing_campaigns,Audience Segmentation,audience-segmentation,planned,metadata,safety_only
+4,45,72,Consolidated Feature,marketing_campaigns,Content Management,content-management,planned,metadata,safety_only
+4,46,72,Consolidated Feature,marketing_campaigns,Landing Page Builder,landing-pages,planned,metadata,safety_only
+4,47,72,Consolidated Feature,marketing_campaigns,Social Media Integration,social-media,planned,metadata,safety_only
+4,48,72,Consolidated Feature,marketing_campaigns,Marketing Analytics,marketing-analytics,planned,metadata,safety_only
+4,49,72,Consolidated Feature,project_workflow,Project Management,project-management,planned,metadata,safety_only
+4,50,72,Consolidated Feature,project_workflow,Task Management,task-management,planned,metadata,safety_only
+4,51,72,Consolidated Feature,project_workflow,Workflow Automation,workflow-automation,planned,metadata,safety_only
+4,52,72,Consolidated Feature,project_workflow,Time Tracking,time-tracking,planned,metadata,safety_only
+4,53,72,Consolidated Feature,project_workflow,Resource Management,resource-management,planned,metadata,safety_only
+4,54,72,Consolidated Feature,project_workflow,Gantt Charts & Timeline,gantt-charts,planned,metadata,safety_only
+4,55,72,Consolidated Feature,forms_templates,Form Builder,form-builder,implemented,complete,full_e2e
+4,56,72,Consolidated Feature,forms_templates,Form Templates,form-templates,implemented,complete,full_e2e
+4,57,72,Consolidated Feature,forms_templates,Advanced Form Validation,form-validation,implemented,complete,full_e2e
+4,58,72,Consolidated Feature,forms_templates,Form Analytics,form-analytics,planned,metadata,safety_only
+4,59,72,Consolidated Feature,forms_templates,Conditional Logic,conditional-logic,implemented,complete,full_e2e
+4,60,72,Consolidated Feature,forms_templates,Form Submission Management,form-submissions,implemented,complete,full_e2e
+4,61,72,Consolidated Feature,integration_api,API Management,api-management,implemented,complete,full_e2e
+4,62,72,Consolidated Feature,integration_api,Webhook System,webhook-system,implemented,complete,full_e2e
+4,63,72,Consolidated Feature,integration_api,Third-party Integrations,third-party-integrations,planned,metadata,safety_only
+4,64,72,Consolidated Feature,integration_api,Data Synchronization,data-sync,planned,metadata,safety_only
+4,65,72,Consolidated Feature,integration_api,API Security,api-security,implemented,complete,full_e2e
+4,66,72,Consolidated Feature,integration_api,Integration Marketplace,integration-marketplace,planned,metadata,safety_only
+4,67,72,Consolidated Feature,collaboration,Team Collaboration,team-collaboration,planned,metadata,safety_only
+4,68,72,Consolidated Feature,collaboration,Real-time Chat,real-time-chat,planned,metadata,safety_only
+4,69,72,Consolidated Feature,collaboration,File Sharing,file-sharing,planned,metadata,safety_only
+4,70,72,Consolidated Feature,collaboration,Comments & Annotations,comments-annotations,planned,metadata,safety_only
+4,71,72,Consolidated Feature,collaboration,Activity Feeds,activity-feeds,planned,metadata,safety_only
+4,72,72,Consolidated Feature,collaboration,Shared Calendars,shared-calendars,planned,metadata,safety_only
+5,1,17,Module Feature Mapping,forms_templates,form-builder,Form builder feature,seeded,mapping,mapping
+5,2,17,Module Feature Mapping,forms_templates,custom-fields,Custom fields feature,seeded,mapping,mapping
+5,3,17,Module Feature Mapping,forms_templates,dropdown-options-management,Dropdown options feature,seeded,mapping,mapping
+5,4,17,Module Feature Mapping,forms_templates,smart-form-suggestions,Premium feature,seeded,mapping,mapping
+5,5,17,Module Feature Mapping,analytics,dashboard-builder,Dashboard builder feature,seeded,mapping,mapping
+5,6,17,Module Feature Mapping,analytics,report-builder,Report builder feature,seeded,mapping,mapping
+5,7,17,Module Feature Mapping,data_management,bulk-upload-download,Bulk upload/download feature,seeded,mapping,mapping
+5,8,17,Module Feature Mapping,integrations,linkedin-enrichment,Premium integration feature,seeded,mapping,mapping
+5,9,17,Module Feature Mapping,ai_core,ai-email-response-generator,Premium AI feature,seeded,mapping,mapping
+5,10,17,Module Feature Mapping,ai_core,content-analysis-service,Premium AI feature,seeded,mapping,mapping
+5,11,17,Module Feature Mapping,ats_core,job-management,ATS job management,seeded,mapping,mapping
+5,12,17,Module Feature Mapping,ats_core,candidate-tracking,ATS candidate tracking,seeded,mapping,mapping
+5,13,17,Module Feature Mapping,ats_core,interview-scheduling,ATS interview scheduling,seeded,mapping,mapping
+5,14,17,Module Feature Mapping,companies,company-profiles,Company profiles,seeded,mapping,mapping
+5,15,17,Module Feature Mapping,companies,company-relationships,Company relationships,seeded,mapping,mapping
+5,16,17,Module Feature Mapping,people,contact-management,People contact management,seeded,mapping,mapping
+5,17,17,Module Feature Mapping,people,skills-tracking,People skills tracking,seeded,mapping,mapping
