@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Upload, 
   Calendar, 
@@ -27,7 +28,6 @@ import { format } from 'date-fns';
 
 interface ImportRecord {
   id: string;
-  fileName: string;
   importedBy: string;
   timestamp: Date;
   totalRows: number;
@@ -35,8 +35,7 @@ interface ImportRecord {
   errorCount: number;
   duplicateCount: number;
   status: 'completed' | 'failed' | 'partial';
-  errors?: string[];
-  duration: number; // in seconds
+  errors?: Array<{ field?: string; message?: string; cin?: string; row?: number }>;
 }
 
 interface ImportHistoryDialogProps {
@@ -59,65 +58,67 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
 
   const loadImportHistory = async () => {
     setIsLoading(true);
-    
-    // Simulate loading import history - in real implementation, this would come from a database
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockHistory: ImportRecord[] = [
-      {
-        id: '1',
-        fileName: 'companies_batch_1.csv',
-        importedBy: 'John Admin',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        totalRows: 150,
-        successCount: 145,
-        errorCount: 3,
-        duplicateCount: 2,
-        status: 'completed',
-        duration: 45
-      },
-      {
-        id: '2',
-        fileName: 'tech_companies.csv',
-        importedBy: 'Sarah Manager',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        totalRows: 500,
-        successCount: 475,
-        errorCount: 15,
-        duplicateCount: 10,
-        status: 'partial',
-        errors: ['Invalid email format in row 45', 'Missing required field in row 67'],
-        duration: 120
-      },
-      {
-        id: '3',
-        fileName: 'startup_list.csv',
-        importedBy: 'Mike Editor',
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-        totalRows: 75,
-        successCount: 75,
-        errorCount: 0,
-        duplicateCount: 0,
-        status: 'completed',
-        duration: 18
-      },
-      {
-        id: '4',
-        fileName: 'large_dataset.csv',
-        importedBy: 'Admin User',
-        timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-        totalRows: 1000,
-        successCount: 0,
-        errorCount: 1000,
-        duplicateCount: 0,
-        status: 'failed',
-        errors: ['File format error', 'Invalid headers detected'],
-        duration: 5
-      }
-    ];
 
-    setImportHistory(mockHistory);
-    setIsLoading(false);
+    try {
+      const { data: auditLogs, error } = await supabase
+        .from('audit_logs')
+        .select('id, user_id, created_at, additional_context')
+        .eq('action', 'companies.bulk_import')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const userIds = Array.from(new Set((auditLogs || []).map((log) => log.user_id).filter(Boolean)));
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      const profileMap = new Map<string, string>();
+      (profiles || []).forEach((profile) => {
+        profileMap.set(profile.id, profile.full_name || profile.email || profile.id);
+      });
+
+      const mappedHistory: ImportRecord[] = (auditLogs || []).map((log) => {
+        const context = (log.additional_context || {}) as {
+          total?: number;
+          inserted?: number;
+          skipped?: number;
+          errors?: Array<{ field?: string; message?: string; cin?: string; row?: number }>;
+        };
+        const total = context.total || 0;
+        const inserted = context.inserted || 0;
+        const errors = context.errors || [];
+        const errorCount = errors.length;
+        const duplicateCount = context.skipped || 0;
+
+        let status: ImportRecord['status'] = 'completed';
+        if (inserted === 0 && (errorCount > 0 || duplicateCount > 0)) {
+          status = 'failed';
+        } else if (errorCount > 0 || duplicateCount > 0) {
+          status = 'partial';
+        }
+
+        return {
+          id: log.id,
+          importedBy: log.user_id ? (profileMap.get(log.user_id) || log.user_id) : 'Unknown',
+          timestamp: new Date(log.created_at),
+          totalRows: total,
+          successCount: inserted,
+          errorCount,
+          duplicateCount,
+          status,
+          errors,
+        };
+      });
+
+      setImportHistory(mappedHistory);
+    } catch (err) {
+      console.error('Failed to load import history:', err);
+      setImportHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusIcon = (status: ImportRecord['status']) => {
@@ -147,16 +148,6 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
     );
   };
 
-  const formatDuration = (seconds: number) => {
-    if (seconds < 60) {
-      return `${seconds}s`;
-    } else if (seconds < 3600) {
-      return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
-    } else {
-      return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
-    }
-  };
-
   const getSuccessRate = (record: ImportRecord) => {
     return Math.round((record.successCount / record.totalRows) * 100);
   };
@@ -165,13 +156,13 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
     if (!record.errors || record.errors.length === 0) return;
     
     const errorReport = [
-      `Import Error Report - ${record.fileName}`,
+      `Import Error Report`,
       `Date: ${format(record.timestamp, 'PPP pp')}`,
       `Total Rows: ${record.totalRows}`,
       `Errors: ${record.errorCount}`,
       '',
       'Error Details:',
-      ...record.errors.map((error, index) => `${index + 1}. ${error}`)
+      ...record.errors.map((error, index) => `${index + 1}. ${error.message || 'Error'}${error.field ? ` (Field: ${error.field})` : ''}${error.cin ? ` (CIN: ${error.cin})` : ''}`)
     ].join('\n');
 
     const blob = new Blob([errorReport], { type: 'text/plain' });
@@ -183,6 +174,14 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const formatImportError = (error: ImportRecord['errors'][number]) => {
+    const parts = [error.message || 'Error'];
+    if (error.field) parts.push(`(Field: ${error.field})`);
+    if (error.cin) parts.push(`(CIN: ${error.cin})`);
+    if (error.row) parts.push(`(Row: ${error.row})`);
+    return parts.join(' ');
   };
 
   return (
@@ -217,7 +216,7 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg flex items-center">
                         <FileText className="mr-2 h-4 w-4" />
-                        {record.fileName}
+                        Companies Bulk Import
                       </CardTitle>
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(record.status)}
@@ -255,10 +254,6 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
                           <Calendar className="mr-1 h-3 w-3" />
                           {format(record.timestamp, 'PPp')}
                         </div>
-                        <div className="flex items-center">
-                          <Clock className="mr-1 h-3 w-3" />
-                          {formatDuration(record.duration)}
-                        </div>
                       </div>
                       
                       <div className="flex items-center space-x-2">
@@ -289,7 +284,7 @@ const ImportHistoryDialog: React.FC<ImportHistoryDialogProps> = ({
                         <div className="space-y-1">
                           {record.errors.slice(0, 3).map((error, index) => (
                             <div key={index} className="text-xs text-red-700">
-                              • {error}
+                              • {formatImportError(error)}
                             </div>
                           ))}
                           {record.errors.length > 3 && (

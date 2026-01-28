@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Building, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreHorizontal, Building, Edit, Trash2, Eye, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useNavigate } from 'react-router-dom';
 import { EditCompanyDialog } from './EditCompanyDialog';
@@ -36,12 +36,16 @@ import EnhancedCompanyFilters from './filters/EnhancedCompanyFilters';
 import { useCompanyFilters, CompanyFilters } from './hooks/useCompanyFilters';
 import { Company } from '@/hooks/useCompanies';
 import { toast } from 'sonner';
+import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
+import CompanyAllocationDialog from './CompanyAllocationDialog';
 
 const CompanyEnhancedListContainer: React.FC = () => {
   const navigate = useNavigate();
   const { companies, isLoading, updateCompany, deleteCompany } = useCompanies();
+  const { isSuperAdmin } = useSuperAdminCheck();
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
+  const [allocatingCompany, setAllocatingCompany] = useState<Company | null>(null);
   
   // Pagination state
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
@@ -358,6 +362,17 @@ const CompanyEnhancedListContainer: React.FC = () => {
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Company
                         </DropdownMenuItem>
+                        {isSuperAdmin && company.owner_type !== 'tenant' && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => setAllocatingCompany(company)}
+                            >
+                              <Share2 className="mr-2 h-4 w-4" />
+                              Allocate to Tenant
+                            </DropdownMenuItem>
+                          </>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           className="text-red-600"
@@ -442,6 +457,12 @@ const CompanyEnhancedListContainer: React.FC = () => {
         allCompanies={companies || []}
         bulkDeleteIds={Array.from(selectedCompanies)}
         onBulkDelete={handleBulkDelete}
+      />
+
+      <CompanyAllocationDialog
+        isOpen={!!allocatingCompany}
+        onClose={() => setAllocatingCompany(null)}
+        company={allocatingCompany}
       />
     </div>
   );

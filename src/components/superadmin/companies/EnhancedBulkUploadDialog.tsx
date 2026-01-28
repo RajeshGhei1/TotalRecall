@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Company } from '@/hooks/useCompanies';
+import { supabase } from '@/integrations/supabase/client';
 import {
   parseCSV,
   validateCSVData,
@@ -46,16 +47,24 @@ import {
   createProgressTracker,
   type BranchOfficeData
 } from './utils/csvProcessor';
+import { mapCSVRowToCompany } from './utils/csvProcessor';
 
 interface EnhancedBulkUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  existingCompanies: Compunknown[];
+  existingCompanies: Company[];
   onImport: (
     companies: Partial<Company>[], 
     options: { skipDuplicates: boolean },
     branchOfficesData?: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>
-  ) => Promise<void>;
+  ) => Promise<{
+    status: string;
+    total: number;
+    inserted: number;
+    skipped: number;
+    errors?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+    duplicates?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+  }>;
 }
 
 const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
@@ -73,6 +82,8 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [serverValidation, setServerValidation] = useState<{ errors: Array<{ row: number; field: string; message: string; cin?: string }>; duplicates: Array<{ row: number; field: string; message: string; cin?: string }> } | null>(null);
+  const [serverValidationError, setServerValidationError] = useState<string | null>(null);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -311,26 +322,56 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
 
     // Use setTimeout to allow UI to update
     setTimeout(() => {
-      try {
-        const result = validateCSVData(csvData, fieldMappings, existingCompanies);
-        setValidationResult(result);
-        setCurrentStep('validation');
-        setProgress({ 
-          stage: 'validating', 
-          progress: 100, 
-          message: `Validation complete: ${result.summary.validRows} valid rows, ${result.summary.errorRows} errors, ${result.summary.totalBranchOffices} branch offices` 
-        });
-        
-        if (result.summary.errorRows > 0) {
-          toast.warning(`Validation completed with ${result.summary.errorRows} errors. Please review before importing.`);
-        } else {
-          toast.success('All data validated successfully!');
+      (async () => {
+        try {
+          const result = validateCSVData(csvData, fieldMappings, existingCompanies);
+          setValidationResult(result);
+
+          const headers = csvData[0] || [];
+          const payload = csvData.slice(1).map((row) => {
+            const csvRowObject: Record<string, string> = {};
+            headers.forEach((header, i) => {
+              csvRowObject[header] = row[i] || '';
+            });
+            const mapped = mapCSVRowToCompany(csvRowObject, fieldMappings);
+            return {
+              name: mapped?.name || '',
+              cin: mapped?.cin || ''
+            };
+          });
+
+          const { data: serverData, error: serverError } = await supabase
+            .rpc('validate_companies_import', { p_rows: payload });
+
+          if (serverError) {
+            setServerValidationError(serverError.message);
+            setServerValidation(null);
+          } else {
+            setServerValidation({
+              errors: (serverData?.errors || []) as Array<{ row: number; field: string; message: string; cin?: string }>,
+              duplicates: (serverData?.duplicates || []) as Array<{ row: number; field: string; message: string; cin?: string }>
+            });
+            setServerValidationError(null);
+          }
+
+          setCurrentStep('validation');
+          setProgress({ 
+            stage: 'validating', 
+            progress: 100, 
+            message: `Validation complete: ${result.summary.validRows} valid rows, ${result.summary.errorRows} errors, ${result.summary.totalBranchOffices} branch offices` 
+          });
+          
+          if (result.summary.errorRows > 0) {
+            toast.warning(`Validation completed with ${result.summary.errorRows} errors. Please review before importing.`);
+          } else {
+            toast.success('All data validated successfully!');
+          }
+        } catch (error) {
+          toast.error('Validation failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+          setIsProcessing(false);
         }
-      } catch (error) {
-        toast.error('Validation failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
-      } finally {
-        setIsProcessing(false);
-      }
+      })();
     }, 100);
   }, [csvData, fieldMappings, existingCompanies]);
 
@@ -341,48 +382,94 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     setCurrentStep('import');
     
     try {
-      const progressTracker = createProgressTracker(validationResult.validRows.length);
+      const normalizedValue = (value?: string) => value?.toLowerCase().trim();
+      const duplicateKeys = new Set<string>();
+      validationResult.duplicates.forEach((dup) => {
+        const cin = normalizedValue(dup.incomingCompany.cin);
+        const name = normalizedValue(dup.incomingCompany.name);
+        const email = normalizedValue(dup.incomingCompany.email);
+        if (cin) duplicateKeys.add(`cin:${cin}`);
+        if (name) duplicateKeys.add(`name:${name}`);
+        if (email) duplicateKeys.add(`email:${email}`);
+      });
+
+      const shouldSkipDuplicate = (company: Partial<Company>) => {
+        const cin = normalizedValue(company.cin);
+        const name = normalizedValue(company.name);
+        const email = normalizedValue(company.email);
+        if (cin && duplicateKeys.has(`cin:${cin}`)) return true;
+        if (name && duplicateKeys.has(`name:${name}`)) return true;
+        if (email && duplicateKeys.has(`email:${email}`)) return true;
+        return false;
+      };
+
+      const rowsToImport: Partial<Company>[] = [];
+      const branchOfficesToImport: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }> = [];
+      const indexMap = new Map<number, number>();
+
+      validationResult.validRows.forEach((row, index) => {
+        if (skipDuplicates && shouldSkipDuplicate(row)) {
+          return;
+        }
+        indexMap.set(index, rowsToImport.length);
+        rowsToImport.push(row);
+      });
+
+      validationResult.branchOfficesData.forEach((entry) => {
+        const newIndex = indexMap.get(entry.companyIndex);
+        if (newIndex === undefined) return;
+        branchOfficesToImport.push({
+          companyIndex: newIndex,
+          branchOffices: entry.branchOffices
+        });
+      });
+
+      const progressTracker = createProgressTracker(rowsToImport.length);
       
       setProgress({ 
         stage: 'importing', 
         progress: 0, 
-        totalRows: validationResult.validRows.length,
+        totalRows: rowsToImport.length,
         message: 'Starting import...' 
       });
 
       // Process in smaller batches for better progress feedback
       const batchSize = 10;
       const batches = [];
-      for (let i = 0; i < validationResult.validRows.length; i += batchSize) {
-        batches.push(validationResult.validRows.slice(i, i + batchSize));
+      for (let i = 0; i < rowsToImport.length; i += batchSize) {
+        batches.push(rowsToImport.slice(i, i + batchSize));
       }
 
       for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
         const batch = batches[batchIndex];
         const startRow = batchIndex * batchSize + 1;
-        const endRow = Math.min(startRow + batchSize - 1, validationResult.validRows.length);
+        const endRow = Math.min(startRow + batchSize - 1, rowsToImport.length);
         
         setProgress({
           stage: 'importing',
           progress: (batchIndex / batches.length) * 100,
           currentRow: endRow,
-          totalRows: validationResult.validRows.length,
-          message: `Importing companies ${startRow}-${endRow} of ${validationResult.validRows.length}...`
+          totalRows: rowsToImport.length,
+          message: `Importing companies ${startRow}-${endRow} of ${rowsToImport.length}...`
         });
         
         // Small delay to show progress
         await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      await onImport(validationResult.validRows, { skipDuplicates }, validationResult.branchOfficesData);
+      const importResult = await onImport(rowsToImport, { skipDuplicates }, branchOfficesToImport);
       
+      const insertedRows = importResult.inserted ?? 0;
+      const skippedRows = importResult.skipped ?? 0;
+      const skippedLabel = skippedRows > 0 ? ` (${skippedRows} skipped)` : '';
+
       setProgress({ 
         stage: 'complete', 
         progress: 100, 
-        message: `Successfully imported ${validationResult.validRows.length} companies${validationResult.summary.totalBranchOffices > 0 ? ` with ${validationResult.summary.totalBranchOffices} branch offices` : ''}` 
+        message: `Successfully imported ${insertedRows} companies${branchOfficesToImport.length > 0 ? ` with ${branchOfficesToImport.reduce((sum, entry) => sum + entry.branchOffices.length, 0)} branch offices` : ''}${skippedLabel}` 
       });
       
-      toast.success(`Successfully imported ${validationResult.validRows.length} companies${validationResult.summary.totalBranchOffices > 0 ? ` with ${validationResult.summary.totalBranchOffices} branch offices` : ''}`);
+      toast.success(`Successfully imported ${insertedRows} companies${branchOfficesToImport.length > 0 ? ` with ${branchOfficesToImport.reduce((sum, entry) => sum + entry.branchOffices.length, 0)} branch offices` : ''}${skippedLabel}`);
       setTimeout(() => onClose(), 2000);
     } catch (error) {
       toast.error('Import failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
@@ -404,6 +491,83 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success('Template downloaded');
+  };
+
+  const downloadIssuesReport = (type: 'errors' | 'duplicates') => {
+    if (!validationResult) return;
+
+    let filename = '';
+    let headers: string[] = [];
+    let rows: string[][] = [];
+
+    if (type === 'errors') {
+      filename = 'company-import-errors.csv';
+      headers = ['row', 'message', 'field', 'value'];
+      rows = validationResult.errors.map((error) => [
+        String(error.row),
+        error.message,
+        error.field ?? '',
+        error.value ?? ''
+      ]);
+      if (serverValidation?.errors?.length) {
+        rows.push(
+          ...serverValidation.errors.map((error) => [
+            String(error.row),
+            `Server: ${error.message}`,
+            error.field ?? '',
+            error.cin ?? ''
+          ])
+        );
+      }
+    } else {
+      filename = 'company-import-duplicates.csv';
+      headers = ['row', 'duplicate_field', 'existing_company', 'existing_cin', 'incoming_name', 'incoming_email', 'incoming_cin'];
+      rows = validationResult.duplicates.map((duplicate) => [
+        String(duplicate.row),
+        duplicate.duplicateField,
+        duplicate.existingCompany.name,
+        duplicate.existingCompany.cin ?? '',
+        duplicate.incomingCompany.name ?? '',
+        duplicate.incomingCompany.email ?? '',
+        duplicate.incomingCompany.cin ?? ''
+      ]);
+      if (serverValidation?.duplicates?.length) {
+        rows.push(
+          ...serverValidation.duplicates.map((duplicate) => [
+            String(duplicate.row),
+            duplicate.field,
+            '',
+            '',
+            '',
+            '',
+            duplicate.cin ?? ''
+          ])
+        );
+      }
+    }
+
+    const escapeValue = (value: string) => {
+      if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => escapeValue(cell)).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${type === 'errors' ? 'Errors' : 'Duplicates'} report downloaded`);
   };
 
   const resetDialog = () => {
@@ -739,6 +903,15 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                       <CardTitle className="text-red-600">Validation Errors</CardTitle>
                     </CardHeader>
                     <CardContent>
+                      <div className="flex justify-end mb-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadIssuesReport('errors')}
+                        >
+                          Download Errors CSV
+                        </Button>
+                      </div>
                       <ScrollArea className="h-40">
                         <div className="space-y-1">
                           {validationResult.errors.slice(0, 15).map((error, index) => (
@@ -773,6 +946,15 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                         />
                         <Label htmlFor="skip-duplicates">Skip duplicate companies during import</Label>
                       </div>
+                      <div className="flex justify-end mb-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadIssuesReport('duplicates')}
+                        >
+                          Download Duplicates CSV
+                        </Button>
+                      </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-1">
                           {validationResult.duplicates.slice(0, 10).map((duplicate, index) => (
@@ -787,6 +969,33 @@ const EnhancedBulkUploadDialog: React.FC<EnhancedBulkUploadDialogProps> = ({
                           )}
                         </div>
                       </ScrollArea>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {serverValidationError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Server validation failed: {serverValidationError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {serverValidation && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-blue-600">Server Validation</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-sm">
+                          <span className="font-medium">Server Errors:</span> {serverValidation.errors.length}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-medium">Server Duplicates:</span> {serverValidation.duplicates.length}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 )}

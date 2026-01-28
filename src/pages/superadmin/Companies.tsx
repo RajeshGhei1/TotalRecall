@@ -24,6 +24,9 @@ import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnection
 import ImportHistoryDialog from '@/components/superadmin/companies/ImportHistoryDialog';
 import ModuleFeatureIntegration from '@/components/modules/ModuleFeatureIntegration';
 import { useCompanies, Company } from '@/hooks/useCompanies';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
+import { useTenantContext } from '@/contexts/TenantContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
@@ -39,92 +42,132 @@ const Companies = () => {
   const [activeTab, setActiveTab] = useState("companies");
   
   const { companies, isLoading, createCompany, refetch } = useCompanies();
+  const { data: currentTenant } = useCurrentTenant();
+  const { isSuperAdmin } = useSuperAdminCheck();
+  const { selectedTenantId } = useTenantContext();
+  const effectiveTenantId = selectedTenantId ?? currentTenant?.tenant_id ?? null;
 
   const handleBulkImport = async (
     companiesToImport: Partial<Company>[], 
     options: { skipDuplicates: boolean },
     branchOfficesData?: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>
-  ): Promise<void> => {
+  ): Promise<{
+    status: string;
+    total: number;
+    inserted: number;
+    skipped: number;
+    errors?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+    duplicates?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+  }> => {
     try {
-      const results = [];
-      
-      for (let i = 0; i < companiesToImport.length; i++) {
-        const company = companiesToImport[i];
-        
-        // Convert the company data to the format expected by the database
-        const companyData = {
-          name: company.name || '',
-          domain: company.website || '',
-          website: company.website || '',
-          email: company.email || '',
-          phone: company.phone || '',
-          description: company.description || '',
-          location: company.location || '',
-          size: company.size || '',
-          founded: company.founded || null,
-          linkedin: company.linkedin || '',
-          twitter: company.twitter || '',
-          facebook: company.facebook || '',
-          cin: company.cin || '',
-          companystatus: company.companystatus || '',
-          registeredofficeaddress: company.registeredofficeaddress || '',
-          registrationdate: company.registrationdate || '',
-          registeredemailaddress: company.registeredemailaddress || '',
-          noofdirectives: company.noofdirectives || '',
-          globalregion: company.globalregion || '',
-          country: company.country || '',
-          region: company.region || '',
-          holocation: company.holocation || '',
-          industry1: company.industry1 || '',
-          industry2: company.industry2 || '',
-          industry3: company.industry3 || '',
-          companysector: company.companysector || '',
-          companytype: company.companytype || '',
-          entitytype: company.entitytype || '',
-          noofemployee: company.noofemployee || '',
-          segmentaspernumberofemployees: company.segmentaspernumberofemployees || '',
-          turnover: company.turnover || '',
-          segmentasperturnover: company.segmentasperturnover || '',
-          turnoveryear: company.turnoveryear || '',
-          yearofestablishment: company.yearofestablishment || '',
-          paidupcapital: company.paidupcapital || '',
-          segmentasperpaidupcapital: company.segmentasperpaidupcapital || '',
-          companyprofile: company.companyprofile || '',
-          areaofspecialize: company.areaofspecialize || '',
-          serviceline: company.serviceline || '',
-          verticles: company.verticles || '',
-          parent_company_id: company.parent_company_id || null,
-          company_group_name: company.company_group_name || '',
-          hierarchy_level: company.hierarchy_level || 0,
-        };
+      const ownerType = isSuperAdmin
+        ? (selectedTenantId ? 'tenant' : 'platform')
+        : 'tenant';
+      const tenantId = ownerType === 'tenant' ? (selectedTenantId ?? effectiveTenantId) : null;
 
-        // Insert company directly into database
-        const { data: insertedCompany, error } = await supabase
-          .from('companies')
-          .insert(companyData)
-          .select()
-          .single();
+      if (ownerType === 'tenant' && !tenantId) {
+        throw new Error('Missing tenant context for bulk import.');
+      }
 
-        if (error) {
-          throw new Error(`Failed to insert company ${company.name}: ${error.message}`);
-        }
+      const mappedCompanies = companiesToImport.map((company) => ({
+        name: company.name || '',
+        domain: company.website || '',
+        website: company.website || '',
+        email: company.email || '',
+        phone: company.phone || '',
+        description: company.description || '',
+        location: company.location || '',
+        size: company.size || '',
+        founded: company.founded || null,
+        linkedin: company.linkedin || '',
+        twitter: company.twitter || '',
+        facebook: company.facebook || '',
+        cin: company.cin || '',
+        companystatus: company.companystatus || '',
+        registeredofficeaddress: company.registeredofficeaddress || '',
+        registrationdate: company.registrationdate || '',
+        registeredemailaddress: company.registeredemailaddress || '',
+        noofdirectives: company.noofdirectives || '',
+        globalregion: company.globalregion || '',
+        country: company.country || '',
+        region: company.region || '',
+        holocation: company.holocation || '',
+        industry1: company.industry1 || '',
+        industry2: company.industry2 || '',
+        industry3: company.industry3 || '',
+        companysector: company.companysector || '',
+        companytype: company.companytype || '',
+        entitytype: company.entitytype || '',
+        noofemployee: company.noofemployee || '',
+        segmentaspernumberofemployees: company.segmentaspernumberofemployees || '',
+        turnover: company.turnover || '',
+        segmentasperturnover: company.segmentasperturnover || '',
+        turnoveryear: company.turnoveryear || '',
+        yearofestablishment: company.yearofestablishment || '',
+        paidupcapital: company.paidupcapital || '',
+        segmentasperpaidupcapital: company.segmentasperpaidupcapital || '',
+        companyprofile: company.companyprofile || '',
+        areaofspecialize: company.areaofspecialize || '',
+        serviceline: company.serviceline || '',
+        verticles: company.verticles || '',
+        parent_company_id: company.parent_company_id || null,
+        company_group_name: company.company_group_name || '',
+        hierarchy_level: company.hierarchy_level || 0,
+      }));
 
-        results.push(insertedCompany);
+      // Note: Branch office functionality removed for now since the table doesn't exist in the schema
+      // This can be re-implemented once the branch_offices table is created
+      if (branchOfficesData && branchOfficesData.length > 0) {
+        logger.debug('Branch offices provided but not processed (branch_offices table missing).');
+      }
 
-        // Note: Branch office functionality removed for now since the table doesn't exist in the schema
-        // This can be re-implemented once the branch_offices table is created
-        if (branchOfficesData && branchOfficesData.length > 0) {
-          const branchData = branchOfficesData.find(b => b.companyIndex === i);
-          if (branchData && branchData.branchOffices.length > 0) {
-            logger.debug(`Branch offices for company ${company.name} will be processed when branch_offices table is available`);
-          }
-        }
+      const { data: importResult, error: importError } = await supabase
+        .rpc('import_companies_bulk', {
+          p_rows: mappedCompanies,
+          p_owner_type: ownerType,
+          p_tenant_id: tenantId,
+          p_skip_duplicates: options.skipDuplicates
+        });
+
+      if (importError) {
+        throw new Error(`Failed to import companies: ${importError.message}`);
+      }
+
+      const result = (importResult || {}) as {
+        status?: string;
+        total?: number;
+        inserted?: number;
+        skipped?: number;
+        errors?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+        duplicates?: Array<{ row?: number; field?: string; message?: string; cin?: string }>;
+      };
+
+      if (result.status === 'failed') {
+        const errorMessage =
+          result.errors?.[0]?.message ||
+          result.duplicates?.[0]?.message ||
+          'Server-side import failed';
+        throw new Error(errorMessage);
       }
 
       // Refresh the companies list
       await refetch();
       
-      toast.success(`Successfully imported ${results.length} companies`);
+      const insertedRows = result.inserted ?? 0;
+      const skippedRows = result.skipped ?? 0;
+      const summary = skippedRows > 0
+        ? `Successfully imported ${insertedRows} companies (${skippedRows} skipped)`
+        : `Successfully imported ${insertedRows} companies`;
+
+      toast.success(summary);
+      return {
+        status: result.status ?? 'completed',
+        total: result.total ?? mappedCompanies.length,
+        inserted: insertedRows,
+        skipped: skippedRows,
+        errors: result.errors ?? [],
+        duplicates: result.duplicates ?? []
+      };
     } catch (error) {
       logger.error('Bulk import failed:', error);
       toast.error(`Bulk import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

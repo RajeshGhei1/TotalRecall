@@ -81,7 +81,7 @@ export interface CSVProcessingResult {
   validRows: Partial<Company>[];
   branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }>;
   errors: Array<{ row: number; message: string; data?: Record<string, unknown>; field?: string; value?: string }>;
-  duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }>;
+  duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string; incomingCompany: Partial<Company> }>;
   summary: {
     totalRows: number;
     validRows: number;
@@ -411,9 +411,13 @@ export function mapCSVRowToCompany(csvRow: unknown, mappings: CSVFieldMapping[])
 export function validateCompanyData(company: Partial<Company>): string[] {
   const errors: string[] = [];
 
-  // Required field validation - only name is truly required now (CIN optional but recommended)
+  // Required field validation
   if (!company.name || company.name.trim().length === 0) {
     errors.push('Company name is required');
+  }
+
+  if (!company.cin || company.cin.trim().length === 0) {
+    errors.push('Company CIN is required');
   }
 
   // Email validation
@@ -534,7 +538,7 @@ export function validateCSVData(
   const validRows: Partial<Company>[] = [];
   const branchOfficesData: Array<{ companyIndex: number; branchOffices: BranchOfficeData[] }> = [];
   const errors: Array<{ row: number; message: string; data?: Record<string, unknown>; field?: string; value?: string }> = [];
-  const duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string }> = [];
+  const duplicates: Array<{ row: number; existingCompany: Company; duplicateField: string; incomingCompany: Partial<Company> }> = [];
   let totalBranchOffices = 0;
   
   if (csvData.length === 0) {
@@ -551,6 +555,7 @@ export function validateCSVData(
   const dataRows = csvData.slice(1);
   const existingNames = new Set(existingCompanies.map(c => c.name.toLowerCase().trim()));
   const existingEmails = new Set(existingCompanies.filter(c => c.email).map(c => c.email!.toLowerCase().trim()));
+  const existingCins = new Set(existingCompanies.filter(c => c.cin).map(c => c.cin!.toLowerCase().trim()));
 
   dataRows.forEach((row, index) => {
     try {
@@ -594,11 +599,13 @@ export function validateCSVData(
       }
 
       // Check for duplicates
+      const isDuplicateCin = company.cin && existingCins.has(company.cin.toLowerCase().trim());
       const isDuplicateName = company.name && existingNames.has(company.name.toLowerCase().trim());
       const isDuplicateEmail = company.email && existingEmails.has(company.email.toLowerCase().trim());
 
-      if (isDuplicateName || isDuplicateEmail) {
+      if (isDuplicateCin || isDuplicateName || isDuplicateEmail) {
         const existingCompany = existingCompanies.find(c => 
+          (company.cin && c.cin?.toLowerCase().trim() === company.cin.toLowerCase().trim()) ||
           (company.name && c.name.toLowerCase().trim() === company.name.toLowerCase().trim()) ||
           (company.email && c.email?.toLowerCase().trim() === company.email.toLowerCase().trim())
         );
@@ -607,9 +614,9 @@ export function validateCSVData(
           duplicates.push({
             row: index + 2,
             existingCompany,
-            duplicateField: isDuplicateName ? 'name' : 'email'
+            duplicateField: isDuplicateCin ? 'cin' : (isDuplicateName ? 'name' : 'email'),
+            incomingCompany: company
           });
-          return;
         }
       }
 

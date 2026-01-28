@@ -5,6 +5,9 @@ import { toast } from 'sonner';
 import { CompanyFormValues } from '@/components/superadmin/companies/schema';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useSecureQueryKey } from '@/hooks/security/useSecureQueryKey';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
+import { useTenantContext } from '@/contexts/TenantContext';
 import { logger } from '@/utils/logger';
 
 export interface Company {
@@ -14,6 +17,9 @@ export interface Company {
   website?: string;
   description?: string;
   created_at: string;
+  tenant_id?: string | null;
+  owner_type?: 'tenant' | 'platform' | 'app';
+  owner_id?: string | null;
   size?: string;
   location?: string;
   // Add missing properties to match the schema
@@ -62,6 +68,10 @@ export const useCompanies = () => {
   const queryClient = useQueryClient();
   const { saveCustomFieldValues } = useCustomFields();
   const { createSecureKey } = useSecureQueryKey();
+  const { data: currentTenant } = useCurrentTenant();
+  const { isSuperAdmin, isLoading: isSuperAdminLoading } = useSuperAdminCheck();
+  const { selectedTenantId } = useTenantContext();
+  const effectiveTenantId = selectedTenantId ?? currentTenant?.tenant_id ?? null;
 
   // Extract custom field values from form data
   const extractCustomFieldValues = (formData: CompanyFormValues) => {
@@ -87,20 +97,61 @@ export const useCompanies = () => {
   } = useQuery({
     queryKey: createSecureKey(['companies']),
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('companies')
         .select('*')
         .order('created_at', { ascending: false });
+
+      const scopedTenantId = isSuperAdmin ? selectedTenantId : effectiveTenantId;
+
+      if (scopedTenantId) {
+        const { data: allocations, error: allocationsError } = await supabase
+          .from('company_data_allocations')
+          .select('company_id')
+          .eq('tenant_id', scopedTenantId);
+
+        if (allocationsError) {
+          throw allocationsError;
+        }
+
+        const allocationIds = (allocations || [])
+          .map((allocation) => allocation.company_id)
+          .filter(Boolean);
+
+        const filters = [
+          `and(owner_type.eq.tenant,tenant_id.eq.${scopedTenantId})`,
+        ];
+
+        if (allocationIds.length > 0) {
+          filters.push(`and(owner_type.in.(platform,app),id.in.(${allocationIds.join(',')}))`);
+        }
+
+        query = query.or(filters.join(','));
+      } else if (!isSuperAdmin) {
+        return [];
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
       return (data as unknown) as Company[];
     },
+    enabled: !isSuperAdminLoading && (isSuperAdmin || !!effectiveTenantId),
   });
 
   // Mutation for creating a new company
   const createCompany = useMutation({
     mutationFn: async (companyData: CompanyFormValues) => {
+      const ownerType = isSuperAdmin
+        ? (selectedTenantId ? 'tenant' : 'platform')
+        : 'tenant';
+      const tenantId = ownerType === 'tenant' ? (selectedTenantId ?? effectiveTenantId) : null;
+
+      if (ownerType === 'tenant' && !tenantId) {
+        throw new Error('Missing tenant context for company creation.');
+      }
+
       // Calculate hierarchy level based on parent
       let hierarchyLevel = 0;
       if (companyData.parentCompanyId) {
@@ -156,6 +207,8 @@ export const useCompanies = () => {
         parent_company_id: companyData.parentCompanyId || null,
         company_group_name: companyData.companyGroupName || null,
         hierarchy_level: hierarchyLevel,
+        owner_type: ownerType,
+        tenant_id: tenantId,
       };
 
       const { data, error } = await supabase
