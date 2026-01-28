@@ -1,9 +1,11 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Company } from '@/hooks/useCompanies';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyScope } from '@/hooks/useCompanies';
 import { MapPin, Globe } from 'lucide-react';
 
 interface LocationData {
@@ -15,46 +17,52 @@ interface LocationData {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 interface GeographicDistributionChartProps {
-  companies: Company[];
+  scopeFilter: CompanyScope;
+  tenantId: string | null;
+  filters: Record<string, unknown>;
+  cacheTtlMs: number;
   isLoading?: boolean;
 }
 
-const GeographicDistributionChart: React.FC<GeographicDistributionChartProps> = ({ companies, isLoading }) => {
+const GeographicDistributionChart: React.FC<GeographicDistributionChartProps> = ({
+  scopeFilter,
+  tenantId,
+  filters,
+  cacheTtlMs,
+  isLoading
+}) => {
   const [viewType, setViewType] = useState<'country' | 'region' | 'city'>('country');
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
 
-  const locationData = useMemo(() => {
-    let field: keyof Company = 'location';
-    switch (viewType) {
-      case 'country':
-        field = 'country';
-        break;
-      case 'region':
-        field = 'region';
-        break;
-      case 'city':
-        field = 'location';
-        break;
-    }
+  const dimension = viewType === 'country'
+    ? 'country'
+    : viewType === 'region'
+    ? 'region'
+    : 'location';
 
-    const locationCounts: Record<string, number> = {};
-    companies.forEach(company => {
-      const location = (company[field] as string) || 'Unknown';
-      locationCounts[location] = (locationCounts[location] || 0) + 1;
-    });
+  const { data: locationData = [], isLoading: isLocationLoading } = useQuery({
+    queryKey: ['geographic-distribution', scopeFilter, tenantId, filters, dimension],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_distribution', {
+        p_scope: scopeFilter,
+        p_tenant_id: tenantId,
+        p_dimension: dimension,
+        p_filters: filters,
+        p_top: 10
+      });
+      if (error) throw error;
+      const items = (data || []) as Array<{ name: string; count: number }>;
+      const total = items.reduce((sum, item) => sum + item.count, 0);
+      return items.map((item) => ({
+        name: item.name,
+        count: item.count,
+        percentage: total ? Math.round((item.count / total) * 100) : 0
+      }));
+    },
+    staleTime: cacheTtlMs
+  });
 
-    const total = Object.values(locationCounts).reduce((sum, count) => sum + count, 0);
-    return Object.entries(locationCounts)
-      .map(([name, count]) => ({
-        name: name || 'Unknown',
-        count,
-        percentage: total ? Math.round((count / total) * 100) : 0
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-  }, [companies, viewType]);
-
-  if (isLoading) {
+  if (isLoading || isLocationLoading) {
     return (
       <Card>
         <CardHeader>

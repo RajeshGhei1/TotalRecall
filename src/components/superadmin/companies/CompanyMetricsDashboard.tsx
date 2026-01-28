@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CompanyScope, useCompanies } from '@/hooks/useCompanies';
+import { Company, CompanyScope } from '@/hooks/useCompanies';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { useTenantContext } from '@/contexts/TenantContext';
+import { useGlobalSettings } from '@/hooks/global-settings/useGlobalSettings';
 import { Building, Users, Download, Settings } from 'lucide-react';
 
 // Import new analytics components
@@ -43,12 +46,33 @@ interface FilterState {
 
 interface CompanyMetricsDashboardProps {
   scopeFilter?: CompanyScope;
+  companiesForExport?: Company[];
+}
+
+interface DistributionItem {
+  name: string;
+  count: number;
+}
+
+interface PeopleStats {
+  companyCount: number;
+  peopleCount: number;
+  relationshipCount: number;
+  topCompanies: Array<{ id: string; name: string; count: number }>;
 }
 
 const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
   scopeFilter = 'all',
+  companiesForExport = [],
 }) => {
-  const { companies = [], isLoading } = useCompanies({ ownerScope: scopeFilter });
+  const { data: currentTenant } = useCurrentTenant();
+  const { selectedTenantId } = useTenantContext();
+  const effectiveTenantId = selectedTenantId ?? currentTenant?.tenant_id ?? null;
+  const { data: performanceSettings } = useGlobalSettings('performance');
+  const cacheTtlSeconds = Number(
+    performanceSettings?.find((setting) => setting.setting_key === 'cache_ttl_default')?.setting_value
+  ) || 300;
+  const cacheTtlMs = cacheTtlSeconds * 1000;
   const [showFilters, setShowFilters] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -61,117 +85,122 @@ const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
   });
 
   // Get company-people relationship statistics
-  const scopeCompanies = useMemo(() => {
-    if (scopeFilter === 'all') return companies;
-    return companies.filter(company => company.owner_type === scopeFilter);
-  }, [companies, scopeFilter]);
-
-  const { data: relationshipStats = { company_count: 0, people_count: 0, relationship_count: 0 } } = useQuery({
-    queryKey: ['company_people_stats', scopeFilter, scopeCompanies.map(c => c.id)],
-    queryFn: async () => {
-      const companyIds = scopeCompanies.map(company => company.id);
-      if (companyIds.length === 0) {
-        return { company_count: 0, people_count: 0, relationship_count: 0 };
-      }
-
-      const uniqueCompanies = new Set<string>();
-      const uniquePeople = new Set<string>();
-      let relationshipCount = 0;
-
-      const chunkSize = 1000;
-      for (let i = 0; i < companyIds.length; i += chunkSize) {
-        const chunk = companyIds.slice(i, i + chunkSize);
-        const { data, error, count } = await supabase
-          .from('company_relationships')
-          .select('company_id, person_id', { count: 'exact', head: false })
-          .in('company_id', chunk);
-
-        if (error) {
-          console.error("Error fetching relationship stats:", error);
-          continue;
-        }
-
-        (data || []).forEach((row) => {
-          if (row.company_id) uniqueCompanies.add(row.company_id);
-          if (row.person_id) uniquePeople.add(row.person_id);
-        });
-
-        relationshipCount += count || 0;
-      }
-
-      return {
-        company_count: uniqueCompanies.size,
-        people_count: uniquePeople.size,
-        relationship_count: relationshipCount
-      };
+  const filterPayload = useMemo(() => ({
+    searchTerm: filters.searchTerm || '',
+    industry: filters.industry || '',
+    location: filters.location || '',
+    size: filters.size || '',
+    hierarchyLevel: filters.hierarchyLevel || '',
+    dateRange: {
+      from: filters.dateRange.from ? filters.dateRange.from.toISOString() : '',
+      to: filters.dateRange.to ? filters.dateRange.to.toISOString() : '',
     }
+  }), [filters]);
+
+  const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
+    queryKey: ['companies-summary', scopeFilter, effectiveTenantId, filterPayload],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_summary', {
+        p_scope: scopeFilter,
+        p_tenant_id: effectiveTenantId,
+        p_filters: filterPayload
+      });
+      if (error) throw error;
+      return data as { total: number; withWebsite: number; withDescription: number };
+    },
+    staleTime: cacheTtlMs
+  });
+
+  const { data: industryDistribution = [], isLoading: isIndustryLoading } = useQuery({
+    queryKey: ['companies-distribution', 'industry1', scopeFilter, effectiveTenantId, filterPayload],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_distribution', {
+        p_scope: scopeFilter,
+        p_tenant_id: effectiveTenantId,
+        p_dimension: 'industry1',
+        p_filters: filterPayload,
+        p_top: 50
+      });
+      if (error) throw error;
+      return (data || []) as DistributionItem[];
+    },
+    staleTime: cacheTtlMs
+  });
+
+  const { data: locationDistribution = [], isLoading: isLocationLoading } = useQuery({
+    queryKey: ['companies-distribution', 'location', scopeFilter, effectiveTenantId, filterPayload],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_distribution', {
+        p_scope: scopeFilter,
+        p_tenant_id: effectiveTenantId,
+        p_dimension: 'location',
+        p_filters: filterPayload,
+        p_top: 50
+      });
+      if (error) throw error;
+      return (data || []) as DistributionItem[];
+    },
+    staleTime: cacheTtlMs
+  });
+
+  const { data: sizeDistribution = [], isLoading: isSizeLoading } = useQuery({
+    queryKey: ['companies-distribution', 'size', scopeFilter, effectiveTenantId, filterPayload],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_distribution', {
+        p_scope: scopeFilter,
+        p_tenant_id: effectiveTenantId,
+        p_dimension: 'size',
+        p_filters: filterPayload,
+        p_top: 50
+      });
+      if (error) throw error;
+      return (data || []) as DistributionItem[];
+    },
+    staleTime: cacheTtlMs
+  });
+
+  const { data: peopleStats, isLoading: isPeopleLoading } = useQuery({
+    queryKey: ['companies-people-stats', scopeFilter, effectiveTenantId, filterPayload],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_people_stats', {
+        p_scope: scopeFilter,
+        p_tenant_id: effectiveTenantId,
+        p_filters: filterPayload,
+        p_top: 10
+      });
+      if (error) throw error;
+      return data as PeopleStats;
+    },
+    staleTime: cacheTtlMs
   });
 
   // Filter companies based on active filters
-  const filteredCompanies = useMemo(() => {
-    return scopeCompanies.filter(company => {
-      // Search filter
-      if (filters.searchTerm && !company.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
-        return false;
-      }
+  const filterOptions = useMemo(() => ({
+    industries: industryDistribution.map(item => item.name).sort(),
+    locations: locationDistribution.map(item => item.name).sort(),
+    sizes: sizeDistribution.map(item => item.name).sort(),
+  }), [industryDistribution, locationDistribution, sizeDistribution]);
 
-      // Industry filter - check all industry fields
-      if (filters.industry && 
-          company.industry1 !== filters.industry && 
-          company.industry2 !== filters.industry && 
-          company.industry3 !== filters.industry) {
-        return false;
-      }
+  const totalCompanies = summaryData?.total || 0;
+  const withWebsite = summaryData?.withWebsite || 0;
+  const withDescription = summaryData?.withDescription || 0;
+  const relationshipStats = {
+    company_count: peopleStats?.companyCount || 0,
+    people_count: peopleStats?.peopleCount || 0,
+    relationship_count: peopleStats?.relationshipCount || 0
+  };
 
-      // Location filter
-      if (filters.location && company.location !== filters.location) {
-        return false;
-      }
+  const isLoading = isSummaryLoading || isIndustryLoading || isLocationLoading || isSizeLoading || isPeopleLoading;
 
-      // Size filter
-      if (filters.size && company.size !== filters.size) {
-        return false;
-      }
-
-      // Hierarchy level filter
-      if (filters.hierarchyLevel && company.hierarchy_level?.toString() !== filters.hierarchyLevel) {
-        return false;
-      }
-
-      // Date range filter
-      if (filters.dateRange.from || filters.dateRange.to) {
-        const companyDate = new Date(company.created_at);
-        if (filters.dateRange.from && companyDate < filters.dateRange.from) {
-          return false;
-        }
-        if (filters.dateRange.to && companyDate > filters.dateRange.to) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [scopeCompanies, filters]);
-
-  // Get unique values for filter options
-  const filterOptions = useMemo(() => {
-    const allIndustries = new Set<string>();
-    scopeCompanies.forEach(c => {
-      if (c.industry1) allIndustries.add(c.industry1);
-      if (c.industry2) allIndustries.add(c.industry2);
-      if (c.industry3) allIndustries.add(c.industry3);
-    });
-
-    return {
-      industries: Array.from(allIndustries).sort(),
-      locations: Array.from(new Set(scopeCompanies.map(c => c.location).filter(Boolean))).sort(),
-      sizes: Array.from(new Set(scopeCompanies.map(c => c.size).filter(Boolean))).sort(),
-    };
-  }, [scopeCompanies]);
-
-  const totalCompanies = filteredCompanies?.length || 0;
-  const withWebsite = filteredCompanies?.filter(c => c.domain || c.website).length || 0;
-  const withDescription = filteredCompanies?.filter(c => c.description).length || 0;
+  const filtersActive = Boolean(
+    filters.searchTerm ||
+    filters.industry ||
+    filters.location ||
+    filters.size ||
+    filters.hierarchyLevel ||
+    filters.dateRange.from ||
+    filters.dateRange.to
+  );
 
   return (
     <div className="space-y-6">
@@ -180,7 +209,7 @@ const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
         <div>
           <h2 className="text-2xl font-bold">Enhanced Analytics Dashboard</h2>
           <p className="text-muted-foreground">
-            Comprehensive company metrics and insights {totalCompanies !== scopeCompanies.length && `(${totalCompanies} filtered)`}
+            Comprehensive company metrics and insights {filtersActive && `(${totalCompanies} filtered)`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -222,7 +251,7 @@ const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
           <CardContent>
             <div className="text-2xl font-bold">{totalCompanies}</div>
             <p className="text-xs text-muted-foreground">
-              {totalCompanies !== scopeCompanies.length && `of ${scopeCompanies.length} total`}
+              {filtersActive ? 'Filtered view' : 'All scoped companies'}
             </p>
           </CardContent>
         </Card>
@@ -266,10 +295,10 @@ const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
 
       {/* Charts Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-        <CompanyIndustryChart companies={filteredCompanies} isLoading={isLoading} />
-        <CompanySizeChart companies={filteredCompanies} isLoading={isLoading} />
-        <CompanyLocationChart companies={filteredCompanies} isLoading={isLoading} />
-        <CompanyPeopleChart companies={filteredCompanies} isLoading={isLoading} />
+        <CompanyIndustryChart data={industryDistribution.slice(0, 10)} isLoading={isLoading} />
+        <CompanySizeChart data={sizeDistribution.slice(0, 10)} isLoading={isLoading} />
+        <CompanyLocationChart data={locationDistribution.slice(0, 10)} isLoading={isLoading} />
+        <CompanyPeopleChart data={peopleStats?.topCompanies || []} isLoading={isLoading} />
       </div>
 
       {/* Enhanced Analytics Section - Remove companies prop from these components */}
@@ -277,20 +306,50 @@ const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
         <h3 className="text-xl font-semibold">Advanced Analytics</h3>
         
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-          <CompanyGrowthChart companies={filteredCompanies} isLoading={isLoading} />
-          <GeographicDistributionChart companies={filteredCompanies} isLoading={isLoading} />
-          <IndustrySectorChart companies={filteredCompanies} isLoading={isLoading} />
-          <DataCompletenessChart companies={filteredCompanies} isLoading={isLoading} />
+          <CompanyGrowthChart
+            scopeFilter={scopeFilter}
+            tenantId={effectiveTenantId}
+            filters={filterPayload}
+            cacheTtlMs={cacheTtlMs}
+            isLoading={isLoading}
+          />
+          <GeographicDistributionChart
+            scopeFilter={scopeFilter}
+            tenantId={effectiveTenantId}
+            filters={filterPayload}
+            cacheTtlMs={cacheTtlMs}
+            isLoading={isLoading}
+          />
+          <IndustrySectorChart
+            scopeFilter={scopeFilter}
+            tenantId={effectiveTenantId}
+            filters={filterPayload}
+            cacheTtlMs={cacheTtlMs}
+            isLoading={isLoading}
+          />
+          <DataCompletenessChart
+            scopeFilter={scopeFilter}
+            tenantId={effectiveTenantId}
+            filters={filterPayload}
+            cacheTtlMs={cacheTtlMs}
+            isLoading={isLoading}
+          />
         </div>
 
-        <HierarchyAnalysisChart companies={filteredCompanies} isLoading={isLoading} />
+        <HierarchyAnalysisChart
+          scopeFilter={scopeFilter}
+          tenantId={effectiveTenantId}
+          filters={filterPayload}
+          cacheTtlMs={cacheTtlMs}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Export Dialog */}
       <AnalyticsExportDialog
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
-        companies={filteredCompanies}
+        companies={companiesForExport}
         currentFilters={[
           scopeFilter !== 'all' ? `scope: ${scopeFilter}` : null,
           ...Object.entries(filters)

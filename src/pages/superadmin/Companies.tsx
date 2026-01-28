@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { BranchOfficeData } from '@/components/superadmin/companies/utils/csvProcessor';
 import { logger } from '@/utils/logger';
+import { useFeatureUsageTracking } from '@/hooks/useFeatureAccess';
 
 const Companies = () => {
   const navigate = useNavigate();
@@ -48,6 +49,17 @@ const Companies = () => {
   const { isSuperAdmin } = useSuperAdminCheck();
   const { selectedTenantId } = useTenantContext();
   const effectiveTenantId = selectedTenantId ?? currentTenant?.tenant_id ?? null;
+  const { trackUsage } = useFeatureUsageTracking();
+
+  React.useEffect(() => {
+    if (activeTab === 'dashboard' && effectiveTenantId) {
+      trackUsage.mutate({
+        tenantId: effectiveTenantId,
+        moduleName: 'companies',
+        featureId: 'company-profiles'
+      });
+    }
+  }, [activeTab, effectiveTenantId, trackUsage]);
 
   const handleBulkImport = async (
     companiesToImport: Partial<Company>[], 
@@ -162,6 +174,13 @@ const Companies = () => {
         : `Successfully imported ${insertedRows} companies`;
 
       toast.success(summary);
+      if (tenantId) {
+        trackUsage.mutate({
+          tenantId,
+          moduleName: 'data_management',
+          featureId: 'bulk-upload-download'
+        });
+      }
       return {
         status: result.status ?? 'completed',
         total: result.total ?? mappedCompanies.length,
@@ -275,7 +294,7 @@ const Companies = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CompanyMetricsDashboard scopeFilter={scopeFilter} />
+        <CompanyMetricsDashboard scopeFilter={scopeFilter} companiesForExport={scopeFilteredCompanies} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -350,6 +369,7 @@ const Companies = () => {
           onClose={() => setIsExportDialogOpen(false)}
           companies={scopeFilteredCompanies}
           currentFilters={`Scope: ${scopeFilter}`}
+          tenantId={effectiveTenantId}
         />
 
         <ImportHistoryDialog

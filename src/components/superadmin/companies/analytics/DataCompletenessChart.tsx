@@ -1,9 +1,11 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Company } from '@/hooks/useCompanies';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyScope } from '@/hooks/useCompanies';
 import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface CompletenessData {
@@ -15,43 +17,33 @@ interface CompletenessData {
 }
 
 interface DataCompletenessChartProps {
-  companies: Company[];
+  scopeFilter: CompanyScope;
+  tenantId: string | null;
+  filters: Record<string, unknown>;
+  cacheTtlMs: number;
   isLoading?: boolean;
 }
 
-const DataCompletenessChart: React.FC<DataCompletenessChartProps> = ({ companies, isLoading }) => {
-  const completenessData = useMemo(() => {
-    const total = companies.length || 0;
-      
-    const fieldsToCheck = [
-      { field: 'email', label: 'Email' },
-      { field: 'phone', label: 'Phone' },
-      { field: 'website', label: 'Website' },
-      { field: 'description', label: 'Description' },
-      { field: 'industry', label: 'Industry' },
-      { field: 'size', label: 'Company Size' },
-      { field: 'location', label: 'Location' },
-      { field: 'linkedin', label: 'LinkedIn' },
-      { field: 'founded', label: 'Founded Year' },
-      { field: 'country', label: 'Country' },
-    ];
-
-    const data = fieldsToCheck.map(({ field, label }) => {
-      const filled = companies.filter(company =>
-        company[field as keyof Company] && company[field as keyof Company] !== ''
-      ).length;
-      
-      return {
-        field,
-        label,
-        filled,
-        total,
-        percentage: total ? Math.round((filled / total) * 100) : 0
-      };
-    });
-
-    return data.sort((a, b) => b.percentage - a.percentage);
-  }, [companies]);
+const DataCompletenessChart: React.FC<DataCompletenessChartProps> = ({
+  scopeFilter,
+  tenantId,
+  filters,
+  cacheTtlMs,
+  isLoading
+}) => {
+  const { data: completenessData = [], isLoading: isCompletenessLoading } = useQuery({
+    queryKey: ['companies-data-completeness', scopeFilter, tenantId, filters],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_data_completeness', {
+        p_scope: scopeFilter,
+        p_tenant_id: tenantId,
+        p_filters: filters
+      });
+      if (error) throw error;
+      return (data || []) as CompletenessData[];
+    },
+    staleTime: cacheTtlMs
+  });
 
   const overallScore = completenessData.length > 0 
     ? Math.round(completenessData.reduce((sum, item) => sum + item.percentage, 0) / completenessData.length)
@@ -64,7 +56,7 @@ const DataCompletenessChart: React.FC<DataCompletenessChartProps> = ({ companies
     return '#ef4444';
   };
 
-  if (isLoading) {
+  if (isLoading || isCompletenessLoading) {
     return (
       <Card>
         <CardHeader>

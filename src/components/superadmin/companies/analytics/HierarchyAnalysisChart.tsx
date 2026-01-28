@@ -1,10 +1,12 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Network } from 'lucide-react';
-import { Company } from '@/hooks/useCompanies';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyScope } from '@/hooks/useCompanies';
 
 interface HierarchyData {
   level: number;
@@ -15,42 +17,48 @@ interface HierarchyData {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 interface HierarchyAnalysisChartProps {
-  companies: Company[];
+  scopeFilter: CompanyScope;
+  tenantId: string | null;
+  filters: Record<string, unknown>;
+  cacheTtlMs: number;
   isLoading?: boolean;
 }
 
-const HierarchyAnalysisChart: React.FC<HierarchyAnalysisChartProps> = ({ companies, isLoading }) => {
-  const hierarchyData = useMemo(() => {
-    if (!companies.length) return [];
+const HierarchyAnalysisChart: React.FC<HierarchyAnalysisChartProps> = ({
+  scopeFilter,
+  tenantId,
+  filters,
+  cacheTtlMs,
+  isLoading
+}) => {
+  const { data: hierarchyData, isLoading: isHierarchyLoading } = useQuery({
+    queryKey: ['companies-hierarchy', scopeFilter, tenantId, filters],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_hierarchy_stats', {
+        p_scope: scopeFilter,
+        p_tenant_id: tenantId,
+        p_filters: filters
+      });
+      if (error) throw error;
+      return data as {
+        levels: Array<{ level: number; count: number }>;
+        parentCount: number;
+        subsidiaryCount: number;
+        maxDepth: number;
+        groupCount: number;
+      };
+    },
+    staleTime: cacheTtlMs
+  });
 
-    const levelCounts: Record<number, { count: number; companies: string[] }> = {};
-    
-    companies.forEach(company => {
-      const level = company.hierarchy_level || 0;
-      if (!levelCounts[level]) {
-        levelCounts[level] = { count: 0, companies: [] };
-      }
-      levelCounts[level].count++;
-      levelCounts[level].companies.push(company.name);
-    });
+  const levels = hierarchyData?.levels || [];
 
-    return Object.entries(levelCounts)
-      .map(([level, data]) => ({
-        level: parseInt(level),
-        count: data.count,
-        companies: data.companies.slice(0, 5)
-      }))
-      .sort((a, b) => a.level - b.level);
-  }, [companies]);
+  const parentCompanies = hierarchyData?.parentCount || 0;
+  const subsidiaries = hierarchyData?.subsidiaryCount || 0;
+  const maxDepth = hierarchyData?.maxDepth || 0;
+  const companiesWithGroups = hierarchyData?.groupCount || 0;
 
-  // Calculate statistics
-  const totalCompanies = companies.length;
-  const parentCompanies = companies.filter(c => !c.parent_company_id).length;
-  const subsidiaries = companies.filter(c => c.parent_company_id).length;
-  const maxDepth = Math.max(...hierarchyData.map(h => h.level), 0);
-  const companiesWithGroups = companies.filter(c => c.company_group_name).length;
-
-  if (isLoading || !companies.length) {
+  if (isLoading || isHierarchyLoading) {
     return (
       <Card>
         <CardHeader>
@@ -61,7 +69,25 @@ const HierarchyAnalysisChart: React.FC<HierarchyAnalysisChartProps> = ({ compani
         </CardHeader>
         <CardContent>
           <div className="h-80 flex items-center justify-center text-muted-foreground">
-            {isLoading ? 'Loading hierarchy data...' : 'No companies available'}
+            {isHierarchyLoading ? 'Loading hierarchy data...' : 'No companies available'}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hierarchyData || levels.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Network className="h-5 w-5" />
+            Hierarchy Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 flex items-center justify-center text-muted-foreground">
+            No companies available
           </div>
         </CardContent>
       </Card>
@@ -102,7 +128,7 @@ const HierarchyAnalysisChart: React.FC<HierarchyAnalysisChartProps> = ({ compani
         <div>
           <h4 className="text-sm font-medium mb-3">Distribution by Hierarchy Level</h4>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={hierarchyData}>
+            <BarChart data={levels}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="level"

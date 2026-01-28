@@ -1,65 +1,17 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
-import { Company } from '@/hooks/useCompanies';
 
 interface CompanyPeopleChartProps {
-  companies: Company[];
+  data: Array<{ id: string; name: string; count: number }>;
   isLoading?: boolean;
 }
 
-const CompanyPeopleChart: React.FC<CompanyPeopleChartProps> = ({ companies, isLoading: isCompaniesLoading }) => {
-  const companyIds = useMemo(() => companies.map((company) => company.id), [companies]);
-  const nameById = useMemo(() => {
-    const map = new Map<string, string>();
-    companies.forEach((company) => map.set(company.id, company.name));
-    return map;
-  }, [companies]);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['company-people-stats', companyIds],
-    queryFn: async () => {
-      if (companyIds.length === 0) {
-        return [];
-      }
-      // Get top companies by number of people
-      const companyCounts: Record<string, { id: string; name: string; count: number }> = {};
-
-      const chunkSize = 1000;
-      for (let i = 0; i < companyIds.length; i += chunkSize) {
-        const chunk = companyIds.slice(i, i + chunkSize);
-        const { data: relationships, error } = await supabase
-          .from('company_relationships')
-          .select('company_id')
-          .in('company_id', chunk);
-
-        if (error) throw error;
-
-        (relationships || []).forEach((relationship) => {
-          const companyId = relationship.company_id as string | undefined;
-          if (!companyId) return;
-          const companyName = nameById.get(companyId);
-          if (!companyName) return;
-          if (companyCounts[companyId]) {
-            companyCounts[companyId].count += 1;
-          } else {
-            companyCounts[companyId] = { id: companyId, name: companyName, count: 1 };
-          }
-        });
-      }
-
-      return Object.values(companyCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-    },
-    enabled: companyIds.length > 0,
-  });
+const CompanyPeopleChart: React.FC<CompanyPeopleChartProps> = ({ data, isLoading }) => {
   
-  if (isCompaniesLoading || isLoading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>

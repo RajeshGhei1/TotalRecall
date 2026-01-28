@@ -1,40 +1,22 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
-import { Company } from '@/hooks/useCompanies';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 interface CompanyIndustryChartProps {
-  companies: Company[];
+  data: Array<{ name: string; count: number }>;
   isLoading?: boolean;
 }
 
-const CompanyIndustryChart: React.FC<CompanyIndustryChartProps> = ({ companies, isLoading }) => {
+const CompanyIndustryChart: React.FC<CompanyIndustryChartProps> = ({ data, isLoading }) => {
 
-  // Process data for the chart
-  const getIndustryData = () => {
-    // Group companies by primary industry (industry1)
-    const industryGroups = companies.reduce((acc, company) => {
-      const industry = company.industry1 || 'Undefined';
-      
-      if (!acc[industry]) {
-        acc[industry] = 0;
-      }
-      acc[industry] += 1;
-      return acc;
-    }, {});
-
-    // Convert to array format for chart
-    return Object.entries(industryGroups).map(([name, value]) => ({
-      name,
-      value
-    }));
-  };
-
-  const data = useMemo(() => getIndustryData(), [companies]);
+  const chartData = data.map((entry) => ({
+    name: entry.name,
+    value: entry.count
+  }));
 
   if (isLoading) {
     return (
@@ -51,12 +33,12 @@ const CompanyIndustryChart: React.FC<CompanyIndustryChartProps> = ({ companies, 
       <CardContent className="p-6">
         <h3 className="text-lg font-medium mb-4">Companies by Primary Industry</h3>
         
-        {data.length > 0 ? (
+        {chartData.length > 0 ? (
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={data}
+                  data={chartData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -66,7 +48,7 @@ const CompanyIndustryChart: React.FC<CompanyIndustryChartProps> = ({ companies, 
                   nameKey="name"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {data.map((entry, index) => (
+                  {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

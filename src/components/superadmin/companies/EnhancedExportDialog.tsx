@@ -17,6 +17,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Company } from '@/hooks/useCompanies';
+import { supabase } from '@/integrations/supabase/client';
+import { useFeatureUsageTracking } from '@/hooks/useFeatureAccess';
 
 interface ExportField {
   key: keyof Company;
@@ -29,14 +31,17 @@ interface EnhancedExportDialogProps {
   onClose: () => void;
   companies: Company[];
   currentFilters?: string;
+  tenantId?: string | null;
 }
 
 const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
   isOpen,
   onClose,
   companies,
-  currentFilters
+  currentFilters,
+  tenantId
 }) => {
+  const { trackUsage } = useFeatureUsageTracking();
   const [exportFields, setExportFields] = useState<ExportField[]>([
     { key: 'name', label: 'Company Name', selected: true },
     { key: 'email', label: 'Email', selected: true },
@@ -117,7 +122,7 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     return generateCSV();
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const selectedFields = exportFields.filter(field => field.selected);
     
     if (selectedFields.length === 0) {
@@ -126,6 +131,13 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
     }
 
     try {
+      const { error: rateLimitError } = await supabase.rpc('enforce_rate_limit', {
+        p_action: 'companies.export'
+      });
+      if (rateLimitError) {
+        throw rateLimitError;
+      }
+
       const content = exportFormat === 'csv' ? generateCSV() : generateXLSX();
       const blob = new Blob([content], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -139,9 +151,16 @@ const EnhancedExportDialog: React.FC<EnhancedExportDialogProps> = ({
       URL.revokeObjectURL(url);
       
       toast.success(`Exported ${companies.length} companies as ${exportFormat.toUpperCase()}`);
+      if (tenantId) {
+        trackUsage.mutate({
+          tenantId,
+          moduleName: 'data_management',
+          featureId: 'bulk-upload-download'
+        });
+      }
       onClose();
     } catch (error) {
-      toast.error('Failed to export companies');
+      toast.error(error instanceof Error ? error.message : 'Failed to export companies');
       console.error('Export error:', error);
     }
   };

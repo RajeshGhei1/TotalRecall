@@ -1,9 +1,11 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Treemap } from 'recharts';
-import { Company } from '@/hooks/useCompanies';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyScope } from '@/hooks/useCompanies';
 import { Building2, TrendingUp } from 'lucide-react';
 
 interface IndustryData {
@@ -16,33 +18,49 @@ interface IndustryData {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
 interface IndustrySectorChartProps {
-  companies: Company[];
+  scopeFilter: CompanyScope;
+  tenantId: string | null;
+  filters: Record<string, unknown>;
+  cacheTtlMs: number;
   isLoading?: boolean;
 }
 
-const IndustrySectorChart: React.FC<IndustrySectorChartProps> = ({ companies, isLoading }) => {
+const IndustrySectorChart: React.FC<IndustrySectorChartProps> = ({
+  scopeFilter,
+  tenantId,
+  filters,
+  cacheTtlMs,
+  isLoading
+}) => {
   const [chartType, setChartType] = useState<'pie' | 'bar' | 'treemap'>('pie');
   const [industryField, setIndustryField] = useState<'industry' | 'industry1' | 'companysector'>('industry');
 
-  const industryData = useMemo(() => {
-    const industryCounts: Record<string, number> = {};
-    companies.forEach(company => {
-      const industry = (company[industryField as keyof Company] as string) || 'Unknown';
-      industryCounts[industry] = (industryCounts[industry] || 0) + 1;
-    });
+  const dimension = industryField === 'companysector' ? 'companysector' : 'industry1';
 
-    const total = Object.values(industryCounts).reduce((sum, count) => sum + count, 0);
-    return Object.entries(industryCounts)
-      .map(([name, count]) => ({
-        name: name || 'Unknown',
-        count,
-        percentage: total ? Math.round((count / total) * 100) : 0,
-        size: count
-      }))
-      .sort((a, b) => b.count - a.count);
-  }, [companies, industryField]);
+  const { data: industryData = [], isLoading: isIndustryLoading } = useQuery({
+    queryKey: ['industry-distribution', scopeFilter, tenantId, filters, dimension],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_distribution', {
+        p_scope: scopeFilter,
+        p_tenant_id: tenantId,
+        p_dimension: dimension,
+        p_filters: filters,
+        p_top: 50
+      });
+      if (error) throw error;
+      const items = (data || []) as Array<{ name: string; count: number }>;
+      const total = items.reduce((sum, item) => sum + item.count, 0);
+      return items.map((item) => ({
+        name: item.name,
+        count: item.count,
+        percentage: total ? Math.round((item.count / total) * 100) : 0,
+        size: item.count
+      }));
+    },
+    staleTime: cacheTtlMs
+  });
 
-  if (isLoading) {
+  if (isLoading || isIndustryLoading) {
     return (
       <Card>
         <CardHeader>

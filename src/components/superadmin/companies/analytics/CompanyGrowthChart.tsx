@@ -1,9 +1,11 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Company } from '@/hooks/useCompanies';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { CompanyScope } from '@/hooks/useCompanies';
 import { CalendarDays, TrendingUp } from 'lucide-react';
 
 interface GrowthData {
@@ -14,59 +16,47 @@ interface GrowthData {
 }
 
 interface CompanyGrowthChartProps {
-  companies: Company[];
+  scopeFilter: CompanyScope;
+  tenantId: string | null;
+  filters: Record<string, unknown>;
+  cacheTtlMs: number;
   isLoading?: boolean;
 }
 
-const CompanyGrowthChart: React.FC<CompanyGrowthChartProps> = ({ companies, isLoading }) => {
+const CompanyGrowthChart: React.FC<CompanyGrowthChartProps> = ({
+  scopeFilter,
+  tenantId,
+  filters,
+  cacheTtlMs,
+  isLoading,
+}) => {
   const [timeRange, setTimeRange] = useState('12months');
   const [chartType, setChartType] = useState('line');
 
-  const growthData = useMemo(() => {
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    switch (timeRange) {
-      case '3months':
-        startDate.setMonth(endDate.getMonth() - 3);
-        break;
-      case '6months':
-        startDate.setMonth(endDate.getMonth() - 6);
-        break;
-      case '12months':
-        startDate.setFullYear(endDate.getFullYear() - 1);
-        break;
-      case '24months':
-        startDate.setFullYear(endDate.getFullYear() - 2);
-        break;
-    }
+  const months = timeRange === '3months'
+    ? 3
+    : timeRange === '6months'
+    ? 6
+    : timeRange === '24months'
+    ? 24
+    : 12;
 
-    const monthlyData: Record<string, number> = {};
-    companies
-      .filter(company => new Date(company.created_at) >= startDate)
-      .forEach(company => {
-        const month = new Date(company.created_at).toISOString().slice(0, 7);
-        monthlyData[month] = (monthlyData[month] || 0) + 1;
+  const { data: growthData = [], isLoading: isGrowthLoading } = useQuery({
+    queryKey: ['company-growth', scopeFilter, tenantId, filters, months],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_companies_growth', {
+        p_scope: scopeFilter,
+        p_tenant_id: tenantId,
+        p_filters: filters,
+        p_months: months
       });
+      if (error) throw error;
+      return (data || []) as GrowthData[];
+    },
+    staleTime: cacheTtlMs
+  });
 
-    const chartData: GrowthData[] = [];
-    let cumulative = 0;
-    
-    const months = Object.keys(monthlyData).sort();
-    months.forEach(month => {
-      cumulative += monthlyData[month];
-      chartData.push({
-        period: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        total: monthlyData[month],
-        new_companies: monthlyData[month],
-        cumulative
-      });
-    });
-
-    return chartData;
-  }, [companies, timeRange]);
-
-  if (isLoading) {
+  if (isLoading || isGrowthLoading) {
     return (
       <Card>
         <CardHeader>
