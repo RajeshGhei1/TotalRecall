@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Company } from '@/hooks/useCompanies';
 import { MapPin, Globe } from 'lucide-react';
 
 interface LocationData {
@@ -15,54 +14,45 @@ interface LocationData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-const GeographicDistributionChart: React.FC = () => {
+interface GeographicDistributionChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const GeographicDistributionChart: React.FC<GeographicDistributionChartProps> = ({ companies, isLoading }) => {
   const [viewType, setViewType] = useState<'country' | 'region' | 'city'>('country');
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
 
-  const { data: locationData = [], isLoading } = useQuery({
-    queryKey: ['geographic_distribution', viewType],
-    queryFn: async () => {
-      let field = 'location';
-      switch (viewType) {
-        case 'country':
-          field = 'country';
-          break;
-        case 'region':
-          field = 'region';
-          break;
-        case 'city':
-          field = 'location';
-          break;
-      }
-
-      const { data, error } = await supabase
-        .from('companies')
-        .select(field)
-        .not(field, 'is', null);
-
-      if (error) throw error;
-
-      // Count occurrences
-      const locationCounts: Record<string, number> = {};
-      data?.forEach(company => {
-        const location = company[field] || 'Unknown';
-        locationCounts[location] = (locationCounts[location] || 0) + 1;
-      });
-
-      // Convert to chart format and sort by count
-      const total = Object.values(locationCounts).reduce((sum, count) => sum + count, 0);
-      const chartData: LocationData[] = Object.entries(locationCounts)
-        .map(([name, count]) => ({
-          name: name || 'Unknown',
-          count,
-          percentage: Math.round((count / total) * 100)
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10); // Top 10
-
-      return chartData;
+  const locationData = useMemo(() => {
+    let field: keyof Company = 'location';
+    switch (viewType) {
+      case 'country':
+        field = 'country';
+        break;
+      case 'region':
+        field = 'region';
+        break;
+      case 'city':
+        field = 'location';
+        break;
     }
-  });
+
+    const locationCounts: Record<string, number> = {};
+    companies.forEach(company => {
+      const location = (company[field] as string) || 'Unknown';
+      locationCounts[location] = (locationCounts[location] || 0) + 1;
+    });
+
+    const total = Object.values(locationCounts).reduce((sum, count) => sum + count, 0);
+    return Object.entries(locationCounts)
+      .map(([name, count]) => ({
+        name: name || 'Unknown',
+        count,
+        percentage: total ? Math.round((count / total) * 100) : 0
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [companies, viewType]);
 
   if (isLoading) {
     return (

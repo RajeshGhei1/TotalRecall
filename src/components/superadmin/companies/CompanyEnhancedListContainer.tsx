@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Building, Edit, Trash2, Eye, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
-import { useCompanies } from '@/hooks/useCompanies';
+import { CompanyScope, useCompanies } from '@/hooks/useCompanies';
 import { useNavigate } from 'react-router-dom';
 import { EditCompanyDialog } from './EditCompanyDialog';
 import CompanyDeleteDialog from './CompanyDeleteDialog';
@@ -39,9 +39,15 @@ import { toast } from 'sonner';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 import CompanyAllocationDialog from './CompanyAllocationDialog';
 
-const CompanyEnhancedListContainer: React.FC = () => {
+interface CompanyEnhancedListContainerProps {
+  scopeFilter?: CompanyScope;
+}
+
+const CompanyEnhancedListContainer: React.FC<CompanyEnhancedListContainerProps> = ({
+  scopeFilter = 'all',
+}) => {
   const navigate = useNavigate();
-  const { companies, isLoading, updateCompany, deleteCompany } = useCompanies();
+  const { companies, isLoading, updateCompany, deleteCompany } = useCompanies({ ownerScope: scopeFilter });
   const { isSuperAdmin } = useSuperAdminCheck();
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -58,6 +64,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
   // Enhanced filter state
   const [filters, setFilters] = useState<CompanyFilters>({
     search: '',
+    ownershipScopes: [],
     industry1: [],
     industry2: [],
     industry3: [],
@@ -90,7 +97,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
   });
 
   // Use the enhanced filtering hook
-  const { filteredCompanies } = useCompanyFilters(companies || [], filters, filters.search);
+  const { filteredCompanies } = useCompanyFilters(companies || [], filters, filters.search, scopeFilter);
 
   // Pagination logic - ensure we have safe defaults
   const totalItems = filteredCompanies?.length || 0;
@@ -131,6 +138,7 @@ const CompanyEnhancedListContainer: React.FC = () => {
   const handleFiltersReset = () => {
     setFilters({
       search: '',
+      ownershipScopes: [],
       industry1: [],
       industry2: [],
       industry3: [],
@@ -166,14 +174,19 @@ const CompanyEnhancedListContainer: React.FC = () => {
   // Selection handlers with safe null checks
   const handleSelectAll = (checked: boolean) => {
     if (checked && paginatedCompanies && paginatedCompanies.length > 0) {
-      const currentPageIds = new Set(paginatedCompanies.map(company => company.id));
+      const currentPageIds = new Set(
+        paginatedCompanies
+          .filter(company => isSuperAdmin || company.owner_type === 'tenant')
+          .map(company => company.id)
+      );
       setSelectedCompanies(currentPageIds);
     } else {
       setSelectedCompanies(new Set());
     }
   };
 
-  const handleSelectCompany = (companyId: string, checked: boolean) => {
+  const handleSelectCompany = (companyId: string, checked: boolean, isDisabled: boolean) => {
+    if (isDisabled) return;
     const newSelection = new Set(selectedCompanies);
     if (checked) {
       newSelection.add(companyId);
@@ -310,13 +323,29 @@ const CompanyEnhancedListContainer: React.FC = () => {
                   <TableCell>
                     <Checkbox
                       checked={selectedCompanies.has(company.id)}
-                      onCheckedChange={(checked) => handleSelectCompany(company.id, checked as boolean)}
+                      disabled={!isSuperAdmin && company.owner_type !== 'tenant'}
+                      onCheckedChange={(checked) => handleSelectCompany(
+                        company.id,
+                        checked as boolean,
+                        !isSuperAdmin && company.owner_type !== 'tenant'
+                      )}
                       aria-label={`Select ${company.name}`}
                     />
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{company.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{company.name}</div>
+                        {company.owner_type && (
+                          <Badge variant="outline" className="text-xs">
+                            {company.owner_type === 'tenant'
+                              ? 'Tenant'
+                              : company.owner_type === 'platform'
+                              ? 'Platform'
+                              : 'App'}
+                          </Badge>
+                        )}
+                      </div>
                       {company.website && (
                         <div className="text-sm text-gray-500">{company.website}</div>
                       )}
@@ -356,12 +385,14 @@ const CompanyEnhancedListContainer: React.FC = () => {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setEditingCompany(company)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Company
-                        </DropdownMenuItem>
+                        {(isSuperAdmin || company.owner_type === 'tenant') && (
+                          <DropdownMenuItem
+                            onClick={() => setEditingCompany(company)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Company
+                          </DropdownMenuItem>
+                        )}
                         {isSuperAdmin && company.owner_type !== 'tenant' && (
                           <>
                             <DropdownMenuSeparator />
@@ -373,14 +404,18 @@ const CompanyEnhancedListContainer: React.FC = () => {
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => setDeletingCompany(company)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Company
-                        </DropdownMenuItem>
+                        {(isSuperAdmin || company.owner_type === 'tenant') && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => setDeletingCompany(company)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Company
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

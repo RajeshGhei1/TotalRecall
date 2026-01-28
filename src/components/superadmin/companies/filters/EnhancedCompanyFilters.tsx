@@ -14,7 +14,7 @@ interface EnhancedCompanyFiltersProps {
   filters: CompanyFilters;
   onFiltersChange: (filters: CompanyFilters) => void;
   onReset: () => void;
-  companies: Compunknown[];
+  companies: Company[];
 }
 
 const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
@@ -47,6 +47,12 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
   const generateBooleanOptions = () => [
     { label: 'Yes', value: 'true' },
     { label: 'No', value: 'false' }
+  ];
+
+  const ownershipOptions = [
+    { label: 'Tenant', value: 'tenant' },
+    { label: 'Platform', value: 'platform' },
+    { label: 'App', value: 'app' },
   ];
 
   // Industry 1 (Primary) options - always use full companies array
@@ -180,6 +186,16 @@ const EnhancedCompanyFilters: React.FC<EnhancedCompanyFiltersProps> = ({
         </div>
 
         <div className="space-y-4">
+          <FilterSection title="Ownership Scope" sectionKey="ownership">
+            <MultiSelectFilter
+              label="Owner Type"
+              options={ownershipOptions}
+              value={filters.ownershipScopes || []}
+              onChange={(value) => updateFilter('ownershipScopes', value)}
+              placeholder="Select owner type"
+            />
+          </FilterSection>
+
           {/* Basic Information */}
           <FilterSection title="Basic Information" sectionKey="basic">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

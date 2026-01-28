@@ -1,15 +1,19 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCompanies } from '@/hooks/useCompanies';
+import { Company } from '@/hooks/useCompanies';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-const CompanyLocationChart: React.FC = () => {
-  const { companies = [], isLoading } = useCompanies();
+interface CompanyLocationChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const CompanyLocationChart: React.FC<CompanyLocationChartProps> = ({ companies, isLoading }) => {
   const isMobile = useIsMobile();
 
   // Process data for the chart
@@ -45,7 +49,7 @@ const CompanyLocationChart: React.FC = () => {
       }, []);
   };
 
-  const data = getLocationData();
+  const data = useMemo(() => getLocationData(), [companies]);
 
   if (isLoading) {
     return (

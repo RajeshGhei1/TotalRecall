@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Company } from '@/hooks/useCompanies';
 import { CalendarDays, TrendingUp } from 'lucide-react';
 
 interface GrowthData {
@@ -14,64 +13,58 @@ interface GrowthData {
   cumulative: number;
 }
 
-const CompanyGrowthChart: React.FC = () => {
+interface CompanyGrowthChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const CompanyGrowthChart: React.FC<CompanyGrowthChartProps> = ({ companies, isLoading }) => {
   const [timeRange, setTimeRange] = useState('12months');
   const [chartType, setChartType] = useState('line');
 
-  const { data: growthData = [], isLoading } = useQuery({
-    queryKey: ['company_growth', timeRange],
-    queryFn: async () => {
-      const endDate = new Date();
-      const startDate = new Date();
-      
-      switch (timeRange) {
-        case '3months':
-          startDate.setMonth(endDate.getMonth() - 3);
-          break;
-        case '6months':
-          startDate.setMonth(endDate.getMonth() - 6);
-          break;
-        case '12months':
-          startDate.setFullYear(endDate.getFullYear() - 1);
-          break;
-        case '24months':
-          startDate.setFullYear(endDate.getFullYear() - 2);
-          break;
-      }
+  const growthData = useMemo(() => {
+    const endDate = new Date();
+    const startDate = new Date();
+    
+    switch (timeRange) {
+      case '3months':
+        startDate.setMonth(endDate.getMonth() - 3);
+        break;
+      case '6months':
+        startDate.setMonth(endDate.getMonth() - 6);
+        break;
+      case '12months':
+        startDate.setFullYear(endDate.getFullYear() - 1);
+        break;
+      case '24months':
+        startDate.setFullYear(endDate.getFullYear() - 2);
+        break;
+    }
 
-      const { data, error } = await supabase
-        .from('companies')
-        .select('created_at')
-        .gte('created_at', startDate.toISOString())
-        .order('created_at');
-
-      if (error) throw error;
-
-      // Process data by month
-      const monthlyData: Record<string, number> = {};
-      data?.forEach(company => {
+    const monthlyData: Record<string, number> = {};
+    companies
+      .filter(company => new Date(company.created_at) >= startDate)
+      .forEach(company => {
         const month = new Date(company.created_at).toISOString().slice(0, 7);
         monthlyData[month] = (monthlyData[month] || 0) + 1;
       });
 
-      // Convert to chart format
-      const chartData: GrowthData[] = [];
-      let cumulative = 0;
-      
-      const months = Object.keys(monthlyData).sort();
-      months.forEach(month => {
-        cumulative += monthlyData[month];
-        chartData.push({
-          period: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-          total: monthlyData[month],
-          new_companies: monthlyData[month],
-          cumulative
-        });
+    const chartData: GrowthData[] = [];
+    let cumulative = 0;
+    
+    const months = Object.keys(monthlyData).sort();
+    months.forEach(month => {
+      cumulative += monthlyData[month];
+      chartData.push({
+        period: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        total: monthlyData[month],
+        new_companies: monthlyData[month],
+        cumulative
       });
+    });
 
-      return chartData;
-    }
-  });
+    return chartData;
+  }, [companies, timeRange]);
 
   if (isLoading) {
     return (

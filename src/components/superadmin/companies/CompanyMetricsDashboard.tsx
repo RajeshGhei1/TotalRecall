@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useCompanies } from '@/hooks/useCompanies';
+import { CompanyScope, useCompanies } from '@/hooks/useCompanies';
 import { Building, Users, Download, Settings } from 'lucide-react';
 
 // Import new analytics components
@@ -41,8 +41,14 @@ interface FilterState {
   searchTerm: string;
 }
 
-const CompanyMetricsDashboard: React.FC = () => {
-  const { companies = [], isLoading } = useCompanies();
+interface CompanyMetricsDashboardProps {
+  scopeFilter?: CompanyScope;
+}
+
+const CompanyMetricsDashboard: React.FC<CompanyMetricsDashboardProps> = ({
+  scopeFilter = 'all',
+}) => {
+  const { companies = [], isLoading } = useCompanies({ ownerScope: scopeFilter });
   const [showFilters, setShowFilters] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -55,49 +61,55 @@ const CompanyMetricsDashboard: React.FC = () => {
   });
 
   // Get company-people relationship statistics
-  const { data: relationshipStats = { company_count: 0, people_count: 0, relationship_count: 0 }, 
-          isLoading: isStatsLoading } = useQuery({
-    queryKey: ['company_people_stats'],
+  const scopeCompanies = useMemo(() => {
+    if (scopeFilter === 'all') return companies;
+    return companies.filter(company => company.owner_type === scopeFilter);
+  }, [companies, scopeFilter]);
+
+  const { data: relationshipStats = { company_count: 0, people_count: 0, relationship_count: 0 } } = useQuery({
+    queryKey: ['company_people_stats', scopeFilter, scopeCompanies.map(c => c.id)],
     queryFn: async () => {
-      // Count companies with relationships - using select count instead of distinct
-      const { data: companyRelationships, error: companyError } = await supabase
-        .from('company_relationships')
-        .select('company_id', { count: 'exact', head: false });
-
-      // Count people with relationships - using select count instead of distinct
-      const { data: peopleRelationships, error: peopleError } = await supabase
-        .from('company_relationships')
-        .select('person_id', { count: 'exact', head: false });
-
-      // Count unique companies with relationships
-      const uniqueCompanies = companyRelationships ? 
-        Array.from(new Set(companyRelationships.map(rel => rel.company_id))).length : 0;
-
-      // Count unique people with relationships
-      const uniquePeople = peopleRelationships ? 
-        Array.from(new Set(peopleRelationships.map(rel => rel.person_id))).length : 0;
-
-      // Count total relationships
-      const { count: relationshipCount, error: countError } = await supabase
-        .from('company_relationships')
-        .select('*', { count: 'exact', head: true });
-
-      if (companyError || peopleError || countError) {
-        console.error("Error fetching relationship stats:", { companyError, peopleError, countError });
+      const companyIds = scopeCompanies.map(company => company.id);
+      if (companyIds.length === 0) {
         return { company_count: 0, people_count: 0, relationship_count: 0 };
       }
 
+      const uniqueCompanies = new Set<string>();
+      const uniquePeople = new Set<string>();
+      let relationshipCount = 0;
+
+      const chunkSize = 1000;
+      for (let i = 0; i < companyIds.length; i += chunkSize) {
+        const chunk = companyIds.slice(i, i + chunkSize);
+        const { data, error, count } = await supabase
+          .from('company_relationships')
+          .select('company_id, person_id', { count: 'exact', head: false })
+          .in('company_id', chunk);
+
+        if (error) {
+          console.error("Error fetching relationship stats:", error);
+          continue;
+        }
+
+        (data || []).forEach((row) => {
+          if (row.company_id) uniqueCompanies.add(row.company_id);
+          if (row.person_id) uniquePeople.add(row.person_id);
+        });
+
+        relationshipCount += count || 0;
+      }
+
       return {
-        company_count: uniqueCompanies,
-        people_count: uniquePeople,
-        relationship_count: relationshipCount || 0
+        company_count: uniqueCompanies.size,
+        people_count: uniquePeople.size,
+        relationship_count: relationshipCount
       };
     }
   });
 
   // Filter companies based on active filters
   const filteredCompanies = useMemo(() => {
-    return companies.filter(company => {
+    return scopeCompanies.filter(company => {
       // Search filter
       if (filters.searchTerm && !company.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
         return false;
@@ -139,12 +151,12 @@ const CompanyMetricsDashboard: React.FC = () => {
 
       return true;
     });
-  }, [companies, filters]);
+  }, [scopeCompanies, filters]);
 
   // Get unique values for filter options
   const filterOptions = useMemo(() => {
     const allIndustries = new Set<string>();
-    companies.forEach(c => {
+    scopeCompanies.forEach(c => {
       if (c.industry1) allIndustries.add(c.industry1);
       if (c.industry2) allIndustries.add(c.industry2);
       if (c.industry3) allIndustries.add(c.industry3);
@@ -152,10 +164,10 @@ const CompanyMetricsDashboard: React.FC = () => {
 
     return {
       industries: Array.from(allIndustries).sort(),
-      locations: Array.from(new Set(companies.map(c => c.location).filter(Boolean))).sort(),
-      sizes: Array.from(new Set(companies.map(c => c.size).filter(Boolean))).sort(),
+      locations: Array.from(new Set(scopeCompanies.map(c => c.location).filter(Boolean))).sort(),
+      sizes: Array.from(new Set(scopeCompanies.map(c => c.size).filter(Boolean))).sort(),
     };
-  }, [companies]);
+  }, [scopeCompanies]);
 
   const totalCompanies = filteredCompanies?.length || 0;
   const withWebsite = filteredCompanies?.filter(c => c.domain || c.website).length || 0;
@@ -168,7 +180,7 @@ const CompanyMetricsDashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold">Enhanced Analytics Dashboard</h2>
           <p className="text-muted-foreground">
-            Comprehensive company metrics and insights {totalCompanies !== companies.length && `(${totalCompanies} filtered)`}
+            Comprehensive company metrics and insights {totalCompanies !== scopeCompanies.length && `(${totalCompanies} filtered)`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -210,7 +222,7 @@ const CompanyMetricsDashboard: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{totalCompanies}</div>
             <p className="text-xs text-muted-foreground">
-              {totalCompanies !== companies.length && `of ${companies.length} total`}
+              {totalCompanies !== scopeCompanies.length && `of ${scopeCompanies.length} total`}
             </p>
           </CardContent>
         </Card>
@@ -254,10 +266,10 @@ const CompanyMetricsDashboard: React.FC = () => {
 
       {/* Charts Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-        <CompanyIndustryChart />
-        <CompanySizeChart />
-        <CompanyLocationChart />
-        <CompanyPeopleChart />
+        <CompanyIndustryChart companies={filteredCompanies} isLoading={isLoading} />
+        <CompanySizeChart companies={filteredCompanies} isLoading={isLoading} />
+        <CompanyLocationChart companies={filteredCompanies} isLoading={isLoading} />
+        <CompanyPeopleChart companies={filteredCompanies} isLoading={isLoading} />
       </div>
 
       {/* Enhanced Analytics Section - Remove companies prop from these components */}
@@ -265,13 +277,13 @@ const CompanyMetricsDashboard: React.FC = () => {
         <h3 className="text-xl font-semibold">Advanced Analytics</h3>
         
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-          <CompanyGrowthChart />
-          <GeographicDistributionChart />
-          <IndustrySectorChart />
-          <DataCompletenessChart />
+          <CompanyGrowthChart companies={filteredCompanies} isLoading={isLoading} />
+          <GeographicDistributionChart companies={filteredCompanies} isLoading={isLoading} />
+          <IndustrySectorChart companies={filteredCompanies} isLoading={isLoading} />
+          <DataCompletenessChart companies={filteredCompanies} isLoading={isLoading} />
         </div>
 
-        <HierarchyAnalysisChart />
+        <HierarchyAnalysisChart companies={filteredCompanies} isLoading={isLoading} />
       </div>
 
       {/* Export Dialog */}
@@ -279,9 +291,13 @@ const CompanyMetricsDashboard: React.FC = () => {
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
         companies={filteredCompanies}
-        currentFilters={Object.entries(filters)
-          .filter(([_, value]) => value && value !== '')
-          .map(([key, value]) => `${key}: ${value}`)
+        currentFilters={[
+          scopeFilter !== 'all' ? `scope: ${scopeFilter}` : null,
+          ...Object.entries(filters)
+            .filter(([_, value]) => value && value !== '')
+            .map(([key, value]) => `${key}: ${value}`)
+        ]
+          .filter(Boolean)
           .join(', ')}
       />
     </div>

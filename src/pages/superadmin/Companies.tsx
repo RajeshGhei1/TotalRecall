@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Upload, Database, BarChart, Download, History, Settings, Crown, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import CompanyEnhancedListContainer from '@/components/superadmin/companies/CompanyEnhancedListContainer';
 import CompanyMetricsDashboard from '@/components/superadmin/companies/CompanyMetricsDashboard';
@@ -23,7 +24,7 @@ import EnhancedExportDialog from '@/components/superadmin/companies/EnhancedExpo
 import ApiConnectionDialog from '@/components/superadmin/companies/ApiConnectionDialog';
 import ImportHistoryDialog from '@/components/superadmin/companies/ImportHistoryDialog';
 import ModuleFeatureIntegration from '@/components/modules/ModuleFeatureIntegration';
-import { useCompanies, Company } from '@/hooks/useCompanies';
+import { useCompanies, Company, CompanyScope } from '@/hooks/useCompanies';
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { useSuperAdminCheck } from '@/hooks/useSuperAdminCheck';
 import { useTenantContext } from '@/contexts/TenantContext';
@@ -40,6 +41,7 @@ const Companies = () => {
   const [isApiConnectionOpen, setIsApiConnectionOpen] = useState(false);
   const [isImportHistoryOpen, setIsImportHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("companies");
+  const [scopeFilter, setScopeFilter] = useState<CompanyScope>('all');
   
   const { companies, isLoading, createCompany, refetch } = useCompanies();
   const { data: currentTenant } = useCurrentTenant();
@@ -175,6 +177,10 @@ const Companies = () => {
     }
   };
 
+  const scopeFilteredCompanies = scopeFilter === 'all'
+    ? (companies || [])
+    : (companies || []).filter((company) => company.owner_type === scopeFilter);
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -197,7 +203,21 @@ const Companies = () => {
               Comprehensive company management with advanced bulk operations and analytics
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Scope</span>
+              <Select value={scopeFilter} onValueChange={(value) => setScopeFilter(value as CompanyScope)}>
+                <SelectTrigger className="w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="tenant">Tenant</SelectItem>
+                  <SelectItem value="platform">Platform</SelectItem>
+                  <SelectItem value="app">App</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={() => {
               logger.debug('Create Company button clicked');
               setIsCreateDialogOpen(true);
@@ -241,7 +261,7 @@ const Companies = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CompanyEnhancedListContainer />
+                <CompanyEnhancedListContainer scopeFilter={scopeFilter} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -255,7 +275,7 @@ const Companies = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CompanyMetricsDashboard />
+                <CompanyMetricsDashboard scopeFilter={scopeFilter} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -328,8 +348,8 @@ const Companies = () => {
         <EnhancedExportDialog
           isOpen={isExportDialogOpen}
           onClose={() => setIsExportDialogOpen(false)}
-          companies={companies || []}
-          currentFilters="All companies"
+          companies={scopeFilteredCompanies}
+          currentFilters={`Scope: ${scopeFilter}`}
         />
 
         <ImportHistoryDialog

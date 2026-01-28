@@ -64,7 +64,9 @@ export interface Company {
   hierarchy_level?: number;
 }
 
-export const useCompanies = () => {
+export type CompanyScope = 'all' | 'tenant' | 'platform' | 'app';
+
+export const useCompanies = (options?: { ownerScope?: CompanyScope }) => {
   const queryClient = useQueryClient();
   const { saveCustomFieldValues } = useCustomFields();
   const { createSecureKey } = useSecureQueryKey();
@@ -95,7 +97,7 @@ export const useCompanies = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: createSecureKey(['companies']),
+    queryKey: createSecureKey(['companies'], [options?.ownerScope ?? 'all']),
     queryFn: async () => {
       let query = supabase
         .from('companies')
@@ -129,6 +131,10 @@ export const useCompanies = () => {
         query = query.or(filters.join(','));
       } else if (!isSuperAdmin) {
         return [];
+      }
+
+      if (options?.ownerScope && options.ownerScope !== 'all') {
+        query = query.eq('owner_type', options.ownerScope);
       }
 
       const { data, error } = await query;

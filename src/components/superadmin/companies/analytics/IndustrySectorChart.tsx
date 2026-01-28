@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Treemap } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Company } from '@/hooks/useCompanies';
 import { Building2, TrendingUp } from 'lucide-react';
 
 interface IndustryData {
@@ -16,41 +15,32 @@ interface IndustryData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
-const IndustrySectorChart: React.FC = () => {
+interface IndustrySectorChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const IndustrySectorChart: React.FC<IndustrySectorChartProps> = ({ companies, isLoading }) => {
   const [chartType, setChartType] = useState<'pie' | 'bar' | 'treemap'>('pie');
   const [industryField, setIndustryField] = useState<'industry' | 'industry1' | 'companysector'>('industry');
 
-  const { data: industryData = [], isLoading } = useQuery({
-    queryKey: ['industry_distribution', industryField],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select(industryField)
-        .not(industryField, 'is', null);
+  const industryData = useMemo(() => {
+    const industryCounts: Record<string, number> = {};
+    companies.forEach(company => {
+      const industry = (company[industryField as keyof Company] as string) || 'Unknown';
+      industryCounts[industry] = (industryCounts[industry] || 0) + 1;
+    });
 
-      if (error) throw error;
-
-      // Count occurrences
-      const industryCounts: Record<string, number> = {};
-      data?.forEach(company => {
-        const industry = company[industryField] || 'Unknown';
-        industryCounts[industry] = (industryCounts[industry] || 0) + 1;
-      });
-
-      // Convert to chart format and sort by count
-      const total = Object.values(industryCounts).reduce((sum, count) => sum + count, 0);
-      const chartData: IndustryData[] = Object.entries(industryCounts)
-        .map(([name, count]) => ({
-          name: name || 'Unknown',
-          count,
-          percentage: Math.round((count / total) * 100),
-          size: count // For treemap
-        }))
-        .sort((a, b) => b.count - a.count);
-
-      return chartData;
-    }
-  });
+    const total = Object.values(industryCounts).reduce((sum, count) => sum + count, 0);
+    return Object.entries(industryCounts)
+      .map(([name, count]) => ({
+        name: name || 'Unknown',
+        count,
+        percentage: total ? Math.round((count / total) * 100) : 0,
+        size: count
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [companies, industryField]);
 
   if (isLoading) {
     return (

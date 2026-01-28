@@ -1,15 +1,18 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCompanies } from '@/hooks/useCompanies';
+import { Company } from '@/hooks/useCompanies';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-const CompanyIndustryChart: React.FC = () => {
-  const { companies = [], isLoading } = useCompanies();
+interface CompanyIndustryChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const CompanyIndustryChart: React.FC<CompanyIndustryChartProps> = ({ companies, isLoading }) => {
 
   // Process data for the chart
   const getIndustryData = () => {
@@ -31,7 +34,7 @@ const CompanyIndustryChart: React.FC = () => {
     }));
   };
 
-  const data = getIndustryData();
+  const data = useMemo(() => getIndustryData(), [companies]);
 
   if (isLoading) {
     return (

@@ -1,12 +1,10 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Network, Building } from 'lucide-react';
-import { useCompanies } from '@/hooks/useCompanies';
+import { Network } from 'lucide-react';
+import { Company } from '@/hooks/useCompanies';
 
 interface HierarchyData {
   level: number;
@@ -16,38 +14,34 @@ interface HierarchyData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-const HierarchyAnalysisChart: React.FC = () => {
-  const { companies = [] } = useCompanies();
+interface HierarchyAnalysisChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
 
-  const { data: hierarchyData = [], isLoading } = useQuery({
-    queryKey: ['hierarchy_analysis', companies.length],
-    queryFn: async () => {
-      if (!companies.length) return [];
+const HierarchyAnalysisChart: React.FC<HierarchyAnalysisChartProps> = ({ companies, isLoading }) => {
+  const hierarchyData = useMemo(() => {
+    if (!companies.length) return [];
 
-      // Analyze hierarchy levels
-      const levelCounts: Record<number, { count: number; companies: string[] }> = {};
-      
-      companies.forEach(company => {
-        const level = company.hierarchy_level || 0;
-        if (!levelCounts[level]) {
-          levelCounts[level] = { count: 0, companies: [] };
-        }
-        levelCounts[level].count++;
-        levelCounts[level].companies.push(company.name);
-      });
+    const levelCounts: Record<number, { count: number; companies: string[] }> = {};
+    
+    companies.forEach(company => {
+      const level = company.hierarchy_level || 0;
+      if (!levelCounts[level]) {
+        levelCounts[level] = { count: 0, companies: [] };
+      }
+      levelCounts[level].count++;
+      levelCounts[level].companies.push(company.name);
+    });
 
-      const hierarchyData: HierarchyData[] = Object.entries(levelCounts)
-        .map(([level, data]) => ({
-          level: parseInt(level),
-          count: data.count,
-          companies: data.companies.slice(0, 5) // Show first 5 companies
-        }))
-        .sort((a, b) => a.level - b.level);
-
-      return hierarchyData;
-    },
-    enabled: companies.length > 0
-  });
+    return Object.entries(levelCounts)
+      .map(([level, data]) => ({
+        level: parseInt(level),
+        count: data.count,
+        companies: data.companies.slice(0, 5)
+      }))
+      .sort((a, b) => a.level - b.level);
+  }, [companies]);
 
   // Calculate statistics
   const totalCompanies = companies.length;

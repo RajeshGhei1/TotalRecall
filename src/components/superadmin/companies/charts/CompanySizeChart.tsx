@@ -1,13 +1,17 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCompanies } from '@/hooks/useCompanies';
+import { Company } from '@/hooks/useCompanies';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const CompanySizeChart: React.FC = () => {
-  const { companies = [], isLoading } = useCompanies();
+interface CompanySizeChartProps {
+  companies: Company[];
+  isLoading?: boolean;
+}
+
+const CompanySizeChart: React.FC<CompanySizeChartProps> = ({ companies, isLoading }) => {
   const isMobile = useIsMobile();
 
   // Process data for the chart
@@ -44,7 +48,7 @@ const CompanySizeChart: React.FC = () => {
     }));
   };
 
-  const data = getSizeData();
+  const data = useMemo(() => getSizeData(), [companies]);
 
   if (isLoading) {
     return (

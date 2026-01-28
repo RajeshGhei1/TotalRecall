@@ -4,6 +4,7 @@ import { Company } from '@/hooks/useCompanies';
 
 export interface CompanyFilters {
   search: string;
+  ownershipScopes: string[];
   
   // Industry & Company Type (new section)
   industry1: string[];
@@ -66,9 +67,10 @@ export interface CompanyFilters {
 }
 
 export const useCompanyFilters = (
-  companies: Compunknown[] | undefined,
+  companies: Company[] | undefined,
   filters: CompanyFilters,
-  searchTerm: string
+  searchTerm: string,
+  scopeFilter?: 'all' | 'tenant' | 'platform' | 'app'
 ) => {
   const filteredCompanies = useMemo(() => {
     // Return empty array if companies is not available or not an array
@@ -77,6 +79,14 @@ export const useCompanyFilters = (
     }
 
     let filtered = [...companies];
+
+    if (scopeFilter && scopeFilter !== 'all') {
+      filtered = filtered.filter(company => company.owner_type === scopeFilter);
+    } else if (filters.ownershipScopes && filters.ownershipScopes.length > 0) {
+      filtered = filtered.filter(company =>
+        company.owner_type && filters.ownershipScopes.includes(company.owner_type)
+      );
+    }
 
     // Apply global search filter first (but don't apply other filters yet for industry option generation)
     if (searchTerm?.trim()) {
@@ -389,7 +399,7 @@ export const useCompanyFilters = (
     }
 
     return filtered;
-  }, [companies, filters, searchTerm]);
+  }, [companies, filters, searchTerm, scopeFilter]);
 
   return {
     filteredCompanies
