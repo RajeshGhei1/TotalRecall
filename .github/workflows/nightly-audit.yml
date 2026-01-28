@@ -1,0 +1,59 @@
+name: Nightly Audit
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Run audit
+        run: |
+          chmod +x scripts/nightly-audit.sh
+          ./scripts/nightly-audit.sh audit-report.txt
+
+      - name: Send email report
+        if: always()
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          AUDIT_EMAIL_TO: ${{ secrets.AUDIT_EMAIL_TO }}
+          AUDIT_EMAIL_FROM: ${{ secrets.AUDIT_EMAIL_FROM }}
+          JOB_STATUS: ${{ job.status }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          if [ -z "$SENDGRID_API_KEY" ] || [ -z "$AUDIT_EMAIL_TO" ] || [ -z "$AUDIT_EMAIL_FROM" ]; then
+            echo "Missing SENDGRID_API_KEY or AUDIT_EMAIL_TO or AUDIT_EMAIL_FROM secrets."
+            exit 1
+          fi
+
+          SUBJECT="Nightly Audit - $JOB_STATUS - $REPO_NAME"
+
+          BODY=$(python - <<'PY'
+import json
+from pathlib import Path
+text = Path("audit-report.txt").read_text() if Path("audit-report.txt").exists() else "No report file generated."
+print(json.dumps(text))
+PY
+)
+
+          curl -sS -X POST "https://api.sendgrid.com/v3/mail/send" \
+            -H "Authorization: Bearer $SENDGRID_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"personalizations\": [{\"to\": [{\"email\": \"$AUDIT_EMAIL_TO\"}]}],
+              \"from\": {\"email\": \"$AUDIT_EMAIL_FROM\"},
+              \"subject\": \"$SUBJECT\",
+              \"content\": [{\"type\": \"text/plain\", \"value\": ${BODY} }]
+            }"
+
